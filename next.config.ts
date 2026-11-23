@@ -190,7 +190,7 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },
-      ...["/geo/maps/:path*", "/home/:path*", "/battle/fx/:path*", "/atlas/:path*", "/icon-192.png", "/icon-512.png", "/logo.svg"].map((source) => ({
+      ...["/geo/maps/:path*", "/geo/howto-demo.webp", "/home/:path*", "/battle/fx/:path*", "/atlas/:path*", "/icon-192.png", "/icon-512.png", "/logo.svg"].map((source) => ({
         source,
         headers: staticAssetCache,
       })),

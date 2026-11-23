@@ -85,6 +85,8 @@ const shotLoaded = (p) =>
 /** Drops a pin `at` of the way across the map's own area (along its middle) and presses Guess: through the dock, or the phone's sheet. */
 async function pinAndGuess(p, phone, at, shots) {
   if (phone) {
+    // Where the page sits under the round as it starts (it mustn't move while the round is played).
+    await p.evaluate(() => (window.__roundScrollY = window.scrollY));
     // The big map button in the bottom bar opens the map card; its check stays dim until a pin is down.
     await p.getByTestId("geo-map-pill").click({ timeout: 15_000 }).catch(async (e) => {
       await p.screenshot({ path: `${OUT}/fail-minimap.png` });
@@ -151,7 +153,8 @@ async function phoneMapGuess(p) {
     header: getComputedStyle(document.querySelector("body > header") ?? document.body).display,
     tabbar: document.querySelector('[data-testid="tabbar"]') ? getComputedStyle(document.querySelector('[data-testid="tabbar"]')).display : "none",
   }));
-  if (page.y !== 0) errors.push(`phone: the page scrolled behind the game (${page.y})`);
+  // The hub stays where it was under the game (nothing shifts when a game starts), and doesn't move during the round.
+  if (page.y !== (await p.evaluate(() => window.__roundScrollY ?? window.scrollY))) errors.push(`phone: the page scrolled behind the game (${page.y})`);
   if (page.header !== "none" || page.tabbar !== "none") errors.push(`phone: the site header or tab bar is still up in a round (${page.header}, ${page.tabbar})`);
   await p.screenshot({ path: `${OUT}/guessr-round-pinned-${vp.width}.png` });
   // The map opens again with the pin kept, and the check guesses.
@@ -271,7 +274,7 @@ async function solo(width, height) {
   // The tracker's first slot holds the round's score (desktop: it fills during the reveal).
   const first = Number((await page.getByTestId("geo-round-score").innerText()).replace(/\D/g, ""));
   if (!phone) {
-    const slot = Number((await page.getByTestId("geo-score-slot-1").innerText()).split("\n").pop().replace(/\D/g, ""));
+    const slot = Number((await page.getByTestId("geo-reveal").getByTestId("geo-score-slot-1").innerText()).split("\n").pop().replace(/\D/g, ""));
     if (slot !== first) errors.push(`the score tracker's first slot reads ${slot}, the round scored ${first}`);
   }
   // Space goes on.
@@ -290,6 +293,167 @@ async function solo(width, height) {
   await page.getByTestId("geo-share-card").waitFor();
   await page.waitForTimeout(1300);
   await page.screenshot({ path: `${OUT}/guessr-summary-${tag}.png`, fullPage: true });
+  await page.context().close();
+}
+
+// ---------------------------------------------------------------------------
+// Smooth and sturdy: nothing moves when a game starts, memory stays flat, and a
+// game survives a reload, Back, a failed picture and a network blip
+// ---------------------------------------------------------------------------
+
+/** Live canvases and images (detached ones included) after a garbage collection, and the page's DOM node count. */
+async function liveObjects(p, cdp) {
+  await cdp.send("HeapProfiler.collectGarbage");
+  await cdp.send("HeapProfiler.collectGarbage");
+  const out = {};
+  for (const ctor of ["HTMLCanvasElement", "HTMLImageElement"]) {
+    const { result: proto } = await cdp.send("Runtime.evaluate", { expression: `${ctor}.prototype`, objectGroup: "probe" });
+    const { objects } = await cdp.send("Runtime.queryObjects", { prototypeObjectId: proto.objectId, objectGroup: "probe" });
+    const { result } = await cdp.send("Runtime.callFunctionOn", { objectId: objects.objectId, functionDeclaration: "function(){return this.length}", returnByValue: true });
+    out[ctor] = result.value;
+    // Let the found objects go again (a held result would keep every one of them alive).
+    await cdp.send("Runtime.releaseObjectGroup", { objectGroup: "probe" });
+  }
+  out.nodes = (await cdp.send("Memory.getDOMCounters")).nodes;
+  return out;
+}
+
+async function sturdy(width, height) {
+  const tag = `${width}`;
+  const page = await newPage({ width, height });
+  await page.addInitScript(() => {
+    window.__shifts = [];
+    window.__long = [];
+    new PerformanceObserver((l) => l.getEntries().forEach((e) => !e.hadRecentInput && window.__shifts.push([e.startTime, e.value]))).observe({ type: "layout-shift", buffered: true });
+    new PerformanceObserver((l) => l.getEntries().forEach((e) => window.__long.push([Math.round(e.startTime), Math.round(e.duration)]))).observe({ type: "longtask", buffered: true });
+  });
+  const cdp = await page.context().newCDPSession(page);
+  step(`sturdy game at ${tag}: no shift on start, flat memory, reload, Back, Exit, a failed picture, a lost guess`);
+  await page.goto(`${BASE}/pokeguessr`, { waitUntil: "networkidle" });
+  await closeHowTo(page);
+  await openGeoSetup(page);
+  const t0 = await page.evaluate(() => performance.now());
+  await page.getByRole("button", { name: /5-round game/ }).click();
+  // The frame is up at once, over the hub (which stays where it was).
+  await page.getByTestId("geo-shell").waitFor({ timeout: 1_000 }).catch(() => errors.push("sturdy: the game's frame didn't show at once"));
+  await shotLoaded(page);
+  await page.waitForTimeout(500);
+  const shift = await page.evaluate((t0) => window.__shifts.filter(([t]) => t >= t0).reduce((s, [, v]) => s + v, 0), t0);
+  if (shift > 0.02) errors.push(`sturdy: starting a game shifts the page (CLS ${shift.toFixed(3)})`);
+  if ((await page.getByTestId("geo-hub").getAttribute("inert")) === null) errors.push("sturdy: the hub under the game can still be reached");
+
+  // Round 1: a pin, then a reload: the same round comes back, its pin and its clock (still running, never reset).
+  const { area } = await tapGuessMap(page, 0.45, 0.5);
+  void area;
+  const before = await page.getByTestId("geo-time-left").innerText();
+  await page.waitForTimeout(1200);
+  await page.reload({ waitUntil: "load" });
+  await page.getByTestId("geo-shell").waitFor({ timeout: 15_000 }).catch(() => errors.push("sturdy: a reload didn't pick the game up again"));
+  await shotLoaded(page);
+  if (!/round\s*1/i.test(await page.getByTestId("geo-round").innerText())) errors.push("sturdy: the reload came back on another round");
+  const after = await page.getByTestId("geo-time-left").innerText();
+  const secs = (c) => Number(c.slice(0, 2)) * 60 + Number(c.slice(3));
+  if (!(secs(after) < secs(before))) errors.push(`sturdy: the clock started again on reload (${before} → ${after})`);
+  if (await page.locator("[data-testid=geo-guess][disabled]").count()) errors.push("sturdy: the pin was lost on reload");
+
+  // Back: still in the game, asked first; "Keep playing" stays.
+  await page.goBack();
+  await page.getByTestId("geo-confirm-exit").waitFor({ timeout: 5_000 }).catch(() => errors.push("sturdy: Back left the game without asking"));
+  await page.screenshot({ path: `${OUT}/guessr-leave-${tag}.png` });
+  await page.getByTestId("geo-stay").click().catch(() => {});
+  if (!(await page.getByTestId("geo-shell").isVisible())) errors.push("sturdy: Keep playing didn't keep the game");
+
+  // Round 2's picture won't load (from here on, until let through below).
+  await page.route("**/api/geo/shot/**", (route) => route.abort("failed"));
+  // A lost answer: the guess is sent again and graded once.
+  let dropped = 0;
+  await page.route("**/api/geo/guess", (route) => (dropped++ === 0 ? route.abort("connectionreset") : route.continue()));
+  await page.getByTestId("geo-guess").click();
+  await page.getByTestId("geo-next").waitFor({ timeout: 20_000 }).catch(() => errors.push("sturdy: a dropped guess wasn't sent again"));
+  await page.unroute("**/api/geo/guess");
+  if (dropped < 2) errors.push("sturdy: the dropped guess was never retried");
+  // The fact came with the answer: no learn request.
+  let learnAsked = false;
+  page.on("request", (r) => r.url().includes("/api/geo/learn") && (learnAsked = true));
+
+  // Round 2's picture fails to load: the clock waits, the round says so, and a retry brings it in.
+  const objects = [];
+  objects.push(await liveObjects(page, cdp));
+  await page.getByTestId("geo-next").click();
+  await page.getByTestId("geo-shot-failed").waitFor({ timeout: 15_000 }).catch(async () => {
+    errors.push(`sturdy: a picture that won't load doesn't say so (${await page.evaluate(() => [document.querySelector("img[data-testid='geo-shot']")?.getAttribute("src"), document.querySelectorAll("[data-testid=geo-shot-failed]").length, document.querySelectorAll("[data-testid=geo-shell]").length].join(" "))})`);
+    await page.screenshot({ path: `${OUT}/fail-shot-${tag}.png` });
+  });
+  if (await page.getByTestId("geo-time-left").count()) errors.push("sturdy: the clock runs while the picture is missing");
+  await page.unroute("**/api/geo/shot/**");
+  await page.getByTestId("geo-shot-retry").click().catch(() => {});
+  await shotLoaded(page);
+  await page.getByTestId("geo-time-left").waitFor({ timeout: 5_000 }).catch(() => errors.push("sturdy: the clock didn't start once the picture came in"));
+
+  // Rounds 2 to 5, with the next picture painted straight after Next, and memory flat.
+  const nexts = [];
+  for (let i = 2; i <= 5; i++) {
+    await shotLoaded(page);
+    await pinAndGuess(page, false, 0.3 + i * 0.08);
+    await page.getByTestId("geo-next").waitFor();
+    await page.waitForTimeout(2600);
+    if (i === 5) break;
+    objects.push(await liveObjects(page, cdp));
+    nexts.push(
+      await page.evaluate(
+        () =>
+          new Promise((done) => {
+            const t = performance.now();
+            document.querySelector("[data-testid=geo-next]").click();
+            const look = () => {
+              const img = document.querySelector("img[data-testid='geo-shot']");
+              if (img?.complete && img.naturalWidth > 0 && getComputedStyle(img).opacity === "1" && !img.closest("[aria-hidden=true]")) requestAnimationFrame(() => done(Math.round(performance.now() - t)));
+              else requestAnimationFrame(look);
+            };
+            requestAnimationFrame(look);
+          })
+      )
+    );
+  }
+  if (learnAsked) errors.push("sturdy: the round result asked for its fact separately");
+  const [first, last] = [objects[1], objects[objects.length - 1]];
+  console.log(`  memory per round: ${objects.map((o) => `${o.HTMLCanvasElement}c/${o.HTMLImageElement}i/${o.nodes}n`).join(" → ")}; Next → picture: ${nexts.join(", ")} ms`);
+  if (last.HTMLCanvasElement > first.HTMLCanvasElement + 1) errors.push(`sturdy: canvases pile up round after round (${first.HTMLCanvasElement} → ${last.HTMLCanvasElement})`);
+  if (last.nodes > first.nodes + 150) errors.push(`sturdy: DOM nodes pile up round after round (${first.nodes} → ${last.nodes})`);
+  // Generous for a shared CI machine (the target on a desktop is 150 ms).
+  if (Math.max(...nexts) > 600) errors.push(`sturdy: the next picture took ${Math.max(...nexts)} ms to show after Next`);
+  const long = await page.evaluate((t0) => window.__long.filter(([t]) => t > t0), t0);
+  console.log(`  long tasks during the game: ${long.length ? long.map(([, d]) => `${d} ms`).join(", ") : "none"}`);
+
+  // Exit asks first; Leave goes back to the hub.
+  await page.getByTestId("geo-next").waitFor();
+  await page.locator("[data-testid=geo-exit]:visible").first().click();
+  await page.getByTestId("geo-confirm-exit").waitFor({ timeout: 5_000 }).catch(() => errors.push("sturdy: Exit didn't ask first"));
+  await page.getByTestId("geo-leave").click().catch(() => {});
+  await page.getByTestId("geo-shell").waitFor({ state: "detached", timeout: 5_000 }).catch(() => errors.push("sturdy: Leave didn't leave"));
+  await page.context().close();
+}
+
+/** Today's Daily, part played and closed: its card offers "Resume Daily #N" (a new tab), and picks up on round 2. */
+async function dailyResume(width, height) {
+  step(`resume the Daily at ${width}`);
+  const page = await newPage({ width, height });
+  await page.goto(`${BASE}/pokeguessr`, { waitUntil: "networkidle" });
+  await closeHowTo(page);
+  await page.getByTestId("geo-daily-play").click();
+  await shotLoaded(page);
+  await pinAndGuess(page, width < 768, 0.5);
+  await page.getByTestId("geo-next").waitFor();
+  // A new tab (the tab's own copy gone): only the Daily's copy is left.
+  await page.evaluate(() => sessionStorage.removeItem("pokeiq:geo-game"));
+  await page.goto(`${BASE}/pokeguessr`, { waitUntil: "networkidle" });
+  const play = page.getByTestId("geo-daily-play");
+  await play.filter({ hasText: /Resume Daily #\d+/ }).waitFor({ timeout: 10_000 }).catch(async () => errors.push(`the Daily's card doesn't offer to resume it ("${await play.innerText()}")`));
+  await play.click();
+  await page.getByTestId("geo-next").waitFor({ timeout: 15_000 }).catch(() => errors.push("resuming the Daily didn't bring back its round result"));
+  await page.getByTestId("geo-next").click();
+  await shotLoaded(page);
+  if (!/round\s*2/i.test(await page.getByTestId("geo-round").innerText())) errors.push("the resumed Daily isn't on round 2");
   await page.context().close();
 }
 
@@ -911,9 +1075,11 @@ async function music(width, height) {
   await muted.context().close();
 }
 
-/** E2E_ONLY=music1440,music390,solo1440,weekly1440,duel1440,solo390,weekly390,duel390,royale1440,team1440,royale390,team390,crowd390,crowd1440 runs a subset. */
-const only = (process.env.E2E_ONLY ?? "music1440,music390,solo1440,weekly1440,duel1440,solo390,weekly390,duel390,royale1440,team1440,royale390,team390,crowd390").split(",");
+/** E2E_ONLY=sturdy1440,daily1440,music1440,music390,solo1440,weekly1440,duel1440,solo390,weekly390,duel390,royale1440,team1440,royale390,team390,crowd390,crowd1440 runs a subset. */
+const only = (process.env.E2E_ONLY ?? "sturdy1440,daily1440,music1440,music390,solo1440,weekly1440,duel1440,solo390,weekly390,duel390,royale1440,team1440,royale390,team390,crowd390").split(",");
 try {
+  if (only.includes("sturdy1440")) await sturdy(1440, 900);
+  if (only.includes("daily1440")) await dailyResume(1440, 900);
   if (only.includes("music1440")) await music(1440, 900);
   if (only.includes("music390")) await music(390, 844);
   if (only.includes("solo1440")) await solo(1440, 900);

@@ -53,7 +53,8 @@
       "scored": "Tu as marqué {score} aujourd'hui.",
       "blurb": "Les lieux du jour, les mêmes pour tout le monde.",
       "again": "Rejouer",
-      "play": "Jouer celle du jour"
+      "play": "Jouer celle du jour",
+      "resume": "Reprendre le Quotidien {num}"
     },
     "weekly": {
       "numbered": "Hebdo #{n}",

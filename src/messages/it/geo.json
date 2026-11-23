@@ -4,7 +4,13 @@
     "exitFullscreen": "Esci da schermo intero",
     "withEsc": "{label} (Esc)",
     "back": "Torna a PokéGuessr",
-    "secondsLeft": "{s} secondi rimasti"
+    "secondsLeft": "{s} secondi rimasti",
+    "loading": "Caricamento del round",
+    "leaveTitle": "Uscire da questa partita?",
+    "leaveBody": "Questa partita non verrà salvata.",
+    "leaveDaily": "Puoi riprendere la Giornaliera di oggi dalla sua scheda.",
+    "leave": "Esci",
+    "stay": "Continua a giocare"
   },
   "dock": {
     "size": "Dimensione della mappa",
@@ -49,7 +55,8 @@
     "views": "Viste di questo luogo",
     "view": "Vista {n} di {count}",
     "fullscreen": "Screenshot a schermo intero",
-    "close": "Chiudi"
+    "close": "Chiudi",
+    "failed": "Questo screenshot non si è caricato. Il tempo aspetta finché non arriva."
   },
   "report": {
     "open": "Segnala questo screenshot",
@@ -101,5 +108,6 @@
     "shareAndBoard": "Condividi e classifica"
   },
   "scoreTotal": "Totale",
-  "roundOf": "Round {n}/{of}"
+  "roundOf": "Round {n}/{of}",
+  "retry": "Riprova"
 }

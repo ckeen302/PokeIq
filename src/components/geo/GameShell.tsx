@@ -98,6 +98,48 @@ export function FullscreenButton({ fs, onClick, className }: { fs: boolean; onCl
   );
 }
 
+/**
+ * "Leave this game?": asked before Exit, Escape or Back ends a game under way.
+ * Escape (or a tap outside) keeps playing.
+ */
+export function ConfirmExit({ daily, onLeave, onStay }: { daily?: boolean; onLeave: () => void; onStay: () => void }) {
+  const t = useT(geoNs);
+  const stay = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    stay.current?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      e.stopImmediatePropagation();
+      onStay();
+    };
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
+  }, [onStay]);
+  return (
+    <div className="absolute inset-0 z-[80] flex items-center justify-center bg-black/60 p-4" onClick={onStay}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="geo-leave-title"
+        className="w-full max-w-sm rounded-xl bg-[#1e1a3f] p-5 text-center text-white shadow-2xl ring-2 ring-[#a99cff]/50"
+        onClick={(e) => e.stopPropagation()}
+        data-testid="geo-confirm-exit"
+      >
+        <p id="geo-leave-title" className="font-display text-xl font-bold uppercase italic">{t("shell.leaveTitle")}</p>
+        <p className="mt-1.5 text-sm text-white/70">{daily ? t("shell.leaveDaily") : t("shell.leaveBody")}</p>
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          <button type="button" onClick={onLeave} className="h-11 rounded-md bg-white/10 font-display text-sm font-bold uppercase tracking-wider text-white transition-colors hover:bg-white/20" data-testid="geo-leave">
+            {t("shell.leave")}
+          </button>
+          <button ref={stay} type="button" onClick={onStay} className="h-11 rounded-md bg-[#4cbb17] font-display text-sm font-bold uppercase tracking-wider text-white transition-colors hover:bg-[#58d01c]" data-testid="geo-stay">
+            {t("shell.stay")}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /** The frame's top-left button: back to the hub. */
 export function ExitButton({ onClick, label: given, testId = "geo-exit" }: { onClick: () => void; label?: string; testId?: string }) {
   const t = useT(geoNs);
@@ -311,6 +353,7 @@ export function MapDock({
   hasPin,
   tools,
   testId = "geo-dock",
+  resetKey,
 }: {
   /** The map; `fill` asks it to fill its box instead of keeping its aspect; `land` (the phone card) opens it on the land rather than the whole map. */
   map: (o: { fill: boolean; land: boolean | "fit" }) => React.ReactNode;
@@ -325,6 +368,8 @@ export function MapDock({
   /** Phones: the round's buttons for the left of the bottom bar (round icon buttons, BAR_BTN). Ones marked data-keep stay while the map is up. */
   tools?: React.ReactNode;
   testId?: string;
+  /** A new round (the dock stays mounted from round to round): the phone's map card closes. */
+  resetKey?: number;
 }) {
   const t = useT(geoNs);
   const phone = usePhone();
@@ -357,7 +402,7 @@ export function MapDock({
     leaveTimer.current = window.setTimeout(() => setHot(false), COLLAPSE_MS);
   };
 
-  if (phone) return <PhoneMap map={map} button={button} extra={extra} hasPin={hasPin} tools={tools} testId={testId} />;
+  if (phone) return <PhoneMap resetKey={resetKey} map={map} button={button} extra={extra} hasPin={hasPin} tools={tools} testId={testId} />;
 
   const open = hot || sticky;
   // Resting: GeoGuessr's small corner map. Open (hovered, focused or pinned): the chosen step's size.
@@ -413,9 +458,11 @@ export const BAR_BTN =
  * its close button or Escape puts it away. The map stays mounted, so the pin
  * and the zoom carry over.
  */
-function PhoneMap({ map, button, extra, hasPin, tools, testId }: { map: (o: { fill: boolean; land: boolean | "fit" }) => React.ReactNode; button: React.ReactNode; extra?: React.ReactNode; hasPin: boolean; tools?: React.ReactNode; testId: string }) {
+function PhoneMap({ map, button, extra, hasPin, tools, testId, resetKey }: { map: (o: { fill: boolean; land: boolean | "fit" }) => React.ReactNode; button: React.ReactNode; extra?: React.ReactNode; hasPin: boolean; tools?: React.ReactNode; testId: string; resetKey?: number }) {
   const t = useT(geoNs);
   const [open, setOpen] = useState(false);
+  // Each round starts on its picture, with the map put away (the map itself stays mounted).
+  useEffect(() => setOpen(false), [resetKey]);
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {

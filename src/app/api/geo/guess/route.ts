@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { playerRateLimit } from "@/lib/server/rate-limit";
-import { claimOnce, recallResponse, rememberResponse, requestFingerprint } from "@/lib/server/replay-guard";
+import { claimFor, recallResponse, rememberResponse, requestFingerprint } from "@/lib/server/replay-guard";
 import { gradeGeo, readGeo, regionGroupOf } from "@/lib/server/geo";
 import { syncHiddenShots } from "@/lib/server/geo-reports";
 import { logRoundScore, roundFlag } from "@/lib/server/geo-round-scores";
@@ -15,8 +15,9 @@ import { GEO_FAMILY_IDS } from "@/lib/geo-families";
  * named; `timeout`: the Timer setting's clock ran out with no pin down, so
  * no points). Kept lean: it's on the warm path and every round goes through it.
  *
- * The rules (geo.ts has them): one guess per round (a second is a 409, an
- * identical retry gets the same answer back), a pin after the round's clock
+ * The rules (geo.ts has them): one guess per round (a different second one
+ * is a 409; the very same request sent again, after a lost answer or a
+ * reload, gets the same answer back, on any instance), a pin after the round's clock
  * plus a grace scores nothing, and a daily is graded only on its day. Each
  * graded round is logged with who played it (an HMAC of the account, or of
  * a device id kept in a cookie) and a behaviour flag, for the moderators.
@@ -53,18 +54,23 @@ export async function POST(request: NextRequest) {
 
   if (!state) return NextResponse.json({ error: "Game expired or invalid — start a new one." }, { status: 401 });
 
-  await syncHiddenShots();
+  void syncHiddenShots();
   const outcome = gradeGeo(state, parsed.data);
   if (!outcome.ok) return NextResponse.json({ error: outcome.error }, { status: outcome.status });
 
-  // Each round can be guessed once; an identical retry (lost response) gets the same answer back.
+  // Each round can be guessed once; the very same request again (a lost answer, a reload) gets the same answer back.
   const fingerprint = requestFingerprint(parsed.data.token, String(parsed.data.x), String(parsed.data.y), parsed.data.family ?? "", parsed.data.timeout ? "timeout" : "");
-  if (!(await claimOnce(outcome.claimKey))) {
-    const cached = recallResponse(outcome.claimKey, fingerprint);
-    if (cached) return NextResponse.json(cached, { headers: { "Cache-Control": "no-store" } });
-    return NextResponse.json({ error: "That round was already guessed." }, { status: 409 });
-  }
-  rememberResponse(outcome.claimKey, fingerprint, outcome.body);
+  const cached = recallResponse(outcome.claimKey, fingerprint);
+  if (cached) return NextResponse.json(cached, { headers: { "Cache-Control": "no-store" } });
+  // The round's fact for the learn card comes along, so the result needs no second request.
+  const { learnAbout } = await import("@/lib/server/geo-learn");
+  const { answer } = outcome.body;
+  const body = { ...outcome.body, learn: learnAbout(answer.name, answer.region ?? "Kanto", answer.parent) };
+  const claim = await claimFor(outcome.claimKey, fingerprint);
+  if (claim === "other") return NextResponse.json({ error: "That round was already guessed." }, { status: 409 });
+  // A retry is graded again from the same token and pin (the same score and place), and logged only the first time.
+  rememberResponse(outcome.claimKey, fingerprint, body);
+  if (claim === "same") return NextResponse.json(body, { headers: { "Cache-Control": "no-store" } });
 
   const known = request.cookies.get(DEVICE_COOKIE)?.value;
   const device = known && DEVICE_RE.test(known) ? known : randomId(12);
@@ -90,7 +96,7 @@ export async function POST(request: NextRequest) {
       })
     );
   }
-  const response = NextResponse.json(outcome.body, { headers: { "Cache-Control": "no-store" } });
+  const response = NextResponse.json(body, { headers: { "Cache-Control": "no-store" } });
   if (device !== known) {
     response.cookies.set(DEVICE_COOKIE, device, {
       httpOnly: true,
