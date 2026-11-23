@@ -39,6 +39,6 @@ if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(__filename
   // One entry per line: small diffs, still one JSON document.
   const lines = (key: string, list: unknown[]) => `"${key}":[\n${list.map((x) => JSON.stringify(x)).join(",\n")}\n]`;
   fs.writeFileSync(path.join(ROOT, "src/data/hunt/answers.json"), `{"version":1,"generatedAt":"${date}",\n${lines("entries", out.entries)}}\n`);
-  fs.writeFileSync(path.join(ROOT, "src/data/hunt/review.json"), `{"generatedAt":"${date}","stats":${JSON.stringify(out.stats)},\n${lines("missingPlaces", out.missingPlaces)},\n${lines("dropped", out.dropped)},\n${lines("review", out.review)}}\n`);
+  fs.writeFileSync(path.join(ROOT, "src/data/hunt/review.json"), `{"generatedAt":"${date}","stats":${JSON.stringify(out.stats)},\n${lines("missingPlaces", out.missingPlaces)},\n${lines("dropped", out.dropped)},\n"excludedAt":${JSON.stringify(out.excludedAt)},\n${lines("review", out.review)}}\n`);
   console.log(out.stats);
 }

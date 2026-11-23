@@ -125,7 +125,7 @@ export const NOT_THE_SAME: { versions: string[]; loc: string; why: string }[] = 
 ];
 
 /**
- * Encounters that need an event (a ticket, a pass, a QR code, another game's save data),
+ * Encounters that need an event (a ticket, a pass, a QR code, another game's save data or key),
  * left out by rule 1. `loc` and `versions` narrow a row; leaving one out means every row.
  * Each is from Bulbapedia's location table for that Pokémon.
  */
@@ -146,6 +146,8 @@ export const EVENT_ONLY: { dex: number; versions?: string[]; loc?: string; why: 
   { dex: 493, why: "Azure Flute event (or another game's save data in Brilliant Diamond / Shining Pearl)" },
   { dex: 494, versions: ["black", "white"], loc: "Liberty Garden", why: "Liberty Pass event" },
   { dex: 801, versions: ["ultra-sun", "ultra-moon"], why: "QR Scanner event" },
+  { dex: 378, versions: ["black-2"], loc: "Underground Ruins", why: "needs the Iceberg Key, which only White 2 unlocks (another game's Key System)" },
+  { dex: 379, versions: ["white-2"], loc: "Underground Ruins", why: "needs the Iron Key, which only Black 2 unlocks (another game's Key System)" },
 ];
 
 /** FireRed / LeafGreen and Emerald's Altering Cave only has Zubat without a Mystery Gift event. */

@@ -58,6 +58,8 @@ export interface BuildResult {
   review: ReviewItem[];
   /** Places dropped from an entry because neither Bulbapedia nor Serebii lists them in that game. */
   dropped: ReviewItem[];
+  /** "dex|version|Region|Place" where a row was left out by a rule (gift, event, swarm, raid…). */
+  excludedAt: string[];
   /** Real places missing from the map, with the entries each one keeps out. */
   missingPlaces: { place: string; versions: string[]; entries: string[] }[];
   stats: Record<string, number>;
@@ -129,8 +131,12 @@ export function buildAnswers(inp: Inputs, opts: { difficulty?: boolean } = {}): 
           if (mc.kind === "excluded") {
             stats.excludedMethod++;
             // Remember where: the sources' agreed list must not add back what a rule left out.
-            const at = matchPlace(idx, r.loc, v);
-            if (at.kind === "place") excludedAt.add(`${dex}|${v}|${at.key}`);
+            // Only for rules that leave out a real encounter at that spot (gifts, events, swarms…), not
+            // for ones that leave out something else there (curry, raids), which says nothing about the wild.
+            if (!isOffMap(r.loc) && !/^(Curry|Tera Raid|Hyperspace|Underground|Massive mass outbreak)$/.test(r.m ?? "")) {
+              const at = matchPlace(idx, r.loc, v);
+              if (at.kind === "place") excludedAt.add(`${dex}|${v}|${at.key}`);
+            }
             continue;
           }
           if (isOffMap(r.loc)) {
@@ -292,7 +298,7 @@ export function buildAnswers(inp: Inputs, opts: { difficulty?: boolean } = {}): 
   stats.entries = entries.length;
   stats.reviewItems = review.length;
   stats.species = new Set(entries.map((e) => e.dex)).size;
-  return { entries, review, dropped, missingPlaces, stats };
+  return { entries, review, dropped, excludedAt: [...excludedAt].sort(), missingPlaces, stats };
 }
 
 /** A one-line fact from the data, only when it's plainly true: a single spot. */

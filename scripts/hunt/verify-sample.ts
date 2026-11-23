@@ -21,6 +21,7 @@ import aboutForms from "../../src/data/about-forms.json";
 import type { HuntAnswerFile, HuntEntry } from "../../src/lib/hunt/types";
 import { FORMS_IN_GAME, ORIGINAL_ONLY, formsInLabel, regionalForms, type EvidenceEntry, type FormInfo } from "./forms";
 import { buildPlaceIndex, isOffMap, matchPlace, type GeoPlace, type PlaceIndex } from "./match";
+import { EVENT_ONLY } from "./rules";
 
 const table = answers as unknown as HuntAnswerFile;
 const idx = buildPlaceIndex((geo as unknown as { world: { locations: GeoPlace[] } }).world.locations);
@@ -97,6 +98,8 @@ export function bulbapediaSets(e: Who, bulba: Record<string, EvidenceEntry[]>) {
       if (v === "legends-arceus") continue;
       for (const s of be.segments) {
         if (s.kind === "other" || (s.kind === "raid" && v !== "sword" && v !== "shield")) continue;
+        // Gigantamax dens hold the Gigantamax form, not the art's.
+        if (/Gigantamax/.test((s as { text?: string }).text ?? "")) continue;
         const f = lineForms(e.dex, v, s.forms);
         if (!f || !f.includes(e.form)) continue;
         for (const p of s.places) {
@@ -133,9 +136,9 @@ export function serebiiSets(e: Who, serebii: Record<string, SerebiiRow[]>, detai
   const sets: Sets = new Map();
   const unplaced: Sets = new Map();
   const hints: Hints = new Map();
-  // The detail pages don't say the form: for species with regional forms, only games that have just the original.
+  // The detail pages don't say the form: for species with regional forms, only games where just the original exists.
   for (const [v, names] of Object.entries(detail[String(e.dex)] ?? {}))
-    if (!formsBy.has(e.dex) || (e.form === null && ORIGINAL_ONLY.has(v))) for (const n of names) place(sets, unplaced, v, n);
+    if (!formsBy.has(e.dex) || (e.form === null && lineForms(e.dex, v, [])?.length === 1 && lineForms(e.dex, v, [])![0] === null)) for (const n of names) place(sets, unplaced, v, n);
   for (const [key, rows] of Object.entries(serebii)) {
     if (key.split("/")[1] !== String(e.dex)) continue;
     for (const r of rows) {
@@ -167,6 +170,12 @@ export function serebiiSets(e: Who, serebii: Record<string, SerebiiRow[]>, detai
   return { sets, unplaced, hints };
 }
 
+/** Event-only places (rules.ts EVENT_ONLY) are left out on purpose. */
+function ruledOut(dex: number, v: string, key: string): boolean {
+  const name = key.split("|")[1];
+  return EVENT_ONLY.some((x) => x.dex === dex && (!x.versions || x.versions.includes(v)) && (!x.loc || x.loc === name));
+}
+
 export interface SampleResult {
   id: string;
   name: string;
@@ -174,6 +183,11 @@ export interface SampleResult {
   games: { version: string; ours: string[]; bulbapedia: string[]; serebii: string[]; errorsExtra: string[]; errorsMissing: string[]; disputed: string[] }[];
   ok: boolean;
 }
+
+/** Where the build left a row out by a rule (src/data/hunt/review.json excludedAt): a source listing it there isn't a miss. */
+const RULED_OUT = new Set<string>(
+  fs.existsSync("src/data/hunt/review.json") ? ((JSON.parse(fs.readFileSync("src/data/hunt/review.json", "utf8")) as { excludedAt?: string[] }).excludedAt ?? []) : [],
+);
 
 export function check(sample: HuntEntry[], bulba: Record<string, EvidenceEntry[]>, serebii: Record<string, SerebiiRow[]>, detail: SerebiiDetail = {}): SampleResult[] {
   return sample.map((e) => {
@@ -188,7 +202,7 @@ export function check(sample: HuntEntry[], bulba: Record<string, EvidenceEntry[]
       const bv = b.get(v) ?? new Set<string>();
       const sv = s.get(v) ?? new Set<string>();
       const errorsExtra = [...o].filter((k) => !bv.has(k) && !sv.has(k));
-      const errorsMissing = [...bv].filter((k) => sv.has(k) && !o.has(k));
+      const errorsMissing = [...bv].filter((k) => sv.has(k) && !o.has(k) && !RULED_OUT.has(`${e.dex}|${v}|${k}`) && !ruledOut(e.dex, v, k));
       const disputed = [...new Set([...bv, ...sv])].filter((k) => !o.has(k) && !(bv.has(k) && sv.has(k)));
       games.push({ version: v, ours: [...o].sort(), bulbapedia: [...bv].sort(), serebii: [...sv].sort(), errorsExtra, errorsMissing, disputed });
     }
