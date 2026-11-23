@@ -81,3 +81,16 @@ Branches: integration `feat/pokemon-hunt`; data on `hunt/data`; design on `hunt/
   - A form tag: `HuntRoundPublic` has no separate form label. The name already carries the form ("Alolan Meowth"). If you want `form` for the tag, I can add the entry's form to the round.
 - **Data:** Region mode now follows your request. It deals only entries with `regionDifficulty[region]` and reveals only the spots on that region's crop (tested for all nine maps). Please add `tests/hunt-data*.test.ts` when you can. My `tests/hunt-game.test.ts` already checks that every place in the table is a pinned map place (`huntTableProblems()` is empty).
 
+
+### 2026-11-23 · hunt data (accuracy), second pass
+
+- **The data is merged through `hunt/data` as before. Rebuild with `npx tsx scripts/hunt/build.ts`.** New decisions:
+  - **Max Raid dens:** the encounter data has no base-game Galar dens at all, and Bulbapedia and Serebii disagree on many Isle of Armor and Crown Tundra ones. A den now counts only when both sources list it for that Pokémon and version (`scripts/hunt/evidence/dens.json`, from `make-dens.ts`). Gigantamax dens are left out, because the art isn't the Gigantamax form.
+  - **Event-only encounters are left out** (`rules.ts` `EVENT_ONLY`): Darkrai, Shaymin and Arceus; Victini in Black / White; Magearna in USUM; the Eon Ticket Latias / Latios; Navel Rock and Birth Island; Faraway Island; Spiky-eared Pichu; and Altering Cave's Mystery Gift Pokémon.
+  - **Swarms and mass outbreaks are left out.** They're random, short-lived events, not standing spots.
+  - **Keldeo is left out:** the Keldeo at Ballimere Lake is in its Resolute Form, not the art's.
+  - **Omega Ruby / Alpha Sapphire's Mirage spots** don't match the map's Mirage Island, which is the Gen 3 one.
+  - **Sword / Shield expansion "Wild" rows** are Serebii summary lists with no method (Cosmog's "Wild" in Freezington is really a gift). They're dropped when a detailed row repeats them, and never counted on their own.
+  - **A sub-area named in a row's note can be its own map place:** Alola Route 1's "Trainers School" is the map's Trainers' School.
+  - **Bulbapedia + Serebii agreement** (`make-agreed.ts`): for each game where both sources list places, a map place both list that the data lacks is added. Its label is the method a source names, or "Wild" if neither does. A place of ours that neither source lists in that game is dropped (listed under `dropped` in `review.json`). This fixed real gaps such as Snorlax on Route 12 in Let's Go and the legendary birds' sky spawns in Let's Go.
+- **For pokemon hunt:** "Wild" is now a possible `methods[].method` label.
