@@ -40,8 +40,10 @@ describe("PokéGuessr guess rules", () => {
     const { token } = (await started.json()) as { token: string };
     const first = await guessRoute.POST(post("/api/geo/guess", { token, x: 0.5, y: 0.5 }));
     expect(first.status).toBe(200);
-    const body = (await first.json()) as { score: number; token: string; answer: { name: string } };
+    const body = (await first.json()) as { score: number; token: string; answer: { name: string }; learn?: unknown };
     expect(body.answer.name).toBeTruthy();
+    // The learn card's fact comes with the answer (null when there's nothing on file): no second request.
+    expect(body).toHaveProperty("learn");
     // The same guess again (a lost response): the same grading, not a second one.
     const again = await guessRoute.POST(post("/api/geo/guess", { token, x: 0.5, y: 0.5 }));
     expect(again.status).toBe(200);

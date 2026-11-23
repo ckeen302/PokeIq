@@ -40,6 +40,7 @@ export function ShotCarousel({
   blur,
   priority = false,
   dock = false,
+  onError,
 }: {
   views: string[];
   index: number;
@@ -55,6 +56,8 @@ export function ShotCarousel({
   priority?: boolean;
   /** The guess map is docked over the picture (on a phone, the corner minimap): the strip keeps beside it. */
   dock?: boolean;
+  /** The picture failed to load (the round asks for it again). */
+  onError?: () => void;
 }) {
   const t = useT(geoNs);
   const [fits, setFits] = useState<Record<string, Fit>>({});
@@ -128,6 +131,7 @@ export function ShotCarousel({
           fetchPriority={priority && src === views[0] ? "high" : undefined}
           decoding={priority && src === views[0] ? "sync" : undefined}
           onLoad={(e) => measure(e.currentTarget)}
+          onError={src === views[0] ? onError : undefined}
           className={cn("absolute inset-0 h-full w-full", !instant.current.has(src) && "transition-opacity duration-[350ms]", fit?.className ?? "object-cover object-center", fit ? "opacity-100" : "opacity-0")}
           style={{ imageRendering: fit?.pixelated ? "pixelated" : "auto", ...zoomStyle(src) }}
           data-testid="geo-shot"

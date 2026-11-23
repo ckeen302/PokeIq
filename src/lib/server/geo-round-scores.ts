@@ -364,6 +364,8 @@ export async function flaggedPlayers(store = roundScoreStore()): Promise<Flagged
 /** How long the per-shot averages are trusted before they're read again. */
 const STATS_TTL_MS = 10 * 60_000;
 let statsUntil = 0;
+/** This instance has read the data once (or tried): later refreshes don't hold up a request. */
+let statsUntilRead = false;
 let loading: Promise<void> | null = null;
 
 /** Brings the shots' player-based difficulty up to date (at most every ten minutes); never throws or waits long. */
@@ -375,11 +377,13 @@ export async function syncShotScores(now = Date.now(), store = roundScoreStore()
     } catch (err) {
       if (!(err instanceof Unavailable)) console.error("[geo-round-scores] averages not read:", err);
     } finally {
+      statsUntilRead = true;
       statsUntil = Date.now() + STATS_TTL_MS;
       loading = null;
     }
   })();
-  await Promise.race([loading, new Promise((r) => setTimeout(r, 1_500))]);
+  // Only an instance's very first read waits (briefly): after that the last data read serves while this refreshes in the background.
+  if (!statsUntilRead) await Promise.race([loading, new Promise((r) => setTimeout(r, 1_500))]);
 }
 
 // ---------------------------------------------------------------------------

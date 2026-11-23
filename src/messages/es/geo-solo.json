@@ -53,7 +53,8 @@
       "scored": "Hoy has hecho {score}.",
       "blurb": "Los lugares de hoy, iguales para todos.",
       "again": "Jugar otra vez",
-      "play": "Jugar la de hoy"
+      "play": "Jugar la de hoy",
+      "resume": "Retomar Diaria {num}"
     },
     "weekly": {
       "numbered": "Semanal n.º {n}",
@@ -191,6 +192,9 @@
     "off": "No",
     "timerBlurb": "Cuando se acaba el tiempo, tu chincheta cuenta donde esté; sin chincheta, 0 puntos. El reloj sigue corriendo si cambias de pestaña. La Diaria y la Semanal siempre son de 1:30, y las rachas no tienen reloj.",
     "harder": "Solo hacen la partida más difícil, así que tus puntuaciones siguen contando en las clasificaciones.",
+    "music": "Música",
+    "musicBlurb": "Música de fondo tranquila mientras juegas. Si silencias el sitio, también se apaga.",
+    "musicVolume": "Volumen de la música",
     "rounds": "Rondas",
     "difficulty": "Dificultad",
     "practice": "Práctica: Normal mantiene las clasificaciones."

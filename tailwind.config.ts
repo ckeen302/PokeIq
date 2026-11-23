@@ -66,6 +66,8 @@ const config: Config = {
         flicker: { "0%, 100%": { opacity: "1" }, "92%": { opacity: "1" }, "93%": { opacity: "0.7" }, "94%": { opacity: "1" } },
         // A phone's bottom sheet: up and in from transparent (a plain 0, so a pop-up never counts as the page's largest paint).
         "sheet-in": { from: { opacity: "0", transform: "translateY(2.5rem)" }, to: { opacity: "1", transform: "none" } },
+        // A how-to sheet rises from below the screen: its first paint is off screen, so a first visit's how-to never counts as the page's largest paint.
+        "sheet-up": { from: { transform: "translateY(100dvh)" }, to: { transform: "none" } },
         // The home page: the hero's picture drifts like a slow camera, light sweeps across Play now and then, colour drifts behind the page, the dailies rise in.
         "hero-drift": { "0%": { transform: "scale(1.02) translate3d(0, 0, 0)" }, "100%": { transform: "scale(1.1) translate3d(-2.5%, -1.5%, 0)" } },
         shine: { "0%, 72%": { transform: "translateX(-120%) skewX(-20deg)" }, "88%, 100%": { transform: "translateX(320%) skewX(-20deg)" } },
@@ -80,6 +82,7 @@ const config: Config = {
         scan: "scan 6s linear infinite",
         flicker: "flicker 6s linear infinite",
         "sheet-in": "sheet-in 0.2s ease-out",
+        "sheet-up": "sheet-up 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) both",
         "hero-drift": "hero-drift 26s ease-in-out infinite alternate",
         shine: "shine 5.5s ease-in-out 1.5s infinite",
         "glow-a": "glow-a 34s ease-in-out infinite",

@@ -1,3 +1,4 @@
+import Image, { type StaticImageData } from "next/image";
 import { cn } from "@/lib/utils";
 
 /**
@@ -46,6 +47,8 @@ const TONE: Record<TileTone, { label: string; ring: string; wash: string }> = {
   muted: { label: "text-muted-foreground", ring: "", wash: "from-muted/40" },
 };
 
+const TILE_IMG = "absolute inset-0 h-full w-full object-cover opacity-80 transition-[opacity,transform] duration-300 group-hover:scale-[1.03] group-hover:opacity-100";
+
 export function HubTile({
   tone = "screen",
   image,
@@ -62,8 +65,8 @@ export function HubTile({
   priority,
 }: {
   tone?: TileTone;
-  /** A picture for the banner (a CDN-cached preview; null: a tinted banner while it's worked out); no banner at all when left out. */
-  image?: string | null;
+  /** A picture for the banner (a CDN-cached preview, or the site's own art, sized by next/image; null: a tinted banner while it's worked out); no banner at all when left out. */
+  image?: string | StaticImageData | null;
   icon: React.ReactNode;
   label: string;
   title: string;
@@ -92,10 +95,13 @@ export function HubTile({
     >
       {image !== undefined ? (
         <div className={cn("relative aspect-[16/6] overflow-hidden bg-gradient-to-br to-transparent sm:aspect-[16/7]", t.wash)}>
-          {image && (
+          {image && typeof image === "object" ? (
+            // The site's own art: served at the tile's size (the hub shows four tiles a row on a wide screen, two on a tablet, one on a phone).
+            <Image src={image} alt="" fill sizes="(min-width: 1280px) 25vw, (min-width: 640px) 50vw, 100vw" priority={priority} className={TILE_IMG} />
+          ) : image ? (
             // eslint-disable-next-line @next/next/no-img-element -- CDN-cached preview
-            <img src={image} alt="" decoding="async" loading={priority ? undefined : "lazy"} fetchPriority={priority ? "high" : undefined} className="absolute inset-0 h-full w-full object-cover opacity-80 transition-[opacity,transform] duration-300 group-hover:scale-[1.03] group-hover:opacity-100" />
-          )}
+            <img src={image} alt="" decoding="async" loading={priority ? undefined : "lazy"} fetchPriority={priority ? "high" : undefined} className={TILE_IMG} />
+          ) : null}
           <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent" aria-hidden />
           <span className={cn("absolute bottom-2 left-3 flex h-9 w-9 items-center justify-center rounded-md border bg-card/90 backdrop-blur", t.label)} aria-hidden>
             {icon}

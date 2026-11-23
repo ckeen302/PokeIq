@@ -52,9 +52,10 @@ export function useDemoFrame(ms: readonly number[]): number {
  * 28rem wide (less a 1rem margin each side on a phone) and 680px tall, never
  * taller than the screen less 2rem above and below. Its title and close
  * button stay on top and its buttons (`footer`) at the bottom; the demo and
- * the rules scroll inside it, between them, never the page. It fades in from
- * transparent on a phone, so a first visit's how-to never counts as the
- * page's largest paint there: the board does.
+ * the rules scroll inside it, between them, never the page. On a phone it
+ * rises from below the screen, so its first paint is off screen and a first
+ * visit's how-to never counts as the page's largest paint there (a fade from
+ * transparent no longer keeps it out): the board does.
  */
 export function HowToDialog({
   title: titleProp,
@@ -85,7 +86,7 @@ export function HowToDialog({
         aria-label={title}
         data-testid={testId}
         onClick={(e) => e.stopPropagation()}
-        className="flex h-[min(680px,calc(100dvh-4rem))] w-full max-w-md flex-col overflow-hidden rounded-lg border-2 border-foreground/15 bg-card shadow-2xl max-md:animate-sheet-in"
+        className="flex h-[min(680px,calc(100dvh-4rem))] w-full max-w-md flex-col overflow-hidden rounded-lg border-2 border-foreground/15 bg-card shadow-2xl max-md:animate-sheet-up"
       >
         <div className="flex shrink-0 items-start justify-between gap-2 border-b border-foreground/10 py-3 pl-4 pr-2 sm:pl-5 sm:pr-3">
           <div className="min-w-0 py-1">

@@ -171,6 +171,8 @@ export function shotReportStore(): ShotReportStore | null {
 /** How long the hidden shots are trusted before they're read again. */
 const HIDDEN_TTL_MS = 60_000;
 let hiddenUntil = 0;
+/** This instance has read the data once (or tried): later refreshes don't hold up a request. */
+let hiddenUntilRead = false;
 let loading: Promise<void> | null = null;
 
 /**
@@ -186,11 +188,13 @@ export async function syncHiddenShots(now = Date.now(), store = shotReportStore(
     } catch (err) {
       if (!(err instanceof GeoReportsUnavailable)) console.error("[geo-reports] hidden shots not read:", err);
     } finally {
+      hiddenUntilRead = true;
       hiddenUntil = Date.now() + HIDDEN_TTL_MS;
       loading = null;
     }
   })();
-  await Promise.race([loading, new Promise((r) => setTimeout(r, 2_000))]);
+  // Only an instance's very first read waits (briefly): after that the last data read serves while this refreshes in the background.
+  if (!hiddenUntilRead) await Promise.race([loading, new Promise((r) => setTimeout(r, 2_000))]);
 }
 
 export type ReportOutcome = { ok: true; stored: boolean; hidden: boolean } | { ok: false; status: number; error: string };

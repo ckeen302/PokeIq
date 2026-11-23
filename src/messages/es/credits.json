@@ -14,5 +14,7 @@
   "race": "Carrera",
   "raceBody": "Texturas del estadio de Poly Haven y sonidos del público de OpenGameArt.org, todo CC0 (<a>créditos</a>).",
   "films": "Las dos películas",
-  "filmsBody": "Las bandas sonoras son originales, compuestas para PokéIQ e interpretadas con el banco de sonidos MuseScore General (MIT; cuerdas de VSCO 2 CE, CC0). Créditos: <world>Historia del mundo Pokémon</world>, <story>La historia de Pokémon</story>."
+  "filmsBody": "Las bandas sonoras son originales, compuestas para PokéIQ e interpretadas con el banco de sonidos MuseScore General (MIT; cuerdas de VSCO 2 CE, CC0). Créditos: <world>Historia del mundo Pokémon</world>, <story>La historia de Pokémon</story>.",
+  "guessr": "Música de PokéGuessr",
+  "guessrBody": "Piezas ambientales originales escritas para PokéIQ y sintetizadas con un script, sin samples ni grabaciones (<a>créditos</a>)."
 }

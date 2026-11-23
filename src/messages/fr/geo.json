@@ -4,7 +4,13 @@
     "exitFullscreen": "Quitter le plein écran",
     "withEsc": "{label} (Échap)",
     "back": "Retour à PokéGuessr",
-    "secondsLeft": "{s} secondes restantes"
+    "secondsLeft": "{s} secondes restantes",
+    "loading": "Chargement de la manche",
+    "leaveTitle": "Quitter cette partie ?",
+    "leaveBody": "Cette partie ne sera pas enregistrée.",
+    "leaveDaily": "Tu pourras reprendre le Quotidien du jour depuis sa carte.",
+    "leave": "Quitter",
+    "stay": "Continuer"
   },
   "dock": {
     "size": "Taille de la carte",
@@ -49,7 +55,8 @@
     "views": "Vues de ce lieu",
     "view": "Vue {n} sur {count}",
     "fullscreen": "Capture en plein écran",
-    "close": "Fermer"
+    "close": "Fermer",
+    "failed": "Cette capture ne s'est pas chargée. Le chrono attend qu'elle le soit."
   },
   "report": {
     "open": "Signaler cette capture",
@@ -101,5 +108,6 @@
     "shareAndBoard": "Partage et classement"
   },
   "scoreTotal": "Total",
-  "roundOf": "Manche {n}/{of}"
+  "roundOf": "Manche {n}/{of}",
+  "retry": "Réessayer"
 }

@@ -76,6 +76,11 @@ export default function CreditsPage() {
           {t.rich("raceBody", { a: file("/race/CREDITS.md") })}
         </p>
       </Section>
+      <Section title={t("guessr")}>
+        <p>
+          {t.rich("guessrBody", { a: file("/audio/guessr/CREDITS.md") })}
+        </p>
+      </Section>
       <Section title={t("films")}>
         <p>
           {t.rich("filmsBody", { world: file("/audio/world-history/CREDITS.md"), story: file("/audio/pokemon-story/CREDITS.md") })}

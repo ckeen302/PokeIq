@@ -4,7 +4,13 @@
     "exitFullscreen": "Vollbild beenden",
     "withEsc": "{label} (Esc)",
     "back": "Zurück zu PokéGuessr",
-    "secondsLeft": "Noch {s} Sekunden"
+    "secondsLeft": "Noch {s} Sekunden",
+    "loading": "Runde wird geladen",
+    "leaveTitle": "Dieses Spiel verlassen?",
+    "leaveBody": "Dieses Spiel wird nicht gespeichert.",
+    "leaveDaily": "Du kannst das heutige Tagesspiel über seine Karte fortsetzen.",
+    "leave": "Verlassen",
+    "stay": "Weiterspielen"
   },
   "dock": {
     "size": "Kartengröße",
@@ -49,7 +55,8 @@
     "views": "Ansichten dieses Orts",
     "view": "Ansicht {n} von {count}",
     "fullscreen": "Screenshot im Vollbild",
-    "close": "Schließen"
+    "close": "Schließen",
+    "failed": "Dieser Screenshot wurde nicht geladen. Die Uhr wartet, bis er da ist."
   },
   "report": {
     "open": "Diesen Screenshot melden",
@@ -101,5 +108,6 @@
     "shareAndBoard": "Teilen & Bestenliste"
   },
   "scoreTotal": "Gesamt",
-  "roundOf": "Runde {n}/{of}"
+  "roundOf": "Runde {n}/{of}",
+  "retry": "Erneut versuchen"
 }

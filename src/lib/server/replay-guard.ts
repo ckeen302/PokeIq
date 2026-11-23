@@ -89,3 +89,57 @@ export function recallResponse<T>(key: string, fingerprint: string): T | null {
   if (!hit || hit.fingerprint !== fingerprint || hit.expires < Date.now()) return null;
   return hit.body as T;
 }
+
+// ---------------------------------------------------------------------------
+// Claims that know who made them
+// ---------------------------------------------------------------------------
+
+/*
+ * A guess whose answer was lost (a network blip, a reload) is sent again,
+ * maybe to another instance, which has no copy of the answer. So the claim
+ * also records which request made it (its fingerprint, as a second key next
+ * to the claim): the very same request is told it's a retry and answered
+ * again, a different one (another pin on a round already guessed) is refused.
+ */
+
+const claimedBy = new Map<string, { fingerprint: string; expires: number }>();
+const MAX_CLAIMED_BY = 20_000;
+const byKey = (key: string, fingerprint: string) => `${key}#${fingerprint}`;
+
+async function recordClaimant(key: string, fingerprint: string): Promise<void> {
+  claimedBy.delete(key);
+  claimedBy.set(key, { fingerprint, expires: Date.now() + MEMORY_TTL_MS });
+  if (claimedBy.size > MAX_CLAIMED_BY) claimedBy.delete(claimedBy.keys().next().value!);
+  const supabase = getServiceSupabase();
+  if (!supabase) return;
+  const { error } = await supabase.from("token_claims").insert({ key: byKey(key, fingerprint) });
+  if (error && error.code !== "23505") console.error("[replay-guard] claimant not recorded:", error.message);
+}
+
+async function madeBy(key: string, fingerprint: string): Promise<boolean> {
+  const local = claimedBy.get(key);
+  if (local && local.expires > Date.now()) return local.fingerprint === fingerprint;
+  const supabase = getServiceSupabase();
+  if (!supabase) return false;
+  const { data, error } = await supabase.from("token_claims").select("key").eq("key", byKey(key, fingerprint)).limit(1);
+  if (error) {
+    console.error("[replay-guard] claimant not read:", error.message);
+    return false;
+  }
+  return (data?.length ?? 0) > 0;
+}
+
+/**
+ * Claims `key` for one request: "new" the first time, "same" when the very
+ * same request comes again (answer it again), "other" for a different one.
+ */
+export async function claimFor(key: string, fingerprint: string): Promise<"new" | "same" | "other"> {
+  if (await claimOnce(key)) {
+    await recordClaimant(key, fingerprint);
+    return "new";
+  }
+  if (await madeBy(key, fingerprint)) return "same";
+  // The first request may still be recording itself on another instance: one more look.
+  await new Promise((r) => setTimeout(r, 300));
+  return (await madeBy(key, fingerprint)) ? "same" : "other";
+}

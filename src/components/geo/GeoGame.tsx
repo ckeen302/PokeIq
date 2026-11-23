@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "@/components/ui/Link";
 import dynamic from "next/dynamic";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
@@ -10,10 +11,12 @@ import { dailyNumber } from "@/lib/daily";
 import { useToday } from "@/lib/use-today";
 import { recordGeoGame, useProgress, type BadgeDef } from "@/lib/progress";
 import { play, unlockAudio } from "@/lib/sound";
+import { useGuessrMusic } from "@/lib/use-guessr-music";
 import { guessrSquare } from "@/lib/share";
 import type { GeoDifficulty } from "@/lib/geo-difficulty";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { mapReady } from "@/components/atlas/atlas-engine";
 import { GeoMap, LINE_DRAW_MS, WORLD_MAP as WORLD_MAP_SRC, WORLD_THUMB, mapAspect, type MapPin } from "./GeoMap";
 import { RegionStreakCard } from "./RegionStreakCard";
 import { useAccount } from "@/lib/account";
@@ -55,12 +58,14 @@ const preloadAfterRound = () =>
       loaded = { GeoResults: r.GeoResults, GeoSummary: s.GeoSummary, LearnCard: l.LearnCard, ReportShot: rep.ReportShot };
     })
     .catch(() => undefined);
+/** A round's picture that fails to load is asked for again this long after each failure (ms), then the round offers a retry. */
+const SHOT_RETRIES = [1000, 2000, 4000];
 /** A game got ready on hover is used for a click this soon after. */
 const PREFETCH_TTL_MS = 60_000;
 /** The likeliest game is started ahead this long after the page has loaded, clear of its first paints. */
 const WARM_AFTER_LOAD_MS = 2000;
 import { ShotCarousel, shotFit } from "./ShotCarousel";
-import { BAR_BTN, CountdownPill, ExitButton, FullscreenButton, GameShell, GuessButton, HudDials, MapDock, Notch, RoundBadge, RoundReadout, ScoreTracker, TimerDial, usePhone } from "./GameShell";
+import { BAR_BTN, ConfirmExit, CountdownPill, ExitButton, FullscreenButton, GameShell, GuessButton, HudDials, MapDock, Notch, RoundBadge, RoundReadout, ScoreTracker, TimerDial, usePhone } from "./GameShell";
 import { roundViewsOf } from "@/lib/geo-look";
 import { DifficultyPicker, GeoSettingsButton, RoundsPicker, TimerPicker } from "./GeoSettings";
 import { DEFAULT_GEO_SETTINGS, GEO_DEFAULT_TIMER, GEO_ZOOM, readGeoSettings, rememberGeoSettings, visibleViews, zoomOrigin, type GeoPlaySettings, type GeoTimer } from "@/lib/geo-settings";
@@ -186,6 +191,75 @@ export async function post<T>(url: string, body: unknown): Promise<T> {
   return data as T;
 }
 
+/** A request that failed on the way (no answer, or the server's own trouble): worth sending again. */
+class Blip extends Error {}
+/**
+ * POSTs, sending the same request again after a network blip or a server
+ * error (0.5 s, 1 s, 2 s apart). A guess is safe to send twice: the server
+ * answers an identical one with the same result.
+ */
+async function postRetrying<T>(url: string, body: unknown, waits = [500, 1000, 2000]): Promise<T> {
+  for (let i = 0; ; i++) {
+    try {
+      const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).catch((e: unknown) => {
+        throw new Blip(e instanceof Error ? e.message : "network");
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.status >= 500) throw new Blip(`Request failed (${res.status})`);
+      if (!res.ok) throw new Error((data as { error?: string }).error ?? `Request failed (${res.status})`);
+      return data as T;
+    } catch (err) {
+      if (!(err instanceof Blip) || i >= waits.length) throw err;
+      await new Promise((r) => setTimeout(r, waits[i]));
+    }
+  }
+}
+
+// ---- a game in progress, kept through a reload --------------------------------
+
+/** A game in progress, saved after every step: this tab's (sessionStorage), and the Daily's for the rest of the day (localStorage). */
+interface SavedGame {
+  v: 1;
+  savedAt: number;
+  game: Omit<Game, "region"> & { region: string };
+  played: Played[];
+  phase: "guessing" | "revealed";
+  pick: MapPin | null;
+  /** When the round's clock started (its picture first showed), so a reload never gives a fresh clock. */
+  clock: { shot: string; at: number } | null;
+  challenge: boolean;
+  /** A guess sent but not yet answered: sent again (the server replays it) on resume. */
+  pending?: Record<string, unknown>;
+}
+const SAVE_KEY = "pokeiq:geo-game";
+const DAILY_SAVE_KEY = "pokeiq:geo-daily-game";
+/** A game's signed state lasts three hours on the server; a save is kept a little less. */
+const SAVE_TTL_MS = 2.5 * 60 * 60 * 1000;
+
+function readSaved(store: "session" | "local"): SavedGame | null {
+  try {
+    const raw = (store === "session" ? sessionStorage : localStorage).getItem(store === "session" ? SAVE_KEY : DAILY_SAVE_KEY);
+    const saved = raw ? (JSON.parse(raw) as SavedGame) : null;
+    return saved?.v === 1 && Date.now() - saved.savedAt < SAVE_TTL_MS ? saved : null;
+  } catch {
+    return null;
+  }
+}
+function writeSaved(saved: SavedGame | null, daily?: boolean) {
+  try {
+    if (saved) {
+      const raw = JSON.stringify(saved);
+      sessionStorage.setItem(SAVE_KEY, raw);
+      if (daily) localStorage.setItem(DAILY_SAVE_KEY, raw);
+    } else {
+      sessionStorage.removeItem(SAVE_KEY);
+      if (daily) localStorage.removeItem(DAILY_SAVE_KEY);
+    }
+  } catch {
+    // Private mode or full: the game just isn't kept through a reload.
+  }
+}
+
 /** Counts up to `value` (eased) whenever it changes, after `delay` ms; instant under reduced motion. A tally tick sounds as it counts. */
 export function useCountUp(value: number, ms = 700, delay = 0, tally = false): number {
   const reduced = useReducedMotion();
@@ -235,6 +309,7 @@ export interface GeoGameProps {
 const tileImage = (src: string) => (src === WORLD_MAP_SRC ? WORLD_THUMB : src);
 
 export function GeoGame(props: GeoGameProps) {
+  useGuessrMusic();
   // The player's achievements and mastery (the hub's You section), read again after each game for the toasts.
   const { progress, fresh, refresh, dismiss } = useGeoProgress();
   return (
@@ -267,9 +342,17 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
   const [viewIndex, setViewIndex] = useState(0);
   const [zoomPixelated, setZoomPixelated] = useState(false);
   const [settings, setSettings] = useState<GeoPlaySettings>(DEFAULT_GEO_SETTINGS);
-  const [roundStartedAt, setRoundStartedAt] = useState(0);
-  /** The round's screenshot is loaded and decoded: only then does the Timer run. */
-  const [shotReady, setShotReady] = useState(false);
+  /** When the round's clock started: the moment its picture was first on screen (kept through a reload). */
+  const [clock, setClock] = useState<{ shot: string; at: number } | null>(null);
+  /** The picture that has loaded and decoded (the clock waits for it), and the tries at the round's picture so far. */
+  const [readyShot, setReadyShot] = useState<string | null>(null);
+  const [shotTry, setShotTry] = useState<{ shot: string; n: number; failed?: boolean }>({ shot: "", n: 0 });
+  /** The hub as it was when the game started (kept as is under the game). */
+  const hubUnderGame = useRef<React.ReactElement | null>(null);
+  /** "Leave this game?" is up. */
+  const [confirmExit, setConfirmExit] = useState(false);
+  /** A guess on its way, kept so a reload can send it again. */
+  const pendingGuess = useRef<Record<string, unknown> | null>(null);
   const [now, setNow] = useState(0);
   const [zoomed, setZoomed] = useState(false);
   const phone = usePhone();
@@ -309,17 +392,143 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
     // eslint-disable-next-line react-hooks/exhaustive-deps -- read the URL once
   }, []);
 
+
+  // ---- kept through a reload, Back and Exit ------------------------------------------
+  /** The game as last saved: each step patches it. */
+  const snap = useRef<SavedGame | null>(null);
+  function save(patch: Partial<Omit<SavedGame, "game">> & { game?: Game }) {
+    if (!snap.current) return;
+    const { game: g, ...rest } = patch;
+    snap.current = { ...snap.current, ...rest, ...(g ? { game: { ...g, region: g.region.id } } : {}), savedAt: Date.now() };
+    writeSaved(snap.current, !!snap.current.game.daily);
+  }
+  function startSaving(g: Game, isChallenge: boolean) {
+    snap.current = { v: 1, savedAt: Date.now(), game: { ...g, region: g.region.id }, played: [], phase: "guessing", pick: null, clock: null, challenge: isChallenge };
+    writeSaved(snap.current, !!g.daily);
+  }
+  useEffect(() => {
+    if (game && phase === "guessing") save({ pick });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- saved as the pin moves
+  }, [pick]);
+
+  /**
+   * Back stays in the game: starting one adds a history entry, and Back
+   * (which takes it off) puts it back and asks "Leave this game?" instead.
+   */
+  const inHistory = useRef(false);
+  /** Each start (and each exit) gets a new number: a start that comes back after its game was left is dropped. */
+  const startRun = useRef(0);
+  const ignorePop = useRef(false);
+  function enterGameHistory() {
+    if (inHistory.current) return;
+    window.history.pushState({ ...(window.history.state ?? {}), geoGame: true }, "");
+    inHistory.current = true;
+  }
+  function leaveGameHistory() {
+    if (!inHistory.current) return;
+    inHistory.current = false;
+    ignorePop.current = true;
+    window.history.back();
+  }
+  const inGame = phase === "loading" || phase === "guessing" || phase === "submitting" || phase === "revealed" || (phase === "error" && !!game);
+  const inGameRef = useRef(inGame);
+  inGameRef.current = inGame;
+  useEffect(() => {
+    const onPop = () => {
+      if (ignorePop.current) {
+        ignorePop.current = false;
+        return;
+      }
+      inHistory.current = false;
+      if (!inGameRef.current) return;
+      enterGameHistory();
+      setConfirmExit(true);
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
+
+  /** Exit (the button, Escape, Back): asks first while a game is under way. */
+  function requestExit() {
+    if (phase === "guessing" || phase === "submitting" || phase === "revealed") setConfirmExit(true);
+    else exitGame();
+  }
+  function exitGame() {
+    // A game still starting is called off.
+    startRun.current++;
+    setConfirmExit(false);
+    // The Daily stays saved for the day (its card offers to resume it); any other game is let go.
+    writeSaved(null, false);
+    if (!game?.daily) snap.current = null;
+    leaveGameHistory();
+    setPhase("setup");
+    if (game?.daily) setDailySave(readSaved("local"));
+  }
+
+  /** Picks a saved game up where it was left: the round, its pin, its clock (still running), or its result. */
+  const resendOnResume = useRef<Record<string, unknown> | null>(null);
+  function resume(saved: SavedGame): boolean {
+    const map = byId(saved.game.region) ?? allRegions.find((r) => r.id === saved.game.region);
+    if (!map || (saved.game.daily && saved.game.daily !== today)) {
+      writeSaved(null, !!saved.game.daily);
+      return false;
+    }
+    unlockAudio();
+    preloadAfterRound();
+    snap.current = saved;
+    writeSaved(saved, !!saved.game.daily);
+    setGame({ ...saved.game, region: map });
+    setPlayed(saved.played);
+    setPick(saved.pick);
+    setClock(saved.clock);
+    setIsChallenge(saved.challenge);
+    setReward(null);
+    setViewIndex(0);
+    setGamePick(null);
+    setError(null);
+    enterGameHistory();
+    if (saved.pending) {
+      resendOnResume.current = saved.pending;
+      setPhase("submitting");
+    } else setPhase(saved.phase === "revealed" && saved.played.length ? "revealed" : "guessing");
+    return true;
+  }
+  // A guess that was on its way when the page went: sent again once the game is back (the server answers it the same way).
+  useEffect(() => {
+    const body = resendOnResume.current;
+    if (!game || !body) return;
+    resendOnResume.current = null;
+    void guess(false, body);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once, after a resume
+  }, [game]);
+  /** Today's Daily, part played and saved: its card offers to resume it. */
+  const [dailySave, setDailySave] = useState<SavedGame | null>(null);
+  useEffect(() => {
+    if (!today) return;
+    const saved = readSaved("local");
+    setDailySave(saved?.game.daily === today ? saved : null);
+  }, [today]);
+
   // /pokeguessr?play=daily (the home page's Play) starts today's Daily straight away; ?play=game a game on the map.
   // It waits for the local date, by which time the saved settings have been read too.
   const autoPlay = useRef(false);
   useEffect(() => {
-    if (autoPlay.current || !today || challenge || phase !== "setup") return;
+    if (autoPlay.current || !today || phase !== "setup") return;
     autoPlay.current = true;
+    // A reload (or Back/Forward to the page) in the middle of a game picks it up again; a fresh visit starts afresh.
+    const saved = readSaved("session");
+    const nav = performance.getEntriesByType?.("navigation")[0] as PerformanceNavigationTiming | undefined;
+    if (saved && (nav?.type === "reload" || nav?.type === "back_forward") && resume(saved)) return;
+    if (saved) writeSaved(null, false);
+    if (challenge) return;
     const url = new URL(window.location.href);
     const play = url.searchParams.get("play");
     if (play !== "daily" && play !== "game") return;
     url.searchParams.delete("play");
     window.history.replaceState(null, "", url);
+    // Today's Daily, part played: picked up where it was left (starting it again would only be practice).
+    const daily = play === "daily" ? readSaved("local") : null;
+    if (daily?.game.daily === today && resume(daily)) return;
     void start(play === "daily" ? { kind: "game", daily: today } : { kind: "game" });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- once, when the date is known
   }, [today]);
@@ -416,7 +625,9 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
   function prefetch(opts: StartOpts, withMap = true) {
     if (phase !== "setup") return;
     preloadAfterRound();
-    if (withMap) void preloadImage(WORLD_MAP_SRC);
+    // The world map's small copy, decoded off the main thread.
+    if (withMap) void mapReady(WORLD_MAP_SRC);
+    if (opts.daily) warmDaily("high");
     if (opts.daily || opts.weekly) return;
     const { body } = startBody(opts);
     const key = JSON.stringify(body);
@@ -442,7 +653,20 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
   warmOnLoad.current = () => {
     if (challenge) prefetch({ kind: "game", challenge: challenge.token }, false);
     else if (filterOk) prefetch({ kind: "game" }, false);
+    // Today's Daily, not yet played: its first picture (the same for everyone, so the CDN keeps it).
+    if (!challenge) warmDaily();
   };
+  const dailyWarm = useRef<string | null>(null);
+  function warmDaily(priority?: "high") {
+    if (!today || dailyWarm.current === today || progress?.best[`geo-daily:${today}`] !== undefined) return;
+    dailyWarm.current = today;
+    void fetch(`/api/geo/daily-shot?date=${today}`)
+      .then((r) => (r.ok ? (r.json() as Promise<{ shot?: string }>) : null))
+      .then((d) => (d?.shot ? preloadImage(d.shot, priority ? { priority } : {}) : false))
+      .catch(() => {
+        dailyWarm.current = null;
+      });
+  }
   useEffect(() => {
     let done = false;
     let timer = 0;
@@ -470,15 +694,21 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
 
   async function start(opts: StartOpts) {
     unlockAudio();
+    // The game's frame is up at once (it covers the hub, which stays where it is underneath).
+    setGame(null);
     setPhase("loading");
     setError(null);
+    setConfirmExit(false);
+    enterGameHistory();
     preloadAfterRound();
+    const run = ++startRun.current;
     try {
       const { mode, bonus, body, timer } = startBody(opts);
       const key = JSON.stringify(body);
       const ready = ahead.current?.key === key && Date.now() - ahead.current.at < PREFETCH_TTL_MS ? ahead.current.res : null;
       ahead.current = null;
       const res = (ready ? await ready.catch(() => null) : null) ?? (await post<GeoStartResponse>("/api/geo", body));
+      if (run !== startRun.current) return;
       const map = byId(res.region) ?? allRegions.find((r) => r.id === res.region);
       if (!map) throw new Error(t("errors.noMap"));
       // A friend's challenge plays on their filter, the daily on every game.
@@ -487,7 +717,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
         : opts.daily || opts.weekly
           ? { era: undefined, families: [] }
           : filter;
-      setGame({
+      const started: Game = {
         region: map,
         kind: opts.kind,
         rounds: opts.challenge && challenge && isGeoRounds(challenge.rounds.length) ? challenge.rounds.length : opts.kind === "game" && !opts.daily && !opts.weekly ? playRounds : GEO_ROUNDS,
@@ -500,30 +730,39 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
         settings: { ...settings, timer },
         token: res.token,
         round: res.round,
-      });
+      };
+      setGame(started);
       setGamePick(null);
       setIsChallenge(!!opts.challenge);
+      startSaving(started, !!opts.challenge);
       setPick(null);
       setPlayed([]);
       setReward(null);
       setViewIndex(0);
-      setRoundStartedAt(Date.now());
+      setClock(null);
       setPhase("guessing");
-      window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
+      if (run !== startRun.current) return;
       setError(err instanceof Error ? err.message : t("errors.start"));
+      setGame(null);
+      leaveGameHistory();
       setPhase("error");
     }
   }
 
   /** `timeUp`: the round's clock ran out, so the pin (if any) is guessed where it is. */
-  async function guess(timeUp = false) {
-    if (!game || (!pick && !timeUp) || phase !== "guessing") return;
+  async function guess(timeUp = false, resend?: Record<string, unknown>) {
+    if (!game || (!pick && !timeUp && !resend) || (phase !== "guessing" && !resend)) return;
     setPhase("submitting");
     try {
       const at = pick ?? { x: 0, y: 0, timeout: true };
-      if (!timeUp) play("guess");
-      const graded = await post<GeoGuessResponse>("/api/geo/guess", { token: game.token, ...at, ...(game.guessGame && gamePick ? { family: gamePick } : {}) });
+      if (!timeUp && !resend) play("guess");
+      const body = resend ?? { token: game.token, ...at, ...(game.guessGame && gamePick ? { family: gamePick } : {}) };
+      // Kept until it's answered: a reload sends the very same guess again, and the server answers it the same way.
+      pendingGuess.current = body;
+      save({ pending: body });
+      const graded = await postRetrying<GeoGuessResponse>("/api/geo/guess", body);
+      pendingGuess.current = null;
       const nextPlayed = [...played, { guess: pick, graded, shot: game.round.shot }];
       setPlayed(nextPlayed);
       setGame({ ...game, token: graded.token });
@@ -545,7 +784,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
         );
       }
       setPhase("revealed");
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      save({ phase: "revealed", played: nextPlayed, game: { ...game, token: graded.token }, pending: undefined });
     } catch (err) {
       setError(err instanceof Error ? err.message : t("errors.grade"));
       setPhase("error");
@@ -557,48 +796,97 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
     const { graded } = current;
     if (graded.done || !graded.next) {
       play("fanfare");
+      writeSaved(null, !!game.daily);
+      leaveGameHistory();
       setPhase("results");
       return;
     }
-    setGame({ ...game, round: graded.next });
+    const nextGame = { ...game, round: graded.next };
+    setGame(nextGame);
     setPick(null);
     setGamePick(null);
     setViewIndex(0);
-    setRoundStartedAt(Date.now());
     setPhase("guessing");
+    save({ game: nextGame, phase: "guessing", pick: null, clock: null });
   }
 
   // The Timer setting: a clock per round; at zero the pin is guessed where it is (no pin: no points).
   const timer = game?.settings.timer ?? 0;
   const roundShot = game?.round.shot;
   const nextShot = game?.round.preload;
+  /**
+   * The round's picture: fetched and decoded before the clock starts. If it
+   * fails, it's asked for again (1 s, 2 s, 4 s apart, past any cached
+   * failure), and after that the round says so and offers to try again; the
+   * clock waits all the while.
+   */
+  const tries = roundShot && shotTry.shot === roundShot ? shotTry : { shot: roundShot ?? "", n: 0 };
+  const shotSrc = roundShot ? (tries.n ? `${roundShot}${roundShot.includes("?") ? "&" : "?"}r=${tries.n}` : roundShot) : "";
+  const shotReady = !!shotSrc && readyShot === shotSrc;
+  const shotFailed = !!tries.failed;
   useEffect(() => {
-    if (!roundShot) return;
+    if (!roundShot || !shotSrc || tries.failed) return;
     let off = false;
-    setShotReady(false);
-    void preloadImage(roundShot).then(() => {
+    let retry = 0;
+    void preloadImage(shotSrc, { priority: "high" }).then((ok) => {
       if (off) return;
-      setRoundStartedAt(Date.now());
-      setShotReady(true);
+      if (!ok) {
+        if (tries.n >= SHOT_RETRIES.length) setShotTry({ shot: roundShot, n: tries.n, failed: true });
+        else retry = window.setTimeout(() => setShotTry({ shot: roundShot, n: tries.n + 1 }), SHOT_RETRIES[tries.n]);
+        return;
+      }
+      // The <img> itself already failed on this address (the preload had it from before): ask again, afresh.
+      if (imgFailed.current === shotSrc) {
+        if (tries.n >= SHOT_RETRIES.length) setShotTry({ shot: roundShot, n: tries.n, failed: true });
+        else retry = window.setTimeout(() => setShotTry({ shot: roundShot, n: tries.n + 1 }), SHOT_RETRIES[tries.n]);
+        return;
+      }
+      setReadyShot(shotSrc);
+      // The clock starts now, unless this round's had already started (a game picked up after a reload).
+      setClock((c) => (c?.shot === roundShot ? c : { shot: roundShot, at: Date.now() }));
       // Then the next round's picture, fetched and decoded while this one is being looked at.
       if (nextShot) void preloadImage(nextShot);
     });
     return () => {
       off = true;
+      window.clearTimeout(retry);
     };
-  }, [roundShot, nextShot]);
+  }, [roundShot, shotSrc, nextShot, tries.n, tries.failed]);
+  /** The address the round's <img> last failed on. */
+  const imgFailed = useRef<string | null>(null);
+  /** The <img> itself failed: if the picture had loaded, ask again afresh (before that, the loop above sees it). */
+  const onShotError = () => {
+    if (!roundShot) return;
+    imgFailed.current = shotSrc;
+    if (!shotReady) return;
+    setReadyShot(null);
+    setShotTry((t) => (t.shot === roundShot && (t.failed || t.n > tries.n) ? t : { shot: roundShot, n: Math.min(SHOT_RETRIES.length, tries.n + 1) }));
+  };
+  const retryShot = () => roundShot && setShotTry({ shot: roundShot, n: tries.n + 1 });
+  const roundStartedAt = clock && clock.shot === roundShot ? clock.at : 0;
+  useEffect(() => {
+    if (clock && game && phase === "guessing") save({ clock });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- saved when the clock starts
+  }, [clock]);
   // The clock is worked out from timestamps (the round's start and now), never by counting ticks, so a
   // hidden tab's slowed timers can't make it drift: it keeps running there, and is right the moment the tab is back.
-  const msLeft = timer && shotReady && (phase === "guessing" || phase === "submitting") ? Math.max(0, roundStartedAt + timer * 1000 - (now || roundStartedAt)) : null;
+  const msLeft = timer && shotReady && roundStartedAt && (phase === "guessing" || phase === "submitting") ? Math.max(0, roundStartedAt + timer * 1000 - Math.max(now, roundStartedAt)) : null;
   const timeLeft = msLeft === null ? null : Math.ceil(msLeft / 1000);
   useEffect(() => {
     if (!timer || !shotReady || phase !== "guessing") return;
-    const tick = () => setNow(Date.now());
+    // A tick as each second turns over (not four a second), so the round re-renders only when the clock's text changes.
+    let id = 0;
+    const tick = () => {
+      const t = Date.now();
+      setNow(t);
+      const left = roundStartedAt + timer * 1000 - t;
+      window.clearTimeout(id);
+      id = window.setTimeout(tick, left > 0 ? (left % 1000 || 1000) + 15 : 1000);
+    };
     tick();
-    const id = window.setInterval(tick, 250);
     document.addEventListener("visibilitychange", tick);
     return () => {
-      window.clearInterval(id);
+      window.clearTimeout(id);
       document.removeEventListener("visibilitychange", tick);
     };
   }, [timer, shotReady, phase, roundStartedAt]);
@@ -616,6 +904,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
         setZoomed(false);
         return;
       }
+      if (confirmExit) return;
       if (e.key !== "Enter" && e.key !== " ") return;
       const t = e.target as HTMLElement | null;
       if (t?.closest("input, textarea, select, button, a")) return;
@@ -631,9 +920,10 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
     return () => window.removeEventListener("keydown", onKey);
   });
 
-  // ---- setup: the hub -----------------------------------------------------------
-  if (phase === "setup" || phase === "loading" || (phase === "error" && !game)) {
+  // ---- setup: the hub (kept in place under a game, so starting one moves nothing) ----
+  const renderHub = (covered: boolean) => {
     const dailyDone = today ? progress?.best[`geo-daily:${today}`] : undefined;
+    const dailyResume = dailyDone === undefined && dailySave?.game.daily === today ? dailySave : null;
     const dailyMap = today ? byId(geoDailyRegion(today, playable(byId(WORLD_REGION)))) : undefined;
     const bestGame = progress?.best[`geo:${boardOf({ region, kind: "game", filter, rounds: playRounds, difficulty: chosenMode })}`];
     const bestStreak = progress?.best[`geo:${boardOf({ region, kind: "streak", filter, difficulty: chosenMode })}`];
@@ -651,7 +941,8 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
     // The duel and party cards name the map as it stands: in the page's language.
     const shownRegion = t.locale === "en" ? region : { ...region, name: names.map(region) };
     return (
-      <div className="mx-auto max-w-6xl space-y-12">
+      // Under a game the hub stays where it is (nothing moves when a game starts or ends), out of reach.
+      <div className="mx-auto max-w-6xl space-y-12" aria-hidden={covered || undefined} inert={covered} data-testid="geo-hub">
         <div className="relative space-y-3 text-center">
           <HowToHelpButton className="absolute right-0 top-0" />
           <p className="hud-label max-md:hidden text-screen">{t("hub.fieldSurvey", { map: names.map(region) })}</p>
@@ -733,11 +1024,13 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
                 <Button
                   className="w-full"
                   disabled={!today || loading}
-                  onClick={() => today && void start({ kind: "game", daily: today })}
+                  // Today's Daily, part played: picked up where it was left (starting it again would only be practice).
+                  onClick={() => today && (dailyResume ? void resume(dailyResume) : void start({ kind: "game", daily: today }))}
                   {...warmProps({ kind: "game", daily: today || "today" })}
+                  data-testid="geo-daily-play"
                 >
                   {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Compass className="h-4 w-4" aria-hidden />}
-                  {dailyDone !== undefined ? t("hub.daily.again") : t("hub.daily.play")}
+                  {dailyResume ? t("hub.daily.resume", { num: `#${dailyNumber(today!)}` }) : dailyDone !== undefined ? t("hub.daily.again") : t("hub.daily.play")}
                 </Button>
               }
             />
@@ -926,7 +1219,8 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
             />
           </div>
           <div id="duels" className="scroll-mt-24">
-            {/* Duels play an era when the map has enough of it (hand-picked games are practice), else every game. */}
+            {/* Duels play an era when the map has enough of it (hand-picked games are practice), else every game. Its code loads as it nears the screen. */}
+            <WhenNear minHeight={420} eager={duelQueue === "ranked"}>
             <DuelCard
               region={shownRegion}
               places={places}
@@ -934,6 +1228,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
               queue={duelQueue}
               onQueue={setDuelQueue}
             />
+            </WhenNear>
           </div>
           {partyOpen && (
             <div id="party" className="scroll-mt-24 space-y-3">
@@ -976,21 +1271,9 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
         <GeoYou progress={mine} />
       </div>
     );
-  }
+  };
 
-  if (phase === "error" || !game) {
-    return (
-      <Card className="mx-auto max-w-md">
-        <CardContent className="space-y-4 p-6 text-center">
-          <p className="font-display text-xl font-bold uppercase">{t("errors.title")}</p>
-          <p className="text-sm text-muted-foreground">{error}</p>
-          <Button onClick={() => setPhase("setup")}>{g("shell.back")}</Button>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (phase === "results") {
+  if (phase === "results" && game) {
     const last = played[played.length - 1]?.graded;
     const GeoResults = loaded.GeoResults ?? LazyResults;
     const GeoSummary = loaded.GeoSummary ?? LazySummary;
@@ -1010,6 +1293,8 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
     );
   }
 
+  /** The round's view (built only while a game is on). */
+  const guessViewOf = (game: Game) => {
   const isStreak = game.kind === "streak";
   const roundNumber = played.length + (phase === "revealed" ? 0 : 1);
   const modeLine = [
@@ -1053,25 +1338,18 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
     </div>
   );
 
-  // ---- round result ------------------------------------------------------------
-  if (phase === "revealed" && current) {
-    return (
-      <GameShell onExit={() => setPhase("setup")}>
-        {() => <RoundReveal game={game} current={current} scores={played.map((p) => p.graded.score)} round={roundNumber} streak={streak} pinImage={pinImage} onNext={next} onExit={() => setPhase("setup")} t={t} names={names} />}
-      </GameShell>
-    );
-  }
-
   // ---- guessing ------------------------------------------------------------------
-  const views = visibleViews(roundViewsOf(game.round), game.settings);
+  // The round's picture as it's being asked for (a retry asks past a cached failure).
+  const views = visibleViews(roundViewsOf(game.round), game.settings).map((v, i) => (i === 0 && shotSrc ? shotSrc : v));
   const zoom = game.settings.zoomed ? (src: string) => ({ scale: GEO_ZOOM, origin: zoomOrigin(src) }) : undefined;
   const zoomedView = zoom?.(views[viewIndex] ?? game.round.shot);
-  return (
-    <GameShell onExit={() => setPhase("setup")}>
-      {({ fs, toggle }) => (
-    <div className="relative h-full">
+  const revealed = phase === "revealed";
+  // eslint-disable-next-line react/display-name -- a render function, not a component
+  return (fs: boolean, toggle: () => void) => (
+    // One guess view for the whole game: the next round reuses it (its map and all), and the round result covers it.
+    <div className={cn("relative h-full", revealed && "invisible")} aria-hidden={revealed || undefined} data-testid="geo-guess-view">
       <div className="absolute inset-0" style={{ bottom: "var(--geo-bar)" }}>
-        <ShotCarousel views={views} index={viewIndex} onIndex={setViewIndex} onZoom={() => setZoomed(true)} zoom={zoom} fs dock blur={game.round.blur} priority={game.round.index === 0} />
+        <ShotCarousel views={views} onError={onShotError} index={viewIndex} onIndex={setViewIndex} onZoom={() => setZoomed(true)} zoom={zoom} fs dock blur={game.round.blur} priority={game.round.index === 0} />
       </div>
       {phone ? (
         <>
@@ -1087,7 +1365,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
       ) : (
         <>
           <div className="geo-safe-tl absolute left-3 top-3 z-20 flex items-center gap-2">
-            <ExitButton onClick={() => setPhase("setup")} />
+            <ExitButton onClick={requestExit} />
             <FullscreenButton fs={fs} onClick={toggle} />
           </div>
           {notch}
@@ -1097,10 +1375,13 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
 
       {/* GeoGuessr-style mini-map (the atlas): docked bottom-right, grows on hover; a bottom sheet on phones. */}
       <MapDock aspect={mapAspect(game.region)}
+        resetKey={game.round.index}
         hasPin={!!pick}
         map={({ fill, land }) => (
           <GeoMap
             land={land}
+            round={game.round.index}
+            defer={phone && game.round.index === 0 && !shotReady}
             region={game.region}
             pick={pick}
             pinImage={pinImage}
@@ -1113,7 +1394,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
         )}
         tools={
           <>
-            <button type="button" onClick={() => setPhase("setup")} className={BAR_BTN} aria-label={g("shell.back")} title={g("shell.back")} data-testid="geo-exit" data-keep>
+            <button type="button" onClick={requestExit} className={BAR_BTN} aria-label={g("shell.back")} title={g("shell.back")} data-testid="geo-exit" data-keep>
               <X className="h-5 w-5" />
             </button>
             <HowToHelpButton className={cn(BAR_BTN, "!p-0 !text-white")} />
@@ -1159,8 +1440,112 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
         )}
       </AnimatePresence>
     </div>
+  );
+  };
+
+  // Under a game the hub doesn't change: it's built once as the game starts, so the round's ticks never re-render it.
+  const hubView = inGame && hubUnderGame.current ? hubUnderGame.current : renderHub(inGame);
+  hubUnderGame.current = inGame ? hubView : null;
+  if (!inGame) return hubView;
+  const guessView = game ? guessViewOf(game) : null;
+  const roundNow = played.length;
+  return (
+    <>
+      {hubView}
+      {/* On the page's body, clear of the page's own layout (the hub keeps its place and scroll underneath). */}
+      {createPortal(
+      <GameShell onExit={requestExit}>
+        {({ fs, toggle }) => (
+          <>
+            {guessView?.(fs, toggle)}
+            {phase === "revealed" && current && game && (
+              <div className="absolute inset-0 z-[40] bg-[#0f0d1f]">
+                <RoundReveal key={roundNow} game={game} current={current} scores={played.map((p) => p.graded.score)} round={roundNow} streak={streak} pinImage={pinImage} onNext={next} onExit={requestExit} t={t} names={names} />
+              </div>
+            )}
+            {(phase === "loading" || (!shotReady && !shotFailed && phase === "guessing" && game?.round.index === 0 && !readyShot)) && (
+              <div className="pointer-events-none absolute inset-0 z-[5] flex items-center justify-center" data-testid="geo-loading">
+                <Loader2 className="h-8 w-8 animate-spin text-white/70" aria-label={g("shell.loading")} />
+              </div>
+            )}
+            {phase === "loading" && (
+              <div className="geo-safe-tl absolute left-3 top-3 z-20">
+                <ExitButton onClick={exitGame} />
+              </div>
+            )}
+            {shotFailed && phase === "guessing" && (
+              <div className="absolute inset-x-4 top-1/2 z-[25] mx-auto max-w-sm -translate-y-1/2 rounded-xl bg-[#1e1a3f]/95 p-5 text-center shadow-2xl ring-1 ring-white/15" role="alert" data-testid="geo-shot-failed">
+                <p className="text-sm text-white/85">{g("shot.failed")}</p>
+                <button type="button" onClick={retryShot} className="mt-3 inline-flex h-10 items-center justify-center rounded-md bg-[#4cbb17] px-5 font-display text-sm font-bold uppercase tracking-wider text-white hover:bg-[#58d01c]" data-testid="geo-shot-retry">
+                  {g("retry")}
+                </button>
+              </div>
+            )}
+            {phase === "error" && (
+              <div className="absolute inset-0 z-[50] flex items-center justify-center bg-[#0f0d1f]/90 p-4">
+                <Card className="w-full max-w-md">
+                  <CardContent className="space-y-4 p-6 text-center">
+                    <p className="font-display text-xl font-bold uppercase">{t("errors.title")}</p>
+                    <p className="text-sm text-muted-foreground" role="alert">{error}</p>
+                    <div className="flex justify-center gap-2">
+                      {pendingGuess.current && (
+                        <Button onClick={() => pendingGuess.current && void guess(false, pendingGuess.current)} data-testid="geo-guess-retry">
+                          {g("retry")}
+                        </Button>
+                      )}
+                      <Button variant={pendingGuess.current ? "outline" : "default"} onClick={exitGame}>{g("shell.back")}</Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+            {confirmExit && <ConfirmExit daily={!!game?.daily} onLeave={exitGame} onStay={() => setConfirmExit(false)} />}
+          </>
+        )}
+      </GameShell>,
+      document.body
       )}
-    </GameShell>
+    </>
+  );
+}
+
+/** A part below the fold mounts this long after the page has loaded, if nobody has scrolled to it first. */
+const IDLE_MOUNT_MS = 3000;
+/** Mounts its children once they're near the screen, or once the page is idle after loading (or straight away when `eager`), holding their room until then. */
+function WhenNear({ children, minHeight, eager = false }: { children: React.ReactNode; minHeight: number; eager?: boolean }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [show, setShow] = useState(eager);
+  useEffect(() => {
+    if (eager) setShow(true);
+  }, [eager]);
+  useEffect(() => {
+    if (show) return;
+    // A link to the duels (#duels, #ranked) wants them at once.
+    if (/^#(duels|ranked)$/.test(window.location.hash) || typeof IntersectionObserver === "undefined") return setShow(true);
+    const io = new IntersectionObserver(([e]) => e?.isIntersecting && setShow(true), { rootMargin: "800px 0px" });
+    if (ref.current) io.observe(ref.current);
+    // Or once the page has loaded and gone quiet, so it's ready before anyone scrolls down.
+    let timer = 0;
+    let idle = 0;
+    const later = () => {
+      timer = window.setTimeout(() => {
+        if (typeof window.requestIdleCallback === "function") idle = window.requestIdleCallback(() => setShow(true), { timeout: 2000 });
+        else setShow(true);
+      }, IDLE_MOUNT_MS);
+    };
+    if (document.readyState === "complete") later();
+    else window.addEventListener("load", later, { once: true });
+    return () => {
+      io.disconnect();
+      window.removeEventListener("load", later);
+      window.clearTimeout(timer);
+      if (idle && typeof window.cancelIdleCallback === "function") window.cancelIdleCallback(idle);
+    };
+  }, [show]);
+  return (
+    <div ref={ref} style={show ? undefined : { minHeight }}>
+      {show ? children : null}
+    </div>
   );
 }
 
@@ -1346,7 +1731,7 @@ function RoundReveal({
               {graded.timedOut ? t("reveal.timeUp") : distanceText(graded.answer.squares, t)}
             </span>
             {/* The learn card: the place, its game, one fact from the Pokédex's place data, and where to read more. */}
-            <LearnCard answer={graded.answer} shot={current.shot} map={game.region} />
+            <LearnCard answer={graded.answer} shot={current.shot} map={game.region} learn={graded.learn} />
           </motion.div>
 
           {/* Next, with its hotkey, and the report link. */}

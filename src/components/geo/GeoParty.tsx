@@ -26,6 +26,7 @@ import {
   type PartyView,
 } from "@/lib/geo-party";
 import { play, unlockAudio } from "@/lib/sound";
+import { useGuessrMusic } from "@/lib/use-guessr-music";
 import { shareOrCopy } from "@/lib/share";
 import { useProgress } from "@/lib/progress";
 import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
@@ -64,6 +65,7 @@ const FIT_MS = 800;
 const joinNames = (t: P, names: string[]) => names.reduce((a, b) => t("and", { a, b }));
 
 export function GeoParty({ code, regions, names }: { code: string; regions: GeoRegionInfo[]; names?: GuessrNames }) {
+  useGuessrMusic();
   const router = useRouter();
   const t = useT(partyNs);
   const { view, now, gone, offline, error, setError, busy, sawPlay, act, send, join, refresh, setLive } = useDuel<PartyView>(`/api/geo/party/${code}`, code);

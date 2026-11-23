@@ -14,5 +14,7 @@
   "race": "Rennen",
   "raceBody": "Stadiontexturen von Poly Haven und Publikumsgeräusche von OpenGameArt.org, alles CC0 (<a>Credits</a>).",
   "films": "Die zwei Filme",
-  "filmsBody": "Die Musik ist original, für PokéIQ geschrieben und mit der Soundfont MuseScore General gespielt (MIT; Streicher aus VSCO 2 CE, CC0). Credits: <world>Geschichte der Pokémon-Welt</world>, <story>Die Geschichte von Pokémon</story>."
+  "filmsBody": "Die Musik ist original, für PokéIQ geschrieben und mit der Soundfont MuseScore General gespielt (MIT; Streicher aus VSCO 2 CE, CC0). Credits: <world>Geschichte der Pokémon-Welt</world>, <story>Die Geschichte von Pokémon</story>.",
+  "guessr": "PokéGuessr-Musik",
+  "guessrBody": "Originale Ambient-Stücke, für PokéIQ geschrieben und per Skript synthetisiert, ohne Samples oder Aufnahmen (<a>Credits</a>)."
 }
