@@ -198,7 +198,74 @@ def pad(rng, midis: list[int], dur: float, level: float, bright: float) -> tuple
     return left * env * scale, right * env * scale
 
 
-INSTRUMENTS = {"piano": piano, "musicbox": music_box, "epiano": epiano}
+def bass(rng, midi: int, vel: float, hold: float) -> np.ndarray:
+    """A round, warm bass: a sine with a little second and third harmonic, plucked and let go."""
+    f0 = mtof(midi)
+    n = int((hold + 0.12) * SR)
+    t = np.arange(n) / SR
+    ph = rng.random() * 6.28
+    sig = np.sin(2 * math.pi * f0 * t + ph) + 0.22 * np.sin(4 * math.pi * f0 * t + ph) + 0.06 * np.sin(6 * math.pi * f0 * t + ph)
+    env = (1 - np.exp(-t / 0.006)) * np.exp(-t / 1.4)
+    off = int(hold * SR)
+    if off < n:
+        env[off:] *= np.exp(-np.arange(n - off) / (0.035 * SR))
+    return sig * env * vel * 0.3
+
+
+INSTRUMENTS = {"piano": piano, "musicbox": music_box, "epiano": epiano, "bass": bass}
+
+
+def band(x: np.ndarray, lo: float | None, hi: float | None) -> np.ndarray:
+    """Band-limits a short buffer (a drum's noise) with a gentle filter."""
+    spec = np.fft.rfft(x)
+    f = np.fft.rfftfreq(len(x), 1 / SR)
+    mask = np.ones_like(f)
+    if lo:
+        mask *= 1 - lowpass_weight(f, lo, 2)
+    if hi:
+        mask *= lowpass_weight(f, hi, 2)
+    return np.fft.irfft(spec * mask, n=len(x))
+
+
+def drum(rng, kind: str) -> np.ndarray:
+    """One soft drum hit, synthesised: no samples. Every kind is kept gentle (chill, not club)."""
+    def env(seconds, decay, attack=0.001):
+        t = np.arange(int(seconds * SR)) / SR
+        return t, (1 - np.exp(-t / attack)) * np.exp(-t / decay)
+
+    if kind in ("kick", "lofikick"):
+        house = kind == "kick"
+        t, e = env(0.5, 0.26 if house else 0.3, 0.0015)
+        f = (47 if house else 52) + (85 if house else 60) * np.exp(-t / (0.03 if house else 0.045))
+        body = np.sin(2 * math.pi * np.cumsum(f) / SR) * e
+        click = band(rng.standard_normal(len(t)), None, 1800 if house else 1000) * np.exp(-t / 0.003)
+        return body + 0.12 * click
+    if kind == "snare":  # a dusty, lo-fi snare
+        t, e = env(0.35, 0.11)
+        tone = np.sin(2 * math.pi * 190 * t) * np.exp(-t / 0.05)
+        noise = band(rng.standard_normal(len(t)), 900, 4200) * e
+        return 0.35 * tone + 0.9 * noise
+    if kind == "clap":  # a soft clap: three quick bursts and a short tail
+        t = np.arange(int(0.3 * SR)) / SR
+        e = np.zeros_like(t)
+        for d in (0.0, 0.011, 0.022):
+            m = t >= d
+            e[m] += np.exp(-(t[m] - d) / 0.005)
+        e += 0.5 * np.exp(-np.maximum(t - 0.022, 0) / 0.08) * (t >= 0.022)
+        return band(rng.standard_normal(len(t)), 1000, 3200) * e * 0.7
+    if kind == "hat":
+        t, e = env(0.12, 0.022)
+        return band(rng.standard_normal(len(t)), 7000, 13000) * e
+    if kind == "openhat":
+        t, e = env(0.5, 0.14, 0.002)
+        return band(rng.standard_normal(len(t)), 7500, 12500) * e * 0.8
+    if kind == "lofihat":
+        t, e = env(0.12, 0.028)
+        return band(rng.standard_normal(len(t)), 5500, 9000) * e
+    if kind == "shaker":
+        t, e = env(0.12, 0.035, 0.008)
+        return band(rng.standard_normal(len(t)), 5000, 10000) * e * 0.8
+    raise ValueError(kind)
 
 # ---------------------------------------------------------------------------
 # The room
@@ -273,7 +340,11 @@ class Track:
     wet: float = 0.42
     sprinkle: str | None = None  # a second voice for high, sparse notes
     bars_per_chord: int = 2
+    # "lofi" or "house": drums, bass and comping chords instead of broken chords; None for the ambient pieces.
+    style: str | None = None
+    swing: float = 0.0  # in beats, how late the off-beat eighths land
     notes: list[Note] = field(default_factory=list)
+    hits: list[tuple[float, str, float, float]] = field(default_factory=list)  # (seconds, drum, velocity, pan)
 
 
 RHYTHMS = {
@@ -309,6 +380,10 @@ CONTOURS = [
 ]
 
 
+# The drums' levels against each other (the whole kit is then set by DRUMS).
+DRUMS = 0.55
+DRUM_GAIN = {k: v * DRUMS for k, v in {"kick": 1.0, "lofikick": 1.0, "snare": 0.5, "clap": 0.45, "hat": 0.22, "openhat": 0.16, "lofihat": 0.25, "shaker": 0.2}.items()}
+
 # The mix: the melody sits on top, the broken chords under it, the pad a quiet bed under both.
 MELODY_GAIN = 1.4
 LEFT_GAIN = 0.5
@@ -322,16 +397,112 @@ class Composer:
         self.beat = 60.0 / track.bpm
         self.bar = self.beat * track.beats
         self.chord_s = self.bar * track.bars_per_chord
+        # Drums and bass draw from their own generator, so the ambient pieces render exactly as before.
+        self.grng = np.random.default_rng(track.seed + 7)
         lo, hi = track.melody_range
         pcs = {(track.tonic + i) % 12 for i in SCALES[track.scale]}
         self.scale_notes = [m for m in range(lo, hi + 1) if m % 12 in pcs]
 
     def add(self, at, inst, midi, vel, hold, pan=0.0, gain=None):
+        if self.t.swing:
+            at = self.swung(at)
         jitter = float(self.rng.normal(0, 0.01))
         vel = float(np.clip(vel + self.rng.normal(0, 0.035), 0.08, 1.0))
         if gain is None:
             gain = MELODY_GAIN
         self.t.notes.append(Note(max(0.0, at + jitter), inst, int(midi), vel, hold, pan, gain))
+
+    def swung(self, at: float) -> float:
+        """Off-beat eighths land a little late (the lazy feel of lo-fi)."""
+        beats = at / self.beat
+        frac = beats - math.floor(beats)
+        if abs(frac - 0.5) < 1e-6:
+            return at + self.t.swing * self.beat
+        return at
+
+    def hit(self, beat_at: float, kind: str, vel: float, pan: float = 0.0, loose: float = 0.006):
+        at = beat_at
+        if self.t.swing:
+            at = self.swung(at)
+        at += float(self.grng.normal(0, loose))
+        vel = float(np.clip(vel * (1 + self.grng.normal(0, 0.08)), 0.05, 1.0))
+        self.t.hits.append((max(0.0, at), kind, vel, pan))
+
+    def groove(self, at: float, chord: Chord, section: str, c: int, last_chord: bool):
+        """The drums and the bass for one chord (two bars)."""
+        t = self.t
+        b = self.beat
+        root = self.bass_root(chord)
+        while root > 45:
+            root -= 12
+        if last_chord:
+            # The very end: one low note, no drums, so the loop's seam is calm.
+            t.notes.append(Note(at, "bass", root, 0.55, self.chord_s * 0.6, 0.0, 1.0))
+            return
+        bars = t.bars_per_chord
+        if t.style == "house":
+            full = section in ("A", "B") or (section == "intro" and c >= 1) or section == "outro"
+            for bar in range(bars):
+                base = at + bar * t.beats * b
+                for beat in range(t.beats):
+                    x = base + beat * b
+                    if full:
+                        self.hit(x, "kick", 0.78 if beat == 0 else 0.7)
+                        self.hit(x + 0.5 * b, "openhat", 0.32, pan=0.25)
+                    if section in ("A", "B") and beat in (1, 3):
+                        self.hit(x, "clap", 0.42, pan=-0.1)
+                    for sixteenth in (0.25, 0.75):
+                        self.hit(x + sixteenth * b, "shaker" if section in ("space", "intro") else "hat", 0.16 + 0.08 * self.grng.random(), pan=-0.3)
+                    if section in ("A", "B") or (section == "outro" and bar == 0):
+                        # The bass on the off-beats, the octave now and then.
+                        note = root + 12 if (beat == 3 and self.grng.random() < 0.35) else root
+                        t.notes.append(Note(x + 0.5 * b + float(self.grng.normal(0, 0.004)), "bass", note, 0.72, 0.42 * b, 0.0, 1.0))
+            if section == "space":
+                t.notes.append(Note(at, "bass", root, 0.45, self.chord_s * 0.9, 0.0, 1.0))
+            return
+        # lofi
+        drums = section in ("A", "B", "outro")
+        for bar in range(bars):
+            base = at + bar * t.beats * b
+            if section != "space":
+                for eighth in range(t.beats * 2):
+                    on = eighth % 2 == 0
+                    self.hit(base + eighth * 0.5 * b, "lofihat", (0.3 if on else 0.2), pan=0.2)
+            if drums:
+                self.hit(base, "lofikick", 0.8)
+                self.hit(base + 2.5 * b, "lofikick", 0.62)
+                if bar % 2 == 1 and self.grng.random() < 0.5:
+                    self.hit(base + 1.75 * b, "lofikick", 0.45)
+                self.hit(base + 1 * b, "snare", 0.55, pan=-0.05, loose=0.012)
+                self.hit(base + 3 * b, "snare", 0.55, pan=-0.05, loose=0.012)
+                if self.grng.random() < 0.3:
+                    self.hit(base + 3.75 * b, "snare", 0.14, pan=-0.05)
+            if section in ("A", "B", "outro"):
+                fifth = root + 7 if self.grng.random() < 0.4 else root
+                t.notes.append(Note(base + float(self.grng.normal(0, 0.006)), "bass", root, 0.7, 1.6 * b, 0.0, 1.0))
+                t.notes.append(Note(self.swung(base + 2.5 * b), "bass", fifth, 0.58, 1.2 * b, 0.0, 1.0))
+        if section == "space":
+            t.notes.append(Note(at, "bass", root, 0.45, self.chord_s * 0.9, 0.0, 1.0))
+
+    def comp(self, at: float, chord: Chord, vel: float, density: str):
+        """Comping chords for the lo-fi and house pieces: a rootless voicing around middle C."""
+        t = self.t
+        q = QUALITIES[chord.quality]
+        root = t.tonic + chord.root
+        tones = sorted({55 + ((root + i - 55) % 12) for i in q[1:]})
+        b = self.beat
+        if density in ("drone", "sparse"):
+            strikes = [(0.0, t.beats * t.bars_per_chord)]
+        elif t.style == "house":
+            # Off-beat stabs, the deep-house way.
+            strikes = [(0.0, 1.0), (1.5, 0.5), (3.0, 0.75), (4.5, 0.5), (6.0, 1.0), (7.5, 0.5)]
+        else:
+            # Lo-fi: the chord rolled on the one, a lazy re-strike in the second bar.
+            strikes = [(0.0, 5.5), (5.5, 2.5)]
+        for beat, dur in strikes:
+            for k, m in enumerate(tones):
+                roll = 0.018 * k if t.style == "lofi" else 0.0
+                self.add(at + beat * b + roll, t.left, m, vel * (1.0 if beat == 0 else 0.85), dur * b + 0.05, pan=-0.2 + 0.12 * k, gain=LEFT_GAIN)
 
     # -- left hand -----------------------------------------------------------
 
@@ -345,6 +516,9 @@ class Composer:
 
     def left_hand(self, at: float, chord: Chord, vel: float, density: str):
         """Broken chords: the root low, then the fifth, the tenth and a colour tone above, held by the pedal."""
+        if self.t.style:
+            self.comp(at, chord, vel, density)
+            return
         q = QUALITIES[chord.quality]
         root = self.bass_root(chord)
         third = q[1]
@@ -478,6 +652,8 @@ class Composer:
                     pad_gain = {"intro": 0.8, "A": 0.75, "B": 0.6, "space": 1.0, "outro": 0.85}[section]
                     if t.pad_level > 0:
                         self.pads.append((at, pad_notes, self.chord_s + (2.5 if last_chord else 0.4), pad_gain * t.pad_level))
+                    if t.style:
+                        self.groove(at, chord, section, c, last_chord)
                     if last_chord:
                         # The end: the tonic held, the melody's last word, then quiet (it wraps into the start).
                         self.add(at, t.left, self.bass_root(chord), 0.4 * arc, self.chord_s, gain=LEFT_GAIN)
@@ -503,7 +679,9 @@ class Composer:
                         role = i % 4
                         start = mid + (4 if busy else 0)
                         vel = (0.5 if busy else 0.46) * arc
-                        if role == 0:
+                        if t.style == "house" and role in (1, 3) and not busy:
+                            pass  # the house piece leaves more room between phrases
+                        elif role == 0:
                             self.phrase(at, chord, motif_r, motif_c, start, vel, t.melody)
                         elif role == 1:
                             # The motif again, a step higher (a sequence), lightly varied.
@@ -522,7 +700,7 @@ class Composer:
 # ---------------------------------------------------------------------------
 
 
-def render(track: Track, out_dir: str) -> dict:
+def render(track: Track, out_dir: str, normalize: bool = True) -> dict:
     comp = Composer(track)
     length_s = comp.compose()
     L = int(round(length_s * SR))
@@ -558,22 +736,73 @@ def render(track: Track, out_dir: str) -> dict:
         return y
 
     left, right = fold(left), fold(right)
+    drum_l = np.zeros(L)
+    drum_r = np.zeros(L)
+    if track.hits:
+        dl = np.zeros(L + tail)
+        dr = np.zeros(L + tail)
+        variants: dict[str, list[np.ndarray]] = {}
+        for at, kind, vel, pan in track.hits:
+            if kind not in variants:
+                variants[kind] = [drum(comp.grng, kind) for _ in range(6)]
+            sig = variants[kind][int(comp.grng.integers(6))] * vel * DRUM_GAIN.get(kind, 1.0)
+            start = int(at * SR)
+            end = min(start + len(sig), L + tail)
+            gl, gr = math.cos((pan + 1) * math.pi / 4), math.sin((pan + 1) * math.pi / 4)
+            dl[start:end] += sig[: end - start] * gl
+            dr[start:end] += sig[: end - start] * gr
+        drum_l, drum_r = fold(dl), fold(dr)
     # The room: a large, soft hall (lows ring longer than highs), fed without the lowest lows.
     irl, irr = room_ir(comp.rng, 6.0, 4.6, 1.8)
     f = np.fft.rfftfreq(L, 1 / SR)
     send_shape = (1 - lowpass_weight(f, 180, 1)) * lowpass_weight(f, 6500, 1)
-    mono = (left + right) * 0.5
+    mono = (left + right) * 0.5 + 0.12 * (drum_l + drum_r) * 0.5  # the drums get only a touch of the room
     send = np.fft.irfft(np.fft.rfft(mono) * send_shape, n=L)
     wet_l = circular_convolve(send, irl)
     wet_r = circular_convolve(send, irr)
     mix_l = left + track.wet * wet_l
     mix_r = right + track.wet * wet_r
-    # Master: a little warmth (high frequencies eased), no rumble.
-    master = lowpass_weight(f, 9000, 1) * (1 - lowpass_weight(f, 32, 2))
+    if track.style == "house":
+        # A gentle sidechain: everything but the drums breathes with the kick.
+        duck = np.ones(L)
+        t = np.arange(int(0.35 * SR)) / SR
+        shape = 0.28 * np.exp(-t / 0.11)
+        for at, kind, _, _ in track.hits:
+            if kind != "kick":
+                continue
+            idx = (int(at * SR) + np.arange(len(shape))) % L
+            duck[idx] = np.minimum(duck[idx], 1 - shape)
+        mix_l *= duck
+        mix_r *= duck
+    mix_l = mix_l + drum_l
+    mix_r = mix_r + drum_r
+    if track.style == "lofi":
+        # Tape: a slow wobble in pitch (a whole number of cycles, so the loop still meets itself).
+        cycles = max(1, round(0.35 * L / SR))
+        n = np.arange(L)
+        delay = 0.0016 * SR * (1 + np.sin(2 * math.pi * cycles * n / L))
+        pos = (n - delay) % L
+        ext = np.arange(L + 1)
+        mix_l = np.interp(pos, ext, np.append(mix_l, mix_l[0]))
+        mix_r = np.interp(pos, ext, np.append(mix_r, mix_r[0]))
+        # Vinyl: a soft hiss and sparse crackle.
+        crng = np.random.default_rng(track.seed + 11)
+        level = np.sqrt(np.mean(mix_l**2))
+        hiss = smooth_lowpass(crng.standard_normal(L), 5000)
+        crackle = np.zeros(L)
+        pops = crng.integers(0, L, size=int(L / SR * 6))
+        crackle[pops] = crng.uniform(-1, 1, size=len(pops)) * crng.exponential(1.0, size=len(pops))
+        crackle = band(crackle, 1200, 7000)
+        bed = 0.05 * level * hiss / np.sqrt(np.mean(hiss**2)) + 0.5 * level * crackle / (np.max(np.abs(crackle)) + 1e-9)
+        mix_l = mix_l + bed
+        mix_r = mix_r + np.roll(bed, int(0.013 * SR))
+    # Master: a little warmth (high frequencies eased; lo-fi much more), no rumble.
+    master = lowpass_weight(f, 4600 if track.style == "lofi" else 9000, 1) * (1 - lowpass_weight(f, 32, 2))
     mix_l = np.fft.irfft(np.fft.rfft(mix_l) * master, n=L)
     mix_r = np.fft.irfft(np.fft.rfft(mix_r) * master, n=L)
     stereo = np.stack([mix_l, mix_r], axis=1)
-    stereo /= np.max(np.abs(stereo)) / 0.5
+    if normalize:
+        stereo /= np.max(np.abs(stereo)) / 0.5
     os.makedirs(out_dir, exist_ok=True)
     stereo.astype("<f4").tofile(os.path.join(out_dir, f"{track.name}.f32"))
     info = {"name": track.name, "title": track.title, "seconds": round(L / SR, 3), "notes": len(track.notes), "bpm": track.bpm, "key": track.scale}
@@ -652,6 +881,49 @@ TRACKS = [
         pad_level=0.9,
         pad_bright=0.6,
         wet=0.38,
+    ),
+]
+
+
+TRACKS += [
+    Track(
+        name="paper-lanterns",
+        title="Paper Lanterns",
+        seed=5531,
+        tonic=63,  # E-flat
+        scale="major",
+        bpm=78,
+        beats=4,
+        chords=[Chord(ii, "m9"), Chord(V, "sus4"), Chord(I, "maj9"), Chord(vi, "m9")],
+        form=[("intro", 1), ("A", 2), ("B", 2), ("space", 1), ("A", 1), ("outro", 1)],
+        melody="piano",
+        left="epiano",
+        melody_range=(67, 84),
+        sprinkle=None,
+        pad_level=0.45,
+        pad_bright=0.4,
+        wet=0.24,
+        style="lofi",
+        swing=0.09,
+    ),
+    Track(
+        name="night-ferry",
+        title="Night Ferry",
+        seed=6643,
+        tonic=60,  # C (A minor's colour)
+        scale="major",
+        bpm=118,
+        beats=4,
+        chords=[Chord(vi, "m9"), Chord(IV, "maj9"), Chord(I, "add9"), Chord(V, "sus2")],
+        form=[("intro", 2), ("A", 3), ("space", 2), ("B", 3), ("A", 2), ("outro", 1)],
+        melody="epiano",
+        left="epiano",
+        melody_range=(69, 86),
+        sprinkle="musicbox",
+        pad_level=0.8,
+        pad_bright=0.5,
+        wet=0.3,
+        style="house",
     ),
 ]
 
