@@ -1182,8 +1182,8 @@ function plainness(c: Candidate): number {
 
 /**
  * Contact sheets of the staged candidates, by place. Each place and game gets
- * at most `cap` shots in all (its shots in the data count; by default half as
- * many again as its size cap, curate.ts's shotCap, so there's a choice): the
+ * at most `cap` shots in all (its shots in the data count; by default its size
+ * cap, curate.ts's shotCap, and two spare when it has room, so there's a choice): the
  * plainest views first, each wiki in turn, so a place's sheet isn't thirty
  * hidden items.
  */
@@ -1199,7 +1199,7 @@ async function sheets(region: string, cap?: number) {
   const cands: Candidate[] = [];
   for (const [pair, list] of groups) {
     const [first] = list;
-    const room = Math.max(0, (cap ?? Math.ceil(shotCap(first, geo as Location[]) * 1.5)) - (have.get(pair) ?? 0));
+    const room = Math.max(0, cap !== undefined ? cap - (have.get(pair) ?? 0) : shotCap(first, geo as Location[]) - (have.get(pair) ?? 0) + (shotCap(first, geo as Location[]) > (have.get(pair) ?? 0) ? 2 : 0));
     const byWiki = new Map<string, Candidate[]>();
     for (const c of [...list].sort((a, b) => plainness(a) - plainness(b) || a.file.length - b.file.length)) byWiki.set(c.wiki, [...(byWiki.get(c.wiki) ?? []), c]);
     const queues = [...byWiki.values()];
@@ -1238,7 +1238,7 @@ async function sheets(region: string, cap?: number) {
       .toFile(path.join(outDir, `${String(s).padStart(3, "0")}.png`));
   }
   writeJson(path.join(outDir, "index.json"), index);
-  console.log(`${region}: ${cands.length} of ${staged.length} staged candidates (at most ${cap ?? "1.5 × the size cap of"} shots per place and game) on ${Math.ceil(cands.length / per)} sheets in ${outDir}`);
+  console.log(`${region}: ${cands.length} of ${staged.length} staged candidates (at most ${cap ?? "the size cap + 2"} shots per place and game) on ${Math.ceil(cands.length / per)} sheets in ${outDir}`);
 }
 
 // ---------------------------------------------------------------------------

@@ -32404,6 +32404,1449 @@
    "game": "Sword / Shield",
    "source": "https://www.wikidex.net/wiki/Archivo:Hombre_de_símbolo_de_autorización_de_combate_EpEc.jpg",
    "checked": "shown on WikiDex's page \"Torre de Batalla/Torre Batalla (Galar)\"; SwSh in its name or category; cropped (bottom 11%); reviewed on a contact sheet"
+  },
+  {
+   "id": "PFXBWc6jpulz",
+   "region": "Crown Tundra",
+   "name": "Max Lair",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Grand_Antre_Dynamax_Dhilan_EB.png",
+   "checked": "shown on Poképédia's page \"Grand Antre Dynamax\"; SwSh in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "2UkYmlHdaI7M",
+   "region": "Hoenn",
+   "name": "Ancient Tomb",
+   "game": "Ruby / Sapphire / Emerald",
+   "source": "https://www.pokewiki.de/Datei:RSS_Grabmal_Registeel.png",
+   "checked": "shown on PokéWiki's page \"Grabmal\"; RSE in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "nE406YCnIMZM",
+   "region": "Hoenn",
+   "name": "Ancient Tomb",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.wikidex.net/wiki/Archivo:Tumba_Antigua_ROZA.png",
+   "checked": "shown on WikiDex's page \"Tumba Antigua\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "bGXxQqHMV3mc",
+   "region": "Hoenn",
+   "name": "Dewford Town",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Myokara_Canne_ROSA.png",
+   "checked": "shown on Poképédia's page \"Myokara\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "3T_UEpX1wiS5",
+   "region": "Hoenn",
+   "name": "Dewford Town",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Village_Myokara_Canne_E.png",
+   "checked": "shown on Poképédia's page \"Myokara\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "0q51HLz8MR3D",
+   "region": "Hoenn",
+   "name": "Dewford Gym",
+   "parent": "Dewford Town",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Arène_de_Myokara_ROSA.png",
+   "checked": "shown on Poképédia's page \"Arène de Myokara\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "oOs68FJFgfiw",
+   "region": "Hoenn",
+   "name": "Ever Grande City",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Éternara_CT29_ROSA.png",
+   "checked": "shown on Poképédia's page \"Éternara\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "XiQuvfD065UP",
+   "region": "Hoenn",
+   "name": "Ever Grande City",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Éternara_Mewtwoïte_Y_ROSA.png",
+   "checked": "shown on Poképédia's page \"Éternara\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "yu1YKKqFCkdw",
+   "region": "Hoenn",
+   "name": "Ever Grande City",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Éternara_Rappel_ROSA.png",
+   "checked": "shown on Poképédia's page \"Éternara\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "PaE9Nz1Q9Oog",
+   "region": "Hoenn",
+   "name": "Fallarbor Town",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Autéquia_Mixeur_à_Baies_ROSA.png",
+   "checked": "shown on Poképédia's page \"Autéquia\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "VQRTd8TNi8ZD",
+   "region": "Hoenn",
+   "name": "Fallarbor Town",
+   "game": "Ruby / Sapphire / Emerald",
+   "source": "https://www.wikidex.net/wiki/Archivo:Tienda_de_batalla_de_Pueblo_Pardal.png",
+   "checked": "in wikidex's category \"Capturas de Pokémon Rubí, Pokémon Zafiro y Pokémon Esmeralda\", named after the place; RSE in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "THDtbNlMp-XA",
+   "region": "Hoenn",
+   "name": "Fiery Path",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Chemin_Ardent_CT06_E.png",
+   "checked": "shown on Poképédia's page \"Chemin Ardent\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "alzL6kQHQluc",
+   "region": "Hoenn",
+   "name": "Fiery Path",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Chemin_Ardent_CT06_ROSA.png",
+   "checked": "shown on Poképédia's page \"Chemin Ardent\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "ae6tzU2AcBIf",
+   "region": "Hoenn",
+   "name": "Fortree City",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Arène_Cimetronelle_ROSA.png",
+   "checked": "shown on Poképédia's page \"Arène de Cimetronelle\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "CkDonwxS1E7W",
+   "region": "Hoenn",
+   "name": "Fortree City",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Cimetronelle_Baie_Mangou_ROSA.png",
+   "checked": "shown on Poképédia's page \"Cimetronelle\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "E1NiGeZeuDIp",
+   "region": "Hoenn",
+   "name": "Fortree City",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Cimetronelle_Petit_Champi_ROSA.png",
+   "checked": "shown on Poképédia's page \"Cimetronelle\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "kV42ih4pMEcK",
+   "region": "Hoenn",
+   "name": "Fortree City",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.wikidex.net/wiki/Archivo:Ciudad_Arborada_ROZA.png",
+   "checked": "shown on WikiDex's page \"Ciudad Arborada\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "14lg9vWDnEGq",
+   "region": "Hoenn",
+   "name": "Granite Cave",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.wikidex.net/wiki/Archivo:Cueva_Granito_ROZA.png",
+   "checked": "shown on WikiDex's page \"Cueva Granito\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "ErDPONsCyRZ3",
+   "region": "Hoenn",
+   "name": "Island Cave",
+   "game": "Ruby / Sapphire / Emerald",
+   "source": "https://www.pokewiki.de/Datei:RSS_Inselhöhle_Regice.png",
+   "checked": "shown on PokéWiki's page \"Inselhöhle\"; RSE in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "heQEE1eNeCJb",
+   "region": "Hoenn",
+   "name": "Jagged Pass",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokewiki.de/Datei:ORAS_Geheimbasis_Steilpass.jpg",
+   "checked": "in pokewiki's category \"ORAS-Screenshot\", named after the place; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "ZFreqedSJ-8V",
+   "region": "Hoenn",
+   "name": "Magma Hideout (Jagged Pass)",
+   "parent": "Jagged Pass",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Planque_Magma_Guérison_ROSA.png",
+   "checked": "shown on Poképédia's page \"Planque Magma\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "g1Razs1MfDuT",
+   "region": "Hoenn",
+   "name": "Magma Hideout (Jagged Pass)",
+   "parent": "Jagged Pass",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Planque_Magma_Pépite_ROSA.png",
+   "checked": "shown on Poképédia's page \"Planque Magma\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "HHJgJ8Zp9xPa",
+   "region": "Hoenn",
+   "name": "Lavaridge Town",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Vermilava_Démolossite_ROSA.png",
+   "checked": "shown on Poképédia's page \"Vermilava\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "tsza7d_9-A1o",
+   "region": "Hoenn",
+   "name": "Lilycove City",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Nénucrique_Max_Repousse_ROSA.png",
+   "checked": "shown on Poképédia's page \"Nénucrique\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "nkdqDQQzbm24",
+   "region": "Hoenn",
+   "name": "Lilycove City",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Nénucrique_PP_Plus_ROSA.png",
+   "checked": "shown on Poképédia's page \"Nénucrique\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "o8xCZCZgsJ7O",
+   "region": "Hoenn",
+   "name": "Lilycove Department Store",
+   "parent": "Lilycove City",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.wikidex.net/wiki/Archivo:Centro_comercial_de_Calagua_ROZA.png",
+   "checked": "shown on WikiDex's page \"Centro Comercial de Ciudad Calagua\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "gakdJqk-QHwr",
+   "region": "Hoenn",
+   "name": "Mauville City",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Arène_Lavandia_ROSA.png",
+   "checked": "shown on Poképédia's page \"Arène de Lavandia\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "RD5kYLvW5ysi",
+   "region": "Hoenn",
+   "name": "Mauville City",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Lavandia_Lockpinite_ROSA.png",
+   "checked": "shown on Poképédia's page \"Lavandia\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "F7MBYf46rIdT",
+   "region": "Hoenn",
+   "name": "Mauville City",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Lavandia_Vitesse_+_E.png",
+   "checked": "shown on Poképédia's page \"Lavandia\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "diFoyHRJIuP1",
+   "region": "Hoenn",
+   "name": "Mauville City",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokewiki.de/Datei:Malvenfroh_City_ORAS.jpg",
+   "checked": "in pokewiki's category \"ORAS-Screenshot\", named after the place; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "yob4nHfwjNJZ",
+   "region": "Hoenn",
+   "name": "Mauville Game Corner",
+   "parent": "Mauville City",
+   "game": "Ruby / Sapphire / Emerald",
+   "source": "https://www.wikidex.net/wiki/Archivo:Casino_Ciudad_Malvalona.png",
+   "checked": "shown on WikiDex's page \"Casino de Ciudad Malvalona\"; RSE in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "b3QfOTYgBlAH",
+   "region": "Hoenn",
+   "name": "Meteor Falls",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Site_Météore_PP_Plus_E.png",
+   "checked": "shown on Poképédia's page \"Site Météore\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "fB-xbOjJWt--",
+   "region": "Hoenn",
+   "name": "Mirage Tower",
+   "game": "Emerald",
+   "source": "https://www.wikidex.net/wiki/Archivo:Fósiles_en_Torre_Espejismo_E.png",
+   "checked": "shown on WikiDex's page \"Torre Espejismo\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "dBPbXACFIXWq",
+   "region": "Hoenn",
+   "name": "Mirage Tower",
+   "game": "Ruby / Sapphire / Emerald",
+   "source": "https://www.wikidex.net/wiki/Archivo:Torre_espejismo.png",
+   "checked": "shown on WikiDex's page \"Torre Espejismo\"; RSE in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "tT-tnpExloO0",
+   "region": "Hoenn",
+   "name": "Mossdeep City",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://pokemon.fandom.com/wiki/File:ORAS_Mossdeep_City.png",
+   "checked": "shown on the Pokémon Wiki's page \"Mossdeep City\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "B6dvFjJHfG36",
+   "region": "Hoenn",
+   "name": "Mossdeep Space Center",
+   "parent": "Mossdeep City",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokewiki.de/Datei:ORAS_Raumfahrtzentrum.png",
+   "checked": "shown on PokéWiki's page \"Moosbach City Raumfahrtzentrum\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "JHhO-BdiuKS4",
+   "region": "Hoenn",
+   "name": "Mossdeep Space Center",
+   "parent": "Mossdeep City",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokewiki.de/Datei:Raumfahrtzentrum_Raketenstartplatz_ORAS.png",
+   "checked": "shown on PokéWiki's page \"Moosbach City Raumfahrtzentrum\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "MUgKDNbehMKd",
+   "region": "Hoenn",
+   "name": "Mt. Chimney",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Mont_Chimnée_CT59_ROSA.png",
+   "checked": "shown on Poképédia's page \"Mont Chimnée\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "ZoHOVu_YIvDD",
+   "region": "Hoenn",
+   "name": "Mt. Chimney",
+   "game": "Ruby / Sapphire / Emerald",
+   "source": "https://www.pokewiki.de/Datei:Seilbahn.png",
+   "checked": "shown on PokéWiki's page \"Schlotberg\"; RSE in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "3yCMDhG-jfj9",
+   "region": "Hoenn",
+   "name": "Mt. Pyre",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Mont_Mémoria_Branettite_ROSA.png",
+   "checked": "shown on Poképédia's page \"Mont Mémoria\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "WVfAhVPjf_yA",
+   "region": "Hoenn",
+   "name": "Mt. Pyre",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Mont_Mémoria_Charminite_ROSA.png",
+   "checked": "shown on Poképédia's page \"Mont Mémoria\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "hffKqbmtsiYp",
+   "region": "Hoenn",
+   "name": "Mt. Pyre",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Mont_Mémoria_Huile_Max_ROSA.png",
+   "checked": "shown on Poképédia's page \"Mont Mémoria\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "KEHgbxyXH--_",
+   "region": "Hoenn",
+   "name": "New Mauville",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:New_Lavandia_Anti-Para_ROSA.png",
+   "checked": "shown on Poképédia's page \"New Lavandia\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "OG6Y8a76e_Th",
+   "region": "Hoenn",
+   "name": "New Mauville",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:New_Lavandia_Total_Soin_ROSA.png",
+   "checked": "shown on Poképédia's page \"New Lavandia\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "nUjo3c7uNjLK",
+   "region": "Hoenn",
+   "name": "Pacifidlog Town",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.wikidex.net/wiki/Archivo:Aura_en_Pueblo_Oromar_ROZA.png",
+   "checked": "in wikidex's category \"Capturas de Pokémon Rubí Omega y Pokémon Zafiro Alfa\", named after the place; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "F8U04oU2rYdd",
+   "region": "Hoenn",
+   "name": "Petalburg City",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Arene_Clementi-Ville.png",
+   "checked": "shown on Poképédia's page \"Arène de Clémenti-Ville\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "gE_ItgsqDFDh",
+   "region": "Hoenn",
+   "name": "Petalburg City",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Clémenti-Ville_Huile_E.png",
+   "checked": "shown on Poképédia's page \"Clémenti-Ville\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "doGDtl2hR8Vb",
+   "region": "Hoenn",
+   "name": "Petalburg City",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Clémenti-Ville_Huile_ROSA.png",
+   "checked": "shown on Poképédia's page \"Clémenti-Ville\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "zjgbwTBKj4X6",
+   "region": "Hoenn",
+   "name": "Petalburg City",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Clémenti-Ville_Rappel_Max_E.png",
+   "checked": "shown on Poképédia's page \"Clémenti-Ville\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "Cuu7TTu56vpD",
+   "region": "Hoenn",
+   "name": "Petalburg Woods",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Bois_Clémenti_Attaque_+_ROSA.png",
+   "checked": "shown on Poképédia's page \"Bois Clémenti\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "3GvnYjDEBX9c",
+   "region": "Hoenn",
+   "name": "Petalburg Woods",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Bois_Clémenti_Huile_ROSA.png",
+   "checked": "shown on Poképédia's page \"Bois Clémenti\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "mVSh6qZYKcl-",
+   "region": "Hoenn",
+   "name": "Route 101",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Route_101_Balignon_agresse_Prof_Séko_ROSA.png",
+   "checked": "shown on Poképédia's page \"Route 101\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "GAW6y5B0CFXM",
+   "region": "Hoenn",
+   "name": "Route 102",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Route_102_Baies_ROSA.png",
+   "checked": "shown on Poképédia's page \"Route 102\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "LE6AdFihzf5y",
+   "region": "Hoenn",
+   "name": "Route 102",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Route_102_Potion_E.png",
+   "checked": "shown on Poképédia's page \"Route 102\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "i2IDQavbQ39E",
+   "region": "Hoenn",
+   "name": "Route 103",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Route_103_Baie_Maron_&_Baie_Mepo_ROSA.png",
+   "checked": "shown on Poképédia's page \"Route 103\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "u4XyQMCIjxmJ",
+   "region": "Hoenn",
+   "name": "Route 103",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Route_103_Defense_Spéc_E.png",
+   "checked": "shown on Poképédia's page \"Route 103\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "xPD7Ic4Wj3CU",
+   "region": "Hoenn",
+   "name": "Route 104",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Route_104_Baies_2_ROSA.png",
+   "checked": "shown on Poképédia's page \"Route 104\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "VvndfGC9TVPF",
+   "region": "Hoenn",
+   "name": "Route 104",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Route_104_Potion_E.png",
+   "checked": "shown on Poképédia's page \"Route 104\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "cRnyZwThIAFb",
+   "region": "Hoenn",
+   "name": "Route 104",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Route_104_PP_Plus_E.png",
+   "checked": "shown on Poképédia's page \"Route 104\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "d65iwtuMbmYM",
+   "region": "Hoenn",
+   "name": "Route 104",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Route_104_Rappel_ROSA.png",
+   "checked": "shown on Poképédia's page \"Route 104\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "wypC3rmHS6kS",
+   "region": "Hoenn",
+   "name": "Route 104",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Route_104_ROSA.png",
+   "checked": "shown on Poképédia's page \"Route 104\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "hYB2itQxMmgw",
+   "region": "Hoenn",
+   "name": "Route 105",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_105_Fer_E.png",
+   "checked": "shown on Poképédia's page \"Chenal 105\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "gvwZEgKpznoE",
+   "region": "Hoenn",
+   "name": "Route 105",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_105_Fer_ROSA.png",
+   "checked": "shown on Poképédia's page \"Chenal 105\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "3MlAdPOBMf11",
+   "region": "Hoenn",
+   "name": "Route 106",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_106_Protéine_ROSA.png",
+   "checked": "shown on Poképédia's page \"Chenal 106\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "lLdwL1CuIvD0",
+   "region": "Hoenn",
+   "name": "Route 107",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_107_ROSA.png",
+   "checked": "shown on Poképédia's page \"Chenal 107\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "3_znIWeemCWr",
+   "region": "Hoenn",
+   "name": "Route 107",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_107_Superepousse_ROSA.png",
+   "checked": "shown on Poképédia's page \"Chenal 107\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "BzF3_-ds3Wfi",
+   "region": "Hoenn",
+   "name": "Route 110",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Entrée_Route_110_ROSA.png",
+   "checked": "shown on Poképédia's page \"Route 110\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "c_J1EYBw60Pg",
+   "region": "Hoenn",
+   "name": "Route 110",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Piste_Cyclable-ROSA.png",
+   "checked": "shown on Poképédia's page \"Route 110\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "djk-zwzL_mQp",
+   "region": "Hoenn",
+   "name": "Route 110",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Route_110_Baie_Nanab_E.png",
+   "checked": "shown on Poképédia's page \"Route 110\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "2kCX1JQ-NbKY",
+   "region": "Hoenn",
+   "name": "Route 110",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Route_110_Élixir_E.png",
+   "checked": "shown on Poképédia's page \"Route 110\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "fXKvEMCPCp1z",
+   "region": "Hoenn",
+   "name": "Route 110",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Route_110_Élixir_ROSA.png",
+   "checked": "shown on Poképédia's page \"Route 110\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "yjwi1rggNLll",
+   "region": "Hoenn",
+   "name": "Route 110",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Route_110_Muscle_+_ROSA.png",
+   "checked": "shown on Poképédia's page \"Route 110\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "l2ijSqstgkUl",
+   "region": "Hoenn",
+   "name": "Route 111",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Route_111_Éclate-Roc_ROSA.png",
+   "checked": "shown on Poképédia's page \"Route 111\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "it978T313rju",
+   "region": "Hoenn",
+   "name": "Route 111",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Route_111_Élixir_E.png",
+   "checked": "shown on Poképédia's page \"Route 111\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "p3oTKxOToF4Y",
+   "region": "Hoenn",
+   "name": "Route 111",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Route_111_PV_Plus_E.png",
+   "checked": "shown on Poképédia's page \"Route 111\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "_YbiildzMduf",
+   "region": "Hoenn",
+   "name": "Route 111",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Route_111_PV_Plus_ROSA.png",
+   "checked": "shown on Poképédia's page \"Route 111\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "2Fe9mygI0Ni_",
+   "region": "Hoenn",
+   "name": "Route 112",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Route_112_Baie_Fraive_&_Baie_Pêcha_E.png",
+   "checked": "shown on Poképédia's page \"Route 112\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "BDVjj8Q5C5nQ",
+   "region": "Hoenn",
+   "name": "Route 112",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Route_112_Baie_Kika_&_Baie_Framby_ROSA.png",
+   "checked": "shown on Poképédia's page \"Route 112\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "yyAIXRVm5aYw",
+   "region": "Hoenn",
+   "name": "Route 112",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Route_112_Défense_Spéciale_ROSA.png",
+   "checked": "shown on Poképédia's page \"Route 112\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "5Het1IRZvHlN",
+   "region": "Hoenn",
+   "name": "Route 112",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Route_112_Pépite_E.png",
+   "checked": "shown on Poképédia's page \"Route 112\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "TI84-VUIGFRh",
+   "region": "Hoenn",
+   "name": "Route 112",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Route_112_Pépite_ROSA.png",
+   "checked": "shown on Poképédia's page \"Route 112\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "PaD8a0s0_4LO",
+   "region": "Hoenn",
+   "name": "Route 113",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokewiki.de/Datei:ORAS_Geheimbasis_Route113-1.jpg",
+   "checked": "in pokewiki's category \"ORAS-Screenshot\", named after the place; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "NdVHavwSPTQN",
+   "region": "Hoenn",
+   "name": "Route 113",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Route_113_Huile_Max_ROSA.png",
+   "checked": "shown on Poképédia's page \"Route 113\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "wUfpWjUJasxJ",
+   "region": "Hoenn",
+   "name": "Route 113",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Route_113_Hyper_Potion_E.png",
+   "checked": "shown on Poképédia's page \"Route 113\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "OsR8BRdqIMQK",
+   "region": "Hoenn",
+   "name": "Route 113",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Route_113_Superepousse_E.png",
+   "checked": "shown on Poképédia's page \"Route 113\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "aHM7e_oyG38S",
+   "region": "Hoenn",
+   "name": "Route 113",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Route_113_Superepousse_ROSA.png",
+   "checked": "shown on Poképédia's page \"Route 113\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "BG081PO6hINa",
+   "region": "Hoenn",
+   "name": "Route 114",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Route_114_Baie_Willia_ROSA.png",
+   "checked": "shown on Poképédia's page \"Route 114\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "BkG-MbfeQh_t",
+   "region": "Hoenn",
+   "name": "Route 114",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Route_114_Éclate-Roc_ROSA.png",
+   "checked": "shown on Poképédia's page \"Route 114\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "tVIxJUenPTlK",
+   "region": "Hoenn",
+   "name": "Route 115",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Route_115_Baie_Repoi_ROSA.png",
+   "checked": "shown on Poképédia's page \"Route 115\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "BUPXU2nNMXd8",
+   "region": "Hoenn",
+   "name": "Route 115",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Route_115_Fer_ROSA.png",
+   "checked": "shown on Poképédia's page \"Route 115\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "8szBE9cwPShc",
+   "region": "Hoenn",
+   "name": "Route 115",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Route_115_PP_Plus_ROSA.png",
+   "checked": "shown on Poképédia's page \"Route 115\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "TfznPdjlpyKL",
+   "region": "Hoenn",
+   "name": "Route 115",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Route_115_Zinc_ROSA.png",
+   "checked": "shown on Poképédia's page \"Route 115\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "N8QfWqvw8dxB",
+   "region": "Hoenn",
+   "name": "Route 116",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Route_116_Baies_Maron_ROSA.png",
+   "checked": "shown on Poképédia's page \"Route 116\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "4EA9gIIw3bVD",
+   "region": "Hoenn",
+   "name": "Route 116",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Route_116_PV_Plus_ROSA.png",
+   "checked": "shown on Poképédia's page \"Route 116\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "jJkyRRc7yTS7",
+   "region": "Hoenn",
+   "name": "Route 116",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Route_116_Repousse_ROSA.png",
+   "checked": "shown on Poképédia's page \"Route 116\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "s3B-0KYwHqjo",
+   "region": "Hoenn",
+   "name": "Route 117",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokewiki.de/Datei:ORAS_Pension_(innen_Route_117).png",
+   "checked": "in pokewiki's category \"ORAS-Screenshot\", named after the place; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "16W7MHACJWyC",
+   "region": "Hoenn",
+   "name": "Route 117",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokewiki.de/Datei:ORAS_Pension_(Route_117).jpg",
+   "checked": "in pokewiki's category \"ORAS-Screenshot\", named after the place; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "6IGn2v3KfqL5",
+   "region": "Hoenn",
+   "name": "Route 117",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Route_117_Baie_Nanana_ROSA.png",
+   "checked": "shown on Poképédia's page \"Route 117\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "B19GsC_qYful",
+   "region": "Hoenn",
+   "name": "Route 117",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Route_117_Super_Ball_ROSA.png",
+   "checked": "shown on Poképédia's page \"Route 117\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "Nl9PMKdshAbo",
+   "region": "Hoenn",
+   "name": "Route 118",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokewiki.de/Datei:ORAS_Geheimbasis_Route118-1.jpg",
+   "checked": "in pokewiki's category \"ORAS-Screenshot\", named after the place; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "1e5wmjSCrwjn",
+   "region": "Hoenn",
+   "name": "Route 118",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Route_118_Poussière_Étoile_ROSA.png",
+   "checked": "shown on Poképédia's page \"Route 118\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "u5bkT8RuB1qU",
+   "region": "Hoenn",
+   "name": "Route 119",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Route_119_Baie_Grena_ROSA.png",
+   "checked": "shown on Poképédia's page \"Route 119\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "OgRweiQiYsQO",
+   "region": "Hoenn",
+   "name": "Route 119",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Route_119_Baie_Lonme_E.png",
+   "checked": "shown on Poképédia's page \"Route 119\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "5dGOjEDde4NF",
+   "region": "Hoenn",
+   "name": "Route 119",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Route_119_Élixir_(2)_E.png",
+   "checked": "shown on Poképédia's page \"Route 119\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "5qJ_mTaQcyvu",
+   "region": "Hoenn",
+   "name": "Route 119",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Route_119_PP_Max_2_ROSA.png",
+   "checked": "shown on Poképédia's page \"Route 119\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "xS7ZfHke49wg",
+   "region": "Hoenn",
+   "name": "Route 120",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Route_120_Baie_Willia_E.png",
+   "checked": "shown on Poképédia's page \"Route 120\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "iyU-hUVrV_aG",
+   "region": "Hoenn",
+   "name": "Route 120",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Route_120_Rappel_2_ROSA.png",
+   "checked": "shown on Poképédia's page \"Route 120\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "_jPhYrCs9uIZ",
+   "region": "Hoenn",
+   "name": "Route 120",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Route_120_Total_Soin_ROSA.png",
+   "checked": "shown on Poképédia's page \"Route 120\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "f3Fn4CwxauyD",
+   "region": "Hoenn",
+   "name": "Route 121",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Route_121_Baie_Kika_&_Baie_Willia_&_Baie_Fraive_&_Baie_Maron_E.png",
+   "checked": "shown on Poképédia's page \"Route 121\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "NTLU46DTH3bi",
+   "region": "Hoenn",
+   "name": "Route 121",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Route_121_Baie_Nanab_ROSA.png",
+   "checked": "shown on Poképédia's page \"Route 121\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "13Kmj_KEhlNA",
+   "region": "Hoenn",
+   "name": "Route 121",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Route_121_Carbone_E.png",
+   "checked": "shown on Poképédia's page \"Route 121\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "dP68fybwUpdG",
+   "region": "Hoenn",
+   "name": "Route 121",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Route_121_Zinc_ROSA.png",
+   "checked": "shown on Poképédia's page \"Route 121\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "ZfNYqIXH21DR",
+   "region": "Hoenn",
+   "name": "Route 122",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.wikidex.net/wiki/Archivo:Ruta_122_ROZA.png",
+   "checked": "shown on WikiDex's page \"Ruta 122\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "YqKdYjViovhv",
+   "region": "Hoenn",
+   "name": "Route 123",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Route_123_Blizzarite_ROSA.png",
+   "checked": "shown on Poképédia's page \"Route 123\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "y6JMqh-63sox",
+   "region": "Hoenn",
+   "name": "Route 123",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Route_123_Herbe_Rappel_E.png",
+   "checked": "shown on Poképédia's page \"Route 123\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "g6QM_A6nvHh-",
+   "region": "Hoenn",
+   "name": "Route 123",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Route_123_PP_Plus_(2)_E.png",
+   "checked": "shown on Poképédia's page \"Route 123\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "KtwiEU7CasrH",
+   "region": "Hoenn",
+   "name": "Route 124",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_124_Chemin_Perle_E.png",
+   "checked": "shown on Poképédia's page \"Chenal 124\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "L2_siJ-H0SB5",
+   "region": "Hoenn",
+   "name": "Route 124",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_124_Chemin_Tesson_Vert_E.png",
+   "checked": "shown on Poképédia's page \"Chenal 124\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "XuuGnHtukRUp",
+   "region": "Hoenn",
+   "name": "Route 124",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_124_Tesson_Bleu_ROSA.png",
+   "checked": "shown on Poképédia's page \"Chenal 124\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "oRRkGFr3wzVM",
+   "region": "Hoenn",
+   "name": "Route 124",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_124_Tesson_Rouge_E.png",
+   "checked": "shown on Poképédia's page \"Chenal 124\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "sCQagOoWOvWY",
+   "region": "Hoenn",
+   "name": "Route 124",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_124_Tesson_Rouge_ROSA.png",
+   "checked": "shown on Poképédia's page \"Chenal 124\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "CJcb-UsmIoYU",
+   "region": "Hoenn",
+   "name": "Route 125",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokewiki.de/Datei:ORAS_Geheimbasis_Route125-1.jpg",
+   "checked": "in pokewiki's category \"ORAS-Screenshot\", named after the place; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "Vu0PtY7EXy3a",
+   "region": "Hoenn",
+   "name": "Route 126",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_126_Tesson_Vert_ROSA.png",
+   "checked": "shown on Poképédia's page \"Chenal 126\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "jHUOEtgDBSBt",
+   "region": "Hoenn",
+   "name": "Route 126",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokewiki.de/Datei:ORAS_Geheimbasis_Route126-2.jpg",
+   "checked": "in pokewiki's category \"ORAS-Screenshot\", named after the place; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "aJeeuhwT7b14",
+   "region": "Hoenn",
+   "name": "Route 127",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_127_Carbone_ROSA.png",
+   "checked": "shown on Poképédia's page \"Chenal 127\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "AoZhjbUC9ELG",
+   "region": "Hoenn",
+   "name": "Route 127",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_127_Zinc_ROSA.png",
+   "checked": "shown on Poképédia's page \"Chenal 127\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "KR1dbk0bQFlA",
+   "region": "Hoenn",
+   "name": "Route 128",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.wikidex.net/wiki/Archivo:Ruta_128_ROZA.png",
+   "checked": "shown on WikiDex's page \"Ruta 128\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "pr_ZasYgnJch",
+   "region": "Hoenn",
+   "name": "Route 132",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_132_Super_Bonbon_ROSA.png",
+   "checked": "shown on Poképédia's page \"Chenal 132\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "c7MrGB2Emk1_",
+   "region": "Hoenn",
+   "name": "Route 133",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_133_Calcium_ROSA.png",
+   "checked": "shown on Poképédia's page \"Chenal 133\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "0ecv3O6TKzZm",
+   "region": "Hoenn",
+   "name": "Route 133",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_133_Morceau_d'Étoile_ROSA.png",
+   "checked": "shown on Poképédia's page \"Chenal 133\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "HRdihuZ_ofnw",
+   "region": "Hoenn",
+   "name": "Route 134",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_134_Carbone_ROSA.png",
+   "checked": "shown on Poképédia's page \"Chenal 134\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "8OtOb_jYrnww",
+   "region": "Hoenn",
+   "name": "Route 134",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_134_CT80_ROSA.png",
+   "checked": "shown on Poképédia's page \"Chenal 134\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "L4USODuZKNAW",
+   "region": "Hoenn",
+   "name": "Route 134",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_134_Morceau_d'Étoile_ROSA.png",
+   "checked": "shown on Poképédia's page \"Chenal 134\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "5OF2AzaU3WH9",
+   "region": "Hoenn",
+   "name": "Rustboro City",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Arène_Mérouville_ROSA.png",
+   "checked": "shown on Poképédia's page \"Arène de Mérouville\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "VZT8U0prgxOG",
+   "region": "Hoenn",
+   "name": "Rustboro City",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Mérouville_Défense_+_E.png",
+   "checked": "shown on Poképédia's page \"Mérouville\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "iJUmvRdXHfzt",
+   "region": "Hoenn",
+   "name": "Rustboro City",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Mérouville_Défense_+_ROSA.png",
+   "checked": "shown on Poképédia's page \"Mérouville\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "3rsqVLNLD8_I",
+   "region": "Hoenn",
+   "name": "Devon Corporation",
+   "parent": "Rustboro City",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Devon_SARL_extérieur_ROSA.png",
+   "checked": "shown on Poképédia's page \"Devon SARL\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "D5DtLi7VCUIp",
+   "region": "Hoenn",
+   "name": "Rusturf Tunnel",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokewiki.de/Datei:ORAS_Geheimbasis_Metaflurtunnel.jpg",
+   "checked": "in pokewiki's category \"ORAS-Screenshot\", named after the place; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "De0F0DSMmiYQ",
+   "region": "Hoenn",
+   "name": "Rusturf Tunnel",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Tunnel_Mérazon_Huile_Max_ROSA.png",
+   "checked": "shown on Poképédia's page \"Tunnel Mérazon\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "rlWAsh410EoK",
+   "region": "Hoenn",
+   "name": "Rusturf Tunnel",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Tunnel_Mérazon_Poké_Ball_E.png",
+   "checked": "shown on Poképédia's page \"Tunnel Mérazon\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "xTze1yEIP2aT",
+   "region": "Hoenn",
+   "name": "Safari Zone",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Parc_Safari_Pépite_ROSA.png",
+   "checked": "shown on Poképédia's page \"Parc Safari (Hoenn)\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "2Vkgy80uOhVi",
+   "region": "Hoenn",
+   "name": "Safari Zone",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Parc_Safari_Rappel_Max_ROSA.png",
+   "checked": "shown on Poképédia's page \"Parc Safari (Hoenn)\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "dxbu-EyLSqGV",
+   "region": "Hoenn",
+   "name": "Scorched Slab",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.wikidex.net/wiki/Archivo:Gruta_Solar_ROZA.png",
+   "checked": "shown on WikiDex's page \"Gruta Solar\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "U2whHqJk8VmM",
+   "region": "Hoenn",
+   "name": "Scorched Slab",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.wikidex.net/wiki/Archivo:Interior_Gruta_Solar_S1_ROZA.png",
+   "checked": "shown on WikiDex's page \"Gruta Solar\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "_JPA-ir8mu9c",
+   "region": "Hoenn",
+   "name": "Sea Mauville",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.wikidex.net/wiki/Archivo:Almacén_Malvamar_ROZA.png",
+   "checked": "shown on WikiDex's page \"Malvamar\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "dqNIm3XMJkVO",
+   "region": "Hoenn",
+   "name": "Sea Mauville",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.wikidex.net/wiki/Archivo:Anillo_Ho-Oh_Malvamar_RO.png",
+   "checked": "shown on WikiDex's page \"Malvamar\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "3iKM4eYXyrEJ",
+   "region": "Hoenn",
+   "name": "Sea Mauville",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.wikidex.net/wiki/Archivo:Zona_sumergida_Malvamar_ROZA.png",
+   "checked": "shown on WikiDex's page \"Malvamar\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "G8VRHq7gPH0x",
+   "region": "Hoenn",
+   "name": "Seafloor Cavern",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.wikidex.net/wiki/Archivo:Caverna_Abisal_ROZA.png",
+   "checked": "shown on WikiDex's page \"Caverna Abisal\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "4PMPPWIWnHoX",
+   "region": "Hoenn",
+   "name": "Seafloor Cavern",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Caverne_Fondmer_CT26_E.png",
+   "checked": "shown on Poképédia's page \"Caverne Fondmer\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "eD_GE71jUXPN",
+   "region": "Hoenn",
+   "name": "Seafloor Cavern",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Caverne_Fondmer_CT26_ROSA.png",
+   "checked": "shown on Poképédia's page \"Caverne Fondmer\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "ZNvfkOSYa4VX",
+   "region": "Hoenn",
+   "name": "Sealed Chamber",
+   "game": "Ruby / Sapphire / Emerald",
+   "source": "https://www.pokewiki.de/Datei:Siegelkammer2.png",
+   "checked": "shown on PokéWiki's page \"Siegelkammer\"; RSE in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "dT3grMAjrOSx",
+   "region": "Hoenn",
+   "name": "Secret Meadow",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokewiki.de/Datei:ORAS_Geheimbasis_GeheimeBlumenwiese-1.jpg",
+   "checked": "in pokewiki's category \"ORAS-Screenshot\", named after the place; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "r3czolw2bStw",
+   "region": "Hoenn",
+   "name": "Secret Meadow",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokewiki.de/Datei:ORAS_Geheimbasis_GeheimeBlumenwiese-2.jpg",
+   "checked": "in pokewiki's category \"ORAS-Screenshot\", named after the place; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "7sLepijEA0A-",
+   "region": "Hoenn",
+   "name": "Secret Meadow",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokewiki.de/Datei:ORAS_Geheimbasis_GeheimeBlumenwiese-4.jpg",
+   "checked": "in pokewiki's category \"ORAS-Screenshot\", named after the place; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "J9a2cNKl8YwO",
+   "region": "Hoenn",
+   "name": "Secret Shore",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokewiki.de/Datei:ORAS_Geheimbasis_GeheimeKüste-1.jpg",
+   "checked": "in pokewiki's category \"ORAS-Screenshot\", named after the place; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "erKWr5ZySVut",
+   "region": "Hoenn",
+   "name": "Secret Shore",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokewiki.de/Datei:ORAS_Geheimbasis_GeheimeKüste-2.jpg",
+   "checked": "in pokewiki's category \"ORAS-Screenshot\", named after the place; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "3F_NggPrgDIs",
+   "region": "Hoenn",
+   "name": "Secret Shore",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokewiki.de/Datei:ORAS_Geheimbasis_GeheimeKüste-4.jpg",
+   "checked": "in pokewiki's category \"ORAS-Screenshot\", named after the place; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "Nmzdx3APc0Xh",
+   "region": "Hoenn",
+   "name": "Shoal Cave",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Grotte_Tréfonds_Antigel_2_ROSA.png",
+   "checked": "shown on Poképédia's page \"Grotte Tréfonds\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "QTModpaHhX3o",
+   "region": "Hoenn",
+   "name": "Sky Pillar",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokewiki.de/Datei:Himmelturm_ORAS_E1.png",
+   "checked": "shown on PokéWiki's page \"Himmelturm\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "6gkO1wyH5qHc",
+   "region": "Hoenn",
+   "name": "Sky Pillar",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokewiki.de/Datei:Himmelturm_ORAS_E3.png",
+   "checked": "shown on PokéWiki's page \"Himmelturm\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "EelnirRT1Cvo",
+   "region": "Hoenn",
+   "name": "Sky Pillar",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokewiki.de/Datei:Himmelturm_ORAS_E5.png",
+   "checked": "shown on PokéWiki's page \"Himmelturm\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "wRGAQ4qAHvvl",
+   "region": "Hoenn",
+   "name": "Sky Pillar",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokewiki.de/Datei:Himmelturmspitze_ORAS.jpg",
+   "checked": "shown on PokéWiki's page \"Himmelturm\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "_hLTauQXHves",
+   "region": "Hoenn",
+   "name": "Sky Pillar",
+   "game": "Emerald",
+   "source": "https://www.wikidex.net/wiki/Archivo:Rayquaza_en_el_pilar_celeste_E.png",
+   "checked": "shown on WikiDex's page \"Pilar Celeste\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "gxuJXoZiiu9n",
+   "region": "Hoenn",
+   "name": "Slateport City",
+   "game": "Ruby / Sapphire / Emerald",
+   "source": "https://www.wikidex.net/wiki/Archivo:Puesto_de_Curro_en_Esmeralda.png",
+   "checked": "shown on WikiDex's page \"Ciudad Portual\"; RSE in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "XyFwxk_A9REB",
+   "region": "Hoenn",
+   "name": "Oceanic Museum",
+   "parent": "Slateport City",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.wikidex.net/wiki/Archivo:Museo_Oceánico_ROZA.png",
+   "checked": "shown on WikiDex's page \"Museo Oceánico\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "wvPoMrhZASx-",
+   "region": "Hoenn",
+   "name": "Oceanic Museum",
+   "parent": "Slateport City",
+   "game": "Ruby / Sapphire / Emerald",
+   "source": "https://www.wikidex.net/wiki/Archivo:Museo_Oceánico_RZE.png",
+   "checked": "in wikidex's category \"Capturas de Pokémon Rubí, Pokémon Zafiro y Pokémon Esmeralda\", named after the place; RSE in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "XyjIoLXg8i3v",
+   "region": "Hoenn",
+   "name": "Sootopolis City",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.wikidex.net/wiki/Archivo:Árbol_de_A._Z._ROZA.png",
+   "checked": "shown on WikiDex's page \"Arrecípolis\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "71PvQjhrCgen",
+   "region": "Hoenn",
+   "name": "Sootopolis City",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Atalanopolis_ROSA.png",
+   "checked": "shown on Poképédia's page \"Atalanopolis\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "XOaDXsBcRd8o",
+   "region": "Hoenn",
+   "name": "Sootopolis City",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Atalanopolis_Ténéfixite_ROSA.png",
+   "checked": "shown on Poképédia's page \"Atalanopolis\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "Ief0ww4o5L1j",
+   "region": "Hoenn",
+   "name": "Cave of Origin",
+   "parent": "Sootopolis City",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://pokemon.fandom.com/wiki/File:Cave_of_Origin_ORAS.jpg",
+   "checked": "shown on the Pokémon Wiki's page \"Cave of Origin\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "BExpyLbV3eSk",
+   "region": "Hoenn",
+   "name": "Southern Island",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Île_du_Sud_Intérieur_ROSA.png",
+   "checked": "shown on Poképédia's page \"Île du Sud\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "DPqh9-81xVJe",
+   "region": "Hoenn",
+   "name": "Southern Island",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.wikidex.net/wiki/Archivo:Isla_del_Sur_ROZA.png",
+   "checked": "shown on WikiDex's page \"Isla del Sur\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "_NeDTo7DEFH7",
+   "region": "Hoenn",
+   "name": "Team Aqua Hideout",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Planque_Aqua_Faiblo_Ball_ROSA.png",
+   "checked": "shown on Poképédia's page \"Planque Aqua\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "3ZWrZItijio0",
+   "region": "Hoenn",
+   "name": "Team Aqua Hideout",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Planque_Aqua_Guérison_ROSA.png",
+   "checked": "shown on Poképédia's page \"Planque Aqua\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "ovp45cOgXnxH",
+   "region": "Hoenn",
+   "name": "Team Aqua Hideout",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Planque_Aqua_PP_Max_ROSA.png",
+   "checked": "shown on Poképédia's page \"Planque Aqua\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "-TeiFHRCXr-f",
+   "region": "Hoenn",
+   "name": "Verdanturf Town",
+   "game": "Ruby / Sapphire / Emerald",
+   "source": "https://www.wikidex.net/wiki/Archivo:Cas_de_clara_por_fuera.png",
+   "checked": "shown on WikiDex's page \"Pueblo Verdegal\"; RSE in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "pqgnYbFuexPj",
+   "region": "Hoenn",
+   "name": "Verdanturf Town",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Vergazon_Mysdibulite_ROSA.png",
+   "checked": "shown on Poképédia's page \"Vergazon\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "5PwNQpXnXz-n",
+   "region": "Hoenn",
+   "name": "Weather Institute",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.wikidex.net/wiki/Archivo:Instituto_Meteorológico_ROZA.png",
+   "checked": "shown on WikiDex's page \"Instituto Meteorológico\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "-2thTvh7sAvu",
+   "region": "Hoenn",
+   "name": "Weather Institute",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Pokémon_émeraude_centre_météo.png",
+   "checked": "in pokepedia's category \"Capture d'écran de Pokémon Émeraude\", named after the place; E in its name or category; reviewed on a contact sheet"
   }
  ]
 }
