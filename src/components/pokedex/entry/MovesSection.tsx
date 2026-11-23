@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useDeferredValue, useEffect, useMemo, useState } from "react";
+import { Fragment, memo, useDeferredValue, useEffect, useMemo, useState } from "react";
 // `m` as `motion`: the rows below are `m` (a move). The light components draw once DexEntry's LazyMotion has its features.
 import { AnimatePresence, m as motion } from "framer-motion";
 import Link from "@/components/ui/Link";
@@ -170,6 +170,36 @@ export function MovesSection({ moves, game, typeNames }: { moves: DexMove[]; gam
         {rows.length === 0 && <p className="py-6 text-center text-sm text-muted-foreground">{t("moves.none")}</p>}
       </div>
       <p className="text-[11px] text-muted-foreground">{t("moves.from", { game })}</p>
+      <OtherTabs moves={moves} tab={tab} />
     </div>
   );
 }
+
+/**
+ * The moves on the tabs that aren't open, as plain links in the HTML but not on screen (`hidden`), so the page's text
+ * has every way this Pokémon learns its moves (crawlers don't press the tabs).
+ */
+const OtherTabs = memo(function OtherTabs({ moves, tab }: { moves: DexMove[]; tab: DexMove["method"] }) {
+  const t = useT(dexEntryNs);
+  const others = TABS.filter((x) => x.method !== tab)
+    .map((x) => ({ method: x.method, list: moves.filter((m) => m.method === x.method) }))
+    .filter((x) => x.list.length > 0);
+  if (!others.length) return null;
+  return (
+    <div hidden>
+      {others.map(({ method, list }) => (
+        <Fragment key={method}>
+          <h3>{t(`moves.tab.${method}`)}</h3>
+          <ul>
+            {list.map((m) => (
+              <li key={`${m.id}-${m.level}`}>
+                <a href={`/pokedex/moves/${m.slug}`}>{m.name}</a>
+                {method === "M" && m.tm ? ` (${m.tm})` : ""}
+              </li>
+            ))}
+          </ul>
+        </Fragment>
+      ))}
+    </div>
+  );
+});
