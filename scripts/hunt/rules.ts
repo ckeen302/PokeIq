@@ -110,9 +110,9 @@ export const PLACE_ALIASES: { region: string; from: string; to: string; versions
   { region: "Unova", from: "Black City", to: "Black City / White Forest", why: "one map place for both" },
   { region: "Hoenn", from: "Team Magma Hideout", to: "Magma Hideout (Jagged Pass)", why: "the same hideout; the map files it under Jagged Pass" },
   { region: "Hoenn", from: "Aqua Hideout", to: "Team Aqua Hideout", why: "the same hideout" },
-  { region: "Sinnoh", from: "Trophy Garden", to: "Pokémon Mansion", why: "the Trophy Garden is the Pokémon Mansion's back garden on Route 212 (Bulbapedia)" },
+  { region: "Sinnoh", from: "Trophy Garden", to: "Pokémon Mansion", why: "Bulbapedia: the Trophy Garden is part of the Pokémon Mansion, behind it on Route 212" },
   { region: "Johto", from: "Mt. Silver Cave", to: "Mt. Silver", why: "the cave inside Mt. Silver" },
-  { region: "Kalos", from: "Unknown Dungeon", to: "Pokémon Village", versions: ["x", "y"], why: "the Unknown Dungeon is a cave inside Pokémon Village (Bulbapedia: 'Unknown Dungeon is a cave in Pokémon Village')" },
+  { region: "Kalos", from: "Unknown Dungeon", to: "Pokémon Village", versions: ["x", "y"], why: "Bulbapedia gives the Unknown Dungeon's location as Pokémon Village: a small cave reached from the village" },
 ];
 
 /**
