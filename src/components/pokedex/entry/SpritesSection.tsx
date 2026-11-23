@@ -1,5 +1,6 @@
-/* eslint-disable @next/next/no-img-element -- pixel sprites and GIFs are drawn as they are; the HOME render goes through the image optimizer by URL */
-import { SPRITE_CELL, optimizedImageUrl, type SpriteColumn } from "@/lib/pokemon/sprites";
+/* eslint-disable @next/next/no-img-element -- pixel sprites, GIFs and the HOME render are drawn as they are (no image optimizer) */
+import { SPRITE_BASE, SPRITE_CELL, type SpriteColumn } from "@/lib/pokemon/sprites";
+import SIZES_ART from "@/data/sizes-art.json";
 import { cn } from "@/lib/utils";
 import { serverT } from "@/i18n/server";
 import spritesNs from "@/messages/dex-sprites";
@@ -93,13 +94,24 @@ export function SpritesSection({ name, columns }: { name: string; columns: Sprit
   );
 }
 
+/**
+ * The HOME render without Vercel's image optimizer, whose free allowance
+ * (a few thousand new pictures a month) every species' pair of renders would
+ * use up: the site's own 256 px WebP copy where it has one (public/sizes/art,
+ * the same picture), else PokéAPI's file as it is, like every other column.
+ */
+const HOME_NORMAL = `${SPRITE_BASE}/other/home/`;
+function homeSrc(src: string): string {
+  const id = src.startsWith(HOME_NORMAL) ? /^(\d+)\.png$/.exec(src.slice(HOME_NORMAL.length))?.[1] : undefined;
+  return id && id in SIZES_ART ? `/sizes/art/256/${id}.webp` : src;
+}
+
 function Sprite({ col, src, alt }: { col: SpriteColumn; src: string; alt: string }) {
   const look = col.look;
   if (look.kind === "home") {
     return (
       <img
-        src={optimizedImageUrl(src, 96)}
-        srcSet={`${optimizedImageUrl(src, 96)} 1x, ${optimizedImageUrl(src, 256)} 2x`}
+        src={homeSrc(src)}
         alt={alt}
         width={SPRITE_CELL}
         height={SPRITE_CELL}
