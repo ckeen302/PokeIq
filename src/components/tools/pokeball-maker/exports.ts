@@ -97,7 +97,7 @@ export async function video(scene: BallScene, d: Design, text: VideoText, onProg
       signal,
       onProgress,
       draw(t) {
-        g.drawImage(scene.exportFrame(videoPose(t, withMon), W, H, t), 0, 0, W, H);
+        g.drawImage(scene.exportFrame(videoPose(t, withMon), W, H, t, { tight: true }), 0, 0, W, H);
         g.textAlign = "center";
         g.textBaseline = "middle";
         // The name at the top, then the end card.

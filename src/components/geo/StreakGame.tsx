@@ -8,6 +8,7 @@ import { type GeoRegionInfo } from "@/lib/geo-types";
 import { GEO_REGION_STREAK_BOARD, GEO_REGION_STREAK_KEY, GEO_STREAK_REGIONS, type GeoStreakGuessResponse, type GeoStreakRegion, type GeoStreakStartResponse } from "@/lib/geo-streak-types";
 import { recordGeoGame, useProgress } from "@/lib/progress";
 import { play, unlockAudio } from "@/lib/sound";
+import { useGuessrMusic } from "@/lib/use-guessr-music";
 import { preloadImage } from "@/lib/preload";
 import { useAccount } from "@/lib/account";
 import { avatarSrc } from "@/lib/avatar";
@@ -62,6 +63,7 @@ async function post<T>(url: string, body: unknown): Promise<T> {
  * the results map. The answer only ever arrives with the grade.
  */
 export function StreakGame({ world }: { world: GeoRegionInfo }) {
+  useGuessrMusic();
   const t = useT(geoStreak);
   const g = useT(geoNs);
   const names = useGeoNames();

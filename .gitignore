@@ -34,3 +34,6 @@ e2e-screenshots/
 
 # PokéAPI / dex build caches (scripts/dex, scripts/i18n)
 /.cache/
+
+# Python bytecode (scripts)
+__pycache__/

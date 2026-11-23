@@ -10,6 +10,8 @@ import { cn } from "@/lib/utils";
 import { useT } from "@/i18n/client";
 import geoSolo from "@/messages/geo-solo";
 import geoNamesNs from "@/messages/geo-names";
+import { setGuessrMusicPrefs } from "@/lib/guessr-music-prefs";
+import { useGuessrMusicPrefs } from "@/lib/use-guessr-music";
 
 /**
  * PokéGuessr's play settings (No move, Zoomed; the round timer has its own picker), in a popover
@@ -58,7 +60,37 @@ export function GeoSettingsButton({ value, onChange }: { value: GeoPlaySettings;
           testId="geo-zoomed"
         />
         <p className="border-t pt-3 text-xs text-muted-foreground">{t("settings.harder")}</p>
+        <MusicSettings />
       </Popover>
+    </div>
+  );
+}
+
+/** Background music: on or off, and its volume (remembered on this device). The site's mute silences it too. */
+function MusicSettings() {
+  const t = useT(geoSolo);
+  const music = useGuessrMusicPrefs();
+  return (
+    <div className="space-y-2 border-t pt-3" data-testid="geo-music-settings">
+      <SettingToggle
+        label={t("settings.music")}
+        description={t("settings.musicBlurb")}
+        checked={music.on}
+        onChange={() => setGuessrMusicPrefs({ on: !music.on })}
+        testId="geo-music"
+      />
+      <input
+        type="range"
+        min={0}
+        max={100}
+        step={5}
+        value={Math.round(music.volume * 100)}
+        disabled={!music.on}
+        aria-label={t("settings.musicVolume")}
+        onChange={(e) => setGuessrMusicPrefs({ volume: Number(e.target.value) / 100 })}
+        data-testid="geo-music-volume"
+        className="h-2 w-full cursor-pointer accent-[hsl(var(--primary))] disabled:cursor-not-allowed disabled:opacity-40"
+      />
     </div>
   );
 }

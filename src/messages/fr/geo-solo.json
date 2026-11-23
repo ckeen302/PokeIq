@@ -192,6 +192,9 @@
     "off": "Non",
     "timerBlurb": "À la fin du temps, ton repère est validé là où il est ; sans repère, 0 point. Le chrono continue si tu changes d'onglet. Le Quotidien et l'Hebdo sont toujours en 1:30, et les séries n'ont pas de chrono.",
     "harder": "Ils ne font que rendre la partie plus difficile : tes scores comptent toujours pour les classements.",
+    "music": "Musique",
+    "musicBlurb": "Une musique de fond calme pendant que tu joues. Couper le son du site l'arrête aussi.",
+    "musicVolume": "Volume de la musique",
     "rounds": "Manches",
     "difficulty": "Difficulté",
     "practice": "Entraînement : seul Normal compte pour les classements."

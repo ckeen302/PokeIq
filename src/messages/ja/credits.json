@@ -14,5 +14,7 @@
   "race": "レース",
   "raceBody": "スタジアムのテクスチャは Poly Haven、観客の音は OpenGameArt.org より、すべて CC0（<a>クレジット</a>）。",
   "films": "2本の映像",
-  "filmsBody": "音楽は PokéIQ のために書かれたオリジナルで、MuseScore General サウンドフォント（MIT。弦楽器は VSCO 2 CE、CC0）で演奏しています。クレジット：<world>ポケモン世界の歴史</world>、<story>ポケモンの物語</story>。"
+  "filmsBody": "音楽は PokéIQ のために書かれたオリジナルで、MuseScore General サウンドフォント（MIT。弦楽器は VSCO 2 CE、CC0）で演奏しています。クレジット：<world>ポケモン世界の歴史</world>、<story>ポケモンの物語</story>。",
+  "guessr": "PokéGuessrの音楽",
+  "guessrBody": "PokéIQのために書かれたオリジナルのアンビエント曲で、サンプルや録音を使わずスクリプトで合成しています（<a>クレジット</a>）。"
 }

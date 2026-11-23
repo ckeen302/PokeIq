@@ -67,13 +67,22 @@ const PREVIEW_BOTS = [
 ];
 const PREVIEW_DISALLOW = ["/api/", "/admin", "/login", "/trainer"];
 
-/** Crawlers that collect pages to train AI models: not welcome anywhere. */
+/**
+ * AI search and answer engines, and the fetchers a person triggers from them
+ * (ChatGPT search, Claude, Perplexity): they read pages to answer and cite
+ * them, so they get the same access as search engines. Named explicitly
+ * because a bot obeys only its most specific group. Google-Extended is here
+ * too: it controls whether Gemini (the app and grounding) may use and cite
+ * the site, alongside Gemini training (Google offers no way to split them);
+ * Google's AI Overviews and AI Mode follow Googlebot regardless.
+ */
+const AI_SEARCH_BOTS = ["OAI-SearchBot", "ChatGPT-User", "Claude-SearchBot", "Claude-User", "PerplexityBot", "Perplexity-User", "Google-Extended"];
+
+/** Crawlers that only collect pages to train AI models (their companies' search bots above are separate): not welcome anywhere. */
 const AI_TRAINING_BOTS = [
   "GPTBot",
   "CCBot",
   "ClaudeBot",
-  "anthropic-ai",
-  "Google-Extended",
   "Applebot-Extended",
   "Bytespider",
   "meta-externalagent",
@@ -96,6 +105,7 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
     rules: [
       { userAgent: "*", allow: "/", disallow: everyLanguage(DISALLOW) },
       { userAgent: PREVIEW_BOTS, allow: "/", disallow: everyLanguage(PREVIEW_DISALLOW) },
+      { userAgent: AI_SEARCH_BOTS, allow: "/", disallow: everyLanguage(DISALLOW) },
       { userAgent: AI_TRAINING_BOTS, disallow: "/" },
     ],
     // Each live language's own sitemap follows English's (src/app/[locale]/sitemap.xml; the index is /sitemap-index.xml).
