@@ -15,8 +15,31 @@
  *             out when a clean crop leaves a good view, else drop the image); broken
  *             images and composites, renders, guidebook maps and overhead maps (Bulbapedia's
  *             top-down area maps are never screenshots); the wrong place or game; generic
- *             interiors or caves that could be anywhere; near-duplicates of shots already in
- *   Cap each place at 5 shots per game family.
+ *             interiors or caves that could be anywhere (a standard Pokémon Center or Mart,
+ *             a plain house, office or shop); near-duplicates of shots already in
+ *   INTERIORS a distinctive interior is a view of its town: a Gym, a museum, the Prism
+ *             Tower, a Battle Tower / Frontier / Subway, a team's hideout or HQ, a one-of-a-kind
+ *             department store, Lumiose's cafés and boutiques, Castelia's towers and the
+ *             Battle Company, a Game Corner that is the only one of its kind, a lighthouse or
+ *             landmark building. It goes to the building's own entry when the data has one,
+ *             else to the town itself.
+ *
+ * How many shots a place gets (shotCap): a cap per game family that grows with the
+ * place's size, because a big city or a wide open area has dozens of streets, plazas and
+ * buildings to show and a short route doesn't. A town's buildings count towards its cap.
+ *
+ *   small   5    most places: routes, towns, caves, buildings
+ *   large   8    a city with several districts, or an open area at least twice its
+ *                region's typical size
+ *   big     12   a big city, or an open area at least four times its region's typical size
+ *   huge    20   the two metropolises, Lumiose City and Castelia City
+ *
+ * An open area's size is its mask (its grid points on the world map) against the median
+ * mask of its region's places, so each region is measured on its own map's scale. A town's
+ * mask is its icon, not its size, so towns and cities are sized by hand (CITY_SIZE), as are
+ * Galar, the Isle of Armor and the Crown Tundra, whose masks are single points (OPEN_SIZE).
+ * Applying flags an addition that takes a place past its cap, and --report lists every place
+ * over its cap (most of them from before this rule, which only bounds what's added).
  *
  * Applying it is idempotent. It also gives every shot its game family (see
  * src/lib/geo-families.ts) and keeps scripts/geo/shot-sources.json, the source
@@ -143,8 +166,10 @@ export function applyCuration(locations: Location[], curation: Curation): string
       }
     }
     if (!dest) throw new Error(`add ${a.id}: no place ${label(a)}`);
-    dest.shots.push({ id: a.id, game: a.game, family: familyFor(a.game, a.id) });
-    log.push(`+ ${label(dest)}: ${a.id} (${a.game})`);
+    const family = familyFor(a.game, a.id);
+    const over = areaShots(a, family, locations) >= shotCap(a, locations);
+    dest.shots.push({ id: a.id, game: a.game, family });
+    log.push(`+ ${label(dest)}: ${a.id} (${a.game})${over ? ` ! past the ${placeSize(a, locations)} place cap of ${shotCap(a, locations)}` : ""}`);
   }
   for (const l of locations) for (const s of l.shots) s.family = familyFor(s.game, `${label(l)} ${s.id}`);
   // A building left without shots is no round.
@@ -186,6 +211,167 @@ function updateSources(locations: Location[], curation: Curation) {
   const sorted = Object.fromEntries(Object.entries(sources).sort(([a], [b]) => a.localeCompare(b)));
   writeFileSync(SOURCES, JSON.stringify(sorted, null, 1) + "\n");
   if (missing) console.log(`  ${missing} shots have no known source`);
+}
+
+// ---------------------------------------------------------------------------
+// How many shots a place gets: a cap per family that grows with its size
+// ---------------------------------------------------------------------------
+
+export const SIZE_CAP = { small: 5, large: 8, big: 12, huge: 20 } as const;
+export type PlaceSize = keyof typeof SIZE_CAP;
+
+/** Towns and cities by how much of them there is to see (a town's mask is its icon, so it can't tell). Unlisted: small. */
+export const CITY_SIZE: Record<string, PlaceSize> = {
+  "Kalos|Lumiose City": "huge",
+  "Unova|Castelia City": "huge",
+  // Big cities: many streets, plazas and landmark buildings.
+  "Alola|Hau'oli City": "big",
+  "Alola|Malie City": "big",
+  "Paldea|Mesagoza": "big",
+  "Paldea|Levincia": "big",
+  "Paldea|Cascarrafa": "big",
+  "Paldea|Naranja and Uva Academy": "big",
+  "Galar|Wyndon": "big",
+  "Galar|Hammerlocke": "big",
+  "Galar|Motostoke": "big",
+  "Sinnoh|Jubilife City": "big",
+  "Sinnoh|Veilstone City": "big",
+  "Sinnoh|Hearthome City": "big",
+  "Johto|Goldenrod City": "big",
+  "Kanto|Saffron City": "big",
+  "Kanto|Celadon City": "big",
+  "Hoenn|Lilycove City": "big",
+  "Hoenn|Slateport City": "big",
+  "Hoenn|Mauville City": "big",
+  "Unova|Nimbasa City": "big",
+  "Unova|Driftveil City": "big",
+  // Cities with a few districts or several landmark buildings.
+  "Alola|Konikoni City": "large",
+  "Alola|Heahea City": "large",
+  "Alola|Po Town": "large",
+  "Alola|Aether Paradise": "large",
+  "Paldea|Medali": "large",
+  "Paldea|Artazon": "large",
+  "Paldea|Porto Marinada": "large",
+  "Paldea|Alfornada": "large",
+  "Paldea|Montenevera": "large",
+  "Paldea|Pokémon League": "large",
+  "Kitakami|Mossui Town": "large",
+  "Blueberry Academy|Blueberry Academy": "large",
+  "Kalos|Anistar City": "large",
+  "Kalos|Coumarine City": "large",
+  "Kalos|Cyllage City": "large",
+  "Kalos|Laverre City": "large",
+  "Kalos|Shalour City": "large",
+  "Kalos|Snowbelle City": "large",
+  "Kalos|Santalune City": "large",
+  "Galar|Circhester": "large",
+  "Galar|Hulbury": "large",
+  "Galar|Stow-on-Side": "large",
+  "Galar|Ballonlea": "large",
+  "Sinnoh|Sunyshore City": "large",
+  "Sinnoh|Canalave City": "large",
+  "Sinnoh|Eterna City": "large",
+  "Sinnoh|Pastoria City": "large",
+  "Sinnoh|Oreburgh City": "large",
+  "Johto|Olivine City": "large",
+  "Johto|Ecruteak City": "large",
+  "Kanto|Vermilion City": "large",
+  "Kanto|Cerulean City": "large",
+  "Hoenn|Rustboro City": "large",
+  "Hoenn|Mossdeep City": "large",
+  "Hoenn|Sootopolis City": "large",
+  "Hoenn|Fortree City": "large",
+  "Hoenn|Ever Grande City": "large",
+  "Unova|Opelucid City": "large",
+  "Unova|Aspertia City": "large",
+  "Unova|Nacrene City": "large",
+  "Unova|Striaton City": "large",
+  "Unova|Humilau City": "large",
+  "Unova|Mistralton City": "large",
+  "Unova|Virbank City": "large",
+};
+
+/** Open areas in the regions whose masks are single points (Galar, the Isle of Armor, the Crown Tundra), by hand. Unlisted: small. */
+export const OPEN_SIZE: Record<string, PlaceSize> = {
+  // The Wild Area's open fields and lakes.
+  "Galar|Rolling Fields": "large",
+  "Galar|Dappled Grove": "large",
+  "Galar|Watchtower Ruins": "large",
+  "Galar|East Lake Axewell": "large",
+  "Galar|West Lake Axewell": "large",
+  "Galar|Axew's Eye": "large",
+  "Galar|South Lake Miloch": "large",
+  "Galar|North Lake Miloch": "large",
+  "Galar|Giant's Seat": "large",
+  "Galar|Motostoke Riverbank": "large",
+  "Galar|Bridge Field": "large",
+  "Galar|Stony Wilderness": "large",
+  "Galar|Dusty Bowl": "large",
+  "Galar|Giant's Mirror": "large",
+  "Galar|Hammerlocke Hills": "large",
+  "Galar|Giant's Cap": "large",
+  "Galar|Lake of Outrage": "large",
+  "Isle of Armor|Fields of Honor": "large",
+  "Isle of Armor|Soothing Wetlands": "large",
+  "Isle of Armor|Forest of Focus": "large",
+  "Isle of Armor|Challenge Beach": "large",
+  "Isle of Armor|Challenge Road": "large",
+  "Isle of Armor|Loop Lagoon": "large",
+  "Isle of Armor|Training Lowlands": "large",
+  "Isle of Armor|Potbottom Desert": "large",
+  "Isle of Armor|Workout Sea": "large",
+  "Isle of Armor|Insular Sea": "large",
+  "Crown Tundra|Giant's Bed": "big",
+  "Crown Tundra|Slippery Slope": "large",
+  "Crown Tundra|Frostpoint Field": "large",
+  "Crown Tundra|Old Cemetery": "large",
+  "Crown Tundra|Snowslide Slope": "large",
+  "Crown Tundra|Giant's Foot": "large",
+  "Crown Tundra|Ballimere Lake": "large",
+  "Crown Tundra|Frigid Sea": "large",
+  // Open areas whose mask undersells them: Area Zero is a whole world below the crater's rim.
+  "Paldea|Great Crater of Paldea": "big",
+};
+
+/** A region's typical place size: the median mask of its towns, routes and landmarks (buildings have none). */
+function regionMedians(locations: Location[]): Map<string, number> {
+  const sizes = new Map<string, number[]>();
+  for (const l of locations) if (!l.parent && l.mask?.length) sizes.set(l.region, [...(sizes.get(l.region) ?? []), l.mask.length]);
+  const out = new Map<string, number>();
+  for (const [region, list] of sizes) {
+    const sorted = [...list].sort((a, b) => a - b);
+    const mid = sorted.length >> 1;
+    out.set(region, sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2);
+  }
+  return out;
+}
+
+let medians: { of: Location[]; by: Map<string, number> } | null = null;
+/** A place's size (a building is sized as its town, since it counts towards the town's cap). */
+export function placeSize(place: { region: string; name: string; parent?: string }, locations: Location[]): PlaceSize {
+  const name = place.parent ?? place.name;
+  const key = `${place.region}|${name}`;
+  if (CITY_SIZE[key]) return CITY_SIZE[key];
+  if (OPEN_SIZE[key]) return OPEN_SIZE[key];
+  if (medians?.of !== locations) medians = { of: locations, by: regionMedians(locations) };
+  const median = medians.by.get(place.region) ?? 0;
+  const cells = locations.find((l) => l.region === place.region && l.name === name && !l.parent)?.mask?.length ?? 0;
+  // A region whose masks are points (median under 5) can't be measured: OPEN_SIZE covers it.
+  if (median < 5 || !cells) return "small";
+  const ratio = cells / median;
+  return ratio >= 4 ? "big" : ratio >= 2 ? "large" : "small";
+}
+
+/** The most shots a place (a town and its buildings together) gets in one game family. */
+export const shotCap = (place: { region: string; name: string; parent?: string }, locations: Location[]) => SIZE_CAP[placeSize(place, locations)];
+
+/** A place's shots of a family, its buildings' included. */
+export function areaShots(place: { region: string; name: string; parent?: string }, family: string, locations: Location[]): number {
+  const name = place.parent ?? place.name;
+  return locations
+    .filter((l) => l.region === place.region && (l.parent ?? l.name) === name)
+    .reduce((n, l) => n + l.shots.filter((s) => (s.family ?? familyOfGame(s.game)) === family).length, 0);
 }
 
 // ---------------------------------------------------------------------------
@@ -243,6 +429,16 @@ function report(locations: Location[]) {
   }
   console.log("\nper family:");
   for (const [f, [p, m]] of [...fam].sort()) console.log(`  ${pad(f, 6)} ${pad(geoFamily(f as GeoFamilyId).short, 10)} places ${pad(p, 5)} at minimum ${pad(m, 5)} below ${p - m}`);
+  const over: string[] = [];
+  for (const l of locations) {
+    if (l.parent) continue;
+    const fams = new Set(locations.filter((b) => b.region === l.region && (b.parent ?? b.name) === l.name).flatMap((b) => b.shots.map((s) => s.family!)));
+    for (const f of fams) {
+      const n = areaShots(l, f, locations);
+      if (n > shotCap(l, locations)) over.push(`${l.region} | ${l.name} ${f} ${n}/${shotCap(l, locations)}`);
+    }
+  }
+  console.log(`\nover their size cap (${over.length}): ${over.join(", ") || "none"}`);
   const shots = locations.reduce((n, l) => n + l.shots.length, 0);
   const empty = locations.filter((l) => !l.parent && !l.shots.length && !locations.some((b) => b.parent === l.name && b.region === l.region && b.shots.length));
   console.log(`\n${shots} shots; places with no shots: ${empty.map((l) => `${l.region} | ${l.name}`).join(", ") || "none"}`);
