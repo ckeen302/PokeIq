@@ -99,5 +99,7 @@
     "missed": "はずれ",
     "again": "もう一度",
     "shareAndBoard": "シェアとランキング"
-  }
+  },
+  "scoreTotal": "合計",
+  "roundOf": "ラウンド{n}/{of}"
 }

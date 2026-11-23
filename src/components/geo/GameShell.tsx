@@ -5,6 +5,7 @@ import { Check, Expand, Hourglass, MapPinned, Maximize, Minimize, Pin, PinOff, S
 import { cn } from "@/lib/utils";
 import { useT } from "@/i18n/client";
 import geoNs from "@/messages/geo";
+import { formatNumber } from "@/i18n/format";
 
 export interface FullscreenApi {
   /** Browser full screen (the game already fills the window). */
@@ -127,7 +128,7 @@ export function Notch({ children, below, className, wide }: { children: React.Re
  * The countdown pill: mm:ss with a ring that drains along the pill's edge.
  * Purple, then red and flashing for the urgent seconds.
  */
-export function CountdownPill({ ms, totalMs, urgentMs = 10_000, testId, className, label }: { ms: number; totalMs: number; urgentMs?: number; testId?: string; className?: string; label?: string }) {
+export function CountdownPill({ ms, totalMs, urgentMs = 10_000, testId, className, label, clock }: { ms: number; totalMs: number; urgentMs?: number; testId?: string; className?: string; label?: string; /** GeoGuessr's "01:30" (two-digit minutes) instead of "1:30". */ clock?: boolean }) {
   const t = useT(geoNs);
   const left = Math.max(0, ms);
   const s = Math.ceil(left / 1000);
@@ -159,8 +160,69 @@ export function CountdownPill({ ms, totalMs, urgentMs = 10_000, testId, classNam
         />
       </svg>
       <span className={cn("font-display text-[1.35rem] font-bold tabular-nums", urgent && "text-[#ff5a5a]")} data-testid={testId}>
-        {Math.floor(s / 60)}:{String(s % 60).padStart(2, "0")}
+        {clock ? String(Math.floor(s / 60)).padStart(2, "0") : Math.floor(s / 60)}:{String(s % 60).padStart(2, "0")}
       </span>
+    </div>
+  );
+}
+
+/**
+ * GeoGuessr's score tracker, top right: a vertical "Round", a slot for each
+ * round (its number, then its score once played), the current one lit, and
+ * the total. More than five rounds wrap onto a second row.
+ */
+export function ScoreTracker({ scores, current, total, rounds, className }: {
+  /** Each round's score so far (a round being counted up passes its count). */
+  scores: (number | null)[];
+  /** The round being played or just revealed (0-based). */
+  current: number;
+  total: string;
+  rounds: number;
+  className?: string;
+}) {
+  const t = useT(geoNs);
+  const fmt = (n: number) => formatNumber(n, t.locale);
+  const cols = Math.min(rounds, 5);
+  return (
+    <div className={cn("flex items-stretch overflow-hidden rounded-lg bg-[#1e1a3f]/90 text-white shadow-lg ring-1 ring-white/10 backdrop-blur", className)} data-testid="geo-score-chip" role="group" aria-label={`${t("round")} ${current + 1}/${rounds}, ${t("scoreTotal")} ${total}`}>
+      <span className="flex w-5 rotate-180 items-center justify-center bg-[#6c5ce7]/35 font-display text-[9px] font-bold uppercase tracking-[0.2em] text-[#c8bfff] [writing-mode:vertical-rl] xl:w-6 xl:text-[10px]" aria-hidden>
+        {t("round")}
+      </span>
+      <ol className="grid gap-px p-1" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }} aria-hidden>
+        {Array.from({ length: rounds }, (_, i) => {
+          const score = scores[i];
+          const on = i === current;
+          return (
+            <li
+              key={i}
+              data-testid={`geo-score-slot-${i + 1}`}
+              data-current={on ? "true" : undefined}
+              className={cn("flex w-9 flex-col items-center justify-center rounded py-1 transition-colors duration-300 xl:w-12", on ? "bg-[#6c5ce7]/60 ring-1 ring-[#a99cff]/70" : "")}
+            >
+              <span className={cn("font-pixel text-[8px] leading-none", on ? "text-white" : "text-white/45")}>{i + 1}</span>
+              <span className={cn("mt-1 font-display text-xs font-bold leading-none tabular-nums xl:text-[15px]", score === null || score === undefined ? "text-white/25" : "text-white")}>
+                {score === null || score === undefined ? "–" : fmt(score)}
+              </span>
+            </li>
+          );
+        })}
+      </ol>
+      <span className="flex min-w-[3.75rem] flex-col items-center justify-center border-l border-white/10 px-2 xl:min-w-[5rem] xl:px-3">
+        <span className="font-display text-[9px] font-bold uppercase leading-none tracking-[0.18em] text-[#c8bfff]">{t("scoreTotal")}</span>
+        <span className="mt-1 font-display text-sm font-bold leading-none tabular-nums text-[#9be15d] xl:text-lg" data-testid="geo-score-total">{total}</span>
+      </span>
+    </div>
+  );
+}
+
+/** The compact score readout, "Round 2/5 · 3,412": phones, and windows too narrow for the tracker beside the notch. */
+export function RoundReadout({ round, rounds, total, className, testId = "geo-score-chip" }: { round: number; rounds: number; total: string; className?: string; testId?: string }) {
+  const t = useT(geoNs);
+  return (
+    <div className={cn("flex h-11 min-w-0 items-center whitespace-nowrap rounded-full bg-[#1e1a3f] px-3.5 font-display text-sm font-bold text-white ring-2 ring-[#a99cff]/70 shadow-[inset_0_2px_8px_rgba(0,0,0,0.5)]", className)} data-testid={testId}>
+      <span className="text-[#c8bfff]">{t("roundOf", { n: round, of: rounds })}</span>
+      <span className="px-1.5 text-white/40" aria-hidden>·</span>
+      <span className="tabular-nums text-[#9be15d]" data-testid="geo-score-total">{total}</span>
     </div>
   );
 }
@@ -498,7 +560,7 @@ export function HudDials({ children }: { children: React.ReactNode }) {
 const DIAL = "relative flex h-[3.75rem] w-[3.75rem] flex-col items-center justify-center rounded-full bg-[#1e1a3f] text-white ring-2 ring-[#a99cff]/70 shadow-[inset_0_2px_8px_rgba(0,0,0,0.5)]";
 
 /** The countdown as a dial: m:ss inside a ring that drains, red for the urgent seconds. */
-export function TimerDial({ ms, totalMs, urgentMs = 10_000, testId }: { ms: number; totalMs: number; urgentMs?: number; testId?: string }) {
+export function TimerDial({ ms, totalMs, urgentMs = 10_000, testId, clock }: { ms: number; totalMs: number; urgentMs?: number; testId?: string; clock?: boolean }) {
   const t = useT(geoNs);
   const left = Math.max(0, ms);
   const s = Math.ceil(left / 1000);
@@ -510,8 +572,8 @@ export function TimerDial({ ms, totalMs, urgentMs = 10_000, testId }: { ms: numb
         <circle cx="30" cy="30" r="25" stroke="rgba(255,255,255,0.12)" strokeWidth="4" />
         <circle cx="30" cy="30" r="25" pathLength={1} stroke={urgent ? "#ff5a5a" : "#8b7cff"} strokeWidth="4" strokeLinecap="round" strokeDasharray="1" strokeDashoffset={1 - frac} className="transition-[stroke-dashoffset] duration-300 ease-linear" />
       </svg>
-      <span className={cn("font-display text-base font-bold tabular-nums leading-none", urgent && "text-[#ff5a5a]")} data-testid={testId}>
-        {Math.floor(s / 60)}:{String(s % 60).padStart(2, "0")}
+      <span className={cn("font-display font-bold tabular-nums leading-none", clock ? "text-[0.9rem]" : "text-base", urgent && "text-[#ff5a5a]")} data-testid={testId}>
+        {clock ? String(Math.floor(s / 60)).padStart(2, "0") : Math.floor(s / 60)}:{String(s % 60).padStart(2, "0")}
       </span>
     </div>
   );
