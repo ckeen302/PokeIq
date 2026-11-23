@@ -117,7 +117,7 @@ export function HuntHub({
         </p>
       )}
 
-      <HubSection id="hunt-modes" eyebrow={t("hub.eyebrow")} title={t("hub.modes")}>
+      <HubSection id="hunt-modes" eyebrow={t("name")} title={t("hub.modes")}>
         <div className="grid gap-4 md:grid-cols-3">
           <HubTile
             testId="hunt-daily-card"

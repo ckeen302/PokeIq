@@ -69,7 +69,7 @@
     "remove": "Nadel {n} entfernen",
     "hintPlace": "Tippe auf die Karte, um Nadel {n} zu setzen",
     "hintMove": "Tippe auf die Karte, um Nadel {n} zu versetzen",
-    "hintDone": "Alle Nadeln gesetzt! Tippe auf die Karte, um Nadel {n} zu versetzen, oder tippe ab",
+    "hintDone": "Alle gesetzt! Tippe, um Nadel {n} zu versetzen",
     "hintOne": "Tippe auf die Karte, wo du es finden würdest",
     "hintMoveOne": "Tippe erneut, um deine Nadel zu versetzen"
   },
@@ -100,7 +100,11 @@
       "near": "Warm, wärmer …",
       "far": "Diesmal ist es entwischt."
     },
-    "method": "{game} · {method}"
+    "close": {
+      "spotOn": "Genau auf der Spur!",
+      "near": "Nah an einem echten Fundort",
+      "far": "Zu weit von jedem Fundort"
+    }
   },
   "results": {
     "title": "Jagd beendet",

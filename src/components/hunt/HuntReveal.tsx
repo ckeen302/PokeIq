@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { BookOpen, Check, ChevronsRight, X } from "lucide-react";
 import Link from "@/components/ui/Link";
-import type { GeoRegionInfo } from "@/lib/geo-types";
+import { WORLD_REGION, type GeoRegionInfo } from "@/lib/geo-types";
 import { cn } from "@/lib/utils";
 import { useT } from "@/i18n/client";
 import type { Translator } from "@/i18n/catalog";
@@ -99,9 +99,15 @@ export function HuntReveal(p: HuntRevealProps) {
 
   // The regions in the order their spots come in, and when each pops.
   const order = useMemo(() => [...new Set(p.spots.map((s) => s.region))], [p.spots]);
-  const isFound = (x: HuntRevealPin) => x.found ?? true;
-  const foundSpots = useMemo(() => new Set(p.pins.filter((x) => x.found ?? true).map((x) => x.spot)), [p.pins]);
-  const foundRegions = useMemo(() => new Set(p.pins.filter((x) => x.found ?? true).map((x) => p.spots[x.spot]?.region)), [p.pins, p.spots]);
+  // A pin found its region per the server; without that flag, the best-scoring pins up to the server's count.
+  const foundPins = useMemo(() => {
+    if (p.pins.every((x) => x.found !== undefined)) return new Set(p.pins.flatMap((x, i) => (x.found ? [i] : [])));
+    const byScore = p.pins.map((x, i) => [x.score, i] as const).sort((a, b) => b[0] - a[0]);
+    return new Set(byScore.slice(0, p.regionsFound).map(([, i]) => i));
+  }, [p.pins, p.regionsFound]);
+  const isFound = (x: HuntRevealPin) => foundPins.has(p.pins.indexOf(x));
+  const foundSpots = useMemo(() => new Set(p.pins.filter((_, i) => foundPins.has(i)).map((x) => x.spot)), [p.pins, foundPins]);
+  const foundRegions = useMemo(() => new Set(p.pins.filter((_, i) => foundPins.has(i)).map((x) => p.spots[x.spot]?.region)), [p.pins, p.spots, foundPins]);
   const regionDelay = (r: string) => (instant ? 0 : FIRST_POP + order.indexOf(r) * REGION_STEP);
   const linksAt = instant ? 0 : FIRST_POP + order.length * REGION_STEP + 0.1;
   const countAt = instant ? 0 : linksAt + 0.55;
@@ -123,7 +129,9 @@ export function HuntReveal(p: HuntRevealProps) {
     if (running) return;
     const a = document.activeElement;
     if (a && a !== document.body && !rootRef.current?.contains(a)) return;
-    rootRef.current?.querySelector<HTMLElement>('[data-testid="hunt-next"]')?.focus({ preventScroll: true });
+    // A frame later: Skip, which may have had the focus, is gone by then.
+    const id = requestAnimationFrame(() => rootRef.current?.querySelector<HTMLElement>('[data-testid="hunt-next"]')?.focus({ preventScroll: true }));
+    return () => cancelAnimationFrame(id);
   }, [running]);
 
   // Space or Enter: skip the sequence, then move on.
@@ -153,16 +161,20 @@ export function HuntReveal(p: HuntRevealProps) {
   const shown = useCount(p.score, instant ? 0 : COUNT_MS, countAt * 1000);
   const prev = p.scores.slice(0, -1);
   const possible = Math.min(p.regionsTotal, p.maxPins);
+  // On a region's own map every pin is in the region: the headline is how close it came instead.
+  const regionMap = p.region.id !== WORLD_REGION;
   const headline =
     p.timedOut && !p.pins.length
       ? t("reveal.timeUp")
+      : regionMap
+        ? t(`reveal.close.${p.score >= 4000 ? "spotOn" : p.score >= 2000 ? "near" : "far"}`)
       : p.regionsFound === 0
         ? t("reveal.foundNone")
         : p.regionsFound >= p.regionsTotal
           ? t("reveal.foundAll", { total: p.regionsTotal })
           : t("reveal.found", { found: p.regionsFound, total: possible });
   const after = (s: number) => ({ initial: instant ? false : { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.3, delay: instant ? 0 : s, ease: [0.2, 0.8, 0.2, 1] as const } });
-  const bar = <RevealBar {...p} shown={shown} headline={headline} after={after} countAt={countAt} instant={instant} t={t} fmt={fmt} />;
+  const bar = <RevealBar {...p} regionMap={regionMap} shown={shown} headline={headline} after={after} countAt={countAt} instant={instant} t={t} fmt={fmt} />;
   const formTag = useFormTag(p.pokemon);
   return (
     <div ref={rootRef} className={cn("relative flex h-full bg-[#0f0d1f]", phone ? "flex-col" : "flex-row")} data-testid="hunt-reveal" data-running={running ? "true" : undefined}>
@@ -291,13 +303,13 @@ function SpotList({ spots, pins, order, foundRegions, regionDelay, after, isFoun
   );
 }
 
-function RevealBar(p: HuntRevealProps & { shown: number; headline: string; after: (s: number) => object; countAt: number; instant: boolean; t: HuntT; fmt: (n: number) => string }) {
+function RevealBar(p: HuntRevealProps & { regionMap?: boolean; shown: number; headline: string; after: (s: number) => object; countAt: number; instant: boolean; t: HuntT; fmt: (n: number) => string }) {
   const { t, fmt } = p;
   return (
     <div className="mx-auto grid max-w-6xl items-center gap-2.5 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 sm:gap-6 sm:px-6 md:grid-cols-[1fr_auto_1fr] md:pb-3">
       <div className="min-w-0 text-center md:text-left">
         <p className="hud-label !text-[#c8bfff]">{t(`reveal.verdict.${verdictOf(p.score)}`)}</p>
-        <p className="geo-glow font-display text-4xl font-bold italic tabular-nums sm:text-5xl" data-testid="hunt-round-score">
+        <p className="geo-glow whitespace-nowrap font-display text-4xl font-bold italic tabular-nums sm:text-5xl" data-testid="hunt-round-score">
           {fmt(p.shown)} <span className="text-lg not-italic text-white/60">{t("reveal.pts")}</span>
         </p>
         <div className="mt-1.5 flex items-center gap-2">
@@ -309,7 +321,7 @@ function RevealBar(p: HuntRevealProps & { shown: number; headline: string; after
       </div>
 
       <motion.div {...p.after(p.countAt)} className="flex min-w-0 flex-col items-center gap-1.5">
-        <span className={cn("inline-flex items-center gap-2 rounded-full border-2 border-[#a99cff] px-4 py-1.5 text-center font-display text-sm font-bold uppercase italic tracking-wide text-white shadow-lg", p.regionsFound > 0 ? "bg-[#4cbb17]" : "bg-[#4a3f9e]")} data-testid="hunt-found-line" role="status">
+        <span className={cn("inline-flex items-center gap-2 rounded-full border-2 border-[#a99cff] px-4 py-1.5 text-center font-display text-sm font-bold uppercase italic tracking-wide text-white shadow-lg", (p.regionMap ? p.score >= 2000 : p.regionsFound > 0) ? "bg-[#4cbb17]" : "bg-[#4a3f9e]")} data-testid="hunt-found-line" role="status">
           {p.headline}
         </span>
         {p.pins.length > 1 && (

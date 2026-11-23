@@ -14,7 +14,8 @@ import { ExitButton, GameShell, Notch } from "@/components/geo/GameShell";
 import { GeoMap } from "@/components/geo/GeoMap";
 import type { HuntPokemonView } from "./HuntCard";
 import { shortLabel, type HuntRevealPin, type HuntRevealSpot } from "./HuntReveal";
-import { HUNT_ROUND_MAX } from "./hunt-ui";
+import { HUNT_ROUND_MAX, verdictOf } from "./hunt-ui";
+import { WORLD_REGION } from "@/lib/geo-types";
 import { formTagOf } from "./HuntCard";
 
 export interface HuntResultRound {
@@ -70,8 +71,8 @@ export function HuntResults({ region, rounds, modeLine, onAgain, onHub, children
             </div>
             <Notch>
               <div className="text-center">
-                <div className="font-display text-xl font-bold uppercase italic leading-none tracking-wide sm:text-2xl">{t("results.title")}</div>
-                <div className="mt-0.5 font-display text-[11px] font-semibold uppercase tracking-[0.14em] text-[#c8bfff]">{modeLine}</div>
+                <div className="whitespace-nowrap font-display text-lg font-bold uppercase italic leading-none tracking-wide sm:text-2xl">{t("results.title")}</div>
+                <div className="mt-0.5 whitespace-nowrap font-display text-[11px] font-semibold uppercase tracking-[0.14em] text-[#c8bfff]">{modeLine}</div>
               </div>
             </Notch>
             {r && (
@@ -123,7 +124,7 @@ export function HuntResults({ region, rounds, modeLine, onAgain, onHub, children
                           <span className="block truncate text-sm font-semibold">{x.pokemon.name}</span>
                           <span className="block truncate text-xs text-muted-foreground">
                             {formTagOf(t, x.pokemon) ? `${formTagOf(t, x.pokemon)} · ` : ""}
-                            {t("results.regions", { found: x.regionsFound, total: x.regionsTotal })}
+                            {region.id === WORLD_REGION ? t("results.regions", { found: x.regionsFound, total: x.regionsTotal }) : t(`reveal.verdict.${verdictOf(x.score)}`)}
                           </span>
                         </span>
                         <span className="flex flex-col items-end">
