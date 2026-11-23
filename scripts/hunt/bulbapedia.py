@@ -30,9 +30,11 @@ VERSION_KEYS = {
     "Sun": ["sun"], "Moon": ["moon"], "Ultra Sun": ["ultra-sun"], "Ultra Moon": ["ultra-moon"],
     "Let's Go Pikachu": ["lets-go-pikachu"], "Let's Go Eevee": ["lets-go-eevee"],
     "Sword": ["sword"], "Shield": ["shield"], "Expansion Pass": ["sword", "shield"],
+    "Sword Expansion Pass": ["sword"], "Shield Expansion Pass": ["shield"],
     "Brilliant Diamond": ["brilliant-diamond"], "Shining Pearl": ["shining-pearl"],
     "Legends: Arceus": ["legends-arceus"],
     "Scarlet": ["scarlet"], "Violet": ["violet"], "The Hidden Treasure of Area Zero": ["scarlet", "violet"],
+    "The Hidden Treasure of Area Zero (Scarlet)": ["scarlet"], "The Hidden Treasure of Area Zero (Violet)": ["violet"],
     "Legends: Z-A": ["legends-za"], "Mega Dimension": ["legends-za"],
 }
 

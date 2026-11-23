@@ -148,8 +148,10 @@ export function buildAnswers(inp: Inputs, opts: { difficulty?: boolean } = {}): 
             stats.summaryOnly++;
             continue;
           }
-          const sub = subAreaPlace(idx, r.n, v);
-          const pm: ReturnType<typeof matchPlace> = sub ? { kind: "place", key: sub, via: "the sub-area in the note" } : matchPlace(idx, r.loc, v);
+          // A sub-area only counts inside a place that matched (a Mirage spot's "Route 124" note isn't the route).
+          const byName = matchPlace(idx, r.loc, v);
+          const sub = byName.kind === "place" ? subAreaPlace(idx, r.n, v) : undefined;
+          const pm: ReturnType<typeof matchPlace> = sub ? { kind: "place", key: sub, via: "the sub-area in the note" } : byName;
           const names = [r.loc, ...(pm.kind === "place" ? [idx.pinned.get(pm.key)!.name] : [])];
           const fr: ReturnType<typeof resolveForms> = r.forms ? { kind: "forms", forms: r.forms, via: "den table" } : resolveForms({ dex, version: v, note: r.n, names, forms, evidence: inp.evidence[String(dex)] });
           const rowForms = fr.kind === "forms" ? fr.forms : allForms;
