@@ -129,6 +129,14 @@
 }
 
 @layer components {
+  /* Text in an accent colour of its own (a type's, a timeline lane's), set as --ink: in light mode it's
+     darkened so the pale ones (Electric yellow, Ice) stay readable on a white card. */
+  .accent-ink {
+    color: var(--ink);
+  }
+  :root.light .accent-ink {
+    color: color-mix(in oklab, var(--ink) 55%, black);
+  }
   /* Translucent device chrome (header / tab bar). */
   .glass {
     @apply border-b border-foreground/[0.06] bg-background/80 backdrop-blur-xl;

@@ -8,6 +8,7 @@ import { getLocale, serverT } from "@/i18n/server";
 import labDex from "@/messages/lab-dex";
 import labDexPage from "@/messages/lab-dex-page";
 import sizesNames from "@/messages/sizes-names";
+import lab from "@/messages/lab";
 
 /**
  * The Professor's Lab (/lab/pokedex): a 3D Pokédex. Every Pokémon (and,
@@ -34,10 +35,19 @@ export const dynamic = "force-static";
 
 export default function Page() {
   const locale = getLocale();
-  if (locale === "en") return <LabDexApp rows={labRows()} />;
+  const t = serverT(lab);
+  // The lab is drawn by its scripts: its heading and what it is are in the HTML too (unseen), for crawlers.
+  const intro = (
+    <div className="sr-only">
+      <h1>{t("cards.pokedex.title")}</h1>
+      <p>{t("cards.pokedex.kicker")}</p>
+      <p>{t("cards.pokedex.pitch")}</p>
+    </div>
+  );
+  if (locale === "en") return <LabDexApp rows={labRows()} intro={intro} />;
   return (
     <ClientMessages namespaces={[labDex]}>
-      <LabDexApp rows={labRowsIn(locale, serverT(sizesNames))} local={labLocal(locale)} />
+      <LabDexApp rows={labRowsIn(locale, serverT(sizesNames))} local={labLocal(locale)} intro={intro} />
     </ClientMessages>
   );
 }

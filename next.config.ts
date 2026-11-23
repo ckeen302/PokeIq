@@ -6,7 +6,7 @@ import { ORDERS } from "./src/lib/sizes/order";
 import { LEADERBOARD_BOARDS } from "./src/lib/leaderboard-boards";
 
 /**
- * Only PokéAPI's sprite CDN (GitHub raw) is allowed as a remote image source.
+ * The image optimizer takes only the site's own pictures (see `images` below).
  * WebP only: AVIF saves a few KB but its cold encode (~1s) is felt mid-quiz.
  * Question media that must stay secret (silhouettes, cries) never uses this
  * pipeline — it's served by /api/media behind encrypted tokens.
@@ -213,7 +213,13 @@ const nextConfig: NextConfig = {
   images: {
     formats: ["image/webp"],
     minimumCacheTTL: 60 * 60 * 24 * 30,
-    remotePatterns: [{ protocol: "https", hostname: "raw.githubusercontent.com", pathname: "/PokeAPI/sprites/**" }],
+    // Vercel's free plan optimizes a few thousand new pictures a month, and any address the optimizer
+    // accepts can be asked for at every width: it takes only the site's own pictures that use it (the
+    // Lab's screenshots and images imported in code), at one quality, and no remote ones. Sprites and
+    // artwork are drawn as they are (unoptimized, or a plain <img>).
+    remotePatterns: [],
+    localPatterns: [{ pathname: "/lab/**", search: "" }, { pathname: "/_next/static/media/**", search: "" }],
+    qualities: [75],
   },
 };
 

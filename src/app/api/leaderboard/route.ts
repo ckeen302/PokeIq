@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { revalidateTag } from "next/cache";
 import { z } from "zod";
 import { getServiceSupabase } from "@/lib/supabase";
 import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
 import { secretIsSecure, verifyToken } from "@/lib/server/crypto";
 import { GAMEPLAY_IP_LIMIT, clientIp, playerRateLimit } from "@/lib/server/rate-limit";
 import { BOARD_FULL, claimBoardSlot, utcDayOf } from "@/lib/server/board-guard";
-import { LEADERBOARD_TAG, UNRANKED_QUIZ_MESSAGE, fetchBoard, practiceMessage } from "@/lib/server/leaderboard";
+import { UNRANKED_QUIZ_MESSAGE, fetchBoard, practiceMessage, refreshBoards } from "@/lib/server/leaderboard";
 import type { RunResult } from "@/lib/session-types";
 
 /**
@@ -106,6 +105,6 @@ export async function POST(request: NextRequest) {
     console.error("[api/leaderboard] insert failed:", error.message);
     return NextResponse.json({ error: "Could not save score" }, { status: 503 });
   }
-  revalidateTag(LEADERBOARD_TAG);
+  refreshBoards();
   return NextResponse.json({ saved: true }, { status: 201 });
 }

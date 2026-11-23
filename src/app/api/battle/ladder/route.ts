@@ -42,7 +42,8 @@ export async function GET(request: NextRequest) {
   const store = ladderStore();
   if (!store) return NextResponse.json({ available: false, id } satisfies LadderResponse, { headers: NO_STORE });
   try {
-    const [you, leaders] = await Promise.all([key ? store.standing(key, format) : null, top ? store.top(format, 100) : undefined]);
+    // An id minted just now has never played: no standing to read.
+    const [you, leaders] = await Promise.all([key && !id ? store.standing(key, format) : null, top ? store.top(format, 100) : undefined]);
     return NextResponse.json({ available: true, id, format, you, top: leaders } satisfies LadderResponse, { headers: NO_STORE });
   } catch (err) {
     if (err instanceof RankedUnavailable) return NextResponse.json({ available: false, id } satisfies LadderResponse, { headers: NO_STORE });
