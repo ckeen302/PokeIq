@@ -24,11 +24,14 @@ export function AccountPanel() {
   // Discord / Google-only trainers have no password, so no recovery code to renew.
   const [hasPassword, setHasPassword] = useState(true);
 
-  if (account.status === "loading" || !account.enabled) return null;
+  if (account.status === "ready" && !account.enabled) return null;
 
-  if (!account.user) {
+  // While the account is still being read, the sign-in card holds its place (unseen), so what's under it doesn't jump
+  // down when it arrives (most visitors aren't signed in; for a signed-in trainer the account panel takes its place).
+  if (account.status === "loading" || !account.user) {
+    const loading = account.status === "loading";
     return (
-      <Card>
+      <Card className={loading ? "invisible" : undefined} aria-hidden={loading || undefined} inert={loading || undefined} data-account-loading={loading || undefined}>
         <CardContent className="flex flex-wrap items-center justify-between gap-3 p-5">
           <div>
             <p className="font-display text-lg font-bold uppercase">{t("panel.saveTitle")}</p>

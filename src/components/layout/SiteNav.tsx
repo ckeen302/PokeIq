@@ -2,7 +2,7 @@
 
 import Link from "@/components/ui/Link";
 import { usePathname } from "@/i18n/navigation";
-import { motion } from "framer-motion";
+import { useLayoutEffect, useRef } from "react";
 import {
   MessagesSquare,
   Trophy,
@@ -15,6 +15,7 @@ import { AccountMenu } from "./AccountMenu";
 import { SoundShortcut } from "./SoundShortcut";
 import { useT } from "@/i18n/client";
 import nav from "@/messages/nav";
+import { springEasing } from "@/lib/spring";
 
 const DESKTOP_LINKS: { href: string; label: keyof typeof nav.en.links; wideOnly?: boolean }[] = [
   { href: "/pokedle", label: "wordle" },
@@ -36,6 +37,44 @@ function isActive(pathname: string, href: string) {
   // The 3D experiences (the timeline, sizes, the globe...) belong to the 3D Lab tab, not to the Pokédex or PokéGuessr.
   if (href === LAB_PATH || isLabPath(pathname)) return href === LAB_PATH && isLabPath(pathname);
   return href === "/" ? pathname === "/" : pathname.startsWith(href);
+}
+
+/** Where the active tab's bar was drawn as it left (for the next tab's bar to slide from), cleared once that commit is done. */
+let leftFrom: DOMRect | null = null;
+const SLIDE = { stiffness: 500, damping: 38 };
+
+/**
+ * The bar under the active tab. On a change of tab it slides from the old tab to the new one with a spring
+ * (what framer-motion's shared layout did, without loading the library on every page): the new bar starts
+ * where the old one was and eases into place, its width scaling from the old one's.
+ */
+function ActiveBar({ className }: { className: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    const from = leftFrom;
+    leftFrom = null;
+    if (el && from && from.width > 0 && typeof el.animate === "function") {
+      const to = el.getBoundingClientRect();
+      if (to.width > 0 && (Math.abs(from.left - to.left) > 0.5 || Math.abs(from.width - to.width) > 0.5)) {
+        const { easing, duration } = springEasing(SLIDE);
+        el.animate(
+          [
+            { transformOrigin: "0 0", transform: `translate(${from.left - to.left}px, ${from.top - to.top}px) scaleX(${from.width / to.width})` },
+            { transformOrigin: "0 0", transform: "none" },
+          ],
+          { duration, easing }
+        );
+      }
+    }
+    return () => {
+      if (!el?.isConnected) return;
+      leftFrom = el.getBoundingClientRect();
+      // Only the bar mounted in the same commit slides from here: a later one (after a page with no active tab) just appears.
+      requestAnimationFrame(() => (leftFrom = null));
+    };
+  }, []);
+  return <span ref={ref} className={className} />;
 }
 
 export function DesktopNav() {
@@ -63,11 +102,7 @@ export function DesktopNav() {
               >
                 {t(`links.${label}`)}
                 {active && (
-                  <motion.span
-                    layoutId="nav-active"
-                    className="absolute inset-x-3 -bottom-[9px] h-[3px] bg-primary shadow-[0_0_10px_hsl(var(--primary))] xl:inset-x-3 2xl:inset-x-4"
-                    transition={{ type: "spring", stiffness: 500, damping: 38 }}
-                  />
+                  <ActiveBar className="absolute inset-x-3 -bottom-[9px] h-[3px] bg-primary shadow-[0_0_10px_hsl(var(--primary))] xl:inset-x-3 2xl:inset-x-4" />
                 )}
               </Link>
             );

@@ -1,7 +1,7 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element -- party sprites come pre-sized from /api/art */
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import Link from "@/components/ui/Link";
 import { Loader2, Search, Star, X } from "lucide-react";
 import { artUrl } from "@/lib/pokemon/art";
@@ -129,7 +129,8 @@ export function TrainerExplorer({
   }, []);
 
   const gameIdx = game ? games.findIndex((g) => g.key === game) : -1;
-  const nq = normalize(q);
+  // The box shows each key at once; the results (a scan of the whole index) follow at a lower priority.
+  const nq = normalize(useDeferredValue(q));
 
   const notableHits = useMemo(
     () =>

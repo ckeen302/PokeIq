@@ -162,9 +162,14 @@ function TeamList({ teams, activeId, onOpen }: { teams: BattleTeam[] | null; act
       !q || normalize(team.name).includes(q) || team.sets.some((s) => normalize(s.species).includes(q) || normalize(s.name).includes(q) || (names.locale !== "en" && normalize(names.species(s.species)).includes(q)));
     return BATTLE_FORMAT_IDS.map((format) => ({ format, teams: (teams ?? []).filter((team) => team.format === format && matches(team)) })).filter((f) => f.teams.length > 0);
   }, [teams, q, names]);
-  if (!teams) return null;
-  if (!teams.length) {
-    return <p className="rounded-lg border border-dashed border-foreground/15 p-4 text-sm text-muted-foreground">{t("builder.noTeams")}</p>;
+  // Until this device's teams are read (just after the page starts), the "no teams yet" note holds its place unseen,
+  // so the editor under it on a phone doesn't jump down when it arrives (a first visit has no teams).
+  if (!teams || !teams.length) {
+    return (
+      <p className={cn("rounded-lg border border-dashed border-foreground/15 p-4 text-sm text-muted-foreground", !teams && "invisible")} aria-hidden={!teams || undefined}>
+        {t("builder.noTeams")}
+      </p>
+    );
   }
   async function copyAll() {
     try {

@@ -19,6 +19,7 @@ import { HISTORY_PATH } from "@/lib/world-history/deeplink";
 import { useT } from "@/i18n/client";
 import timelineNs from "@/messages/timeline";
 import stageNs from "@/messages/timeline-stage";
+import { webglProbe } from "@/lib/gl/probe";
 
 // The intro and the era transitions load only when they are about to play.
 const TimelineIntro = lazy(() => import("./TimelineIntro"));
@@ -33,14 +34,7 @@ export interface EraStart {
 
 type Mode = "boot" | "3d" | "list";
 
-function webglOk() {
-  try {
-    const c = document.createElement("canvas");
-    return !!(c.getContext("webgl2") || c.getContext("webgl"));
-  } catch {
-    return false;
-  }
-}
+const webglOk = () => webglProbe(["webgl2", "webgl"]);
 
 function localStore(): Storage | null {
   try {
