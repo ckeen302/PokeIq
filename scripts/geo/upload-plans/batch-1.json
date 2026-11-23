@@ -1701,5 +1701,161 @@
   },
   "id": "SCLDCBr17HGa",
   "uploaded": false
+ },
+ {
+  "url": "https://www.pokewiki.de/images/5/55/Bahnhof_Illumina_City.png",
+  "sha256": "76f6a44e466c0fe59a9f9d386cc4879148a704daf8738d76bdd2d24be4c3e258",
+  "game": "X / Y",
+  "crop": {
+   "left": 0,
+   "top": 0,
+   "width": 400,
+   "height": 240
+  },
+  "id": "cBQo9Cqt3aB5",
+  "uploaded": false
+ },
+ {
+  "url": "https://www.pokewiki.de/images/9/93/Illumina_City_2.png",
+  "sha256": "7328bc3d58df9ca1195b1e366c5ffdb340cbf8bd02b327dfa8da6edda88467ad",
+  "game": "X / Y",
+  "crop": {
+   "left": 0,
+   "top": 0,
+   "width": 400,
+   "height": 240
+  },
+  "id": "k572QrcMx8vE",
+  "uploaded": false
+ },
+ {
+  "url": "https://www.pokewiki.de/images/4/4f/XY_Herbstallee_2.png",
+  "sha256": "d8f8c3428420debfe21968f457ab602498f730fe38d5ed5ac120a7c4647f3f83",
+  "game": "X / Y",
+  "crop": {
+   "left": 0,
+   "top": 0,
+   "width": 400,
+   "height": 240
+  },
+  "id": "6-TQdRU2ltqH",
+  "uploaded": false
+ },
+ {
+  "url": "https://www.pokewiki.de/images/f/fd/XY_Herbstallee.png",
+  "sha256": "b7ff162b42e12c7563073f7091ce4f31fb5a25a7294e214eb7a2e06c5c8eb830",
+  "game": "X / Y",
+  "crop": {
+   "left": 0,
+   "top": 0,
+   "width": 400,
+   "height": 240
+  },
+  "id": "gqrgXp5F_HML",
+  "uploaded": false
+ },
+ {
+  "url": "https://www.pokewiki.de/images/6/62/Haus_der_Pr%C3%BCfung.png",
+  "sha256": "fb674a91ccdc9ae6709c609d361af7de1636d77e44ae39e7d1e73b377bf3712e",
+  "game": "X / Y",
+  "crop": {
+   "left": 0,
+   "top": 0,
+   "width": 400,
+   "height": 240
+  },
+  "id": "jkWODCxrOP3C",
+  "uploaded": false
+ },
+ {
+  "url": "https://www.pokewiki.de/images/c/c9/Caf%C3%A9_Freestyle_innen.png",
+  "sha256": "0cb9f0e676ba03b9790944d50a6214c682a48bf6838ae2248b8e916a978ddc20",
+  "game": "X / Y",
+  "crop": {
+   "left": 0,
+   "top": 0,
+   "width": 400,
+   "height": 240
+  },
+  "id": "C5RuMU-7J1H5",
+  "uploaded": false
+ },
+ {
+  "url": "https://www.pokewiki.de/images/4/45/Saftbar.png",
+  "sha256": "c855f99ceada1646f77567467edc8f83a75fc40bee21d6eaf0b9bcbfd1ba1fb1",
+  "game": "X / Y",
+  "crop": {
+   "left": 0,
+   "top": 0,
+   "width": 400,
+   "height": 240
+  },
+  "id": "WsHV-pIqFw-y",
+  "uploaded": false
+ },
+ {
+  "url": "https://www.pokewiki.de/images/c/c9/Begonia_Calluna_Labor.png",
+  "sha256": "e5171bf2c41f7f09ffd7faa5e9537d35a4968695bd7335deed43eafa8201259e",
+  "game": "X / Y",
+  "crop": {
+   "left": 0,
+   "top": 0,
+   "width": 400,
+   "height": 240
+  },
+  "id": "yWomDSYobcCC",
+  "uploaded": false
+ },
+ {
+  "url": "https://www.pokewiki.de/images/d/d6/Trainer-Promo-Studio.png",
+  "sha256": "e860c3f8138bfe33a596a830a663fd2a5d5b866e870ced9bb14aa147214ac732",
+  "game": "X / Y",
+  "crop": {
+   "left": 0,
+   "top": 0,
+   "width": 400,
+   "height": 240
+  },
+  "id": "3JaNu1Gph2u9",
+  "uploaded": false
+ },
+ {
+  "url": "https://www.pokewiki.de/images/b/b0/Heilkundeladen_innen.png",
+  "sha256": "7cbf881b68d300d90f56a87b4f47786f1a0e45f6d5913a572af8feb831e440df",
+  "game": "X / Y",
+  "crop": {
+   "left": 0,
+   "top": 0,
+   "width": 400,
+   "height": 240
+  },
+  "id": "3oWwC6j-kn9t",
+  "uploaded": false
+ },
+ {
+  "url": "https://www.pokewiki.de/images/3/39/Stein-Boutique_innen.png",
+  "sha256": "6cefd39ad5ca5a6dc98c59f97b6da9721cbe7e0a412dd0a2091055a2a7edd8a9",
+  "game": "X / Y",
+  "crop": {
+   "left": 0,
+   "top": 0,
+   "width": 400,
+   "height": 240
+  },
+  "id": "5Ri1EsuRgD56",
+  "uploaded": false
+ },
+ {
+  "url": "https://www.pokewiki.de/images/0/00/XY_Fr%C3%BChlingsallee.png",
+  "sha256": "483bf864ea99e4d345fc77162e545f85c7e1d4f354c508ce225f3c8bf46b01a4",
+  "game": "X / Y",
+  "crop": {
+   "left": 0,
+   "top": 0,
+   "width": 400,
+   "height": 240
+  },
+  "id": "SYGWlFntwbD7",
+  "uploaded": false
  }
 ]

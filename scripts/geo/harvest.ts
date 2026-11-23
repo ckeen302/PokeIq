@@ -1209,11 +1209,14 @@ async function sheets(region: string, cap?: number) {
 /**
  * review.json: { "sheets": [0, 1, …] (the sheets looked at), "reject": { "3.7": "reason", … },
  * "crop": { "2.4": { "top"?: share, "bottom"?: share, "left"?: share, "right"?: share } } }.
- * Every tile on a reviewed sheet that isn't rejected is kept (after its crop).
+ * Every tile on a reviewed sheet that isn't rejected is kept (after its crop), except the
+ * tiles in "defer": [ "4.2", … ], left undecided for a later batch.
  */
 interface Review {
   sheets: number[];
   reject: Record<string, string>;
+  /** Tiles left for a later batch: neither kept nor rejected. */
+  defer?: string[];
   crop?: Record<string, { top?: number; bottom?: number; left?: number; right?: number }>;
 }
 
@@ -1259,6 +1262,7 @@ async function accept(region: string, reviewFile: string, planFile?: string) {
     const c = byKey.get(k);
     if (!c || ledger[k]?.id) continue;
     const tag = `${sheet}.${tile}`;
+    if (review.defer?.includes(tag)) continue;
     if (review.reject[tag]) {
       ledger[k] = { decision: "rejected", reason: review.reject[tag] };
       continue;

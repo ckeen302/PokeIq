@@ -32339,6 +32339,103 @@
    "game": "Scarlet / Violet",
    "source": "https://www.wikidex.net/wiki/Archivo:Plaza_Árida_EP.jpg",
    "checked": "shown on WikiDex's page \"Plaza Árida\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "cBQo9Cqt3aB5",
+   "region": "Kalos",
+   "name": "Lumiose City",
+   "game": "X / Y",
+   "source": "https://www.pokewiki.de/Datei:Bahnhof_Illumina_City.png",
+   "checked": "in pokewiki's category \"XY-Screenshot\", named after the place; XY in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "k572QrcMx8vE",
+   "region": "Kalos",
+   "name": "Lumiose City",
+   "game": "X / Y",
+   "source": "https://www.pokewiki.de/Datei:Illumina_City_2.png",
+   "checked": "shown on PokéWiki's page \"Illumina City\"; XY in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "6-TQdRU2ltqH",
+   "region": "Kalos",
+   "name": "Lumiose City",
+   "game": "X / Y",
+   "source": "https://www.pokewiki.de/Datei:XY_Herbstallee_2.png",
+   "checked": "shown on PokéWiki's page \"Herbstallee\"; XY in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "gqrgXp5F_HML",
+   "region": "Kalos",
+   "name": "Lumiose City",
+   "game": "X / Y",
+   "source": "https://www.pokewiki.de/Datei:XY_Herbstallee.png",
+   "checked": "shown on PokéWiki's page \"Herbstallee\"; XY in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "jkWODCxrOP3C",
+   "region": "Kalos",
+   "name": "Lumiose City",
+   "game": "X / Y",
+   "source": "https://www.pokewiki.de/Datei:Haus_der_Prüfung.png",
+   "checked": "shown on PokéWiki's page \"Haus der Prüfung\"; XY in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "C5RuMU-7J1H5",
+   "region": "Kalos",
+   "name": "Lumiose City",
+   "game": "X / Y",
+   "source": "https://www.pokewiki.de/Datei:Café_Freestyle_innen.png",
+   "checked": "shown on PokéWiki's page \"Sommerallee\"; XY in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "WsHV-pIqFw-y",
+   "region": "Kalos",
+   "name": "Juice Shoppe",
+   "parent": "Lumiose City",
+   "game": "X / Y",
+   "source": "https://www.pokewiki.de/Datei:Saftbar.png",
+   "checked": "shown on PokéWiki's page \"Saftbar\"; XY in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "yWomDSYobcCC",
+   "region": "Kalos",
+   "name": "Lumiose City",
+   "game": "X / Y",
+   "source": "https://www.pokewiki.de/Datei:Begonia_Calluna_Labor.png",
+   "checked": "shown on PokéWiki's page \"Labor von Flordelis\"; XY in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "3JaNu1Gph2u9",
+   "region": "Kalos",
+   "name": "Lumiose City",
+   "game": "X / Y",
+   "source": "https://www.pokewiki.de/Datei:Trainer-Promo-Studio.png",
+   "checked": "shown on PokéWiki's page \"Südring\"; XY in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "3oWwC6j-kn9t",
+   "region": "Kalos",
+   "name": "Lumiose City",
+   "game": "X / Y",
+   "source": "https://www.pokewiki.de/Datei:Heilkundeladen_innen.png",
+   "checked": "shown on PokéWiki's page \"Frühlingsallee\"; XY in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "5Ri1EsuRgD56",
+   "region": "Kalos",
+   "name": "Lumiose City",
+   "game": "X / Y",
+   "source": "https://www.pokewiki.de/Datei:Stein-Boutique_innen.png",
+   "checked": "shown on PokéWiki's page \"Frühlingsallee\"; XY in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "SYGWlFntwbD7",
+   "region": "Kalos",
+   "name": "Lumiose City",
+   "game": "X / Y",
+   "source": "https://www.pokewiki.de/Datei:XY_Frühlingsallee.png",
+   "checked": "shown on PokéWiki's page \"Frühlingsallee\"; XY in its name or category; reviewed on a contact sheet"
   }
  ]
 }
