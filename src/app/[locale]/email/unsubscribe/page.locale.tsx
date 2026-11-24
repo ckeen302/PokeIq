@@ -3,7 +3,7 @@
 import * as Source from "@/app/email/unsubscribe/page";
 import { mirrorPage } from "@/i18n/mirror";
 
-const m = mirrorPage("/email/unsubscribe", Source);
+const m = mirrorPage("/email/unsubscribe", Source, { image: { route: "/", alt: "home" } });
 
 export const dynamicParams = false;
 export const generateMetadata = m.generateMetadata;

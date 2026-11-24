@@ -3,7 +3,7 @@
 import * as Source from "@/app/pokedex/tcg/page";
 import { mirrorPage } from "@/i18n/mirror";
 
-const m = mirrorPage("/pokedex/tcg", Source);
+const m = mirrorPage("/pokedex/tcg", Source, { image: { route: "/pokedex", alt: "pokedex" } });
 
 export const dynamic = "force-dynamic";
 export const dynamicParams = true;

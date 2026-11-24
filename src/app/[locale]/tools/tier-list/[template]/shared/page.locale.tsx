@@ -3,7 +3,7 @@
 import * as Source from "@/app/tools/tier-list/[template]/shared/page";
 import { mirrorPage } from "@/i18n/mirror";
 
-const m = mirrorPage("/tools/tier-list/[template]/shared", Source);
+const m = mirrorPage("/tools/tier-list/[template]/shared", Source, { image: { route: "/", alt: "home" } });
 
 export const dynamic = "force-dynamic";
 export const dynamicParams = true;

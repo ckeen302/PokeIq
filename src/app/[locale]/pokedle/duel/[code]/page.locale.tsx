@@ -3,7 +3,7 @@
 import * as Source from "@/app/pokedle/duel/[code]/page";
 import { mirrorPage } from "@/i18n/mirror";
 
-const m = mirrorPage("/pokedle/duel/[code]", Source);
+const m = mirrorPage("/pokedle/duel/[code]", Source, { image: { route: "/pokedle/duel/[code]", alt: "pokedle_duel_code" } });
 
 export const dynamicParams = false;
 export const generateMetadata = m.generateMetadata;

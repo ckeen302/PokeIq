@@ -3,7 +3,7 @@
 import * as Source from "@/app/credits/page";
 import { mirrorPage } from "@/i18n/mirror";
 
-const m = mirrorPage("/credits", Source);
+const m = mirrorPage("/credits", Source, { image: { route: "/", alt: "home" } });
 
 export const dynamicParams = false;
 export const generateMetadata = m.generateMetadata;

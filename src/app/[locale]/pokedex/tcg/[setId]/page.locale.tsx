@@ -3,7 +3,7 @@
 import * as Source from "@/app/pokedex/tcg/[setId]/page";
 import { mirrorPage } from "@/i18n/mirror";
 
-const m = mirrorPage("/pokedex/tcg/[setId]", Source);
+const m = mirrorPage("/pokedex/tcg/[setId]", Source, { image: { route: "/pokedex/tcg/[setId]", alt: "pokedex_tcg_setId" } });
 
 export const revalidate = 21600;
 export const dynamicParams = false;
