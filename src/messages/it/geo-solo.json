@@ -246,6 +246,7 @@
     "everyone": "Le puntine di tutti",
     "answer": "La risposta",
     "making": "Creo l'immagine…",
-    "share": "Condividi questa mappa"
+    "share": "Condividi questa mappa",
+    "none": "Non ci sono ancora abbastanza puntine nel round {round}"
   }
 }

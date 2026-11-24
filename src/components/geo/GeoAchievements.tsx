@@ -32,6 +32,9 @@ const GROUP_ICON: Record<GeoAchievementGroup, typeof Award> = {
   weekly: Award,
 };
 
+/** An achievement's icon (its group's), for a medal. */
+export const achievementIcon = (id: string) => GROUP_ICON[geoAchievement(id)?.group ?? "precision"];
+
 /** One badge: its icon (lit once earned), name, what it takes, and how far along. */
 function AchievementItem({ state, t }: { state: GeoAchievementState; t: RecordT }) {
   const n = useT(geoNamesNs);

@@ -33,9 +33,9 @@ const ICONS: Record<string, LucideIcon> = {
   "conn-featured": Star,
 };
 
-/** Gym-badge style medal: metallic octagon with an icon. */
-export function BadgeMedal({ id, unlocked = true, size = "md" }: { id: string; unlocked?: boolean; size?: "sm" | "md" }) {
-  const Icon = ICONS[id] ?? Medal;
+/** Gym-badge style medal: metallic octagon with an icon (the badge's own, or `icon`: a PokéGuessr achievement's). */
+export function BadgeMedal({ id, unlocked = true, size = "md", icon }: { id: string; unlocked?: boolean; size?: "sm" | "md"; icon?: LucideIcon }) {
+  const Icon = icon ?? ICONS[id] ?? Medal;
   return (
     <span
       className={cn(

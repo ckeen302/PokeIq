@@ -122,9 +122,25 @@ async function playGame(page, opts) {
     if (await playRound(page, { ...opts, label: `${opts.label} round ${r + 1}`, edit, shot: r === 0 ? opts.shot : undefined })) edit = false;
   }
   if (edit) opts.fail(`${opts.label}: no round took more than one pin, so pin editing went untested`);
+  // The end screen (PokéGuessr's, GeoGuessr's): the total over the dimmed map, the bar, BREAKDOWN and NEXT; no side panel.
   await page.getByTestId("hunt-results").waitFor();
-  const total = await shown(page, "hunt-results-total").innerText();
+  await page.waitForTimeout(1800);
+  const total = await page.getByTestId("hunt-results").getByTestId("geo-results-total").innerText();
   if (!/\d/.test(total)) fail(opts, `the results say "${total}"`);
+  if (await page.getByTestId("hunt-results-panel").count()) fail(opts, "the results still have a side panel");
+  if (!(await page.getByTestId("geo-end-bar").isVisible())) fail(opts, "the end screen has no score bar");
+  for (const id of ["hunt-again", "geo-breakdown-toggle"]) if (!(await page.getByTestId(id).isVisible())) fail(opts, `the end screen has no ${id}`);
+  // BREAKDOWN: a round's spots and lines on the map, the tracker with every round; another round picked there shows it.
+  await page.getByTestId("geo-breakdown-toggle").click();
+  await page.getByTestId("geo-end-tracker").waitFor();
+  if ((await page.locator("[data-testid^=geo-end-round-]").count()) !== 5) fail(opts, "the breakdown's tracker doesn't hold the five rounds");
+  const before = await page.getByTestId("hunt-results-focus").innerText();
+  const other = (await page.getByTestId("geo-end-round-1").getAttribute("aria-pressed")) === "true" ? 2 : 1;
+  await page.getByTestId(`geo-end-round-${other}`).click();
+  if ((await page.getByTestId("hunt-results-focus").innerText()) === before) fail(opts, "picking another round in the tracker didn't show it");
+  if (!(await page.getByTestId("hunt-reveal-layer").count())) fail(opts, "the breakdown's map shows no spots");
+  await page.getByTestId("geo-breakdown-toggle").click();
+  await page.waitForTimeout(500);
 }
 const fail = (opts, msg) => opts.fail(`${opts.label}: ${msg}`);
 
@@ -183,7 +199,8 @@ export async function runHunt({ browser, BASE, OUT, errors, step }) {
       await page.screenshot({ path: `${OUT}/hunt-round-phone.png` });
       await playGame(page, { phone: true, fail: f, label: "daily", shot: `${OUT}/hunt-reveal-phone.png` });
       if (!(await page.getByTestId("hunt-share-button").isVisible())) f("the Daily's results have no share button");
-      if ((await page.getByTestId("hunt-share-grid").locator("li").count()) !== 5) f("the share grid doesn't have a row per round");
+      if ((await page.getByTestId("hunt-share").getByTestId("geo-share-squares").locator(":scope > span").count()) !== 5) f("the share card's squares don't have a row per round");
+      if (!/Pokémon Hunt #\d+/.test((await page.getByTestId("hunt-share").getAttribute("data-share")) ?? "")) f("the Daily's share text has no title");
       await page.screenshot({ path: `${OUT}/hunt-results-phone.png`, fullPage: true });
       // The same Daily for everyone: a second player gets the same first Pokémon.
       const other = await open(browser, { width: 390, height: 844 }, true);

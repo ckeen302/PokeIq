@@ -246,6 +246,7 @@
     "everyone": "Chinchetas de todos",
     "answer": "La respuesta",
     "making": "Creando la imagen…",
-    "share": "Compartir este mapa"
+    "share": "Compartir este mapa",
+    "none": "Aún no hay suficientes chinchetas en la ronda {round}"
   }
 }

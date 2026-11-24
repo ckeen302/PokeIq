@@ -246,6 +246,7 @@
     "everyone": "Les repères de tous",
     "answer": "La réponse",
     "making": "Création de l'image…",
-    "share": "Partager cette carte"
+    "share": "Partager cette carte",
+    "none": "Pas encore assez de repères sur la manche {round}"
   }
 }
