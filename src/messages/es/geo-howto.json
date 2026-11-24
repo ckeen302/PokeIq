@@ -20,7 +20,6 @@
     "labelDesktop": "Demostración de una ronda: una captura de Pokémon ocupa la pantalla, el mapa de la esquina se amplía, se coloca una chincheta y se pulsa Adivinar; el resultado traza una línea hasta el lugar real y puntúa {score} de {max}",
     "labelPhone": "Demostración de una ronda: una captura de Pokémon ocupa la pantalla, se abre el mapa, se coloca una chincheta y se pulsa Adivinar; el resultado traza una línea hasta el lugar real y puntúa {score} de {max}",
     "round": "Ronda {n}",
-    "score": "Puntos",
     "tapMove": "Toca otra vez para mover tu chincheta",
     "tapPlace": "Toca el mapa para poner tu chincheta",
     "spotOn": "¡Clavado!",

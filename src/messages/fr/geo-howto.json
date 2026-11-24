@@ -20,7 +20,6 @@
     "labelDesktop": "Démo d’une manche : une capture Pokémon remplit l’écran, la carte dans le coin s’agrandit, un repère est placé et on appuie sur Valider ; le résultat trace une ligne jusqu’au vrai lieu et rapporte {score} sur {max}",
     "labelPhone": "Démo d’une manche : une capture Pokémon remplit l’écran, la carte s’ouvre, un repère est placé et on appuie sur Valider ; le résultat trace une ligne jusqu’au vrai lieu et rapporte {score} sur {max}",
     "round": "Manche {n}",
-    "score": "Score",
     "tapMove": "Touche à nouveau pour déplacer ton repère",
     "tapPlace": "Touche la carte pour placer ton repère",
     "spotOn": "En plein dans le mille !",

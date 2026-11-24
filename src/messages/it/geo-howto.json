@@ -20,7 +20,6 @@
     "labelDesktop": "Demo di un round: uno screenshot Pokémon riempie lo schermo, la mappa nell’angolo si allarga, si piazza una puntina e si preme Indovina; il risultato traccia una linea fino al punto reale e vale {score} su {max}",
     "labelPhone": "Demo di un round: uno screenshot Pokémon riempie lo schermo, si apre la mappa, si piazza una puntina e si preme Indovina; il risultato traccia una linea fino al punto reale e vale {score} su {max}",
     "round": "Round {n}",
-    "score": "Punti",
     "tapMove": "Tocca di nuovo per spostare la puntina",
     "tapPlace": "Tocca la mappa per mettere la puntina",
     "spotOn": "In pieno!",

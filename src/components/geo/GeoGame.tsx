@@ -1945,7 +1945,7 @@ function RoundReveal({
                 <p className={cn("hud-label", graded.hit ? "!text-[#9be15d]" : "!text-[#ff5a5a]")}>
                   {graded.hit ? (isWorld ? t("reveal.rightRegion") : t("reveal.correct")) : isWorld ? t("reveal.wrongRegion") : t("reveal.over")}
                 </p>
-                <p className="flex items-center justify-center gap-2 font-display text-4xl font-bold italic md:justify-start">
+                <p className="flex items-center justify-center gap-2 font-display text-4xl font-bold italic md:justify-start md:text-3xl lg:text-4xl">
                   {graded.hit ? <Check className="h-8 w-8 text-[#9be15d]" aria-hidden /> : <X className="h-8 w-8 text-[#ff5a5a]" aria-hidden />}
                   {graded.hit ? t("reveal.inARow", { n: streak }) : t("reveal.final", { n: streak })}
                 </p>
@@ -1991,7 +1991,7 @@ function RoundReveal({
               type="button"
               onClick={onNext}
               data-testid="geo-next"
-              className="flex h-12 w-full max-w-xs items-center justify-center gap-2 rounded-md bg-[#4cbb17] px-6 font-display text-base font-bold uppercase tracking-wider text-white shadow-lg transition-[background-color,transform] hover:bg-[#58d01c] active:scale-[0.98]"
+              className="flex min-h-12 w-full max-w-xs items-center justify-center gap-2 rounded-md bg-[#4cbb17] px-6 py-1.5 font-display text-base leading-tight font-bold uppercase tracking-wider text-white shadow-lg transition-[background-color,transform] hover:bg-[#58d01c] active:scale-[0.98]"
             >
               {graded.done ? (isStreak ? t("reveal.results") : t("reveal.summary")) : t("reveal.next")} ▶
               <kbd aria-hidden className="ml-1 hidden rounded border border-white/40 px-1.5 text-[10px] font-normal normal-case sm:inline [@media(pointer:coarse)]:!hidden">{t("reveal.space")}</kbd>
