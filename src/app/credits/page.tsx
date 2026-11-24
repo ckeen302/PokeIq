@@ -1,17 +1,13 @@
 import { BackButton } from "@/components/ui/BackButton";
 import type { Metadata } from "next";
-import { languageAlternates } from "@/i18n/metadata";
+import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
 import { serverT } from "@/i18n/server";
 import credits from "@/messages/credits";
 import site from "@/messages/site";
 
 export function generateMetadata(): Metadata {
   const t = serverT(credits);
-  return {
-    title: t("title"),
-    description: t("description"),
-    alternates: { canonical: "/credits", languages: languageAlternates("/credits") },
-  };
+  return pageMetadata({ title: t("title"), description: t("description"), path: "/credits", image: SHARE_IMAGES.site });
 }
 
 const LINK = "underline underline-offset-2 hover:text-foreground";
@@ -43,7 +39,7 @@ export default function CreditsPage() {
     <article className="mx-auto max-w-2xl space-y-8">
       <BackButton href="/" />
       <header className="space-y-2">
-        <h1 className="font-display text-4xl font-bold uppercase tracking-tight">{t("title")}</h1>
+        <h1 className="break-words font-display text-4xl font-bold uppercase tracking-tight">{t("title")}</h1>
         <p className="text-sm text-muted-foreground">
           {s("footer.disclaimer")}
         </p>

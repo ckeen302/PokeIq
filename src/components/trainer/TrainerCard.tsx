@@ -217,7 +217,7 @@ export function TrainerCard({ local }: { local?: TrainerLocal } = {}) {
               >
                 <BadgeMedal id={b.id} unlocked={unlocked} />
                 <div className="min-w-0">
-                  <div className="truncate text-sm font-semibold max-sm:whitespace-normal">{bt(`${b.id as keyof typeof badgesNs.en & string}.name`)}</div>
+                  <div className="text-sm font-semibold">{bt(`${b.id as keyof typeof badgesNs.en & string}.name`)}</div>
                   <div className="text-[11px] leading-tight text-muted-foreground max-[479px]:text-xs">{bt(`${b.id as keyof typeof badgesNs.en & string}.description`)}</div>
                 </div>
               </div>
