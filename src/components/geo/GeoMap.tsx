@@ -118,8 +118,8 @@ const CROP_WAIT_MS = 1500;
 const LOCKED_ROOM = 1.04;
 /** A reveal never zooms closer than this many world pixels across (a handful of towns). */
 const REVEAL_MIN_BOX = 260;
-/** The line draws itself over this long before the camera moves. */
-export const LINE_DRAW_MS = 600;
+/** The line draws itself over this long before the camera moves (globals.css's .geo-line: 0.05 s, then 0.45 s). */
+export const LINE_DRAW_MS = 400;
 
 /** Where a revealed round's flag stands: the exact spot when the shot has one, else the place's pin. */
 const flagAt = (answer: RevealedRound["answer"]): [number, number] => answer.spot ?? answer.pin;

@@ -213,6 +213,17 @@ class Blip extends Error {}
  * error (0.5 s, 1 s, 2 s apart). A guess is safe to send twice: the server
  * answers an identical one with the same result.
  */
+/** When this tab last reached the guess endpoint (a guess, or a wake-up). */
+let guessApiAt = 0;
+/** A server function sleeps after a few idle minutes; one woken a little before the guess answers it without the wait. */
+const GUESS_WARM_AFTER_MS = 4 * 60 * 1000;
+/** Wakes the guess endpoint as a round starts, unless it was used in the last few minutes. */
+function warmGuess() {
+  if (Date.now() - guessApiAt < GUESS_WARM_AFTER_MS) return;
+  guessApiAt = Date.now();
+  void fetch("/api/geo/guess", { method: "GET", cache: "no-store" }).catch(() => undefined);
+}
+
 async function postRetrying<T>(url: string, body: unknown, waits = [500, 1000, 2000]): Promise<T> {
   for (let i = 0; ; i++) {
     try {
@@ -969,7 +980,9 @@ function GeoGameInner({
       // Kept until it's answered: a reload sends the very same guess again, and the server answers it the same way.
       pendingGuess.current = body;
       save({ pending: body });
+      guessApiAt = Date.now();
       const graded = await postRetrying<GeoGuessResponse>("/api/geo/guess", body);
+      guessApiAt = Date.now();
       pendingGuess.current = null;
       const nextPlayed = [...played, { guess: pick, graded, shot: game.round.shot }];
       setPlayed(nextPlayed);
@@ -1085,6 +1098,10 @@ function GeoGameInner({
     if (clock && game && phase === "guessing") save({ clock });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- saved when the clock starts or stops
   }, [clock]);
+  // Each round wakes the guess endpoint if it has slept, so the score comes back without a cold start.
+  useEffect(() => {
+    if (roundShot && phase === "guessing") warmGuess();
+  }, [roundShot, phase]);
   // A stopped clock goes on from the time it had left, once the server has started it again and the round's picture is up.
   useEffect(() => {
     if (!roundShot || stoppedLeft === undefined || paused || !shotReady || !timer) return;
@@ -1893,9 +1910,11 @@ function ModeCard({
 }
 
 /** The camera fits the guess and the answer this long (ms), after the line has drawn. */
-const FIT_MS = 800;
-/** The score counts up over this long once the camera has settled. */
-const SCORE_COUNT_MS = 1000;
+const FIT_MS = 650;
+/** The score counts up over this long, from the moment the result shows (GeoGuessr's: no wait for the camera). */
+const SCORE_COUNT_MS = 900;
+/** The score starts counting this soon after the result shows. */
+const SCORE_DELAY_MS = 100;
 
 /**
  * The round result, GeoGuessr's October 2026 classic layout: a full-bleed
@@ -1933,7 +1952,7 @@ function RoundReveal({
   const reduced = useReducedMotion();
   const LearnCard = loaded.LearnCard ?? LazyLearn;
   const ReportShot = loaded.ReportShot ?? LazyReport;
-  const countDelay = reduced ? 0 : LINE_DRAW_MS + FIT_MS * 0.6;
+  const countDelay = reduced ? 0 : SCORE_DELAY_MS;
   const shown = useCountUp(graded.score, SCORE_COUNT_MS, countDelay, true);
   const isStreak = game.kind === "streak";
   const isWorld = isWorldwide(game.region.id);
@@ -2016,7 +2035,7 @@ function RoundReveal({
           </div>
 
           {/* The distance pill and the place. */}
-          <motion.div {...rise(reduced ? 0 : (LINE_DRAW_MS + FIT_MS) / 1000)} className="flex min-w-0 flex-col items-center gap-2">
+          <motion.div {...rise(reduced ? 0 : (LINE_DRAW_MS + 150) / 1000)} className="flex min-w-0 flex-col items-center gap-2">
             <span className="inline-flex items-center gap-2 rounded-full border-2 border-[#a99cff] bg-[#4cbb17] px-4 py-1.5 font-display text-sm font-bold uppercase italic tracking-wide text-white shadow-lg" data-testid="geo-distance">
               <MapPinIcon className="h-4 w-4" aria-hidden />
               {graded.timedOut ? t("reveal.timeUp") : distanceText(graded.answer.squares, t)}
