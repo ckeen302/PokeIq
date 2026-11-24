@@ -1758,9 +1758,22 @@ function GeoGameInner({
         {({ fs, toggle }) => (
           <>
             {guessView?.(fs, toggle)}
-            {phase === "revealed" && current && game && (
+            {/* The result shows the moment Guess is pressed (the pin on the result map), and fills in as the answer comes back. */}
+            {((phase === "revealed" && current) || phase === "submitting") && game && (
               <div className="absolute inset-0 z-[40] bg-[#0f0d1f]">
-                <RoundReveal key={roundNow} game={game} current={current} scores={played.map((p) => p.graded.score)} round={roundNow} streak={streak} pinImage={pinImage} onNext={next} onExit={requestExit} t={t} names={names} />
+                <RoundReveal
+                  key={game.round.index}
+                  game={game}
+                  current={current ?? { guess: pick, graded: null, shot: game.round.shot }}
+                  scores={current ? played.map((p) => p.graded.score) : [...played.map((p) => p.graded.score), 0]}
+                  round={current ? roundNow : roundNow + 1}
+                  streak={streak}
+                  pinImage={pinImage}
+                  onNext={next}
+                  onExit={requestExit}
+                  t={t}
+                  names={names}
+                />
               </div>
             )}
             {(phase === "loading" || (!shotReady && !shotFailed && phase === "guessing" && game?.round.index === 0 && !readyShot)) && (
@@ -1936,7 +1949,8 @@ function RoundReveal({
   names,
 }: {
   game: Game;
-  current: Played;
+  /** The round's guess, and its answer once the server has sent it (null while it's on its way). */
+  current: Omit<Played, "graded"> & { graded: GeoGuessResponse | null };
   /** Every round's score so far, this one last. */
   scores: number[];
   round: number;
@@ -1949,21 +1963,32 @@ function RoundReveal({
 }) {
   const fmt = (n: number) => formatNumber(n, t.locale);
   const { graded, guess: g } = current;
+  // Shown before the answer came: the pin is already standing, so it doesn't drop again when the line comes.
+  const waited = useRef(!graded).current;
+  const score = graded?.score ?? 0;
   const reduced = useReducedMotion();
   const LearnCard = loaded.LearnCard ?? LazyLearn;
   const ReportShot = loaded.ReportShot ?? LazyReport;
   const countDelay = reduced ? 0 : SCORE_DELAY_MS;
-  const shown = useCountUp(graded.score, SCORE_COUNT_MS, countDelay, true);
+  const shown = useCountUp(score, SCORE_COUNT_MS, countDelay, true);
   const isStreak = game.kind === "streak";
   const isWorld = isWorldwide(game.region.id);
   const roundNumber = Math.min(game.rounds, round);
-  const bar = { initial: { width: 0 }, animate: { width: `${(graded.score / GEO_MAX_ROUND_SCORE) * 100}%` }, transition: { duration: reduced ? 0 : SCORE_COUNT_MS / 1000, delay: reduced ? 0 : countDelay / 1000, ease: "easeOut" as const } };
+  const bar = { initial: { width: 0 }, animate: { width: `${(score / GEO_MAX_ROUND_SCORE) * 100}%` }, transition: { duration: reduced ? 0 : SCORE_COUNT_MS / 1000, delay: reduced ? 0 : countDelay / 1000, ease: "easeOut" as const } };
   const rise = (delay: number) => ({ initial: reduced ? false : { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.35, delay: reduced ? 0 : delay, ease: [0.2, 0.8, 0.2, 1] as const } });
   return (
-    <div className="relative flex h-full flex-col md:block" data-testid="geo-reveal">
+    <div className="relative flex h-full flex-col md:block" data-testid={graded ? "geo-reveal" : "geo-reveal-waiting"}>
       {/* Phone: the map takes what the bottom bar leaves, so the camera frames both pins in view. */}
       <div className="relative min-h-0 flex-1 md:absolute md:inset-x-0 md:top-0 md:bottom-[6.75rem]">
-        <GeoMap region={game.region} revealed={[{ guess: g, answer: graded.answer, image: pinImage }]} fit={{ delay: LINE_DRAW_MS, duration: FIT_MS }} fill controls={false} />
+        <GeoMap
+          region={game.region}
+          revealed={graded ? [{ guess: g, answer: graded.answer, image: pinImage, still: waited }] : []}
+          pick={graded ? null : g}
+          pinImage={pinImage}
+          fit={{ delay: LINE_DRAW_MS, duration: FIT_MS }}
+          fill
+          controls={false}
+        />
       </div>
       <div className="geo-safe-tl absolute left-3 top-3 z-20">
         <ExitButton onClick={onExit} />
@@ -1999,7 +2024,20 @@ function RoundReveal({
         <div className="mx-auto grid max-w-6xl items-center gap-3 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 sm:gap-6 sm:px-6 md:grid-cols-[1fr_auto_1fr]">
           {/* The score (or the streak) and its bar. */}
           <div className="min-w-0 text-center md:text-left">
-            {isStreak ? (
+            {!graded ? (
+              <>
+                <p className="hud-label !text-[#c8bfff]">&nbsp;</p>
+                <p className="geo-glow font-display text-4xl font-bold italic tabular-nums text-white/40 sm:text-5xl" data-testid="geo-round-score-waiting">
+                  {isStreak ? "…" : <>{fmt(0)} <span className="text-lg not-italic text-white/30">{t("hud.pts")}</span></>}
+                </p>
+                {!isStreak && (
+                  <div className="mt-1.5 flex items-center gap-2">
+                    <div className="meter h-2 flex-1 !bg-black/40" />
+                    <span className="font-pixel text-[9px] text-white/50">{fmt(GEO_MAX_ROUND_SCORE)}</span>
+                  </div>
+                )}
+              </>
+            ) : isStreak ? (
               <>
                 <p className={cn("hud-label", graded.hit ? "!text-[#9be15d]" : "!text-[#ff5a5a]")}>
                   {graded.hit ? (isWorld ? t("reveal.rightRegion") : t("reveal.correct")) : isWorld ? t("reveal.wrongRegion") : t("reveal.over")}
@@ -2023,7 +2061,7 @@ function RoundReveal({
                 </div>
               </>
             )}
-            {graded.gameGuess && (
+            {graded?.gameGuess && (
               <p className={cn("mt-1 text-sm font-semibold", graded.gameGuess.correct ? "text-[#9be15d]" : "text-white/60")} data-testid="geo-game-bonus">
                 {graded.gameGuess.correct
                   ? t("reveal.rightGame", { bonus: fmt(graded.gameGuess.bonus) })
@@ -2035,30 +2073,35 @@ function RoundReveal({
           </div>
 
           {/* The distance pill and the place. */}
-          <motion.div {...rise(reduced ? 0 : (LINE_DRAW_MS + 150) / 1000)} className="flex min-w-0 flex-col items-center gap-2">
+          {graded ? <motion.div {...rise(reduced ? 0 : (LINE_DRAW_MS + 150) / 1000)} className="flex min-w-0 flex-col items-center gap-2">
             <span className="inline-flex items-center gap-2 rounded-full border-2 border-[#a99cff] bg-[#4cbb17] px-4 py-1.5 font-display text-sm font-bold uppercase italic tracking-wide text-white shadow-lg" data-testid="geo-distance">
               <MapPinIcon className="h-4 w-4" aria-hidden />
               {graded.timedOut ? t("reveal.timeUp") : distanceText(graded.answer.squares, t)}
             </span>
             {/* The learn card: the place, its game, one fact from the Pokédex's place data, and where to read more. */}
             <LearnCard answer={graded.answer} shot={current.shot} map={game.region} learn={graded.learn} />
-          </motion.div>
+          </motion.div> : <div className="max-md:h-[141px]" aria-hidden />}
 
-          {/* Next, with its hotkey, and the report link. */}
-          <div className="flex flex-col items-center gap-1.5 md:items-end">
-            <button
-              type="button"
-              onClick={onNext}
-              data-testid="geo-next"
-              className="flex min-h-12 w-full max-w-xs items-center justify-center gap-2 rounded-md bg-[#4cbb17] px-6 py-1.5 font-display text-base leading-tight font-bold uppercase tracking-wider text-white shadow-lg transition-[background-color,transform] hover:bg-[#58d01c] active:scale-[0.98]"
-            >
-              {graded.done ? (isStreak ? t("reveal.results") : t("reveal.summary")) : t("reveal.next")} ▶
-              <kbd aria-hidden className="ml-1 hidden rounded border border-white/40 px-1.5 text-[10px] font-normal normal-case sm:inline [@media(pointer:coarse)]:!hidden">{t("reveal.space")}</kbd>
-            </button>
-            <div className="text-white/60 [&_button]:text-white/60 [&_button:hover]:text-white">
-              <ReportShot key={current.shot} shot={current.shot} mode={game.daily ? "daily" : "solo"} />
-            </div>
-          </div>
+          {/* Next, with its hotkey, and the report link: they come with the answer (and the place), so nothing in the bar shifts. */}
+          {graded ? (
+            <motion.div {...rise(0)} className="flex flex-col items-center gap-1.5 md:items-end">
+              <button
+                type="button"
+                onClick={onNext}
+                data-testid="geo-next"
+                className="flex min-h-12 w-full max-w-xs items-center justify-center gap-2 rounded-md bg-[#4cbb17] px-6 py-1.5 font-display text-base leading-tight font-bold uppercase tracking-wider text-white shadow-lg transition-[background-color,transform] hover:bg-[#58d01c] active:scale-[0.98]"
+              >
+                {graded.done ? (isStreak ? t("reveal.results") : t("reveal.summary")) : t("reveal.next")} ▶
+                <kbd aria-hidden className="ml-1 hidden rounded border border-white/40 px-1.5 text-[10px] font-normal normal-case sm:inline [@media(pointer:coarse)]:!hidden">{t("reveal.space")}</kbd>
+              </button>
+              <div className="text-white/60 [&_button]:text-white/60 [&_button:hover]:text-white">
+                <ReportShot key={current.shot} shot={current.shot} mode={game.daily ? "daily" : "solo"} />
+              </div>
+            </motion.div>
+          ) : (
+            // A phone's bar keeps the room they take (the map above it is sized by it), so the map doesn't jump when they come.
+            <div className="max-md:h-[78px]" aria-hidden />
+          )}
         </div>
       </motion.div>
     </div>
