@@ -27,7 +27,7 @@ export function BattleHeader({
   return (
     <div className={compact ? "space-y-1.5" : "space-y-2"}>
       <BackButton href={back} className="mb-1" />
-      <nav aria-label="Breadcrumb" className="hud-label flex items-center gap-1.5">
+      <nav aria-label={t("header.breadcrumb")} className="hud-label flex items-center gap-1.5">
         <Link href="/battle" className="tap text-screen hover:text-foreground max-sm:-my-3 max-sm:py-3">
           {t("header.battle")}
         </Link>

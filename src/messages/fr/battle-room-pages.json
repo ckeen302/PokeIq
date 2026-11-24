@@ -1,6 +1,7 @@
 {
   "header": {
-    "battle": "Combat"
+    "battle": "Combat",
+    "breadcrumb": "Fil d’Ariane"
   },
   "play": {
     "title": "Combat contre l’ordinateur"
