@@ -941,7 +941,8 @@ await openGeoSetup(page);
 await page.getByRole("button", { name: /5-round game/ }).click();
 await playGeoRounds(5);
 await page.getByText("Survey complete").waitFor();
-await page.getByRole("button", { name: /Challenge a friend/ }).waitFor();
+// The end screen's share card offers the challenge (the link replays the same places).
+await page.getByTestId("geo-share-card").filter({ hasText: /Challenge a friend/ }).waitFor();
 await page.screenshot({ path: `${OUT}/guessr-summary.png`, fullPage: true });
 if (!geoChallenge) throw new Error("no PokéGuessr challenge token");
 
@@ -1024,7 +1025,7 @@ step("pokéguessr: friend accepts the challenge");
 await gotoSettled(page, `${BASE}/pokeguessr/c/${encodeURIComponent(geoChallenge)}`);
 await page.getByRole("button", { name: /Accept challenge/ }).click();
 await playGeoRounds(5);
-await page.getByText(/You beat|wins this one|Dead heat/).waitFor();
+await page.getByTestId("geo-end-challenge").filter({ hasText: /You beat|wins? this one|Dead heat/ }).waitFor();
 await page.screenshot({ path: `${OUT}/guessr-challenge-result.png`, fullPage: true });
 
 step("pokéguessr: 3-round game (picked rounds)");
@@ -1042,7 +1043,7 @@ await playGeoRounds(3);
 await page.getByText("Survey complete").waitFor();
 page.off("response", countGuess);
 if (geoPlayed !== 3) throw new Error(`a 3-round game took ${geoPlayed} guesses`);
-await page.getByText(/out of 15,000/).waitFor();
+await page.getByText(/of 15,000 points/i).waitFor();
 await page.screenshot({ path: `${OUT}/guessr-3-round-summary.png`, fullPage: true });
 
 step("pokéguessr: Hard game is practice, with a Wordle-style result card to copy");
@@ -1063,10 +1064,10 @@ page.off("response", readStart);
 if (hardStart?.practice !== "difficulty") throw new Error(`a Hard game should be practice, got ${hardStart?.practice}`);
 await page.getByText("Survey complete").waitFor();
 await page.getByText(/Easy and Hard games are practice/).waitFor();
-const geoCard = await page.getByTestId("geo-share-preview").innerText();
+const geoCard = (await page.getByTestId("geo-share-card").getAttribute("data-share")) ?? "";
 if (!/PokéGuessr .*· Hard/.test(geoCard) || !/[🟩🟨🟧🟥]{5}/u.test(geoCard)) throw new Error(`result card looks wrong: ${geoCard}`);
-await page.getByTestId("geo-copy-result").click();
-await page.getByTestId("geo-share-card").filter({ hasText: /Copied!|Couldn.t copy/ }).waitFor();
+await page.getByTestId("geo-share").click();
+await page.getByTestId("geo-share").filter({ hasText: /Copied!|Shared!/ }).or(page.getByText(/Couldn.t copy/)).first().waitFor();
 await page.screenshot({ path: `${OUT}/guessr-hard-summary.png`, fullPage: true });
 
 step("pokéguessr: world globe card opens the 3D globe (canvas, or the no-WebGL fallback)");
@@ -1226,8 +1227,11 @@ for (let i = 0; i < 5; i++) {
 }
 await page.getByText("Survey complete").waitFor();
 await page.screenshot({ path: `${OUT}/guessr-2d-summary.png`, fullPage: true });
-await page.getByRole("button", { name: /Play again/ }).click();
+// NEXT: back to the hub, where Play again is.
+await page.getByTestId("geo-results-again").click();
+await page.getByTestId("geo-hub").waitFor();
 if (await page.getByTestId("geo-guess-game").count()) errors.push("PokéGuessr still offers Guess the game too");
+if (!(await page.getByTestId("geo-era-all").isVisible())) await openGeoSetup(page);
 await page.getByTestId("geo-era-all").click();
 
 // Two trainers in two browsers: Red opens a duel on Kanto, Blue joins from the link.
