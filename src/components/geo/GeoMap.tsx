@@ -161,7 +161,9 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
   // Very tall or wide maps sit in a box of sensible proportions.
   const aspect = mapAspect(region);
   const toWorld = (x: number, y: number): [number, number] => [x0 + x * bw, y0 + y * bh];
-  const locked = region.id !== WORLD_REGION;
+  // Only a region's own crop is locked (framed, the rest dimmed). The world and every map drawn on the whole world (a themed map,
+  // like the Weekly's) are the same whole world: one crop, one zoom, the same names and dots.
+  const locked = region.id !== WORLD_REGION && region.map.src !== WORLD_MAP;
   /**
    * First paint: the region's own crop of the map (a few dozen KB), or a small
    * copy of the world, drawn over the canvas until the 580 KB world map has
@@ -208,7 +210,7 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
     // A map of the whole world (the world itself, a themed map) opens on its land, filling the card.
     const wholeWorld = x0 <= 0 && y0 <= 0 && x1 >= atlas.W && y1 >= atlas.H;
     const e = createAtlas(canvas, stage, atlas, WORLD_MAP, {
-      bounds: region.id === WORLD_REGION ? undefined : box,
+      bounds: locked ? box : undefined,
       // "fit" (the desktop dock): zoomed in like GeoGuessr's, the same zoom when the box grows, and never further out than the land
       // filling the box; true (the phone card): the land fills the card.
       home: land && wholeWorld ? dockHome(landBox(atlas), land === "fit") : undefined,
@@ -261,7 +263,7 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
       e.destroy();
       engine.current = null;
     };
-  }, [atlas, cropPainted, region.id, x0, y0, x1, y1, land]);
+  }, [atlas, cropPainted, region.id, locked, x0, y0, x1, y1, land]);
 
   // A new round on the same map: back to where it started.
   const firstRound = useRef(round);

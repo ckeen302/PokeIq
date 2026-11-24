@@ -3,7 +3,7 @@
 import * as Source from "@/app/tools/favorite-pokemon-picker/shared/page";
 import { mirrorPage } from "@/i18n/mirror";
 
-const m = mirrorPage("/tools/favorite-pokemon-picker/shared", Source);
+const m = mirrorPage("/tools/favorite-pokemon-picker/shared", Source, { image: { route: "/", alt: "home" } });
 
 export const dynamic = "force-dynamic";
 export const dynamicParams = true;

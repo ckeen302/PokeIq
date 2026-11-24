@@ -18,6 +18,7 @@
     "best": "Best {score}",
     "bestRow": "Best {n} in a row",
     "played": "Played",
+    "result": "See your result",
     "atlas": "World Atlas",
     "challenge": {
       "tag": "Challenge",
@@ -52,9 +53,9 @@
       "title": "Daily game",
       "scored": "You scored {score} today.",
       "blurb": "Today's places, the same for everyone.",
-      "again": "Play again",
       "play": "Play today's",
-      "resume": "Resume Daily {num}"
+      "resume": "Resume Daily {num}",
+      "started": "Today's Daily was already started in this browser or on your account. It's one game a day."
     },
     "weekly": {
       "numbered": "Weekly #{n}",
@@ -66,8 +67,10 @@
       "m": "{m}m",
       "scored": "You scored {score} this week.",
       "blurb": "This week's map, the same for everyone.",
-      "again": "Replay for practice",
-      "play": "Play this week's"
+      "play": "Play this week's",
+      "resume": "Resume Weekly #{n}",
+      "started": "This week's Weekly Challenge was already started in this browser or on your account. It's one game a week.",
+      "next": "Next Weekly in {left}"
     },
     "mode": {
       "game": "{n}-round game",

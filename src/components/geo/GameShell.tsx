@@ -1,6 +1,6 @@
 "use client";
 
-import { cloneElement, isValidElement, useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, cloneElement, isValidElement, useCallback, useEffect, useRef, useState } from "react";
 import { Check, Expand, Hourglass, MapPinned, Maximize, Minimize, Pin, PinOff, Shrink, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useT } from "@/i18n/client";
@@ -51,8 +51,8 @@ export function GameShell({ children, onExit, className }: { children: (api: Ful
       if (document.fullscreenElement) return;
       const t = e.target as HTMLElement | null;
       if (t?.closest("input, textarea, select")) return;
-      // An open dialog (the zoomed screenshot, the phone's map sheet) takes Escape first.
-      if (document.querySelector('[role="dialog"]:not([aria-hidden="true"])')) return;
+      // An open dialog (the zoomed screenshot, the phone's map sheet) takes Escape first; a closed one (the site's More sheet) is inert.
+      if (document.querySelector('[role="dialog"]:not([aria-hidden="true"]):not([inert])')) return;
       exitRef.current?.();
     };
     document.addEventListener("fullscreenchange", onChange);
@@ -101,9 +101,10 @@ export function FullscreenButton({ fs, onClick, className }: { fs: boolean; onCl
 
 /**
  * "Leave this game?": asked before Exit, Escape or Back ends a game under way.
- * Escape (or a tap outside) keeps playing.
+ * Escape (or a tap outside) keeps playing. The Daily and the Weekly say they're
+ * saved (their round's clock stops where it is), any other game that it isn't.
  */
-export function ConfirmExit({ daily, onLeave, onStay }: { daily?: boolean; onLeave: () => void; onStay: () => void }) {
+export function ConfirmExit({ daily, weekly, onLeave, onStay }: { daily?: boolean; weekly?: boolean; onLeave: () => void; onStay: () => void }) {
   const t = useT(geoNs);
   const stay = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -127,7 +128,7 @@ export function ConfirmExit({ daily, onLeave, onStay }: { daily?: boolean; onLea
         data-testid="geo-confirm-exit"
       >
         <p id="geo-leave-title" className="font-display text-xl font-bold uppercase italic">{t("shell.leaveTitle")}</p>
-        <p className="mt-1.5 text-sm text-white/70">{daily ? t("shell.leaveDaily") : t("shell.leaveBody")}</p>
+        <p className="mt-1.5 text-sm text-white/70">{daily ? t("shell.leaveDaily") : weekly ? t("shell.leaveWeekly") : t("shell.leaveBody")}</p>
         <div className="mt-4 grid grid-cols-2 gap-2">
           <button type="button" onClick={onLeave} className="h-11 rounded-md bg-white/10 font-display text-sm font-bold uppercase tracking-wider text-white transition-colors hover:bg-white/20" data-testid="geo-leave">
             {t("shell.leave")}
@@ -228,7 +229,7 @@ export function ScoreTracker({ scores, current, total, rounds, className }: {
   const cols = Math.min(rounds, 5);
   return (
     <div className={cn("flex items-stretch overflow-hidden rounded-lg bg-[#1e1a3f]/90 text-white shadow-lg ring-1 ring-white/10 backdrop-blur", className)} data-testid="geo-score-chip" role="group" aria-label={`${t("round")} ${current + 1}/${rounds}, ${t("scoreTotal")} ${total}`}>
-      <span className="flex w-5 rotate-180 items-center justify-center bg-[#6c5ce7]/35 font-display text-[9px] font-bold uppercase tracking-[0.2em] text-[#c8bfff] [writing-mode:vertical-rl] xl:w-6 xl:text-[10px]" aria-hidden>
+      <span className="flex w-5 rotate-180 items-center justify-center bg-[#6c5ce7]/35 font-display text-[8px] font-bold uppercase leading-none tracking-[0.1em] text-[#c8bfff] [writing-mode:vertical-rl] xl:w-6 xl:text-[9px]" aria-hidden>
         {t("round")}
       </span>
       <ol className="grid gap-px p-1" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }} aria-hidden>
@@ -296,8 +297,6 @@ const boxHeight = (h: string) => `min(max(${h}, ${MIN_H}px), calc(100vh - 9rem))
 /* v2: everyone starts again at GeoGuessr's size (an older remembered XL no longer carries over). */
 const SIZE_KEY = "pokeiq:geo-map-size-v2";
 const STICKY_KEY = "pokeiq:geo-map-sticky-v2";
-/** The map shrinks back this long after the pointer leaves (unless pinned). */
-const COLLAPSE_MS = 600;
 
 function readSize(): MapSize {
   try {
@@ -377,11 +376,9 @@ export function MapDock({
   const [size, setSize] = useState<MapSize>("s");
   const [sticky, setSticky] = useState(false);
   const [hot, setHot] = useState(false);
-  const leaveTimer = useRef<number | undefined>(undefined);
   useEffect(() => {
     setSize(readSize());
     setSticky(readSticky());
-    return () => window.clearTimeout(leaveTimer.current);
   }, []);
 
   const chooseSize = (next: MapSize) => {
@@ -394,13 +391,21 @@ export function MapDock({
       return !s;
     });
   };
-  const warm = () => {
-    window.clearTimeout(leaveTimer.current);
-    setHot(true);
+  // Open the moment the pointer is over it, and back to the corner size the moment it leaves (unless pinned), as quick both ways.
+  const over = useRef(false);
+  const warm = () => setHot(true);
+  const enter = () => {
+    over.current = true;
+    warm();
   };
-  const cool = () => {
-    window.clearTimeout(leaveTimer.current);
-    leaveTimer.current = window.setTimeout(() => setHot(false), COLLAPSE_MS);
+  const leave = () => {
+    over.current = false;
+    setHot(false);
+  };
+  // Focus moving between its own buttons, or leaving while the pointer is still on it, keeps it open.
+  const blur = (e: React.FocusEvent<HTMLDivElement>) => {
+    if (over.current || e.currentTarget.contains(e.relatedTarget as Node | null)) return;
+    setHot(false);
   };
 
   if (phone) return <PhoneMap resetKey={resetKey} map={map} button={button} extra={extra} hasPin={hasPin} tools={tools} testId={testId} hint={hint} />;
@@ -420,17 +425,18 @@ export function MapDock({
       // Its margins, the gap and the guess button scale with the window like GeoGuessr's (32, 16, 14 and 38 px in a 1710×987 window).
       className="geo-dock absolute z-10 flex flex-col transition-[width] duration-[250ms] ease-out [&_[data-testid=geo-guess]]:h-[3.85vh] [&_[data-testid=geo-guess]]:whitespace-nowrap [&_[data-testid=geo-guess]]:text-[1.62vh]"
       style={{ width: boxWidth(box.w), right: "1.87vw", bottom: "1.62vh", gap: "1.42vh" }}
-      onPointerOver={warm}
-      onPointerLeave={cool}
+      onPointerOver={enter}
+      onPointerLeave={leave}
       onFocusCapture={warm}
-      onBlurCapture={cool}
+      onBlurCapture={blur}
     >
       <div className="relative transition-[height] duration-[250ms] ease-out" style={{ height: boxHeight(box.h) }}>
         {/* The corner map's zoom buttons (small, top left) show once it's open: at rest they'd cover the names, and hovering opens it anyway. */}
         <div className={cn("h-full overflow-hidden rounded-md border-2 border-foreground/20 shadow-2xl [&_[data-map-controls]]:left-[0.6vh] [&_[data-map-controls]]:right-auto [&_[data-map-controls]]:top-[0.6vh] [&_[data-map-controls]]:gap-[0.4vh]", open ? "[&_[data-map-controls]>button]:h-[2.25vh] [&_[data-map-controls]>button]:w-[2.25vh] [&_[data-map-controls]_svg]:h-[1.2vh] [&_[data-map-controls]_svg]:w-[1.2vh]" : "[&_[data-map-controls]]:hidden")}>
           {map({ fill: true, land: "fit" })}
         </div>
-        <div className={cn("absolute bottom-full left-0 z-[2] mb-[0.81vh] flex gap-[0.4vh] transition-opacity duration-200", open ? "opacity-100" : "pointer-events-none opacity-0")} role="group" aria-label={t("dock.size")}>
+        {/* The row spans the map's width and its gap is padding, so the pointer stays on the dock between the map and these buttons. */}
+        <div className={cn("absolute inset-x-0 bottom-full z-[2] flex gap-[0.4vh] pb-[0.81vh] transition-opacity duration-200", open ? "opacity-100" : "pointer-events-none opacity-0")} role="group" aria-label={t("dock.size")}>
           <button type="button" className={control} onClick={() => chooseSize(MAP_SIZES[Math.min(MAP_SIZES.length - 1, idx + 1)])} disabled={idx >= MAP_SIZES.length - 1} aria-label={t("dock.bigger")} title={t("dock.bigger")} data-testid="geo-map-grow">
             <Expand className="h-3.5 w-3.5" />
           </button>
@@ -652,10 +658,16 @@ export function RoundBadge({ label: given, value, of, mode, testId }: { label?: 
         <span className="flex h-7 min-w-7 items-center justify-center rounded-full rounded-br-sm bg-[#6c5ce7] px-1.5 font-display text-sm font-bold text-white shadow-inner">{value}</span>
         {of !== undefined && <span className="font-display text-xs font-semibold text-white/50">/{of}</span>}
       </div>
-      {/* The map and the mode (Daily #, Weekly #, difficulty), small under the badge. */}
+      {/* The map and the mode (Daily #, Weekly #, difficulty), small under the badge: a long one wraps rather than being cut off. */}
       {mode && (
-        <span className="max-w-full truncate rounded-md bg-[#1e1a3f]/70 px-2 py-0.5 font-display text-[10px] font-semibold uppercase tracking-[0.12em] text-[#c8bfff] backdrop-blur" data-testid="geo-round-mode">
-          {mode}
+        <span className="line-clamp-2 max-w-full rounded-md bg-[#1e1a3f]/70 px-2 py-0.5 text-right font-display text-[10px] font-semibold uppercase leading-snug tracking-[0.12em] text-[#c8bfff] backdrop-blur" data-testid="geo-round-mode">
+          {/* It breaks between the parts ("Towns and Cities · / Weekly #5"), never inside one. */}
+          {mode.split(" · ").map((part, i) => (
+            <Fragment key={i}>
+              {i > 0 && " · "}
+              <span className="whitespace-nowrap">{part}</span>
+            </Fragment>
+          ))}
         </span>
       )}
     </div>

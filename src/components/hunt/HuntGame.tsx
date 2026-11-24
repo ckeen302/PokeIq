@@ -5,6 +5,7 @@ import { useT } from "@/i18n/client";
 import huntNs from "@/messages/hunt";
 import { localDateString } from "@/lib/daily";
 import { play, unlockAudio } from "@/lib/sound";
+import { useGuessrMusic } from "@/lib/use-guessr-music";
 import { useGeoNames } from "@/lib/geo-i18n-client";
 import { WORLD_REGION, type GeoRegionInfo } from "@/lib/geo-types";
 import type { MapPin } from "@/components/geo/GeoMap";
@@ -112,6 +113,8 @@ export function HuntGame({ maps }: { maps: GeoRegionInfo[] }) {
   const regionName = useCallback((id: string) => names.region(id[0].toUpperCase() + id.slice(1)), [names]);
 
   const [phase, setPhase] = useState<Phase>("hub");
+  // PokéGuessr's music plays while a hunt is on (from a mode's Play, through its rounds and their reveals), not in the menus or on the final results.
+  useGuessrMusic(phase === "starting" || phase === "playing" || phase === "grading" || phase === "reveal");
   const [busyMode, setBusyMode] = useState<HuntMode | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [game, setGame] = useState<Game | null>(null);
@@ -221,14 +224,14 @@ export function HuntGame({ maps }: { maps: GeoRegionInfo[] }) {
     if (msLeft === 0 && phase === "playing") void submit(true);
   }, [msLeft, phase, submit]);
 
-  // Space hunts once a pin is down, as PokéGuessr's Guess (the reveal binds its own keys).
+  // Space or Enter hunts once a pin is down, as PokéGuessr's Guess (the reveal binds its own keys).
   const anyPin = pins.some(Boolean);
   useEffect(() => {
     if (phase !== "playing") return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.code !== "Space" || !anyPin) return;
+      if ((e.code !== "Space" && e.key !== "Enter") || !anyPin) return;
       if ((e.target as HTMLElement | null)?.closest("input, textarea, select, button, a")) return;
-      if (document.querySelector('[role="dialog"]:not([aria-hidden="true"])')) return;
+      if (document.querySelector('[role="dialog"]:not([aria-hidden="true"]):not([inert])')) return;
       e.preventDefault();
       void submit();
     };
@@ -356,7 +359,8 @@ export function HuntGame({ maps }: { maps: GeoRegionInfo[] }) {
             />
           )}
           {error && phase === "playing" && <HuntState kind="error" message={error} onRetry={() => setError(null)} onBack={leave} />}
-          {confirmExit && <ConfirmExit daily={!!game.daily} onLeave={leave} onStay={() => setConfirmExit(false)} />}
+          {/* Pokémon Hunt's Daily isn't kept when it's left: the plain line ("This game won't be saved"). */}
+          {confirmExit && <ConfirmExit onLeave={leave} onStay={() => setConfirmExit(false)} />}
         </>
       )}
     </GameShell>

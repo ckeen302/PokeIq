@@ -3,7 +3,7 @@
 import * as Source from "@/app/tools/shiny-maker/page";
 import { mirrorPage } from "@/i18n/mirror";
 
-const m = mirrorPage("/tools/shiny-maker", Source);
+const m = mirrorPage("/tools/shiny-maker", Source, { image: { route: "/", alt: "home" } });
 
 export const dynamicParams = false;
 export const generateMetadata = m.generateMetadata;

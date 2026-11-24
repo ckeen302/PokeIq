@@ -8,7 +8,8 @@
     "loading": "Runde wird geladen",
     "leaveTitle": "Dieses Spiel verlassen?",
     "leaveBody": "Dieses Spiel wird nicht gespeichert.",
-    "leaveDaily": "Du kannst das heutige Tagesspiel über seine Karte fortsetzen.",
+    "leaveDaily": "Dein Tagesspiel ist gespeichert, mit der restlichen Zeit auf der Uhr. Du kannst heute zurückkommen und es beenden.",
+    "leaveWeekly": "Deine Wochen-Challenge ist gespeichert, mit der restlichen Zeit auf der Uhr. Du kannst diese Woche zurückkommen und sie beenden.",
     "leave": "Verlassen",
     "stay": "Weiterspielen"
   },
@@ -105,9 +106,11 @@
     "correct": "Richtig",
     "missed": "Verfehlt",
     "again": "Nochmal spielen",
+    "nextDaily": "Nächstes Tagesspiel in",
     "shareAndBoard": "Teilen & Bestenliste"
   },
   "scoreTotal": "Gesamt",
   "roundOf": "Runde {n}/{of}",
+  "roundN": "Runde {n}",
   "retry": "Erneut versuchen"
 }

@@ -44,7 +44,7 @@ describe("share images in every language", () => {
       const relDir = relative(APP, dirname(file)).split("\\").join("/");
       const key = altKey(relDir);
       keys.add(key);
-      expect(existsSync(join(APP, "[locale]", relDir, "opengraph-image.locale.tsx")), file).toBe(true);
+      expect(existsSync(join(APP, "[locale]", relDir, "share-image", "route.locale.ts")), file).toBe(true);
       const src = readFileSync(file, "utf8");
       const m = /^export const alt = (?:"((?:[^"\\]|\\.)*)"|CHALLENGE_ALT);/m.exec(src);
       expect(m, file).not.toBeNull();

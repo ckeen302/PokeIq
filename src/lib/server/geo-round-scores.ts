@@ -118,6 +118,8 @@ export interface RoundScoreStore {
   ofPlayer(key: string, limit?: number): Promise<PlayerRoundRow[]>;
   /** Daily rounds' pins (world map 0–1) on these screenshots logged in [since, until) ms, oldest first, for the crowd map. */
   dailyPins?(shots: readonly string[], since: number, until: number): Promise<DailyPinRow[]>;
+  /** Whether a trainer has a daily round on one of these screenshots logged in [since, until) ms. */
+  playedDaily?(key: string, shots: readonly string[], since: number, until: number): Promise<boolean>;
 }
 /** A daily round's pin, as the crowd map reads it: the trainer's key only to keep one pin each, never sent on. */
 export interface DailyPinRow {
@@ -199,6 +201,10 @@ export function memoryRoundScoreStore(): RoundScoreStore {
           return pin ? [{ shot: r.shot, pin, player: playerKeyOf(r.player) }] : [];
         })
         .slice(0, CROWD_ROWS);
+    },
+    async playedDaily(key, shots, since, until) {
+      const want = new Set(shots);
+      return mem().some((r) => r.mode === "daily" && playerKeyOf(r.player) === key && want.has(r.shot) && r.at >= since && r.at < until);
     },
   };
 }
@@ -330,6 +336,20 @@ export function supabaseRoundScoreStore(sb: Sb): RoundScoreStore {
         return pin ? [{ shot: r.shot_id, pin, player: r.player_key }] : [];
       });
     },
+    async playedDaily(key, shots, since, until) {
+      if (!shots.length) return false;
+      const { data, error } = await sb
+        .from("geo_round_scores")
+        .select("shot_id")
+        .eq("player_key", key)
+        .eq("mode", "daily")
+        .in("shot_id", [...shots])
+        .gte("created_at", new Date(since).toISOString())
+        .lt("created_at", new Date(until).toISOString())
+        .limit(1);
+      check(error);
+      return (data?.length ?? 0) > 0;
+    },
   };
 }
 
@@ -347,6 +367,24 @@ export async function logRoundScore(row: RoundScoreRow, store = roundScoreStore(
     await store.insert(row);
   } catch (err) {
     if (!(err instanceof Unavailable)) console.error("[geo-round-scores] not logged:", err);
+  }
+}
+
+const DAY_MS = 86_400_000;
+/**
+ * Whether a trainer (their key) has had a round of a date's Daily graded: one
+ * of its screenshots logged as a daily round while that Daily could be played
+ * (a day either side of its date, for every time zone). False when rounds
+ * aren't stored, or can't be read (it never stops a game).
+ */
+export async function playedDailyRound(key: string, date: string, shots: readonly string[], store = roundScoreStore()): Promise<boolean> {
+  const midnight = Date.parse(`${date}T00:00:00Z`);
+  if (!store?.playedDaily || !shots.length || Number.isNaN(midnight)) return false;
+  try {
+    return await store.playedDaily(key, shots, midnight - DAY_MS, midnight + 2 * DAY_MS);
+  } catch (err) {
+    if (!(err instanceof Unavailable)) console.error("[geo-round-scores] daily rounds not read:", err);
+    return false;
   }
 }
 

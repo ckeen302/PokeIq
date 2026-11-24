@@ -20,7 +20,6 @@
     "labelDesktop": "Demo einer Runde: Ein Pokémon-Screenshot füllt den Bildschirm, die Karte in der Ecke wird größer, eine Nadel wird gesetzt und „Tippen“ gedrückt; das Ergebnis zieht eine Linie zum echten Ort und bringt {score} von {max}",
     "labelPhone": "Demo einer Runde: Ein Pokémon-Screenshot füllt den Bildschirm, die Karte öffnet sich, eine Nadel wird gesetzt und „Tippen“ gedrückt; das Ergebnis zieht eine Linie zum echten Ort und bringt {score} von {max}",
     "round": "Runde {n}",
-    "score": "Punkte",
     "tapMove": "Tippe erneut, um deine Nadel zu versetzen",
     "tapPlace": "Tippe auf die Karte, um deine Nadel zu setzen",
     "spotOn": "Volltreffer!",

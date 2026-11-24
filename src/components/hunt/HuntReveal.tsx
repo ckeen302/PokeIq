@@ -144,7 +144,7 @@ export function HuntReveal(p: HuntRevealProps) {
       if (e.key !== " " && e.key !== "Enter") return;
       const el = e.target as HTMLElement | null;
       if (el?.closest("button, a, input, textarea, select")) return;
-      if (document.querySelector('[role="dialog"]:not([aria-hidden="true"])')) return;
+      if (document.querySelector('[role="dialog"]:not([aria-hidden="true"]):not([inert])')) return;
       e.preventDefault();
       if (live.current.running) skip();
       else live.current.onNext();
@@ -205,7 +205,8 @@ export function HuntReveal(p: HuntRevealProps) {
         <Notch>
           <div className="text-center">
             <div className="whitespace-nowrap font-display text-xl font-bold uppercase italic leading-none tracking-wide sm:text-2xl">
-              {g("round")} {p.roundIndex + 1}
+              {g("roundN", { n: p.roundIndex + 1 })}
+              <span className="text-white/50">/{p.rounds}</span>
             </div>
             <div className="mt-0.5 whitespace-nowrap font-display text-[11px] font-semibold uppercase tracking-[0.14em] text-[#c8bfff]">{p.modeLine}</div>
           </div>

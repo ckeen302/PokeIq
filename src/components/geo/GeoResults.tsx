@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import { Check, ChevronDown, Crown, RotateCcw, X } from "lucide-react";
+import { ArrowLeft, Check, ChevronDown, Crown, RotateCcw, X } from "lucide-react";
 import { GEO_MAX_ROUND_SCORE, type GeoGuessResponse, type GeoKind, type GeoRegionInfo } from "@/lib/geo-types";
 import { isWorldwide } from "@/lib/geo-themes";
 import { placeLabel, squaresText } from "@/lib/geo-names";
@@ -12,9 +12,11 @@ import { Button } from "@/components/ui/button";
 import { GeoMap, type MapPin, type RevealedRound } from "./GeoMap";
 import { ExitButton, GameShell, Notch } from "./GameShell";
 import { ShareResultLink } from "./ShareResultLink";
+import { NextDailyCountdown } from "@/components/NextDailyCountdown";
 import { useT } from "@/i18n/client";
 import { formatNumber } from "@/i18n/format";
 import geoNs from "@/messages/geo";
+import commonNs from "@/messages/common";
 import { useGeoNames } from "@/lib/geo-i18n-client";
 
 /** What the results map needs of a finished game: the map and the rounds as graded. */
@@ -23,6 +25,8 @@ export interface ResultsGame {
   kind: GeoKind;
   rounds: number;
   daily?: string;
+  /** The Weekly Challenge's week: like the Daily, played once. */
+  weekly?: string;
 }
 export interface ResultsRound {
   guess: MapPin | null;
@@ -66,20 +70,25 @@ export function GeoResults({
   pinImage,
   shareToken,
   onRestart,
+  next,
   children,
 }: {
   game: ResultsGame;
   played: ResultsRound[];
   pinImage?: string;
+  /** Under Back, when the next one comes (the Weekly's; the Daily's is built in). */
+  next?: React.ReactNode;
   /** A signed result, for the result page's link and preview card. */
   shareToken?: string;
   onRestart: () => void;
   children?: React.ReactNode;
 }) {
   const t = useT(geoNs);
+  const common = useT(commonNs);
   const names = useGeoNames();
   const fmt = (n: number) => formatNumber(n, t.locale);
   const isStreak = game.kind === "streak";
+  const once = !!(game.daily || game.weekly);
   const isWorld = isWorldwide(game.region.id);
   const scores = played.map((p) => p.graded.score);
   const total = scores.reduce((s, x) => s + x, 0);
@@ -216,8 +225,10 @@ export function GeoResults({
               </ol>
 
               <div className="grid gap-2 sm:grid-cols-2">
+                {/* The Daily and the Weekly are played once: no Play again, back to the hub. */}
                 <Button size="lg" variant="success" onClick={onRestart} data-testid="geo-results-again">
-                  <RotateCcw className="h-4 w-4" aria-hidden />{` ${t("results.again")}`}
+                  {once ? <ArrowLeft className="h-4 w-4" aria-hidden /> : <RotateCcw className="h-4 w-4" aria-hidden />}
+                  {` ${once ? common("back") : t("results.again")}`}
                 </Button>
                 {shareToken ? (
                   <ShareResultLink token={shareToken} />
@@ -227,6 +238,7 @@ export function GeoResults({
                   </Button>
                 )}
               </div>
+              {game.daily ? <NextDailyCountdown label={t("results.nextDaily")} /> : next}
             </div>
 
             {children && (

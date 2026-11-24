@@ -812,6 +812,8 @@ export interface GeoState {
   roundAt?: number;
   /** Streaks: the player's seen screenshots (packSeen), so each next round is planned as at the start. */
   seen?: string;
+  /** The Daily and the Weekly: time spent away (left and come back to), kept out of the game's duration. */
+  paused?: number;
 }
 
 /** What a challenge link carries: the seed (so the same places come up) and the friend's result. */
@@ -895,6 +897,13 @@ export function geoDailyFirstShot(date: string): { shot: string; blur?: string; 
   if (!first) return null;
   const blur = shotBlur(first.shot);
   return { shot: shotUrl(first.shot), ...(blur ? { blur } : {}), sharpTo: sharpTo(first.shot, lookup(spec, first).shot.family) };
+}
+
+/** The Daily's screenshots on a date (the same for everyone), so an account's logged rounds can tell whether it was played. */
+export function geoDailyShots(date: string): string[] {
+  const spec: GeoSpec = { region: geoDailyRegion(date, isGeoSpec({ region: WORLD_REGION, kind: "game" })), kind: "game", daily: date };
+  if (!isGeoSpec(spec)) return [];
+  return dealRounds(spec, `geo-daily:${date}`, undefined).rounds.map((r) => r.shot);
 }
 
 /**
@@ -999,10 +1008,98 @@ export function startGeo(
   return { token: signToken("geo", state), round: publicRound(spec, 0, rounds[0], state.timer ? undefined : rounds[1]) };
 }
 
-export function readGeo(token: unknown): GeoState | null {
+export function readGeo(token: unknown, now = Date.now()): GeoState | null {
   const state = verifyToken<GeoState>("geo", token);
-  if (!state || state.v !== 4 || Date.now() - state.startedAt > STATE_TTL_MS) return null;
+  if (!state || state.v !== 4 || !geoStateLive(state, now)) return null;
   return isGeoSpec(state.spec) ? state : null;
+}
+
+/**
+ * A game's state lasts three hours. The Daily's and the Weekly's last as long
+ * as they can be graded: each can be started only once, so one left part
+ * played is finished later that day (or week), from where it was.
+ */
+function geoStateLive(state: Pick<GeoState, "startedAt" | "spec">, now: number): boolean {
+  if (now - state.startedAt <= STATE_TTL_MS) return true;
+  if (state.spec.daily) return isValidDailyDate(state.spec.daily, now);
+  if (state.spec.weekly) return isGeoWeek(state.spec.weekly) && now <= geoWeeklyEndsAt(state.spec.weekly) + STATE_TTL_MS;
+  return false;
+}
+
+// ---------------------------------------------------------------------------
+// The Daily and the Weekly: left and come back to, the round's clock stopped
+// ---------------------------------------------------------------------------
+
+/** A game kept for its day or week: started once, and left and picked up again with its round's clock where it was. */
+export const geoKept = (spec: Pick<GeoSpec, "daily" | "weekly">) => !!(spec.daily || spec.weekly);
+
+/**
+ * A round's clock, stopped as the player left: the time the server has
+ * counted on it (`used`, from when it was dealt, the round result read before
+ * it included), and the time the player's own clock showed (`left`), never
+ * more than the round's clock or than what the server's own clock allows.
+ */
+export interface GeoPause {
+  sid: string;
+  /** The round (0-based): the game's log length when it was stopped. */
+  round: number;
+  used: number;
+  left: number;
+  /** When it was stopped. */
+  at: number;
+  /** When the round went on from it: the same resume sent again soon after (its answer lost) gets the same answer. */
+  resumedAt?: number;
+}
+/** A resume sent again within this long of the first goes on from the same pause; after it, the pause is spent. */
+export const GEO_RESUME_AGAIN_MS = 30_000;
+
+const roundsOver = (state: GeoState) => state.log.length >= geoRoundsOf(state.spec);
+
+/**
+ * Stops a kept game's round clock: `left` is what the player's clock showed
+ * (ms; left out when it hadn't started, as with a round result still being
+ * read). The server's count comes from its own clock, so a pause can't win
+ * back time it has already counted. Null for a game that isn't kept, has no
+ * clock, or is over.
+ */
+export function pauseGeo(state: GeoState, left: number | undefined, now = Date.now()): GeoPause | null {
+  if (!geoKept(state.spec) || !state.timer || roundsOver(state)) return null;
+  const clock = state.timer * 1000;
+  const used = Math.max(0, now - (state.roundAt ?? state.startedAt));
+  const shown = Math.min(clock, Math.max(0, Number.isFinite(left) ? Math.round(left!) : clock));
+  return { sid: state.sid, round: state.log.length, used, left: Math.max(0, Math.min(shown, clock + GEO_TIMER_GRACE_MS - used)), at: now };
+}
+
+/**
+ * Starts a kept game's round clock again. With the pause the server made for
+ * this very round, the round goes on from it: the state's round time moves on
+ * by the time away (so a guess is graded on the time played, as if it had
+ * never been left) and `left` is the time the clock showed. The pause is then
+ * spent (`keep` marks when it was used: the same resume sent again within
+ * GEO_RESUME_AGAIN_MS gets the same answer, never more time). Without one
+ * (the pause never reached the server, or it's spent), the server's clock
+ * never stopped: `left` is what it still allows, and the state is unchanged.
+ */
+export function resumeGeo(
+  state: GeoState,
+  pause: GeoPause | null | undefined,
+  now = Date.now()
+): { token: string; left: number; resumed: boolean; keep: GeoPause | null } {
+  const clock = (state.timer ?? 0) * 1000;
+  const roundAt = state.roundAt ?? state.startedAt;
+  if (pause && pause.sid === state.sid && pause.round === state.log.length && pause.at <= now && !roundsOver(state)) {
+    const from = pause.resumedAt ?? now;
+    if (now - from <= GEO_RESUME_AGAIN_MS) {
+      const keep: GeoPause = { ...pause, resumedAt: from };
+      const left = Math.max(0, pause.left - (now - from));
+      // A token already going on from this pause (its answer came back): as it is.
+      if (roundAt >= from - pause.used) return { token: signToken("geo", state), left, resumed: true, keep };
+      const next: GeoState = { ...state, roundAt: from - pause.used, paused: (state.paused ?? 0) + (from - pause.at) };
+      return { token: signToken("geo", next), left, resumed: true, keep };
+    }
+  }
+  const used = Math.max(0, now - roundAt);
+  return { token: signToken("geo", state), left: Math.max(0, Math.min(clock, clock + GEO_TIMER_GRACE_MS - used)), resumed: false, keep: null };
 }
 
 export type GeoGuessOutcome =
@@ -1070,7 +1167,7 @@ export function gradeGeo(state: GeoState, guess: { x: number; y: number; family?
       score: total,
       ...(bonusTotal !== undefined ? { bonus: bonusTotal } : {}),
       rounds: next.log.map((s, i) => ({ score: s, name: rounds[i].location })),
-      durationMs: Math.max(1, now - state.startedAt),
+      durationMs: Math.max(1, now - state.startedAt - (state.paused ?? 0)),
       finishedAt: now,
     };
     if (!streak) {

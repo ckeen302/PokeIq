@@ -170,7 +170,8 @@ export function Hero({ data, form, onFormChange, types, abilities }: HeroProps) 
             <p className="hud-label text-screen">
               {t("no", { n: String(p.id).padStart(4, "0") })} · {p.genus}
             </p>
-            <h1 className="font-display text-5xl font-bold uppercase tracking-tight sm:text-6xl">{form?.name ?? p.name}</h1>
+            {/* A name with a word of 11 letters or more (Crabominable, Brambleghast) is a size smaller on a phone, so it fits the card. */}
+            <h1 className={cn("break-words font-display text-5xl font-bold uppercase tracking-tight sm:text-6xl", longestWord(form?.name ?? p.name) >= 11 && "max-sm:text-4xl")}>{form?.name ?? p.name}</h1>
             {(local ? local.english : p.names.ja) && <p className="mt-1 text-base text-muted-foreground">{local ? local.english : p.names.ja}</p>}
           </m.div>
 
@@ -372,3 +373,5 @@ function PokeballWatermark() {
     </m.svg>
   );
 }
+
+const longestWord = (s: string) => Math.max(0, ...s.split(/\s+/).map((w) => w.length));

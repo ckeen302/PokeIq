@@ -6,7 +6,7 @@ import Link from "@/components/ui/Link";
 import { jsonLd, pageMetadata } from "@/lib/seo";
 import { dexBreadcrumbs, dexDescription, dexSummary, dexTitle } from "@/lib/pokemon/dex-seo";
 import { POKEDEX, artworkUrl, getPokemonBySlug } from "@/lib/pokemon/pokedex";
-import { getDexEntry } from "@/lib/pokemon/details";
+import { englishDexEntry, getDexEntry } from "@/lib/pokemon/details";
 import { DexEntry } from "@/components/pokedex/entry/DexEntry";
 import { SpritesSection } from "@/components/pokedex/entry/SpritesSection";
 import { dexSpriteColumns } from "@/lib/pokemon/dex-sprites";
@@ -54,7 +54,7 @@ export default async function PokemonPage({ params }: PageProps) {
   if (!p) notFound();
   const t = serverT(pageNs);
   const locale = getLocale();
-  const data = locale === "en" ? getDexEntry(p) : localizeDexEntry(getDexEntry(p), locale);
+  const data = locale === "en" ? englishDexEntry(getDexEntry(p)) : localizeDexEntry(getDexEntry(p), locale);
   const cards = await cardLinksForDex(p.id, 6);
   const name = data.core.name;
   const typeName = locale === "en" ? capitalize : (ty: string) => typeNames(locale)[ty];
@@ -81,7 +81,7 @@ export default async function PokemonPage({ params }: PageProps) {
       </ClientMessages>
       <section className="mx-auto mt-10 max-w-3xl space-y-3 text-sm text-muted-foreground" aria-label={t("about", { name })}>
         <h2 className="font-display text-base font-bold uppercase tracking-wider text-foreground">{t("summary", { name })}</h2>
-        <p>{locale === "en" ? dexSummary(p) : localDexSummary(p, locale)}</p>
+        <p>{locale === "en" ? dexSummary(p, data.abilities) : localDexSummary(p, locale)}</p>
         <p className="flex flex-wrap gap-x-4 gap-y-1">
           <Link href="/quiz/whos-that-pokemon" className="underline-offset-2 hover:text-foreground hover:underline">{t("whosThat")}</Link>
           <Link href="/battle/teams" className="underline-offset-2 hover:text-foreground hover:underline">{t("teams")}</Link>

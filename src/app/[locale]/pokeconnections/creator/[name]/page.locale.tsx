@@ -3,7 +3,7 @@
 import * as Source from "@/app/pokeconnections/creator/[name]/page";
 import { mirrorPage } from "@/i18n/mirror";
 
-const m = mirrorPage("/pokeconnections/creator/[name]", Source);
+const m = mirrorPage("/pokeconnections/creator/[name]", Source, { image: { route: "/pokeconnections", alt: "pokeconnections" } });
 
 export const dynamic = "force-dynamic";
 export const dynamicParams = true;

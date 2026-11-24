@@ -10,10 +10,10 @@
   },
   "title": {
     "practice": "Entraînement",
-    "daily": "Défi du jour nº {n}",
-    "dailyStats": "Défi du jour nº {n} · Stats",
-    "archive": "Défi du jour nº {n} · Archives ({date})",
-    "loading": "Défi du jour"
+    "daily": "Quotidien n° {n}",
+    "dailyStats": "Quotidien n° {n} · Stats",
+    "archive": "Quotidien n° {n} · Archives ({date})",
+    "loading": "Quotidien"
   },
   "formats": {
     "label": "Format du défi du jour",
@@ -145,7 +145,7 @@
     "solvedIn": "Trouvé en {n}",
     "missed": "Raté",
     "inProgress": "En cours · {n}/{max}",
-    "daily": "{status} (défi du jour)"
+    "daily": "{status} (quotidien)"
   },
   "community": {
     "label": "Comment tout le monde s'en est sorti aujourd'hui",

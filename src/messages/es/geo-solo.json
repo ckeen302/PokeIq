@@ -18,6 +18,7 @@
     "best": "Récord {score}",
     "bestRow": "Récord: {n} seguidos",
     "played": "Jugado",
+    "result": "Ver tu resultado",
     "atlas": "Atlas del mundo",
     "challenge": {
       "tag": "Reto",
@@ -52,9 +53,9 @@
       "title": "Partida diaria",
       "scored": "Hoy has hecho {score}.",
       "blurb": "Los lugares de hoy, iguales para todos.",
-      "again": "Jugar otra vez",
       "play": "Jugar la de hoy",
-      "resume": "Retomar Diaria {num}"
+      "resume": "Retomar Diaria {num}",
+      "started": "Ya empezaste la Diaria de hoy en este navegador o en tu cuenta. Es una partida al día."
     },
     "weekly": {
       "numbered": "Semanal n.º {n}",
@@ -66,8 +67,10 @@
       "m": "{m} min",
       "scored": "Esta semana has hecho {score}.",
       "blurb": "El mapa de esta semana, igual para todos.",
-      "again": "Repetir para practicar",
-      "play": "Jugar la de esta semana"
+      "play": "Jugar la de esta semana",
+      "resume": "Retomar Semanal n.º {n}",
+      "started": "Ya empezaste el Reto semanal de esta semana en este navegador o en tu cuenta. Es una partida a la semana.",
+      "next": "Próximo Semanal en {left}"
     },
     "mode": {
       "game": "Partida de {n} rondas",

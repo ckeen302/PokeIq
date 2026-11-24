@@ -8,7 +8,8 @@
     "loading": "Chargement de la manche",
     "leaveTitle": "Quitter cette partie ?",
     "leaveBody": "Cette partie ne sera pas enregistrée.",
-    "leaveDaily": "Tu pourras reprendre le Quotidien du jour depuis sa carte.",
+    "leaveDaily": "Ton Quotidien est enregistré, avec le temps qu'il te restait. Tu peux revenir le terminer aujourd'hui.",
+    "leaveWeekly": "Ton Défi de la semaine est enregistré, avec le temps qu'il te restait. Tu peux revenir le terminer cette semaine.",
     "leave": "Quitter",
     "stay": "Continuer"
   },
@@ -105,9 +106,11 @@
     "correct": "Correct",
     "missed": "Raté",
     "again": "Rejouer",
+    "nextDaily": "Prochain Quotidien dans",
     "shareAndBoard": "Partage et classement"
   },
   "scoreTotal": "Total",
   "roundOf": "Manche {n}/{of}",
+  "roundN": "Manche {n}",
   "retry": "Réessayer"
 }

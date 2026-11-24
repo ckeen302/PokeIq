@@ -199,3 +199,31 @@ export function ShotCarousel({
     </div>
   );
 }
+
+/**
+ * A duel's or a party's round picture, fitted the way ShotCarousel fits a
+ * solo round's: edge to edge, except a tall shot, shown whole over a blurred
+ * copy of itself; small pixel art scaled up without blurring. Fades in once
+ * loaded.
+ */
+export function LiveShot({ src, alt }: { src: string; alt: string }) {
+  const [fit, setFit] = useState<Fit | null>(null);
+  return (
+    <>
+      {fit?.tall && (
+        // eslint-disable-next-line @next/next/no-img-element -- blurred fill behind a tall shot
+        <img src={src} alt="" aria-hidden className="absolute inset-0 h-full w-full scale-110 object-cover opacity-70 blur-xl" />
+      )}
+      {/* eslint-disable-next-line @next/next/no-img-element -- server-proxied, CDN-cached screenshot */}
+      <img
+        src={src}
+        alt={alt}
+        data-testid="geo-shot"
+        data-fit={fit?.tall ? "tall" : undefined}
+        onLoad={(e) => setFit(shotFit(e.currentTarget))}
+        className={cn("absolute inset-0 h-full w-full transition-opacity duration-[350ms]", fit?.className ?? "object-cover object-center", fit ? "opacity-100" : "opacity-0")}
+        style={{ imageRendering: fit?.pixelated ? "pixelated" : "auto" }}
+      />
+    </>
+  );
+}

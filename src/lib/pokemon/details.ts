@@ -9,6 +9,7 @@ import { fixEvolutionConditions } from "./evolution-fixes";
 import { getEncounters } from "./encounters";
 import { moveSlugs } from "@/lib/dex/build";
 import { speciesNames } from "@/lib/dex/species-names";
+import { VERSION_BY_KEY } from "./encounter-types";
 
 /**
  * Assembles everything the study Pokédex shows for one species into a single
@@ -156,5 +157,30 @@ export function getDexEntry(p: Pokemon): DexEntryData {
     lookalikes: lookalikesOf(p.id, (o) => !evolutionFamily(p).some((f) => f.id === o.id))
       .slice(0, 6)
       .map(({ pokemon: o, similarity }) => ({ id: o.id, slug: o.slug, name: o.name, types: o.types, similarity })),
+  };
+}
+
+/**
+ * The ingest wrote a few English names from PokéAPI's ids ("Water1", "Letsgo Kanto", "Lets Go Pikachu"). The English
+ * page shows their official names instead. Other languages translate from these raw values, so this is English only.
+ */
+const EGG_GROUPS_EN: Record<string, string> = {
+  Water1: "Water 1",
+  Water2: "Water 2",
+  Water3: "Water 3",
+  Ground: "Field",
+  Plant: "Grass",
+  Humanshape: "Human-Like",
+  Indeterminate: "Amorphous",
+  "No Eggs": "Undiscovered",
+};
+const DEX_NAMES_EN: Record<string, string> = { "Letsgo Kanto": "Let's Go Kanto", "Isle Of Armor": "Isle of Armor" };
+
+export function englishDexEntry(data: DexEntryData): DexEntryData {
+  return {
+    ...data,
+    eggGroups: data.eggGroups.map((g) => EGG_GROUPS_EN[g] ?? g),
+    dexNumbers: data.dexNumbers.map((d) => ({ ...d, dex: DEX_NAMES_EN[d.dex] ?? d.dex.replace("Ulaula", "Ula'ula") })),
+    entries: data.entries.map((e) => ({ ...e, labels: e.games.map((g) => VERSION_BY_KEY[g.toLowerCase().replace(/ /g, "-")]?.name ?? g) })),
   };
 }

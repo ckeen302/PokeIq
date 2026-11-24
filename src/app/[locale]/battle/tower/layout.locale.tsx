@@ -3,5 +3,5 @@
 import * as Source from "@/app/battle/tower/layout";
 import { mirrorMetadata, mirrorLayout } from "@/i18n/mirror";
 
-export const generateMetadata = mirrorMetadata(Source);
+export const generateMetadata = mirrorMetadata(Source, { route: "/battle", alt: "battle" });
 export default mirrorLayout(Source);

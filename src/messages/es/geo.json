@@ -8,7 +8,8 @@
     "loading": "Cargando la ronda",
     "leaveTitle": "¿Salir de esta partida?",
     "leaveBody": "Esta partida no se guardará.",
-    "leaveDaily": "Puedes retomar la Diaria de hoy desde su tarjeta.",
+    "leaveDaily": "Tu Diaria queda guardada, con el tiempo que te quedaba. Puedes volver y terminarla hoy.",
+    "leaveWeekly": "Tu Reto semanal queda guardado, con el tiempo que te quedaba. Puedes volver y terminarlo esta semana.",
     "leave": "Salir",
     "stay": "Seguir jugando"
   },
@@ -105,9 +106,11 @@
     "correct": "Correcto",
     "missed": "Fallado",
     "again": "Jugar otra vez",
+    "nextDaily": "Próxima Diaria en",
     "shareAndBoard": "Compartir y clasificación"
   },
   "scoreTotal": "Total",
   "roundOf": "Ronda {n}/{of}",
+  "roundN": "Ronda {n}",
   "retry": "Reintentar"
 }

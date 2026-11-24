@@ -22,7 +22,11 @@
     "waitingMore": "あと{n}人を待っています…",
     "locked": "決定済み",
     "timeUp": "時間切れ",
-    "watching": "脱落：観戦中 · {playing}人中{guessed}人が回答"
+    "watching": "脱落：観戦中 · {playing}人中{guessed}人が回答",
+    "zoom": "画面全体を見る",
+    "zoomTitle": "画面全体",
+    "fullScreen": "画面を全体表示",
+    "close": "閉じる"
   },
   "reveal": {
     "standings": "順位を見る ▶",

@@ -60,6 +60,8 @@ function pageFile(rel, src) {
   const open = consts.dynamicParams === "true";
   const dynamicSegments = /\[/.test(relDir);
   const imp = `@/app/${rel.replace(/\.tsx?$/, "")}`;
+  const image = imageOf(relDir);
+  const opts = [...(open ? ["openParams: true"] : []), ...(image ? [`image: ${image}`] : [])];
   const lines = [HEADER, `// Source: src/app/${rel}`];
   if (client) {
     // A client page has no metadata or params of its own: the language's layout checks the language.
@@ -67,7 +69,7 @@ function pageFile(rel, src) {
     lines.push(`const m = mirrorPage(${JSON.stringify(route)}, { default: Source });`);
   } else {
     lines.push(`import * as Source from "${imp}";`, `import { mirrorPage } from "@/i18n/mirror";`, "");
-    lines.push(`const m = mirrorPage(${JSON.stringify(route)}, Source${open ? ", { openParams: true }" : ""});`);
+    lines.push(`const m = mirrorPage(${JSON.stringify(route)}, Source${opts.length ? `, { ${opts.join(", ")} }` : ""});`);
   }
   lines.push("");
   for (const key of COPIED) if (consts[key] !== undefined) lines.push(`export const ${key} = ${consts[key]};`);
@@ -84,24 +86,43 @@ const IMAGE = /^(opengraph-image|twitter-image)\.tsx?$/;
 
 /**
  * A share image's key in the og-alt namespace: its route's folders joined by "_", "home" for the root
- * ("pokedex/games/[slug]" → "pokedex_games_slug"). tests/i18n-og.test.ts derives the same keys.
+ * ("pokedex/games/[slug]" → "pokedex_games_slug"). tests/i18n-og-email.test.ts derives the same keys.
  */
 const altKey = (relDir) => relDir.replace(/\[+(?:\.\.\.)?([^\]]+)\]+/g, "$1").replace(/[^A-Za-z0-9]+/g, "_") || "home";
 
+/** The folder under a route where its share image in a language is served: /<lang>/<path>/share-image. */
+const SHARE_IMAGE = "share-image";
+
 /**
- * A share image in the language: the English image route's own drawing, called with the language in its params
- * (the card reads it there, see lib/og/i18n), with its alt text from og-alt. Drawn on request.
+ * A share image in the language, as a route handler at /<lang>/<path>/share-image: the English image route's own
+ * drawing, called with the language in its params (the card reads it there, see lib/og/i18n), drawn on request.
+ * Not an opengraph-image file: Next only treats a file named exactly opengraph-image.tsx as one, so a
+ * opengraph-image.locale.tsx was served without its image handler (a 405) at an address its pages' og:image
+ * didn't even name. The pages point og:image here themselves (mirrorPage's `image`).
  */
 function imageFile(rel, src) {
-  const relDir = dirname(rel) === "." ? "" : dirname(rel);
   const imp = `@/app/${rel.replace(/\.tsx?$/, "")}`;
   const { consts } = exportsOf(src);
   const lines = [HEADER, `// Source: src/app/${rel}`];
-  lines.push(`import * as Source from "${imp}";`, `import { mirrorImage } from "@/i18n/mirror";`, "");
-  lines.push(`const m = mirrorImage(${JSON.stringify(altKey(relDir))}, Source);`, "");
+  lines.push(`import * as Source from "${imp}";`, `import { mirrorImageRoute } from "@/i18n/mirror";`, "");
   for (const key of COPIED) if (consts[key] !== undefined) lines.push(`export const ${key} = ${consts[key]};`);
-  lines.push("export const generateImageMetadata = m.generateImageMetadata;", "export default m.Image;", "");
+  lines.push("export const GET = mirrorImageRoute(Source);", "");
   return lines.join("\n");
+}
+
+/** Every folder with a share image of its own ("" is the root's). */
+const imageDirs = new Set(
+  walk(APP)
+    .filter((rel) => IMAGE.test(rel.split("/").pop()))
+    .map((rel) => (dirname(rel) === "." ? "" : dirname(rel)))
+);
+
+/** The share image a page (or layout) in this folder shows (its own folder's, else the nearest one above it), as code. */
+function imageOf(relDir) {
+  for (let dir = relDir; ; dir = dirname(dir) === "." ? "" : dirname(dir)) {
+    if (imageDirs.has(dir)) return `{ route: ${JSON.stringify(dir ? routeOf(dir) : "/")}, alt: ${JSON.stringify(altKey(dir))} }`;
+    if (!dir) return null;
+  }
 }
 
 function reexportFile(rel, src) {
@@ -115,7 +136,8 @@ function reexportFile(rel, src) {
   const helpers = [...(meta ? ["mirrorMetadata"] : []), ...(layout ? ["mirrorLayout"] : [])];
   if (helpers.length) lines.push(`import * as Source from "${imp}";`, `import { ${helpers.join(", ")} } from "@/i18n/mirror";`, "");
   // A layout's own title and description, pointed at the language's URL like a page's.
-  if (meta) lines.push("export const generateMetadata = mirrorMetadata(Source);");
+  const image = meta ? imageOf(dirname(rel) === "." ? "" : dirname(rel)) : null;
+  if (meta) lines.push(`export const generateMetadata = mirrorMetadata(Source${image ? `, ${image}` : ""});`);
   lines.push(layout ? "export default mirrorLayout(Source);" : `export { default } from "${imp}";`);
   for (const key of COPIED) if (consts[key] !== undefined) lines.push(`export const ${key} = ${consts[key]};`);
   lines.push("");
@@ -129,7 +151,7 @@ for (const rel of walk(APP)) {
   const src = readFileSync(join(APP, rel), "utf8");
   if (base === "page.tsx") wanted.set(rel, pageFile(rel, src));
   else if (["layout.tsx", "loading.tsx", "not-found.tsx", "error.tsx"].includes(base)) wanted.set(rel, reexportFile(rel, src));
-  else if (IMAGE.test(base)) wanted.set(rel, imageFile(rel, src));
+  else if (IMAGE.test(base)) wanted.set(`${dirname(rel) === "." ? "" : `${dirname(rel)}/`}${SHARE_IMAGE}/route.ts`, imageFile(rel, src));
 }
 
 const check = process.argv.includes("--check");

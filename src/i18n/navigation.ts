@@ -1,11 +1,12 @@
 "use client";
 
-import { usePathname as useNextPathname, useRouter as useNextRouter } from "next/navigation";
+import { useRouter as useNextRouter } from "next/navigation";
 import { useMemo } from "react";
 import { useLocale } from "./locale-context";
 import { stripLocale } from "./paths";
 import { localeHref } from "./href";
 import { DEFAULT_LOCALE } from "./config";
+import { useServedPathname } from "./served-path";
 
 export { localeHref } from "./href";
 
@@ -13,7 +14,7 @@ export { useLocale } from "./locale-context";
 
 /** The current page's English path, whatever language it is shown in ("/es/pokedle" → "/pokedle"). */
 function useEnglishPath(): string {
-  return stripLocale(useNextPathname());
+  return stripLocale(useServedPathname());
 }
 
 /** next/navigation's router, with English paths sent to the current language's version of the page. */
@@ -31,6 +32,6 @@ function useLocaleRouter(): ReturnType<typeof useNextRouter> {
   }, [router, locale]);
 }
 
-// English-only builds (LIVE_LOCALES inlined as ""): exactly next/navigation's hooks, nothing else in the browser's code.
-export const usePathname: () => string = process.env.LIVE_LOCALES ? useEnglishPath : useNextPathname;
+// English-only builds (LIVE_LOCALES inlined as ""): next/navigation's hooks (the path as served, see served-path).
+export const usePathname: () => string = process.env.LIVE_LOCALES ? useEnglishPath : useServedPathname;
 export const useRouter: typeof useNextRouter = process.env.LIVE_LOCALES ? useLocaleRouter : useNextRouter;

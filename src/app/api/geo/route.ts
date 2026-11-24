@@ -11,6 +11,7 @@ import { GEO_ERAS, GEO_FAMILY_IDS } from "@/lib/geo-families";
 import { GEO_TIMERS_ACCEPTED } from "@/lib/geo-settings";
 import { GEO_SEEN_MAX } from "@/lib/geo-seen";
 import { GEO_SHOT_ID_RE } from "@/lib/geo-reports";
+import { playedOnAccount } from "@/lib/server/geo-once";
 
 /**
  * POST /api/geo — start a PokéGuessr game.
@@ -18,10 +19,14 @@ import { GEO_SHOT_ID_RE } from "@/lib/geo-reports";
  *                             on every game's screenshots or an era's ("2d" / "3d"); picked
  *                             `families` narrow it further (practice: not ranked).
  *                             `recent` lists the areas the player just saw, so they don't come straight back
- *   { daily: "YYYY-MM-DD" }   the daily game (same five places for everyone, every game)
+ *   { daily: "YYYY-MM-DD" }   the daily game (same five places for everyone), played once: a
+ *                             second start of the day is refused (409, code "daily-started")
  *   { challenge: "<token>" }  a friend's exact five places (not ranked)
  *   { weekly: true }          this week's Weekly Challenge (the week's map, same five places for
- *                             everyone all week; the first start of the week is the scored one)
+ *                             everyone all week), played once a week like the Daily ("weekly-started")
+ * The Daily and the Weekly are held to once by a cookie this browser keeps, and for a signed-in
+ * trainer also by their account (lib/server/geo-once.ts). A game left part played isn't started
+ * again: the browser picks it up from its token (POST /api/geo/clock starts its round's clock again).
  * `difficulty: "easy" | "hard"` deals shots the audit rates easier or harder (practice: not ranked).
  * `guessGame: true` adds "guess the game too" (five-round games): bonus points
  * for naming each screenshot's game, kept apart from the ranked score.
@@ -70,17 +75,29 @@ export async function POST(request: NextRequest) {
   if (body.weekly) {
     const weekly = currentGeoWeekly();
     if (!weekly) return NextResponse.json({ error: "This week's challenge isn't available." }, { status: 503 });
+    // Once a week, like the Daily.
+    if (startedWeeks.includes(weekly.week) || (await playedOnAccount(request, { weekly: weekly.week }))) {
+      return NextResponse.json(
+        { error: "You've already played this week's Weekly Challenge. A new one comes on Monday.", code: "weekly-started", weekly: weekly.week },
+        { status: 409, headers: { "Cache-Control": "no-store" } }
+      );
+    }
     // Always every game's screenshots, five rounds, Normal: like the Daily.
     spec = { region: weekly.region, kind: "game", weekly: weekly.week };
-    if (startedWeeks.includes(weekly.week)) spec.practice = "repeat-weekly";
   } else if (body.daily !== undefined) {
     if (!isValidDailyDate(body.daily)) {
       return NextResponse.json({ error: "That daily game isn't available." }, { status: 400 });
     }
+    // Once a day: a game left part played is picked up from its token, never started again.
+    if (started.includes(body.daily) || (await playedOnAccount(request, { daily: body.daily }))) {
+      return NextResponse.json(
+        { error: "You've already played today's Daily. A new one comes at midnight.", code: "daily-started", daily: body.daily },
+        { status: 409, headers: { "Cache-Control": "no-store" } }
+      );
+    }
     // The daily is always every game's screenshots.
     const region = geoDailyRegion(body.daily, isGeoSpec({ region: WORLD_REGION, kind: "game" }));
     spec = { region, kind: "game", daily: body.daily };
-    if (started.includes(body.daily)) spec.practice = "repeat-daily";
   } else if (body.challenge) {
     const challenge = readGeoChallenge(body.challenge);
     if (!challenge) return NextResponse.json({ error: "That challenge link isn't valid." }, { status: 400 });
@@ -111,7 +128,7 @@ export async function POST(request: NextRequest) {
     { ...game, region: spec.region, practice: spec.practice, ...(spec.weekly ? { weekly: spec.weekly } : {}) },
     { headers: { "Cache-Control": "no-store" } }
   );
-  if (spec.weekly && !spec.practice) {
+  if (spec.weekly) {
     response.cookies.set(WEEKLY_COOKIE, [spec.weekly, ...startedWeeks].slice(0, 3).join(","), {
       httpOnly: true,
       sameSite: "lax",
@@ -120,7 +137,7 @@ export async function POST(request: NextRequest) {
       maxAge: 15 * 24 * 60 * 60,
     });
   }
-  if (spec.daily && !spec.practice) {
+  if (spec.daily) {
     response.cookies.set(DAILY_COOKIE, [spec.daily, ...started].slice(0, 4).join(","), {
       httpOnly: true,
       sameSite: "lax",

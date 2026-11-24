@@ -17,7 +17,7 @@ import { DuelGone, DuelLoading, DuelLobby, DuelNotice, DuelVisitor, MatchedNote,
 import { DuelChat, DuelTools, EmoteFeed } from "@/components/duel/DuelReactions";
 import { GeoMap, LINE_DRAW_MS, mapAspect, type MapPin, type RevealedRound } from "./GeoMap";
 import { ReportShot } from "./ReportShot";
-import { shotFit } from "./ShotCarousel";
+import { LiveShot, shotFit } from "./ShotCarousel";
 import { CountdownPill, FullscreenButton, GameShell, GuessButton, MapDock } from "./GameShell";
 import { DuelBand, DuelLeave, EmoteButton, HpTimeline, LivePill, OpponentGuessedBar, THEM_COLOR, VersusIntro, YOU_COLOR, fmtIn, multIn, seatImage, useRevealSequence } from "./DuelHud";
 import { useDuelLive } from "./use-duel-live";
@@ -62,7 +62,6 @@ export interface GeoDuelProps {
 }
 
 export function GeoDuel({ code, regions, names }: GeoDuelProps) {
-  useGuessrMusic();
   const router = useRouter();
   const t = useT(duelNs);
   const fmt = fmtIn(t.locale);
@@ -161,6 +160,10 @@ export function GeoDuel({ code, regions, names }: GeoDuelProps) {
 
   const map = view ? regions.find((r) => r.id === view.region) : undefined;
   const race = view?.mode === "race";
+  /** The end screen: the match is over and its last reveal (if this trainer saw the match) has been seen. */
+  const ended = view?.status === "finished" && (summary || !sawPlay || view.end?.reason === "left" || !last);
+  // The music plays while this trainer's match is on (the versus intro, the rounds and their reveals), not in the lobby, for a visitor or on the end screen.
+  useGuessrMusic(!gone && !!map && !!view && view.you !== null && (view.status === "playing" || (view.status === "finished" && !ended)));
   if (gone || (view && !map)) {
     return <DuelGone message={gone ?? t("gone")} href="/pokeguessr" label={t("back")} />;
   }
@@ -254,7 +257,7 @@ export function GeoDuel({ code, regions, names }: GeoDuelProps) {
   const me = view.you;
   const them = shownName(view.players[1 - me]) ?? t("yourOpponent");
 
-  if (view.status === "finished" && (summary || !sawPlay || view.end?.reason === "left" || !last)) {
+  if (ended) {
     return (
       <GameShell onExit={() => router.push("/pokeguessr")}>
         {() => (
@@ -326,7 +329,7 @@ export function GeoDuel({ code, regions, names }: GeoDuelProps) {
               multiplier={live.multiplier}
               multipliers={live.multipliers}
               compact
-              below={<CountdownPill ms={left} totalMs={totalMs} urgentMs={live.countdown ? DUEL_COUNTDOWN_FLASH_MS : 10_000} testId="geo-duel-clock" />}
+              below={<CountdownPill ms={left} totalMs={totalMs} urgentMs={live.countdown ? DUEL_COUNTDOWN_FLASH_MS : 10_000} testId="geo-duel-clock" clock />}
             />
             <div className="relative min-h-0 flex-1">
               <AnimatePresence>
@@ -335,20 +338,7 @@ export function GeoDuel({ code, regions, names }: GeoDuelProps) {
               <div className="absolute inset-0">
                 {notice && <div className="absolute inset-x-0 top-12 z-30 px-4">{notice}</div>}
                 <div className="screen relative h-full w-full overflow-hidden rounded-none" style={{ height: "calc(100% - var(--geo-bar))" }}>
-                  {live.shot && (
-                    // eslint-disable-next-line @next/next/no-img-element -- server-proxied, CDN-cached screenshot
-                    <img
-                      key={live.shot}
-                      src={live.shot}
-                      alt={t("round.alt")}
-                      data-testid="geo-shot"
-                      onLoad={(e) => {
-                        e.currentTarget.style.imageRendering = shotFit(e.currentTarget).pixelated ? "pixelated" : "auto";
-                        e.currentTarget.style.opacity = "1";
-                      }}
-                      className="absolute inset-0 h-full w-full object-cover object-center opacity-0 transition-opacity duration-[350ms]"
-                    />
-                  )}
+                  {live.shot && <LiveShot key={live.shot} src={live.shot} alt={t("round.alt")} />}
                 </div>
                 <div className="absolute left-3 top-3 z-20 flex items-center gap-2">
                   <DuelLeave busy={busy} onLeave={() => void leave()} />
@@ -407,7 +397,12 @@ export function GeoDuel({ code, regions, names }: GeoDuelProps) {
                   aria-label={t("round.fullScreen")}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element -- same cached screenshot, full size */}
-                  <img src={live.shot} alt={t("round.alt")} className="max-h-full max-w-full rounded-md object-contain" />
+                  <img
+                    src={live.shot}
+                    alt={t("round.alt")}
+                    onLoad={(e) => (e.currentTarget.style.imageRendering = shotFit(e.currentTarget).pixelated ? "pixelated" : "auto")}
+                    className="max-h-[calc(100vh-2rem)] max-w-full rounded-md object-contain"
+                  />
                   <button type="button" className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20" aria-label={t("round.close")}>
                     <X className="h-5 w-5" />
                   </button>

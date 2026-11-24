@@ -8,7 +8,8 @@
     "loading": "Loading the round",
     "leaveTitle": "Leave this game?",
     "leaveBody": "This game won't be saved.",
-    "leaveDaily": "You can pick today's Daily up again from its card.",
+    "leaveDaily": "Your Daily is saved, with the time left on the clock. You can come back and finish it today.",
+    "leaveWeekly": "Your Weekly Challenge is saved, with the time left on the clock. You can come back and finish it this week.",
     "leave": "Leave",
     "stay": "Keep playing"
   },
@@ -105,9 +106,11 @@
     "correct": "Correct",
     "missed": "Missed",
     "again": "Play again",
+    "nextDaily": "Next Daily in",
     "shareAndBoard": "Share & leaderboard"
   },
   "scoreTotal": "Total",
   "roundOf": "Round {n}/{of}",
+  "roundN": "Round {n}",
   "retry": "Try again"
 }

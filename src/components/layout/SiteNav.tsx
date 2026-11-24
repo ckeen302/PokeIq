@@ -16,6 +16,7 @@ import { SoundShortcut } from "./SoundShortcut";
 import { useT } from "@/i18n/client";
 import nav from "@/messages/nav";
 import { springEasing } from "@/lib/spring";
+import { SERVED_PATH_ATTR, useServedPathname } from "@/i18n/served-path";
 
 const DESKTOP_LINKS: { href: string; label: keyof typeof nav.en.links; wideOnly?: boolean }[] = [
   { href: "/pokedle", label: "wordle" },
@@ -81,9 +82,11 @@ export function DesktopNav() {
   const pathname = usePathname();
   const account = useAccount();
   const t = useT(nav);
+  const served = { [SERVED_PATH_ATTR]: useServedPathname() };
   return (
     // `contents`: the links and the actions sit in the header's grid, so the links are centred on the page itself.
-    <nav className="contents">
+    // It also tells the browser which path the HTML was rendered for (see served-path).
+    <nav className="contents" {...served}>
       <div className="flex justify-center">
         <div className="hidden items-center lg:flex">
           {DESKTOP_LINKS.map(({ href, label, wideOnly }) => {
