@@ -56,8 +56,9 @@ export function saveBlob(blob: Blob, name: string) {
   setTimeout(() => URL.revokeObjectURL(url), 4000);
 }
 
+/** "pokeiq-shiny-charizard.png", or the design's name ("pokeiq-midnight-zard.png"): named like the site's other downloads. */
 export const fileName = (sp: Species, d: Design, ext: string) =>
-  `${(d.name || `shiny-${sp.name}`).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "shiny"}.${ext}`;
+  `pokeiq-${(d.name || `shiny-${sp.name}`).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "shiny"}.${ext}`;
 
 export function canvasBlob(c: HTMLCanvasElement): Promise<Blob> {
   return new Promise((res, rej) => c.toBlob((b) => (b ? res(b) : rej(new Error("toBlob"))), "image/png"));
