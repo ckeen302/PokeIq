@@ -1,5 +1,6 @@
 "use client";
 
+import { STAGE_POSTERS, StagePoster } from "@/components/lab/StagePoster";
 import { localUrl } from "@/i18n/paths";
 import Link from "@/components/ui/PlainLink";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -408,6 +409,8 @@ export function TimelineExperience({ entries, eraStarts, initialId = null, child
             aria-label={t("sceneLabel")}
             role="application"
           />
+          {/* Phones: a still of the opening view until the tunnel's first frame (an event's link opens elsewhere: no still). */}
+          {initialId === null && <StagePoster src={STAGE_POSTERS.timeline} gone={ready} fullScreen />}
           <div className="tl-fx" aria-hidden />
 
           {!ready && !intro && (

@@ -1,5 +1,7 @@
 "use client";
 
+import { WEAK_CROWD_CAP, deviceInfo, lightStart } from "@/lib/gl/device-tier";
+import { watchStageActive } from "@/lib/gl/stage-active";
 import { localUrl } from "@/i18n/paths";
 import dynamic from "next/dynamic";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -112,6 +114,8 @@ interface Final {
 
 /** Phones, touch screens and low-memory devices start light; everything else on the middle quality. The monitor adapts from there. */
 function initialQuality(): Quality {
+  // Weak devices (a software renderer, an old GPU, a slow CPU, little memory) start light whatever their screen.
+  if (lightStart()) return "low";
   const nav = navigator as Navigator & { deviceMemory?: number };
   const short = Math.min(window.screen.width, window.screen.height);
   if (window.matchMedia("(pointer: coarse)").matches || short < 600 || (nav.deviceMemory !== undefined && nav.deviceMemory <= 4)) return "low";
@@ -418,7 +422,9 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
       const species = ready.species.map((id) => slice.species.find((s) => s.id === id)!);
       speciesRef.current = species;
       heightsRef.current = species.map((s) => figureSize(s).h);
-      const view = new BattleView(ready, (await import("./scene")).QUALITY[qualityRef.current].cap);
+      const cap = (await import("./scene")).QUALITY[qualityRef.current].cap;
+      // A weak device draws fewer units (each army is still all there, its rest represented as above the cap).
+      const view = new BattleView(ready, deviceInfo().tier === 0 ? Math.min(cap, WEAK_CROWD_CAP) : cap);
       // Forms (as the engine plays them): Wishiwashi starts schooled from level 20, the rest in their first form.
       formsRef.current = species.map((s, k) => speciesForms(s, ready.fighters[k] ?? { ability: "", tera: "", level: 100 }, ready.moves[k] ?? []));
       view.startForms(formsRef.current.map((f) => f.initial));
@@ -528,8 +534,14 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
     let doneAt = -1;
     let wasSlow = false;
     let frameEma = 16.7, workEma = 2;
+    // Scrolled out of view (the setup panel below) or in a hidden tab: nothing is drawn and the battle waits.
+    const activity = stageRef.current ? watchStageActive(stageRef.current) : null;
     const loop = (now: number) => {
       raf = requestAnimationFrame(loop);
+      if (activity && !activity.active) {
+        last = now;
+        return;
+      }
       const start = performance.now();
       const raw = now - last;
       frameEma = frameEma * 0.95 + Math.min(250, raw) * 0.05;
@@ -673,7 +685,10 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
       }
     };
     raf = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(raf);
+    return () => {
+      cancelAnimationFrame(raf);
+      activity?.dispose();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

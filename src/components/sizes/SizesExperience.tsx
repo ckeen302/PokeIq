@@ -1,5 +1,7 @@
 "use client";
 
+import { STAGE_POSTERS, StagePoster } from "@/components/lab/StagePoster";
+import { lightStart } from "@/lib/gl/device-tier";
 import { localUrl } from "@/i18n/paths";
 import Link from "@/components/ui/PlainLink";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -71,6 +73,8 @@ function localStore(): Storage | null {
  * there, in both directions.
  */
 function initialQuality(): Quality {
+  // Weak devices (a software renderer, an old GPU, a slow CPU, little memory) start light whatever their screen.
+  if (lightStart()) return "low";
   const nav = navigator as Navigator & { deviceMemory?: number };
   const short = Math.min(window.screen.width, window.screen.height);
   const coarse = window.matchMedia("(pointer: coarse)").matches;
@@ -1319,6 +1323,8 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
             aria-label={t("scene", { dir: lowerIn(dirText(order.by, order.dir, tl), tl), label: lowerIn(orderLabel(order.by, tl), tl) })}
           />
           <canvas ref={overlayRef} className="sz-overlay h-full w-full" aria-hidden />
+          {/* Phones: a still of the city until the first view is showing (only the page's own first view; links to a Pokémon, a comparison or another order open elsewhere). */}
+          {preset === DEFAULT_PRESET.id && !focus && !vs.length && !compare && isDefaultOrder(initialOrder) && <StagePoster src={STAGE_POSTERS.sizes} gone={shown} fullScreen />}
           <div className="sz-shade-top" aria-hidden />
           <div className="sz-shade-bottom" aria-hidden />
 

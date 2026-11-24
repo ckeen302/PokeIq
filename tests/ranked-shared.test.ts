@@ -44,7 +44,12 @@ describe("anonymous ranked ids", () => {
   it("only accepts ids the server signed", () => {
     const id = newAnonId();
     expect(readAnonId(id)).toMatch(/^[A-Za-z0-9_-]{16}$/);
-    expect(readAnonId(`${id.slice(0, -2)}xx`)).toBeNull();
+    // Change one character inside the signature, always to a different one. Swapping the last two for "xx" sometimes
+    // left the signature unchanged, or changed only its final character's spare bits, so this failed about once in a
+    // thousand runs.
+    const at = id.lastIndexOf(".") + 2;
+    const tampered = `${id.slice(0, at)}${id[at] === "A" ? "B" : "A"}${id.slice(at + 1)}`;
+    expect(readAnonId(tampered)).toBeNull();
     expect(readAnonId("not-a-token")).toBeNull();
   });
 });

@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { deviceInfo } from "@/lib/gl/device-tier";
 import { watchContext } from "@/lib/gl/context-loss";
 import { latOf, lonOf, type Atlas } from "@/lib/globe/geo";
 import { atlasMountains, type GlobeMountain } from "@/lib/globe/mountains";
@@ -725,7 +726,9 @@ export function createGlobeScene(host: HTMLElement, layer: HTMLDivElement, cb: S
   }
 
   // ---- sizing & quality
-  let quality = opts.quality ?? (reduce ? 1 : Math.min(window.innerWidth, window.innerHeight) < 600 ? 2 : 3);
+  // Weak devices (a software renderer, an old GPU, a slow CPU, little memory) start lower; the monitor takes it from there.
+  const tier = deviceInfo().tier;
+  let quality = opts.quality ?? (reduce || tier === 0 ? 1 : Math.min(window.innerWidth, window.innerHeight) < 600 || tier === 1 ? 2 : 3);
   function applyPixelRatio() {
     const w = host.clientWidth, h = host.clientHeight;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, QUALITY[quality].pr));

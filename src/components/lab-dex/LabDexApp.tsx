@@ -1,5 +1,7 @@
 "use client";
 
+import { STAGE_POSTERS, StagePoster } from "@/components/lab/StagePoster";
+import { deviceInfo } from "@/lib/gl/device-tier";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, SlidersHorizontal, X } from "lucide-react";
 import { typeColor } from "@/lib/pokemon/type-colors";
@@ -192,7 +194,9 @@ function Lab({ rows, intro }: { rows: LabRow[]; intro?: React.ReactNode }) {
     const q = new URLSearchParams(location.search).get("q");
     const nav = navigator as Navigator & { deviceMemory?: number };
     const forced = q !== null && /^[0-3]$/.test(q);
-    const first = forced ? (Number(q) as Tier) : startTier({ phone: window.matchMedia("(max-width: 1023px)").matches, cores: nav.hardwareConcurrency || 8, memoryGb: nav.deviceMemory });
+    // The screen's start, lowered for a weak device (a software renderer, an old GPU, a slow CPU).
+    const device = deviceInfo().tier;
+    const first = forced ? (Number(q) as Tier) : (Math.min(startTier({ phone: window.matchMedia("(max-width: 1023px)").matches, cores: nav.hardwareConcurrency || 8, memoryGb: nav.deviceMemory }), device === 0 ? 0 : device === 1 ? 1 : 3) as Tier);
     tierRef.current = first;
     const governor = new Governor(first, first);
     // Test aid (?rec=1): a fixed step a frame, so a slow software renderer can be filmed frame by frame at the real pace.
@@ -542,6 +546,7 @@ function Lab({ rows, intro }: { rows: LabRow[]; intro?: React.ReactNode }) {
           data-testid="lab-wheel"
         >
           <div ref={host} className="absolute inset-0" />
+          <StagePoster src={STAGE_POSTERS.labDex} gone={ready} />
           {mode === "2d" && <Fallback2D ref={fbRef} len={len} monAt={monAt} phone={phone} />}
           {!booted && intro}
           {(mode === "boot" || (mode === "3d" && !ready)) && (
