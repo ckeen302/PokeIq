@@ -101,6 +101,7 @@ export const NAMESPACES = [
   "geo-replay",
   "geo-solo",
   "geo-streak",
+  "hunt",
   "globe",
   "globe-page",
   "guessr-cards",

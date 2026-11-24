@@ -12,6 +12,7 @@ import geoNs from "@/messages/geo";
 import geoNamesNs from "@/messages/geo-names";
 import { localMap } from "@/lib/geo-i18n";
 import { dockHome } from "./dock-size";
+import { HuntPinMark, HuntSpotMark, huntPinColor, spotTagPlacement } from "@/components/hunt/map-marks";
 
 export interface MapPin {
   x: number;
@@ -68,7 +69,35 @@ interface Props {
   defer?: boolean;
   /** The round: the guess map stays mounted from round to round, and a new one starts it where it started. */
   round?: number;
+  /** Pokémon Hunt: the numbered pins (slot i is pin i + 1; null is a slot not placed yet). Drawn instead of `pick`. */
+  picks?: (MapPin | null)[];
+  /** Pokémon Hunt: the pin a tap moves (it wears a halo). */
+  activePick?: number;
+  /** Pokémon Hunt: a tap on (or right by) a placed pin picks that pin up instead of moving the active one. */
+  onPickSelect?: (i: number) => void;
+  /** Pokémon Hunt's reveal: every real spot, as flags with a "game · method" tag, popping in after `delay` seconds. */
+  spots?: HuntMapSpot[];
+  /** Pokémon Hunt's reveal: each pin's dashed line to the spot it scored against (`spot` indexes `spots`). */
+  links?: HuntMapLink[];
 }
+
+export interface HuntMapSpot extends MapPin {
+  tag?: string;
+  /** The place's area (the map's 0–1 coordinates), shaded under the flag. */
+  mask?: [number, number][];
+  delay?: number;
+  found?: boolean;
+}
+export interface HuntMapLink {
+  pin: MapPin;
+  spot: number;
+  /** The pin's number (1-based). */
+  n: number;
+  delay?: number;
+}
+
+/** A tap this close (screen px) to a placed hunt pin's tip or head picks it up. */
+const PICK_GRAB_PX = 26;
 
 export const WORLD_MAP = "/geo/maps/world.webp";
 /** A small copy of the whole world, shown while the big map loads on the world map itself. */
@@ -115,7 +144,7 @@ export function mapAspect(region: Pick<GeoRegionInfo, "map">): number {
  * round draws a dashed line from the guess to the answer, then zooms to fit
  * them both.
  */
-export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, controls = true, className, fill, others = [], land = false, density, defer = false, round }: Props) {
+export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, controls = true, className, fill, others = [], land = false, density, defer = false, round, picks, activePick, onPickSelect, spots, links }: Props) {
   const t = useT(geoNs);
   const geoNames = useT(geoNamesNs);
   const mapName = localMap(geoNames, region);
@@ -145,8 +174,11 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
   /** What to do once the engine has drawn the map sharp (set by the engine's effect). */
   const sharpRef = useRef<() => void>(() => undefined);
 
+  /** The hunt's pins and the view as they stand, for telling a tap on a pin from a tap on the map. */
+  const huntRef = useRef<{ picks?: (MapPin | null)[]; onPickSelect?: (i: number) => void; view: AtlasView | null }>({ view: null });
   useEffect(() => {
     pickRef.current = onPick;
+    huntRef.current = { picks, onPickSelect, view };
   });
 
   useEffect(() => {
@@ -185,6 +217,26 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
       onTap: (wx, wy) => {
         const x = (wx - x0) / (x1 - x0);
         const y = (wy - y0) / (y1 - y0);
+        // A hunt pin under the tap (its tip, or its head just above) is picked up rather than a new spot pinned.
+        const h = huntRef.current;
+        if (h.picks && h.onPickSelect && h.view) {
+          const s = h.view.s;
+          // The open dock's whole world is drawn taller (k), so screen distance up and down is k times more.
+          const sy = s * (h.view.k ?? 1);
+          let near = -1;
+          let best = PICK_GRAB_PX;
+          h.picks.forEach((p, i) => {
+            if (!p) return;
+            const dx = (x0 + p.x * (x1 - x0) - wx) * s;
+            const dy = (y0 + p.y * (y1 - y0) - wy) * sy;
+            const d = Math.min(Math.hypot(dx, dy), Math.hypot(dx, dy + 21));
+            if (d < best) {
+              best = d;
+              near = i;
+            }
+          });
+          if (near >= 0) return h.onPickSelect(near);
+        }
         if (x >= 0 && x <= 1 && y >= 0 && y <= 1) pickRef.current?.({ x, y });
       },
       onView: setView,
@@ -220,13 +272,15 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
   }, [round]);
 
   // A revealed round zooms to show the guess and the answer together, once the line has drawn.
-  const revealKey = revealed.map((r) => `${r.guess?.x},${r.guess?.y},${flagAt(r.answer)}`).join("|");
+  const revealKey = [...revealed.map((r) => `${r.guess?.x},${r.guess?.y},${flagAt(r.answer)}`), ...(spots ?? []).map((p) => `${p.x},${p.y}`), ...(links ?? []).map((l) => `${l.pin.x},${l.pin.y}`)].join("|");
   const fitDelay = fit?.delay ?? 0;
   const fitDuration = fit?.duration;
   useEffect(() => {
     const e = engine.current;
-    if (!e || !revealed.length) return;
+    if (!e || !(revealed.length || spots?.length)) return;
     const pts = revealed.flatMap((r) => [toWorld(...flagAt(r.answer)),...(r.guess ? [toWorld(r.guess.x, r.guess.y)] : [])]);
+    // A hunt's reveal frames every real spot and every pin.
+    for (const p of [...(spots ?? []), ...(links ?? []).map((l) => l.pin)]) pts.push(toWorld(p.x, p.y));
     // A crowd map frames the busiest cells too (those holding most of the pins).
     if (density) {
       const total = density.cells.reduce((s, c) => s + c[2], 0);
@@ -335,8 +389,17 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
               </g>
             );
           })}
+          {/* Pokémon Hunt's reveal: the lines first, then the spots, then the pins on top. */}
+          {spots && (
+            <HuntSpots spots={spots} links={links ?? []} toScreen={toScreen} width={stageRef.current?.clientWidth ?? 0} maskId={maskId} areaR={areaR} />
+          )}
+          {picks?.map((p, i) => {
+            if (!p) return null;
+            const [px, py] = toScreen(p.x, p.y);
+            return <HuntPinMark key={`${i}:${p.x},${p.y}`} x={px} y={py} n={i + 1} active={i === activePick} />;
+          })}
           {/* Keyed by position so every new pin replays the drop. */}
-          {pick && <GuessPin key={`${pick.x},${pick.y}`} x={toScreen(pick.x, pick.y)[0]} y={toScreen(pick.x, pick.y)[1]} image={pinImage} />}
+          {pick && !picks && <GuessPin key={`${pick.x},${pick.y}`} x={toScreen(pick.x, pick.y)[0]} y={toScreen(pick.x, pick.y)[1]} image={pinImage} />}
         </svg>
       )}
       {controls && (
@@ -360,6 +423,54 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
         </div>
       )}
     </div>
+  );
+}
+
+/** Pokémon Hunt's reveal layer: each pin's line to its spot drawing itself, the spots' flags and tags, and the numbered pins. */
+function HuntSpots({ spots, links, toScreen, width, maskId, areaR }: { spots: HuntMapSpot[]; links: HuntMapLink[]; toScreen: (x: number, y: number) => [number, number]; width: number; maskId: string; areaR: number }) {
+  const at = spots.map((p) => toScreen(p.x, p.y));
+  const tags = spotTagPlacement(spots.map((p, i) => ({ x: at[i][0], y: at[i][1], tag: p.tag, found: p.found })), width);
+  return (
+    <g data-testid="hunt-reveal-layer">
+      {/* Each place's area, faint (green where a pin found it), fading in with its flag. */}
+      {spots.map((p, i) =>
+        p.mask?.length ? (
+          <g key={`a${i}`} className="geo-area" style={{ animationDelay: `${p.delay ?? 0}s` }}>
+            <g opacity={p.found ? 0.45 : 0.25}>
+              {p.mask.map(([x, y], k) => {
+                const [mx, my] = toScreen(x, y);
+                return <circle key={k} cx={mx} cy={my} r={areaR} className={p.found ? "fill-success" : "fill-white"} />;
+              })}
+            </g>
+          </g>
+        ) : null
+      )}
+      {links.map((l, i) => {
+        const s = at[l.spot];
+        if (!s) return null;
+        const [gx, gy] = toScreen(l.pin.x, l.pin.y);
+        const mask = `${maskId}-hunt-${i}`;
+        return (
+          <g key={`l${i}`}>
+            <mask id={mask} maskUnits="userSpaceOnUse" x="0" y="0" width="100%" height="100%">
+              <line className="geo-line" pathLength={1} x1={gx} y1={gy} x2={s[0]} y2={s[1]} stroke="#fff" strokeWidth={6} strokeLinecap="round" style={{ animationDelay: `${l.delay ?? 0}s` }} />
+            </mask>
+            <line mask={`url(#${mask})`} x1={gx} y1={gy} x2={s[0]} y2={s[1]} strokeWidth={2.5} strokeDasharray="5 5" strokeLinecap="round" stroke={huntPinColor(l.n - 1)} data-testid="hunt-link" />
+          </g>
+        );
+      })}
+      {/* Unfound spots under found ones, so a found spot's tag is never covered. */}
+      {spots
+        .map((p, i) => ({ p, i }))
+        .sort((a, b) => Number(!!a.p.found) - Number(!!b.p.found))
+        .map(({ p, i }) => (
+          <HuntSpotMark key={`s${i}`} x={at[i][0]} y={at[i][1]} tag={p.tag} delay={p.delay} found={p.found} showTag={tags[i].show} tagLeft={tags[i].left} />
+        ))}
+      {links.map((l) => {
+        const [gx, gy] = toScreen(l.pin.x, l.pin.y);
+        return <HuntPinMark key={`p${l.n}`} x={gx} y={gy} n={l.n} delay={Math.max(0, (l.delay ?? 0) - 0.2)} />;
+      })}
+    </g>
   );
 }
 

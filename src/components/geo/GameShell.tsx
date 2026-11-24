@@ -352,6 +352,7 @@ export function MapDock({
   tools,
   testId = "geo-dock",
   resetKey,
+  hint,
 }: {
   /** The map; `fill` asks it to fill its box instead of keeping its aspect; `land` (the phone card) opens it on the land rather than the whole map. */
   map: (o: { fill: boolean; land: boolean | "fit" }) => React.ReactNode;
@@ -368,6 +369,8 @@ export function MapDock({
   testId?: string;
   /** A new round (the dock stays mounted from round to round): the phone's map card closes. */
   resetKey?: number;
+  /** The phone card's label, instead of "Tap the map" / "Tap again to move your pin" (Pokémon Hunt's several pins). */
+  hint?: string;
 }) {
   const t = useT(geoNs);
   const phone = usePhone();
@@ -400,7 +403,7 @@ export function MapDock({
     leaveTimer.current = window.setTimeout(() => setHot(false), COLLAPSE_MS);
   };
 
-  if (phone) return <PhoneMap resetKey={resetKey} map={map} button={button} extra={extra} hasPin={hasPin} tools={tools} testId={testId} />;
+  if (phone) return <PhoneMap resetKey={resetKey} map={map} button={button} extra={extra} hasPin={hasPin} tools={tools} testId={testId} hint={hint} />;
 
   const open = hot || sticky;
   // Resting: GeoGuessr's small corner map. Open (hovered, focused or pinned): the chosen step's size.
@@ -458,7 +461,7 @@ export const BAR_BTN =
  * its close button or Escape puts it away. The map stays mounted, so the pin
  * and the zoom carry over.
  */
-function PhoneMap({ map, button, extra, hasPin, tools, testId, resetKey }: { map: (o: { fill: boolean; land: boolean | "fit" }) => React.ReactNode; button: React.ReactNode; extra?: React.ReactNode; hasPin: boolean; tools?: React.ReactNode; testId: string; resetKey?: number }) {
+function PhoneMap({ map, button, extra, hasPin, tools, testId, resetKey, hint }: { map: (o: { fill: boolean; land: boolean | "fit" }) => React.ReactNode; button: React.ReactNode; extra?: React.ReactNode; hasPin: boolean; tools?: React.ReactNode; testId: string; resetKey?: number; hint?: string }) {
   const t = useT(geoNs);
   const [open, setOpen] = useState(false);
   // Each round starts on its picture, with the map put away (the map itself stays mounted).
@@ -500,7 +503,7 @@ function PhoneMap({ map, button, extra, hasPin, tools, testId, resetKey }: { map
           {extra && <div className="absolute inset-x-2 bottom-2 z-[3]">{extra}</div>}
         </div>
         <p className="pointer-events-none absolute left-1/2 top-0 z-[4] -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full bg-[#1e1a3f] px-4 py-2 font-display text-sm font-bold italic text-white shadow-lg ring-2 ring-[#a99cff]/70" data-testid="geo-map-hint">
-          {hasPin ? t("dock.moveHint") : t("dock.placeHint")}
+          {hint ?? (hasPin ? t("dock.moveHint") : t("dock.placeHint"))}
         </p>
       </div>
 

@@ -47,6 +47,7 @@ export async function englishSitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/pokedle`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
     { url: `${SITE_URL}/pokeguessr`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
     { url: `${SITE_URL}/pokeguessr/streak`, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${SITE_URL}/pokeguessr/hunt`, changeFrequency: "daily", priority: 0.7 },
     { url: `${SITE_URL}/pokeguessr/globe`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${SITE_URL}/pokeconnections`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
     { url: `${SITE_URL}/pikadoku`, lastModified: now, changeFrequency: "daily", priority: 0.9 },

@@ -1,0 +1,245 @@
+/**
+ * Blind verification of a sample of the answer table against Bulbapedia and Serebii.
+ *
+ *   npx tsx scripts/hunt/verify-sample.ts pick <seed> <size> <sample.json> [--exclude earlier.json…]   # draws and saves the sample, prints its dex numbers
+ *   npx tsx scripts/hunt/verify-sample.ts check <sample.json> <bulbapedia.json> <serebii.json>… [--out file]
+ *
+ * The sample is drawn from the table with a seeded generator, weighted to rare entries
+ * (weight 1 / number of places, so a one-spot legendary is far likelier than a route regular)
+ * and always including every regional-form entry. The two sources are read first, on their
+ * own: each one's place list per game is built from its pages alone and matched to the map
+ * (the same game-aware matcher), and only then compared with ours.
+ *
+ * Per entry and game, a place of ours is "confirmed" when either source lists it; it's an
+ * error when neither does. A place both sources list that we don't have is an error too.
+ * A place only one source lists is "disputed" (shown, not an error).
+ */
+import fs from "node:fs";
+import answers from "../../src/data/hunt/answers.json";
+import geo from "../../src/data/geo.json";
+import aboutForms from "../../src/data/about-forms.json";
+import type { HuntAnswerFile, HuntEntry } from "../../src/lib/hunt/types";
+import { FORMS_IN_GAME, ORIGINAL_ONLY, formsInLabel, regionalForms, type EvidenceEntry, type FormInfo } from "./forms";
+import { buildPlaceIndex, isOffMap, matchPlace, type GeoPlace, type PlaceIndex } from "./match";
+import { EVENT_ONLY } from "./rules";
+
+const table = answers as unknown as HuntAnswerFile;
+const idx = buildPlaceIndex((geo as unknown as { world: { locations: GeoPlace[] } }).world.locations);
+const formsBy = regionalForms(aboutForms as unknown as [number, number, string, string, string][]);
+
+/** mulberry32 on a string seed. */
+function rng(seed: string) {
+  let h = 1779033703 ^ seed.length;
+  for (let i = 0; i < seed.length; i++) h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+  let a = h >>> 0;
+  return () => {
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/** `exclude`: entries checked in earlier rounds, so a fresh sample is fresh. */
+export function pickSample(seed: string, size: number, exclude: Set<string> = new Set()): HuntEntry[] {
+  const pool = table.entries.filter((e) => !exclude.has(e.id));
+  const forms = pool.filter((e) => e.form || formsBy.has(e.dex));
+  const rest = pool.filter((e) => !forms.includes(e));
+  const out = [...forms];
+  const r = rng(seed);
+  // Weighted sampling without replacement (Efraimidis–Spirakis keys).
+  const keyed = rest.map((e) => ({ e, k: Math.pow(r(), e.places.length) }));
+  keyed.sort((a, b) => b.k - a.k || a.e.id.localeCompare(b.e.id));
+  for (const { e } of keyed) {
+    if (out.length >= size) break;
+    out.push(e);
+  }
+  return out.sort((a, b) => a.dex - b.dex || a.id.localeCompare(b.id));
+}
+
+type Sets = Map<string, Set<string>>;
+const add = (m: Sets, v: string, k: string) => (m.get(v) ?? m.set(v, new Set()).get(v)!).add(k);
+
+/** Which forms a source's line is about, for one game: the original only when the game has no other. */
+function lineForms(dex: number, v: string, labels: string[]): (string | null)[] | undefined {
+  const fs_: FormInfo[] | undefined = formsBy.get(dex);
+  if (!fs_?.length || ORIGINAL_ONLY.has(v) || !fs_.some((f) => (FORMS_IN_GAME[v] ?? []).includes(f.key.split("-")[0]))) return [null];
+  if (!labels.length) return undefined;
+  const parsed = labels.map((l) => formsInLabel(l, fs_));
+  return parsed.every((x) => x) ? (parsed.flat() as (string | null)[]) : undefined;
+}
+
+const ZA_NAMES = /Wild Zone|District|Lumiose|Sewers|Lysandre|Sector|Quasartico|Research Lab|Old House/;
+const IGNORED = /^(Poké Pelago|Isle Abeens|.*Game Corner|Terarium|League Club Room|Route|Max Raid Battle|Wanderer|Type)$/;
+
+function place(m: Sets, unplaced: Sets, v: string, name: string): string | undefined {
+  if (isOffMap(name) || IGNORED.test(name)) return undefined;
+  if (v === "legends-za" && !ZA_NAMES.test(name)) return undefined;
+  const pm = matchPlace(idx, name, v);
+  if (pm.kind === "place") {
+    add(m, v, pm.key);
+    return pm.key;
+  }
+  add(unplaced, v, name);
+  return undefined;
+}
+
+type Who = Pick<HuntEntry, "dex" | "form">;
+/** version|place key → the method a source's line names ("Super Rod", "Fixed encounter"), when it names one. */
+type Hints = Map<string, string>;
+
+export function bulbapediaSets(e: Who, bulba: Record<string, EvidenceEntry[]>) {
+  const sets: Sets = new Map();
+  const unplaced: Sets = new Map();
+  const hints: Hints = new Map();
+  for (const be of bulba[String(e.dex)] ?? [])
+    for (const v of be.versions) {
+      if (v === "legends-arceus") continue;
+      for (const s of be.segments) {
+        if (s.kind === "other" || (s.kind === "raid" && v !== "sword" && v !== "shield")) continue;
+        // Gigantamax dens hold the Gigantamax form, not the art's.
+        if (/Gigantamax/.test((s as { text?: string }).text ?? "")) continue;
+        const f = lineForms(e.dex, v, s.forms);
+        if (!f || !f.includes(e.form)) continue;
+        for (const p of s.places) {
+          const k = place(sets, unplaced, v, p);
+          const m = (s as { method?: string | null }).method;
+          if (k && m && !hints.has(`${v}|${k}`)) hints.set(`${v}|${k}`, m);
+        }
+      }
+    }
+  return { sets, unplaced, hints };
+}
+
+interface SerebiiRow {
+  group: string;
+  game: string;
+  segments: { text: string; places: string[] }[];
+}
+const SEREBII_GAMES: Record<string, string> = {
+  Red: "red", "Blue (Intl.)": "blue", Yellow: "yellow", Gold: "gold", Silver: "silver", Crystal: "crystal",
+  Ruby: "ruby", Sapphire: "sapphire", Emerald: "emerald", FireRed: "firered", LeafGreen: "leafgreen",
+  Diamond: "diamond", Pearl: "pearl", Platinum: "platinum", HeartGold: "heartgold", SoulSilver: "soulsilver",
+  Black: "black", White: "white", "Black 2": "black-2", "White 2": "white-2", X: "x", Y: "y",
+  "Omega Ruby": "omega-ruby", "Alpha Sapphire": "alpha-sapphire", Sun: "sun", Moon: "moon", "Ultra Sun": "ultra-sun", "Ultra Moon": "ultra-moon",
+  "Let's Go, Pikachu!": "lets-go-pikachu", "Let's Go, Eevee!": "lets-go-eevee", Sword: "sword", Shield: "shield",
+  "Brilliant Diamond": "brilliant-diamond", "Shining Pearl": "shining-pearl", Scarlet: "scarlet", Violet: "violet", "Legends: Z-A": "legends-za",
+};
+/** Serebii lines that aren't a wild spot. */
+const SEREBII_OTHER = /Trade|Gift|Evolve|Breed|Tera Raid|Transfer|Event|Hatch|Received|Island Scan|Pelago|Friend Safari|Hyperspace|Dynamax Adventure|Max Lair|Gigantamax|Pok.walker|Dual|Swarm|Mass Outbreak|Underground|Not in|Unobtainable|Roam|Pal Park|HOME|Pok.mon Bank|Starter|Revive|Fossil|Game Corner|Prize|Only obtainable|Cannot|Celebration|Distribution|Mystery Gift|Ultra Space|Ultra Wormhole/i;
+
+/** Serebii's detailed location pages (scripts/hunt/serebii-detail.ts): dex → version → places. */
+export type SerebiiDetail = Record<string, Record<string, string[]>>;
+
+export function serebiiSets(e: Who, serebii: Record<string, SerebiiRow[]>, detail: SerebiiDetail = {}) {
+  const sets: Sets = new Map();
+  const unplaced: Sets = new Map();
+  const hints: Hints = new Map();
+  // The detail pages don't say the form: for species with regional forms, only games where just the original exists.
+  for (const [v, names] of Object.entries(detail[String(e.dex)] ?? {}))
+    if (!formsBy.has(e.dex) || (e.form === null && lineForms(e.dex, v, [])?.length === 1 && lineForms(e.dex, v, [])![0] === null)) for (const n of names) place(sets, unplaced, v, n);
+  for (const [key, rows] of Object.entries(serebii)) {
+    if (key.split("/")[1] !== String(e.dex)) continue;
+    for (const r of rows) {
+      const v = SEREBII_GAMES[r.game] ?? (r.game.startsWith("Legends: Z-A") && !/Mega Dimension/.test(r.game) ? "legends-za" : undefined);
+      if (!v) continue;
+      let current: string[] = [];
+      for (const s of r.segments) {
+        const label = /^(\w+) Form$/.exec(s.text.trim());
+        if (label) {
+          current = [s.text.trim()];
+          continue;
+        }
+        if (SEREBII_OTHER.test(s.text)) continue;
+        if (/Max Raid/.test(s.text) && v !== "sword" && v !== "shield") continue;
+        const tail = /\((\w+)(?: Form)?\)\s*$/.exec(s.text);
+        const labels = tail ? [`${tail[1].replace(/^Alola$/, "Alolan").replace(/^Kanto$/, "Kantonian").replace(/^Galar$/, "Galarian")} Form`] : current;
+        const f = lineForms(e.dex, v, labels);
+        if (!f || !f.includes(e.form)) continue;
+        const names = s.places.length ? s.places : s.text.replace(/^[^:]*:\s*/, "").split(/,\s*|\s+and\s+/);
+        const hint = /^Fixed:/.test(s.text) ? "Fixed encounter" : /^Rare Spawn/.test(s.text) ? "Overworld" : undefined;
+        for (const n of names)
+          if (n.trim()) {
+            const k = place(sets, unplaced, v, n.trim().replace(/\s*\([^)]*\)$/, ""));
+            if (k && hint && !hints.has(`${v}|${k}`)) hints.set(`${v}|${k}`, hint);
+          }
+      }
+    }
+  }
+  return { sets, unplaced, hints };
+}
+
+/** Event-only places (rules.ts EVENT_ONLY) are left out on purpose. */
+function ruledOut(dex: number, v: string, key: string): boolean {
+  const name = key.split("|")[1];
+  return EVENT_ONLY.some((x) => x.dex === dex && (!x.versions || x.versions.includes(v)) && (!x.loc || x.loc === name));
+}
+
+export interface SampleResult {
+  id: string;
+  name: string;
+  places: number;
+  games: { version: string; ours: string[]; bulbapedia: string[]; serebii: string[]; errorsExtra: string[]; errorsMissing: string[]; disputed: string[] }[];
+  ok: boolean;
+}
+
+/** Where the build left a row out by a rule (src/data/hunt/review.json excludedAt): a source listing it there isn't a miss. */
+const RULED_OUT = new Set<string>(
+  fs.existsSync("src/data/hunt/review.json") ? ((JSON.parse(fs.readFileSync("src/data/hunt/review.json", "utf8")) as { excludedAt?: string[] }).excludedAt ?? []) : [],
+);
+
+export function check(sample: HuntEntry[], bulba: Record<string, EvidenceEntry[]>, serebii: Record<string, SerebiiRow[]>, detail: SerebiiDetail = {}): SampleResult[] {
+  return sample.map((e) => {
+    const ours: Sets = new Map();
+    for (const p of e.places) for (const m of p.methods) for (const v of m.versions) add(ours, v, `${p.geoRegion}|${p.name}`);
+    // Sources first, on their own.
+    const b = bulbapediaSets(e, bulba).sets;
+    const s = serebiiSets(e, serebii, detail).sets;
+    const games: SampleResult["games"] = [];
+    for (const v of [...new Set([...ours.keys(), ...b.keys(), ...s.keys()])].sort()) {
+      const o = ours.get(v) ?? new Set<string>();
+      const bv = b.get(v) ?? new Set<string>();
+      const sv = s.get(v) ?? new Set<string>();
+      const errorsExtra = [...o].filter((k) => !bv.has(k) && !sv.has(k));
+      const errorsMissing = [...bv].filter((k) => sv.has(k) && !o.has(k) && !RULED_OUT.has(`${e.dex}|${v}|${k}`) && !ruledOut(e.dex, v, k));
+      const disputed = [...new Set([...bv, ...sv])].filter((k) => !o.has(k) && !(bv.has(k) && sv.has(k)));
+      games.push({ version: v, ours: [...o].sort(), bulbapedia: [...bv].sort(), serebii: [...sv].sort(), errorsExtra, errorsMissing, disputed });
+    }
+    return { id: e.id, name: e.name, places: e.places.length, games, ok: games.every((g) => !g.errorsExtra.length && !g.errorsMissing.length) };
+  });
+}
+
+if (process.argv[1]?.endsWith("verify-sample.ts")) {
+  const [cmd, ...args] = process.argv.slice(2);
+  const flag = (name: string) => {
+    const i = args.indexOf(name);
+    return i >= 0 ? args.splice(i, 2)[1] : undefined;
+  };
+  if (cmd === "pick") {
+    const exclude = new Set<string>();
+    for (let f = flag("--exclude"); f; f = flag("--exclude")) for (const id of JSON.parse(fs.readFileSync(f, "utf8")) as string[]) exclude.add(id);
+    const [seed, size, file] = args;
+    const sample = pickSample(seed, Number(size), exclude);
+    fs.writeFileSync(file, JSON.stringify(sample.map((e) => e.id)));
+    console.log([...new Set(sample.map((e) => e.dex))].join(" "));
+  } else {
+    const out = flag("--out");
+    const detailFile = flag("--detail");
+    const detail: SerebiiDetail = detailFile && fs.existsSync(detailFile) ? JSON.parse(fs.readFileSync(detailFile, "utf8")) : {};
+    const [file, bulbaFile, ...serebiiFiles] = args;
+    const ids = JSON.parse(fs.readFileSync(file, "utf8")) as string[];
+    const byId = new Map(table.entries.map((e) => [e.id, e]));
+    const gone = ids.filter((id) => !byId.has(id));
+    const sample = ids.flatMap((id) => byId.get(id) ?? []);
+    const bulba = JSON.parse(fs.readFileSync(bulbaFile, "utf8")) as Record<string, EvidenceEntry[]>;
+    const serebii: Record<string, SerebiiRow[]> = {};
+    for (const f of serebiiFiles) Object.assign(serebii, JSON.parse(fs.readFileSync(f, "utf8")));
+    const res = check(sample, bulba, serebii, detail);
+    if (out) fs.writeFileSync(out, JSON.stringify({ sample: ids, leftOutSince: gone, results: res }, null, 1));
+    const bad = res.filter((r) => !r.ok);
+    console.log(`${ids.length} sampled, ${gone.length} since left out of the table, ${res.length} checked, ${bad.length} with an error (${((100 * bad.length) / Math.max(1, res.length)).toFixed(1)}%)`);
+    for (const r of bad)
+      for (const g of r.games.filter((x) => x.errorsExtra.length || x.errorsMissing.length)) console.log(`  ${r.id} ${r.name} ${g.version}: extra ${g.errorsExtra.join(", ") || "-"} | missing ${g.errorsMissing.join(", ") || "-"}`);
+  }
+}

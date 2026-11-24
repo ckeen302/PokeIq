@@ -1,0 +1,8289 @@
+{
+ "Metapod": {
+  "Red": {
+   "bulbapedia": [
+    "Route 25",
+    "Viridian Forest"
+   ],
+   "serebii": [
+    "Route 25",
+    "Viridian Forest"
+   ]
+  },
+  "Blue": {
+   "bulbapedia": [
+    "Route 24",
+    "Route 25",
+    "Viridian Forest"
+   ],
+   "serebii": [
+    "Route 24",
+    "Route 25",
+    "Viridian Forest"
+   ]
+  },
+  "Yellow": {
+   "bulbapedia": [
+    "Viridian Forest"
+   ],
+   "serebii": [
+    "Viridian Forest"
+   ]
+  },
+  "Gold": {
+   "bulbapedia": [
+    "Route 2",
+    "Route 30",
+    "Route 31",
+    "Ilex Forest",
+    "National Park",
+    "Route 26",
+    "Route 27",
+    "Route 34",
+    "Route 35",
+    "Route 36",
+    "Route 37",
+    "Route 38",
+    "Route 39",
+    "Azalea Town",
+    "Lake of Rage"
+   ],
+   "serebii": [
+    "Route 30",
+    "Route 31",
+    "Route 34",
+    "Route 35",
+    "Route 36",
+    "Route 37",
+    "Route 38",
+    "Route 39",
+    "Azalea Town",
+    "Ilex Forest",
+    "National Park",
+    "Lake of Rage",
+    "Route 2",
+    "Route 26",
+    "Route 27"
+   ]
+  },
+  "Silver": {
+   "bulbapedia": [
+    "National Park"
+   ],
+   "serebii": [
+    "National Park"
+   ]
+  },
+  "Crystal": {
+   "bulbapedia": [
+    "Route 24",
+    "Route 25",
+    "Ilex Forest",
+    "National Park"
+   ],
+   "serebii": [
+    "Route 45",
+    "Route 46",
+    "Ilex Forest",
+    "National Park",
+    "Route 24",
+    "Route 25"
+   ]
+  },
+  "Ruby": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sapphire": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Emerald": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "FireRed": {
+   "bulbapedia": [
+    "Route 24",
+    "Route 25",
+    "Viridian Forest",
+    "Pattern Bush"
+   ],
+   "serebii": [
+    "Route 24",
+    "Route 25",
+    "Viridian Forest",
+    "Pattern Bush"
+   ]
+  },
+  "LeafGreen": {
+   "bulbapedia": [
+    "Route 24",
+    "Route 25",
+    "Viridian Forest",
+    "Pattern Bush"
+   ],
+   "serebii": [
+    "Route 24",
+    "Route 25",
+    "Viridian Forest",
+    "Pattern Bush"
+   ]
+  },
+  "Diamond": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Pearl": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Platinum": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "HeartGold": {
+   "bulbapedia": [
+    "Route 2",
+    "Route 30",
+    "Route 31",
+    "Ilex Forest",
+    "National Park",
+    "Viridian Forest",
+    "Route 47"
+   ],
+   "serebii": [
+    "Route 30",
+    "Route 31",
+    "Ilex Forest",
+    "National Park",
+    "Route 2",
+    "Viridian Forest"
+   ]
+  },
+  "SoulSilver": {
+   "bulbapedia": [
+    "National Park"
+   ],
+   "serebii": [
+    "National Park"
+   ]
+  },
+  "Black": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "White": {
+   "bulbapedia": [
+    "Route 12"
+   ],
+   "serebii": [
+    "Route 12"
+   ]
+  },
+  "Black 2": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "White 2": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "X": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Y": {
+   "bulbapedia": [
+    "Santalune Forest"
+   ],
+   "serebii": [
+    "Santalune Forest"
+   ]
+  },
+  "Omega Ruby": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Alpha Sapphire": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sun": {
+   "bulbapedia": [
+    "Route 1",
+    "Route 5",
+    "Lush Jungle",
+    "Melemele Meadow"
+   ],
+   "serebii": [
+    "Route 1",
+    "Route 5",
+    "Lush Jungle",
+    "Melemele Meadow"
+   ]
+  },
+  "Moon": {
+   "bulbapedia": [
+    "Route 1",
+    "Route 5",
+    "Lush Jungle",
+    "Melemele Meadow"
+   ],
+   "serebii": [
+    "Route 1",
+    "Route 5",
+    "Lush Jungle",
+    "Melemele Meadow"
+   ]
+  },
+  "Ultra Sun": {
+   "bulbapedia": [
+    "Route 5",
+    "Lush Jungle",
+    "Melemele Meadow"
+   ],
+   "serebii": [
+    "Route 5",
+    "Lush Jungle",
+    "Melemele Meadow"
+   ]
+  },
+  "Ultra Moon": {
+   "bulbapedia": [
+    "Route 5",
+    "Lush Jungle",
+    "Melemele Meadow"
+   ],
+   "serebii": [
+    "Route 5",
+    "Lush Jungle",
+    "Melemele Meadow"
+   ]
+  },
+  "Let's Go Pikachu": {
+   "bulbapedia": [
+    "Viridian Forest"
+   ],
+   "serebii": [
+    "Viridian Forest"
+   ]
+  },
+  "Let's Go Eevee": {
+   "bulbapedia": [
+    "Viridian Forest"
+   ],
+   "serebii": [
+    "Viridian Forest"
+   ]
+  },
+  "Sword": {
+   "bulbapedia": [
+    "Rolling Fields",
+    "Bridge Field",
+    "Dappled Grove",
+    "South Lake Miloch"
+   ],
+   "serebii": [
+    "Rolling Fields",
+    "Bridge Field",
+    "Dappled Grove",
+    "South Lake Miloch"
+   ]
+  },
+  "Shield": {
+   "bulbapedia": [
+    "Rolling Fields",
+    "Bridge Field",
+    "Dappled Grove",
+    "South Lake Miloch"
+   ],
+   "serebii": [
+    "Rolling Fields",
+    "Bridge Field",
+    "Dappled Grove",
+    "South Lake Miloch"
+   ]
+  },
+  "Brilliant Diamond": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Shining Pearl": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Scarlet": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Violet": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Legends: Z-A": {
+   "bulbapedia": [],
+   "serebii": []
+  }
+ },
+ "Weepinbell": {
+  "Red": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Blue": {
+   "bulbapedia": [
+    "Route 12",
+    "Route 13",
+    "Route 14",
+    "Route 15"
+   ],
+   "serebii": [
+    "Route 12",
+    "Route 13",
+    "Route 14",
+    "Route 15"
+   ]
+  },
+  "Yellow": {
+   "bulbapedia": [
+    "Route 12",
+    "Route 13",
+    "Route 14",
+    "Route 15",
+    "Cerulean Cave"
+   ],
+   "serebii": [
+    "Route 12",
+    "Route 13",
+    "Route 14",
+    "Route 15",
+    "Cerulean Cave"
+   ]
+  },
+  "Gold": {
+   "bulbapedia": [
+    "Route 24",
+    "Route 25",
+    "Route 44"
+   ],
+   "serebii": [
+    "Route 24",
+    "Route 25",
+    "Route 44"
+   ]
+  },
+  "Silver": {
+   "bulbapedia": [
+    "Route 24",
+    "Route 25",
+    "Route 44"
+   ],
+   "serebii": [
+    "Route 24",
+    "Route 25",
+    "Route 44"
+   ]
+  },
+  "Crystal": {
+   "bulbapedia": [
+    "Route 44"
+   ],
+   "serebii": [
+    "Route 44"
+   ]
+  },
+  "Ruby": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sapphire": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Emerald": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "FireRed": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "LeafGreen": {
+   "bulbapedia": [
+    "Route 12",
+    "Route 13",
+    "Route 14",
+    "Route 15",
+    "Berry Forest",
+    "Bond Bridge",
+    "Cape Brink",
+    "Water Path"
+   ],
+   "serebii": [
+    "Route 12",
+    "Route 13",
+    "Route 14",
+    "Route 15",
+    "Berry Forest",
+    "Bond Bridge",
+    "Cape Brink",
+    "Water Path"
+   ]
+  },
+  "Diamond": {
+   "bulbapedia": [
+    "Route 224",
+    "Route 229",
+    "Route 230"
+   ],
+   "serebii": [
+    "Route 224",
+    "Route 229",
+    "Route 230"
+   ]
+  },
+  "Pearl": {
+   "bulbapedia": [
+    "Route 224",
+    "Route 229",
+    "Route 230"
+   ],
+   "serebii": [
+    "Route 224",
+    "Route 229",
+    "Route 230"
+   ]
+  },
+  "Platinum": {
+   "bulbapedia": [
+    "Route 224",
+    "Route 230"
+   ],
+   "serebii": [
+    "Route 224",
+    "Route 230"
+   ]
+  },
+  "HeartGold": {
+   "bulbapedia": [
+    "Route 24",
+    "Route 25",
+    "Route 44",
+    "Safari Zone"
+   ],
+   "serebii": [
+    "Route 24",
+    "Route 25",
+    "Route 44",
+    "Safari Zone"
+   ]
+  },
+  "SoulSilver": {
+   "bulbapedia": [
+    "Route 24",
+    "Route 25",
+    "Route 44",
+    "Safari Zone"
+   ],
+   "serebii": [
+    "Route 24",
+    "Route 25",
+    "Route 44",
+    "Safari Zone"
+   ]
+  },
+  "Black": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "White": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Black 2": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "White 2": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "X": {
+   "bulbapedia": [
+    "Route 14",
+    "Route 16",
+    "Route 19"
+   ],
+   "serebii": [
+    "Route 14",
+    "Route 16",
+    "Route 19"
+   ]
+  },
+  "Y": {
+   "bulbapedia": [
+    "Route 14",
+    "Route 16",
+    "Route 19"
+   ],
+   "serebii": [
+    "Route 14",
+    "Route 16",
+    "Route 19"
+   ]
+  },
+  "Omega Ruby": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Alpha Sapphire": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Let's Go Pikachu": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Let's Go Eevee": {
+   "bulbapedia": [
+    "Route 12",
+    "Route 13",
+    "Route 14",
+    "Route 15",
+    "Route 21"
+   ],
+   "serebii": [
+    "Route 12",
+    "Route 13",
+    "Route 14",
+    "Route 15",
+    "Route 21"
+   ]
+  },
+  "Sword": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Shield": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Brilliant Diamond": {
+   "bulbapedia": [
+    "Route 224",
+    "Route 229",
+    "Route 230"
+   ],
+   "serebii": [
+    "Route 224",
+    "Route 229",
+    "Route 230"
+   ]
+  },
+  "Shining Pearl": {
+   "bulbapedia": [
+    "Route 224",
+    "Route 229",
+    "Route 230"
+   ],
+   "serebii": [
+    "Route 224",
+    "Route 229",
+    "Route 230"
+   ]
+  },
+  "Scarlet": {
+   "bulbapedia": [
+    "Mossfell Confluence"
+   ],
+   "serebii": [
+    "Mossfell Confluence"
+   ]
+  },
+  "Violet": {
+   "bulbapedia": [
+    "Mossfell Confluence"
+   ],
+   "serebii": [
+    "Mossfell Confluence"
+   ]
+  },
+  "Legends: Z-A": {
+   "bulbapedia": [
+    "Wild Zone 13"
+   ],
+   "serebii": [
+    "Wild Zone 13"
+   ]
+  }
+ },
+ "Gastly": {
+  "Red": {
+   "bulbapedia": [
+    "Pokémon Tower"
+   ],
+   "serebii": [
+    "Pokémon Tower"
+   ]
+  },
+  "Blue": {
+   "bulbapedia": [
+    "Pokémon Tower"
+   ],
+   "serebii": [
+    "Pokémon Tower"
+   ]
+  },
+  "Yellow": {
+   "bulbapedia": [
+    "Pokémon Tower"
+   ],
+   "serebii": [
+    "Pokémon Tower"
+   ]
+  },
+  "Gold": {
+   "bulbapedia": [
+    "Tin Tower",
+    "Sprout Tower"
+   ],
+   "serebii": [
+    "Tin Tower",
+    "Sprout Tower"
+   ]
+  },
+  "Silver": {
+   "bulbapedia": [
+    "Tin Tower",
+    "Sprout Tower"
+   ],
+   "serebii": [
+    "Tin Tower",
+    "Sprout Tower"
+   ]
+  },
+  "Crystal": {
+   "bulbapedia": [
+    "Route 31",
+    "Route 32",
+    "Route 36",
+    "Tin Tower",
+    "Sprout Tower"
+   ],
+   "serebii": [
+    "Route 31",
+    "Route 32",
+    "Route 36",
+    "Tin Tower",
+    "Sprout Tower"
+   ]
+  },
+  "Ruby": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sapphire": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Emerald": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "FireRed": {
+   "bulbapedia": [
+    "Pokémon Tower",
+    "Lost Cave"
+   ],
+   "serebii": [
+    "Pokémon Tower",
+    "Lost Cave"
+   ]
+  },
+  "LeafGreen": {
+   "bulbapedia": [
+    "Pokémon Tower",
+    "Lost Cave"
+   ],
+   "serebii": [
+    "Pokémon Tower",
+    "Lost Cave"
+   ]
+  },
+  "Diamond": {
+   "bulbapedia": [
+    "Old Chateau",
+    "Lost Tower",
+    "Route 209"
+   ],
+   "serebii": [
+    "Route 209",
+    "Old Chateau",
+    "Lost Tower"
+   ]
+  },
+  "Pearl": {
+   "bulbapedia": [
+    "Old Chateau",
+    "Lost Tower",
+    "Route 209"
+   ],
+   "serebii": [
+    "Route 209",
+    "Old Chateau",
+    "Lost Tower"
+   ]
+  },
+  "Platinum": {
+   "bulbapedia": [
+    "Old Chateau",
+    "Eterna Forest",
+    "Lost Tower",
+    "Turnback Cave"
+   ],
+   "serebii": [
+    "Eterna Forest",
+    "Old Chateau",
+    "Lost Tower",
+    "Turnback Cave"
+   ]
+  },
+  "HeartGold": {
+   "bulbapedia": [
+    "Bell Tower",
+    "Sprout Tower",
+    "Safari Zone"
+   ],
+   "serebii": [
+    "Sprout Tower",
+    "Bell Tower",
+    "Safari Zone"
+   ]
+  },
+  "SoulSilver": {
+   "bulbapedia": [
+    "Bell Tower",
+    "Sprout Tower",
+    "Safari Zone"
+   ],
+   "serebii": [
+    "Sprout Tower",
+    "Bell Tower",
+    "Safari Zone"
+   ]
+  },
+  "Black": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "White": {
+   "bulbapedia": [
+    "White Forest"
+   ],
+   "serebii": [
+    "White Forest"
+   ]
+  },
+  "Black 2": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "White 2": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "X": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Y": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Omega Ruby": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Alpha Sapphire": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sun": {
+   "bulbapedia": [
+    "Hau'oli Cemetery",
+    "Memorial Hill"
+   ],
+   "serebii": [
+    "Hau'oli Cemetery",
+    "Memorial Hill"
+   ]
+  },
+  "Moon": {
+   "bulbapedia": [
+    "Hau'oli Cemetery",
+    "Memorial Hill"
+   ],
+   "serebii": [
+    "Hau'oli Cemetery",
+    "Memorial Hill"
+   ]
+  },
+  "Ultra Sun": {
+   "bulbapedia": [
+    "Hau'oli Cemetery",
+    "Memorial Hill",
+    "Trainers' School"
+   ],
+   "serebii": [
+    "Hau'oli Cemetery",
+    "Memorial Hill",
+    "Route 1"
+   ]
+  },
+  "Ultra Moon": {
+   "bulbapedia": [
+    "Hau'oli Cemetery",
+    "Memorial Hill",
+    "Trainers' School"
+   ],
+   "serebii": [
+    "Hau'oli Cemetery",
+    "Memorial Hill",
+    "Route 1"
+   ]
+  },
+  "Let's Go Pikachu": {
+   "bulbapedia": [
+    "Pokémon Tower"
+   ],
+   "serebii": [
+    "Pokémon Tower"
+   ]
+  },
+  "Let's Go Eevee": {
+   "bulbapedia": [
+    "Pokémon Tower"
+   ],
+   "serebii": [
+    "Pokémon Tower"
+   ]
+  },
+  "Sword": {
+   "bulbapedia": [
+    "North Lake Miloch",
+    "Watchtower Ruins",
+    "Giant's Seat",
+    "Hammerlocke Hills",
+    "Giant's Cap",
+    "Giant's Mirror",
+    "Motostoke Riverbank",
+    "South Lake Miloch",
+    "Stony Wilderness"
+   ],
+   "serebii": [
+    "North Lake Miloch",
+    "Watchtower Ruins",
+    "Giant's Seat",
+    "Hammerlocke Hills",
+    "Giant's Cap",
+    "Giant's Mirror",
+    "Motostoke Riverbank",
+    "South Lake Miloch",
+    "Stony Wilderness"
+   ]
+  },
+  "Shield": {
+   "bulbapedia": [
+    "North Lake Miloch",
+    "Watchtower Ruins",
+    "Giant's Seat",
+    "Hammerlocke Hills",
+    "Giant's Cap",
+    "Giant's Mirror",
+    "Motostoke Riverbank",
+    "South Lake Miloch",
+    "Stony Wilderness"
+   ],
+   "serebii": [
+    "North Lake Miloch",
+    "Watchtower Ruins",
+    "Giant's Seat",
+    "Hammerlocke Hills",
+    "Giant's Cap",
+    "Giant's Mirror",
+    "Motostoke Riverbank",
+    "South Lake Miloch",
+    "Stony Wilderness"
+   ]
+  },
+  "Brilliant Diamond": {
+   "bulbapedia": [
+    "Route 209",
+    "Old Chateau",
+    "Lost Tower"
+   ],
+   "serebii": [
+    "Route 209",
+    "Old Chateau",
+    "Lost Tower"
+   ]
+  },
+  "Shining Pearl": {
+   "bulbapedia": [
+    "Route 209",
+    "Old Chateau",
+    "Lost Tower"
+   ],
+   "serebii": [
+    "Route 209",
+    "Old Chateau",
+    "Lost Tower"
+   ]
+  },
+  "Scarlet": {
+   "bulbapedia": [
+    "South Province Area One",
+    "South Province Area Three",
+    "South Province Area Four",
+    "East Province Area One",
+    "East Province Area Two",
+    "East Province Area Three",
+    "West Province Area One",
+    "West Province Area Two",
+    "West Province Area Three",
+    "Apple Hills",
+    "Mossfell Confluence",
+    "Oni Mountain",
+    "Wistful Fields",
+    "Paradise Barrens"
+   ],
+   "serebii": [
+    "East Province Area Two",
+    "East Province Area Three",
+    "South Province Area One",
+    "South Province Area Three",
+    "West Province Area One",
+    "Apple Hills",
+    "Mossfell Confluence",
+    "Oni Mountain",
+    "Wistful Fields",
+    "Paradise Barrens"
+   ]
+  },
+  "Violet": {
+   "bulbapedia": [
+    "South Province Area One",
+    "South Province Area Three",
+    "South Province Area Four",
+    "East Province Area One",
+    "East Province Area Two",
+    "East Province Area Three",
+    "West Province Area One",
+    "West Province Area Two",
+    "West Province Area Three",
+    "Apple Hills",
+    "Mossfell Confluence",
+    "Oni Mountain",
+    "Wistful Fields",
+    "Paradise Barrens"
+   ],
+   "serebii": [
+    "East Province Area Two",
+    "East Province Area Three",
+    "South Province Area One",
+    "South Province Area Three",
+    "West Province Area One",
+    "Apple Hills",
+    "Mossfell Confluence",
+    "Oni Mountain",
+    "Wistful Fields",
+    "Paradise Barrens"
+   ]
+  },
+  "Legends: Z-A": {
+   "bulbapedia": [
+    "Vert Sector 1",
+    "Vert Sector 5",
+    "Vert Sector 7",
+    "Vert Sector 9",
+    "Espace Vide",
+    "Bleu Sector 4",
+    "Bleu Sector 5",
+    "Bleu Sector 8",
+    "Old Building",
+    "The Sewers",
+    "Magenta Sector 1",
+    "Magenta Sector 3",
+    "Magenta Sector 4",
+    "Magenta Sector 6",
+    "Magenta Sector 9",
+    "Rouge Sector 8",
+    "Wild Zone 4",
+    "Jaune Sector 4",
+    "Jaune Sector 6",
+    "Jaune Sector 7",
+    "Jaune Sector 9"
+   ],
+   "serebii": [
+    "Wild Zone 4",
+    "Wild Zone 7",
+    "Bleu District",
+    "Jaune District",
+    "Magenta District",
+    "Rouge District",
+    "Vert District",
+    "Old House",
+    "The Sewers"
+   ]
+  }
+ },
+ "Koffing": {
+  "Red": {
+   "bulbapedia": [
+    "Pokémon Mansion"
+   ],
+   "serebii": [
+    "Pokémon Mansion"
+   ]
+  },
+  "Blue": {
+   "bulbapedia": [
+    "Pokémon Mansion"
+   ],
+   "serebii": [
+    "Pokémon Mansion"
+   ]
+  },
+  "Yellow": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Gold": {
+   "bulbapedia": [
+    "Burned Tower",
+    "Team Rocket HQ"
+   ],
+   "serebii": [
+    "Burned Tower"
+   ]
+  },
+  "Silver": {
+   "bulbapedia": [
+    "Burned Tower",
+    "Team Rocket HQ"
+   ],
+   "serebii": [
+    "Burned Tower"
+   ]
+  },
+  "Crystal": {
+   "bulbapedia": [
+    "Burned Tower",
+    "Team Rocket HQ"
+   ],
+   "serebii": [
+    "Burned Tower"
+   ]
+  },
+  "Ruby": {
+   "bulbapedia": [
+    "Fiery Path"
+   ],
+   "serebii": [
+    "Fiery Path"
+   ]
+  },
+  "Sapphire": {
+   "bulbapedia": [
+    "Fiery Path"
+   ],
+   "serebii": [
+    "Fiery Path"
+   ]
+  },
+  "Emerald": {
+   "bulbapedia": [
+    "Fiery Path"
+   ],
+   "serebii": [
+    "Fiery Path"
+   ]
+  },
+  "FireRed": {
+   "bulbapedia": [
+    "Pokémon Mansion",
+    "Celadon City"
+   ],
+   "serebii": [
+    "Pokémon Mansion",
+    "Celadon City"
+   ]
+  },
+  "LeafGreen": {
+   "bulbapedia": [
+    "Pokémon Mansion",
+    "Celadon City"
+   ],
+   "serebii": [
+    "Pokémon Mansion",
+    "Celadon City"
+   ]
+  },
+  "Diamond": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Pearl": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Platinum": {
+   "bulbapedia": [
+    "Stark Mountain"
+   ],
+   "serebii": [
+    "Stark Mountain"
+   ]
+  },
+  "HeartGold": {
+   "bulbapedia": [
+    "Burned Tower",
+    "Safari Zone",
+    "Team Rocket HQ"
+   ],
+   "serebii": [
+    "Burned Tower",
+    "Safari Zone"
+   ]
+  },
+  "SoulSilver": {
+   "bulbapedia": [
+    "Burned Tower",
+    "Safari Zone",
+    "Team Rocket HQ"
+   ],
+   "serebii": [
+    "Burned Tower",
+    "Safari Zone"
+   ]
+  },
+  "Black": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "White": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Black 2": {
+   "bulbapedia": [
+    "Virbank Complex"
+   ],
+   "serebii": [
+    "Virbank Complex"
+   ]
+  },
+  "White 2": {
+   "bulbapedia": [
+    "Virbank Complex"
+   ],
+   "serebii": [
+    "Virbank Complex"
+   ]
+  },
+  "X": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Y": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Omega Ruby": {
+   "bulbapedia": [
+    "Fiery Path"
+   ],
+   "serebii": [
+    "Fiery Path"
+   ]
+  },
+  "Alpha Sapphire": {
+   "bulbapedia": [
+    "Fiery Path"
+   ],
+   "serebii": [
+    "Fiery Path"
+   ]
+  },
+  "Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Let's Go Pikachu": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Let's Go Eevee": {
+   "bulbapedia": [
+    "Power Plant",
+    "Pokémon Mansion"
+   ],
+   "serebii": [
+    "Power Plant",
+    "Pokémon Mansion"
+   ]
+  },
+  "Sword": {
+   "bulbapedia": [
+    "Dusty Bowl",
+    "Giant's Mirror",
+    "Motostoke Outskirts",
+    "Motostoke Riverbank",
+    "East Lake Axewell",
+    "Giant's Cap",
+    "Hammerlocke Hills",
+    "North Lake Miloch"
+   ],
+   "serebii": [
+    "Dusty Bowl",
+    "Giant's Mirror",
+    "Motostoke Outskirts",
+    "Motostoke Riverbank",
+    "East Lake Axewell",
+    "Giant's Cap",
+    "Hammerlocke Hills",
+    "North Lake Miloch"
+   ]
+  },
+  "Shield": {
+   "bulbapedia": [
+    "Dusty Bowl",
+    "Giant's Mirror",
+    "Motostoke Outskirts",
+    "Motostoke Riverbank",
+    "East Lake Axewell",
+    "Giant's Cap",
+    "Hammerlocke Hills",
+    "North Lake Miloch"
+   ],
+   "serebii": [
+    "Dusty Bowl",
+    "Giant's Mirror",
+    "Motostoke Outskirts",
+    "Motostoke Riverbank",
+    "East Lake Axewell",
+    "Giant's Cap",
+    "Hammerlocke Hills",
+    "North Lake Miloch"
+   ]
+  },
+  "Brilliant Diamond": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Shining Pearl": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Scarlet": {
+   "bulbapedia": [
+    "Oni Mountain",
+    "Infernal Pass",
+    "Crystal Pool"
+   ],
+   "serebii": [
+    "Oni Mountain",
+    "Infernal Pass",
+    "Crystal Pool"
+   ]
+  },
+  "Violet": {
+   "bulbapedia": [
+    "Oni Mountain",
+    "Infernal Pass",
+    "Crystal Pool"
+   ],
+   "serebii": [
+    "Oni Mountain",
+    "Infernal Pass",
+    "Crystal Pool"
+   ]
+  },
+  "Legends: Z-A": {
+   "bulbapedia": [],
+   "serebii": []
+  }
+ },
+ "Rhyhorn": {
+  "Red": {
+   "bulbapedia": [
+    "Safari Zone"
+   ],
+   "serebii": [
+    "Safari Zone"
+   ]
+  },
+  "Blue": {
+   "bulbapedia": [
+    "Safari Zone"
+   ],
+   "serebii": [
+    "Safari Zone"
+   ]
+  },
+  "Yellow": {
+   "bulbapedia": [
+    "Safari Zone",
+    "Cerulean Cave"
+   ],
+   "serebii": [
+    "Safari Zone",
+    "Cerulean Cave"
+   ]
+  },
+  "Gold": {
+   "bulbapedia": [
+    "Victory Road"
+   ],
+   "serebii": [
+    "Victory Road"
+   ]
+  },
+  "Silver": {
+   "bulbapedia": [
+    "Victory Road"
+   ],
+   "serebii": [
+    "Victory Road"
+   ]
+  },
+  "Crystal": {
+   "bulbapedia": [
+    "Victory Road"
+   ],
+   "serebii": [
+    "Victory Road"
+   ]
+  },
+  "Ruby": {
+   "bulbapedia": [
+    "Safari Zone"
+   ],
+   "serebii": [
+    "Safari Zone"
+   ]
+  },
+  "Sapphire": {
+   "bulbapedia": [
+    "Safari Zone"
+   ],
+   "serebii": [
+    "Safari Zone"
+   ]
+  },
+  "Emerald": {
+   "bulbapedia": [
+    "Safari Zone"
+   ],
+   "serebii": [
+    "Safari Zone"
+   ]
+  },
+  "FireRed": {
+   "bulbapedia": [
+    "Safari Zone"
+   ],
+   "serebii": [
+    "Safari Zone"
+   ]
+  },
+  "LeafGreen": {
+   "bulbapedia": [
+    "Safari Zone"
+   ],
+   "serebii": [
+    "Safari Zone"
+   ]
+  },
+  "Diamond": {
+   "bulbapedia": [
+    "Route 227",
+    "Stark Mountain"
+   ],
+   "serebii": [
+    "Route 227",
+    "Stark Mountain"
+   ]
+  },
+  "Pearl": {
+   "bulbapedia": [
+    "Route 227",
+    "Stark Mountain"
+   ],
+   "serebii": [
+    "Route 227",
+    "Stark Mountain"
+   ]
+  },
+  "Platinum": {
+   "bulbapedia": [
+    "Route 214",
+    "Route 227",
+    "Victory Road",
+    "Stark Mountain"
+   ],
+   "serebii": [
+    "Route 214",
+    "Route 227",
+    "Victory Road",
+    "Stark Mountain"
+   ]
+  },
+  "HeartGold": {
+   "bulbapedia": [
+    "Victory Road",
+    "Safari Zone"
+   ],
+   "serebii": [
+    "Victory Road",
+    "Safari Zone"
+   ]
+  },
+  "SoulSilver": {
+   "bulbapedia": [
+    "Victory Road",
+    "Safari Zone"
+   ],
+   "serebii": [
+    "Victory Road",
+    "Safari Zone"
+   ]
+  },
+  "Black": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "White": {
+   "bulbapedia": [
+    "White Forest"
+   ],
+   "serebii": [
+    "White Forest"
+   ]
+  },
+  "Black 2": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "White 2": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "X": {
+   "bulbapedia": [
+    "Glittering Cave"
+   ],
+   "serebii": [
+    "Glittering Cave"
+   ]
+  },
+  "Y": {
+   "bulbapedia": [
+    "Glittering Cave"
+   ],
+   "serebii": [
+    "Glittering Cave"
+   ]
+  },
+  "Omega Ruby": {
+   "bulbapedia": [
+    "Safari Zone"
+   ],
+   "serebii": [
+    "Safari Zone"
+   ]
+  },
+  "Alpha Sapphire": {
+   "bulbapedia": [
+    "Safari Zone"
+   ],
+   "serebii": [
+    "Safari Zone"
+   ]
+  },
+  "Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Let's Go Pikachu": {
+   "bulbapedia": [
+    "Rock Tunnel",
+    "Victory Road",
+    "Cerulean Cave"
+   ],
+   "serebii": [
+    "Rock Tunnel",
+    "Victory Road",
+    "Cerulean Cave"
+   ]
+  },
+  "Let's Go Eevee": {
+   "bulbapedia": [
+    "Rock Tunnel",
+    "Victory Road",
+    "Cerulean Cave"
+   ],
+   "serebii": [
+    "Rock Tunnel",
+    "Victory Road",
+    "Cerulean Cave"
+   ]
+  },
+  "Sword": {
+   "bulbapedia": [
+    "Route 8",
+    "Bridge Field",
+    "Giant's Cap",
+    "Giant's Mirror",
+    "Motostoke Riverbank",
+    "Stony Wilderness",
+    "Rolling Fields",
+    "Potbottom Desert",
+    "Fields of Honor"
+   ],
+   "serebii": [
+    "Route 8",
+    "Bridge Field",
+    "Giant's Cap",
+    "Giant's Mirror",
+    "Motostoke Riverbank",
+    "Stony Wilderness",
+    "Rolling Fields",
+    "Potbottom Desert",
+    "Fields of Honor",
+    "Training Lowlands"
+   ]
+  },
+  "Shield": {
+   "bulbapedia": [
+    "Route 8",
+    "Bridge Field",
+    "Giant's Cap",
+    "Giant's Mirror",
+    "Motostoke Riverbank",
+    "Stony Wilderness",
+    "Rolling Fields",
+    "Potbottom Desert",
+    "Fields of Honor"
+   ],
+   "serebii": [
+    "Route 8",
+    "Bridge Field",
+    "Giant's Cap",
+    "Giant's Mirror",
+    "Motostoke Riverbank",
+    "Stony Wilderness",
+    "Rolling Fields",
+    "Potbottom Desert",
+    "Fields of Honor",
+    "Training Lowlands"
+   ]
+  },
+  "Brilliant Diamond": {
+   "bulbapedia": [
+    "Route 227",
+    "Stark Mountain"
+   ],
+   "serebii": [
+    "Route 227",
+    "Stark Mountain"
+   ]
+  },
+  "Shining Pearl": {
+   "bulbapedia": [
+    "Route 227",
+    "Stark Mountain"
+   ],
+   "serebii": [
+    "Route 227",
+    "Stark Mountain"
+   ]
+  },
+  "Scarlet": {
+   "bulbapedia": [
+    "Savanna Biome"
+   ],
+   "serebii": [
+    "Savanna Biome"
+   ]
+  },
+  "Violet": {
+   "bulbapedia": [
+    "Savanna Biome"
+   ],
+   "serebii": [
+    "Savanna Biome"
+   ]
+  },
+  "Legends: Z-A": {
+   "bulbapedia": [],
+   "serebii": []
+  }
+ },
+ "Scyther": {
+  "Red": {
+   "bulbapedia": [
+    "Safari Zone"
+   ],
+   "serebii": [
+    "Safari Zone"
+   ]
+  },
+  "Blue": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Yellow": {
+   "bulbapedia": [
+    "Safari Zone"
+   ],
+   "serebii": [
+    "Safari Zone"
+   ]
+  },
+  "Gold": {
+   "bulbapedia": [
+    "National Park"
+   ],
+   "serebii": [
+    "National Park"
+   ]
+  },
+  "Silver": {
+   "bulbapedia": [
+    "National Park"
+   ],
+   "serebii": [
+    "National Park"
+   ]
+  },
+  "Crystal": {
+   "bulbapedia": [
+    "National Park"
+   ],
+   "serebii": [
+    "National Park"
+   ]
+  },
+  "Ruby": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sapphire": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Emerald": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "FireRed": {
+   "bulbapedia": [
+    "Safari Zone"
+   ],
+   "serebii": [
+    "Safari Zone"
+   ]
+  },
+  "LeafGreen": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Diamond": {
+   "bulbapedia": [
+    "Route 229"
+   ],
+   "serebii": [
+    "Route 229"
+   ]
+  },
+  "Pearl": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Platinum": {
+   "bulbapedia": [
+    "Route 210",
+    "Route 215"
+   ],
+   "serebii": [
+    "Route 210",
+    "Route 215"
+   ]
+  },
+  "HeartGold": {
+   "bulbapedia": [
+    "National Park"
+   ],
+   "serebii": [
+    "National Park"
+   ]
+  },
+  "SoulSilver": {
+   "bulbapedia": [
+    "National Park"
+   ],
+   "serebii": [
+    "National Park"
+   ]
+  },
+  "Black": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "White": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Black 2": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "White 2": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "X": {
+   "bulbapedia": [
+    "Route 21"
+   ],
+   "serebii": [
+    "Route 21"
+   ]
+  },
+  "Y": {
+   "bulbapedia": [
+    "Route 21"
+   ],
+   "serebii": [
+    "Route 21"
+   ]
+  },
+  "Omega Ruby": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Alpha Sapphire": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sun": {
+   "bulbapedia": [
+    "Poni Plains"
+   ],
+   "serebii": [
+    "Poni Plains"
+   ]
+  },
+  "Moon": {
+   "bulbapedia": [
+    "Poni Plains"
+   ],
+   "serebii": [
+    "Poni Plains"
+   ]
+  },
+  "Ultra Sun": {
+   "bulbapedia": [
+    "Poni Plains"
+   ],
+   "serebii": [
+    "Poni Plains"
+   ]
+  },
+  "Ultra Moon": {
+   "bulbapedia": [
+    "Poni Plains"
+   ],
+   "serebii": [
+    "Poni Plains"
+   ]
+  },
+  "Let's Go Pikachu": {
+   "bulbapedia": [
+    "Route 14",
+    "Route 15"
+   ],
+   "serebii": [
+    "Route 14",
+    "Route 15"
+   ]
+  },
+  "Let's Go Eevee": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sword": {
+   "bulbapedia": [
+    "Training Lowlands",
+    "Fields of Honor"
+   ],
+   "serebii": [
+    "Training Lowlands",
+    "Fields of Honor",
+    "Forest of Focus",
+    "Workout Sea"
+   ]
+  },
+  "Shield": {
+   "bulbapedia": [
+    "Training Lowlands",
+    "Fields of Honor"
+   ],
+   "serebii": [
+    "Training Lowlands",
+    "Fields of Honor",
+    "Forest of Focus",
+    "Workout Sea"
+   ]
+  },
+  "Brilliant Diamond": {
+   "bulbapedia": [
+    "Route 229"
+   ],
+   "serebii": [
+    "Route 229"
+   ]
+  },
+  "Shining Pearl": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Scarlet": {
+   "bulbapedia": [
+    "South Province Area Four",
+    "South Province Area Six",
+    "North Province Area Two",
+    "Casseroya Lake",
+    "Socarrat Trail",
+    "Savanna Biome",
+    "Canyon Biome",
+    "Chargestone Cavern"
+   ],
+   "serebii": [
+    "Casseroya Lake",
+    "North Province Area Two",
+    "South Province Area Four",
+    "South Province Area Six",
+    "Canyon Biome",
+    "Savanna Biome"
+   ]
+  },
+  "Violet": {
+   "bulbapedia": [
+    "South Province Area Four",
+    "South Province Area Six",
+    "North Province Area Two",
+    "Casseroya Lake",
+    "Socarrat Trail",
+    "Savanna Biome",
+    "Canyon Biome",
+    "Chargestone Cavern"
+   ],
+   "serebii": [
+    "Casseroya Lake",
+    "North Province Area Two",
+    "South Province Area Four",
+    "South Province Area Six",
+    "Canyon Biome",
+    "Savanna Biome"
+   ]
+  },
+  "Legends: Z-A": {
+   "bulbapedia": [
+    "Wild Zone 13"
+   ],
+   "serebii": [
+    "Wild Zone 13"
+   ]
+  }
+ },
+ "Snorlax": {
+  "Red": {
+   "bulbapedia": [
+    "Route 12",
+    "Route 16"
+   ],
+   "serebii": [
+    "Route 12",
+    "Route 16"
+   ]
+  },
+  "Blue": {
+   "bulbapedia": [
+    "Route 12",
+    "Route 16"
+   ],
+   "serebii": [
+    "Route 12",
+    "Route 16"
+   ]
+  },
+  "Yellow": {
+   "bulbapedia": [
+    "Route 12",
+    "Route 16"
+   ],
+   "serebii": [
+    "Route 12",
+    "Route 16"
+   ]
+  },
+  "Gold": {
+   "bulbapedia": [
+    "Vermilion City"
+   ],
+   "serebii": [
+    "Vermilion City"
+   ]
+  },
+  "Silver": {
+   "bulbapedia": [
+    "Vermilion City"
+   ],
+   "serebii": [
+    "Vermilion City"
+   ]
+  },
+  "Crystal": {
+   "bulbapedia": [
+    "Vermilion City"
+   ],
+   "serebii": [
+    "Vermilion City"
+   ]
+  },
+  "Ruby": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sapphire": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Emerald": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "FireRed": {
+   "bulbapedia": [
+    "Route 12",
+    "Route 16"
+   ],
+   "serebii": [
+    "Route 12",
+    "Route 16"
+   ]
+  },
+  "LeafGreen": {
+   "bulbapedia": [
+    "Route 12",
+    "Route 16"
+   ],
+   "serebii": [
+    "Route 12",
+    "Route 16"
+   ]
+  },
+  "Diamond": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Pearl": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Platinum": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "HeartGold": {
+   "bulbapedia": [
+    "Route 11",
+    "Route 12"
+   ],
+   "serebii": [
+    "Route 11"
+   ]
+  },
+  "SoulSilver": {
+   "bulbapedia": [
+    "Route 11",
+    "Route 12"
+   ],
+   "serebii": [
+    "Route 11"
+   ]
+  },
+  "Black": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "White": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Black 2": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "White 2": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "X": {
+   "bulbapedia": [
+    "Route 7"
+   ],
+   "serebii": [
+    "Route 7"
+   ]
+  },
+  "Y": {
+   "bulbapedia": [
+    "Route 7"
+   ],
+   "serebii": [
+    "Route 7"
+   ]
+  },
+  "Omega Ruby": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Alpha Sapphire": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sun": {
+   "bulbapedia": [
+    "Route 1"
+   ],
+   "serebii": [
+    "Route 1"
+   ]
+  },
+  "Moon": {
+   "bulbapedia": [
+    "Route 1"
+   ],
+   "serebii": [
+    "Route 1"
+   ]
+  },
+  "Ultra Sun": {
+   "bulbapedia": [
+    "Route 1"
+   ],
+   "serebii": [
+    "Route 1"
+   ]
+  },
+  "Ultra Moon": {
+   "bulbapedia": [
+    "Route 1"
+   ],
+   "serebii": [
+    "Route 1"
+   ]
+  },
+  "Let's Go Pikachu": {
+   "bulbapedia": [
+    "Route 12",
+    "Route 16",
+    "Cerulean Cave"
+   ],
+   "serebii": [
+    "Route 12",
+    "Route 16",
+    "Cerulean Cave"
+   ]
+  },
+  "Let's Go Eevee": {
+   "bulbapedia": [
+    "Route 12",
+    "Route 16",
+    "Cerulean Cave"
+   ],
+   "serebii": [
+    "Route 12",
+    "Route 16",
+    "Cerulean Cave"
+   ]
+  },
+  "Sword": {
+   "bulbapedia": [
+    "Motostoke Riverbank",
+    "Bridge Field",
+    "East Lake Axewell",
+    "Rolling Fields",
+    "Stony Wilderness",
+    "Slippery Slope",
+    "Frostpoint Field"
+   ],
+   "serebii": [
+    "Motostoke Riverbank",
+    "Bridge Field",
+    "East Lake Axewell",
+    "Rolling Fields",
+    "Stony Wilderness",
+    "Slippery Slope",
+    "Frostpoint Field",
+    "Giant's Bed",
+    "Giant's Foot",
+    "Ballimere Lake"
+   ]
+  },
+  "Shield": {
+   "bulbapedia": [
+    "Motostoke Riverbank",
+    "Bridge Field",
+    "East Lake Axewell",
+    "Rolling Fields",
+    "Stony Wilderness",
+    "Slippery Slope",
+    "Frostpoint Field",
+    "Giant's Bed"
+   ],
+   "serebii": [
+    "Motostoke Riverbank",
+    "Bridge Field",
+    "East Lake Axewell",
+    "Rolling Fields",
+    "Stony Wilderness",
+    "Slippery Slope",
+    "Frostpoint Field",
+    "Giant's Bed",
+    "Giant's Foot",
+    "Ballimere Lake"
+   ]
+  },
+  "Brilliant Diamond": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Shining Pearl": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Scarlet": {
+   "bulbapedia": [
+    "Timeless Woods"
+   ],
+   "serebii": [
+    "Timeless Woods"
+   ]
+  },
+  "Violet": {
+   "bulbapedia": [
+    "Timeless Woods"
+   ],
+   "serebii": [
+    "Timeless Woods"
+   ]
+  },
+  "Legends: Z-A": {
+   "bulbapedia": [],
+   "serebii": []
+  }
+ },
+ "Dratini": {
+  "Red": {
+   "bulbapedia": [
+    "Safari Zone"
+   ],
+   "serebii": [
+    "Safari Zone"
+   ]
+  },
+  "Blue": {
+   "bulbapedia": [
+    "Safari Zone"
+   ],
+   "serebii": [
+    "Safari Zone"
+   ]
+  },
+  "Yellow": {
+   "bulbapedia": [
+    "Safari Zone"
+   ],
+   "serebii": [
+    "Safari Zone"
+   ]
+  },
+  "Gold": {
+   "bulbapedia": [
+    "Dragon's Den",
+    "Route 45"
+   ],
+   "serebii": [
+    "Dragon's Den",
+    "Route 45"
+   ]
+  },
+  "Silver": {
+   "bulbapedia": [
+    "Dragon's Den",
+    "Route 45"
+   ],
+   "serebii": [
+    "Dragon's Den",
+    "Route 45"
+   ]
+  },
+  "Crystal": {
+   "bulbapedia": [
+    "Dragon's Den",
+    "Route 45"
+   ],
+   "serebii": [
+    "Dragon's Den",
+    "Route 45"
+   ]
+  },
+  "Ruby": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sapphire": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Emerald": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "FireRed": {
+   "bulbapedia": [
+    "Safari Zone"
+   ],
+   "serebii": [
+    "Safari Zone"
+   ]
+  },
+  "LeafGreen": {
+   "bulbapedia": [
+    "Safari Zone"
+   ],
+   "serebii": [
+    "Safari Zone"
+   ]
+  },
+  "Diamond": {
+   "bulbapedia": [
+    "Mt. Coronet"
+   ],
+   "serebii": [
+    "Mt. Coronet"
+   ]
+  },
+  "Pearl": {
+   "bulbapedia": [
+    "Mt. Coronet"
+   ],
+   "serebii": [
+    "Mt. Coronet"
+   ]
+  },
+  "Platinum": {
+   "bulbapedia": [
+    "Mt. Coronet"
+   ],
+   "serebii": [
+    "Mt. Coronet"
+   ]
+  },
+  "HeartGold": {
+   "bulbapedia": [
+    "Dragon's Den",
+    "Safari Zone"
+   ],
+   "serebii": [
+    "Dragon's Den",
+    "Safari Zone"
+   ]
+  },
+  "SoulSilver": {
+   "bulbapedia": [
+    "Dragon's Den",
+    "Safari Zone"
+   ],
+   "serebii": [
+    "Dragon's Den",
+    "Safari Zone"
+   ]
+  },
+  "Black": {
+   "bulbapedia": [
+    "Dragonspiral Tower"
+   ],
+   "serebii": [
+    "Dragonspiral Tower"
+   ]
+  },
+  "White": {
+   "bulbapedia": [
+    "Dragonspiral Tower"
+   ],
+   "serebii": [
+    "Dragonspiral Tower"
+   ]
+  },
+  "Black 2": {
+   "bulbapedia": [
+    "Dragonspiral Tower"
+   ],
+   "serebii": [
+    "Dragonspiral Tower"
+   ]
+  },
+  "White 2": {
+   "bulbapedia": [
+    "Dragonspiral Tower"
+   ],
+   "serebii": [
+    "Dragonspiral Tower"
+   ]
+  },
+  "X": {
+   "bulbapedia": [
+    "Route 21"
+   ],
+   "serebii": [
+    "Route 21"
+   ]
+  },
+  "Y": {
+   "bulbapedia": [
+    "Route 21"
+   ],
+   "serebii": [
+    "Route 21"
+   ]
+  },
+  "Omega Ruby": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Alpha Sapphire": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sun": {
+   "bulbapedia": [
+    "Poni Gauntlet",
+    "Poni Meadow",
+    "Vast Poni Canyon"
+   ],
+   "serebii": [
+    "Poni Gauntlet",
+    "Poni Meadow",
+    "Vast Poni Canyon"
+   ]
+  },
+  "Moon": {
+   "bulbapedia": [
+    "Poni Gauntlet",
+    "Poni Meadow",
+    "Vast Poni Canyon"
+   ],
+   "serebii": [
+    "Poni Gauntlet",
+    "Poni Meadow",
+    "Vast Poni Canyon"
+   ]
+  },
+  "Ultra Sun": {
+   "bulbapedia": [
+    "Poni Gauntlet",
+    "Poni Meadow"
+   ],
+   "serebii": [
+    "Poni Gauntlet",
+    "Poni Meadow"
+   ]
+  },
+  "Ultra Moon": {
+   "bulbapedia": [
+    "Poni Gauntlet",
+    "Poni Meadow"
+   ],
+   "serebii": [
+    "Poni Gauntlet",
+    "Poni Meadow"
+   ]
+  },
+  "Let's Go Pikachu": {
+   "bulbapedia": [
+    "Route 10"
+   ],
+   "serebii": [
+    "Route 10"
+   ]
+  },
+  "Let's Go Eevee": {
+   "bulbapedia": [
+    "Route 10"
+   ],
+   "serebii": [
+    "Route 10"
+   ]
+  },
+  "Sword": {
+   "bulbapedia": [
+    "Ballimere Lake",
+    "Giant's Bed",
+    "Path to the Peak",
+    "Frigid Sea",
+    "Three-Point Pass"
+   ],
+   "serebii": [
+    "Ballimere Lake",
+    "Giant's Bed",
+    "Path to the Peak",
+    "Frigid Sea",
+    "Three-Point Pass"
+   ]
+  },
+  "Shield": {
+   "bulbapedia": [
+    "Ballimere Lake",
+    "Giant's Bed",
+    "Path to the Peak",
+    "Frigid Sea",
+    "Three-Point Pass"
+   ],
+   "serebii": [
+    "Ballimere Lake",
+    "Giant's Bed",
+    "Path to the Peak",
+    "Frigid Sea",
+    "Three-Point Pass"
+   ]
+  },
+  "Brilliant Diamond": {
+   "bulbapedia": [
+    "Mt. Coronet"
+   ],
+   "serebii": [
+    "Mt. Coronet"
+   ]
+  },
+  "Shining Pearl": {
+   "bulbapedia": [
+    "Mt. Coronet"
+   ],
+   "serebii": [
+    "Mt. Coronet"
+   ]
+  },
+  "Scarlet": {
+   "bulbapedia": [
+    "South Province Area Six",
+    "North Province Area Two",
+    "Casseroya Lake"
+   ],
+   "serebii": [
+    "South Province Area Six",
+    "North Province Area Two",
+    "Casseroya Lake"
+   ]
+  },
+  "Violet": {
+   "bulbapedia": [
+    "South Province Area Six",
+    "North Province Area Two",
+    "Casseroya Lake"
+   ],
+   "serebii": [
+    "South Province Area Six",
+    "North Province Area Two",
+    "Casseroya Lake"
+   ]
+  },
+  "Legends: Z-A": {
+   "bulbapedia": [
+    "Vert Sector 6",
+    "Bleu Sector 9",
+    "Magenta Sector 8",
+    "Rouge Sector 8",
+    "Jaune Sector 3",
+    "Jaune Sector 5"
+   ],
+   "serebii": [
+    "Bleu Sector 9",
+    "Jaune Sector 3",
+    "Magenta District",
+    "Rouge District",
+    "Vert Sector 6"
+   ]
+  }
+ },
+ "Dragonite": {
+  "Red": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Blue": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Yellow": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Gold": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Silver": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Crystal": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ruby": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sapphire": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Emerald": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "FireRed": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "LeafGreen": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Diamond": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Pearl": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Platinum": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "HeartGold": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "SoulSilver": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Black": {
+   "bulbapedia": [
+    "Dragonspiral Tower"
+   ],
+   "serebii": [
+    "Dragonspiral Tower"
+   ]
+  },
+  "White": {
+   "bulbapedia": [
+    "Dragonspiral Tower"
+   ],
+   "serebii": [
+    "Dragonspiral Tower"
+   ]
+  },
+  "Black 2": {
+   "bulbapedia": [
+    "Dragonspiral Tower",
+    "Route 18"
+   ],
+   "serebii": [
+    "Dragonspiral Tower"
+   ]
+  },
+  "White 2": {
+   "bulbapedia": [
+    "Dragonspiral Tower",
+    "Route 18"
+   ],
+   "serebii": [
+    "Dragonspiral Tower"
+   ]
+  },
+  "X": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Y": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Omega Ruby": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Alpha Sapphire": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sun": {
+   "bulbapedia": [
+    "Poni Gauntlet"
+   ],
+   "serebii": [
+    "Poni Gauntlet"
+   ]
+  },
+  "Moon": {
+   "bulbapedia": [
+    "Poni Gauntlet"
+   ],
+   "serebii": [
+    "Poni Gauntlet"
+   ]
+  },
+  "Ultra Sun": {
+   "bulbapedia": [
+    "Poni Gauntlet"
+   ],
+   "serebii": [
+    "Poni Gauntlet"
+   ]
+  },
+  "Ultra Moon": {
+   "bulbapedia": [
+    "Poni Gauntlet"
+   ],
+   "serebii": [
+    "Poni Gauntlet"
+   ]
+  },
+  "Let's Go Pikachu": {
+   "bulbapedia": [
+    "Route 1",
+    "Route 2",
+    "Route 3",
+    "Route 4",
+    "Route 6",
+    "Route 7",
+    "Route 8",
+    "Route 9",
+    "Route 10",
+    "Route 11",
+    "Route 12",
+    "Route 13",
+    "Route 14",
+    "Route 15",
+    "Route 16",
+    "Route 17",
+    "Route 18",
+    "Route 19",
+    "Route 21",
+    "Route 22",
+    "Route 23",
+    "Route 24",
+    "Route 25"
+   ],
+   "serebii": [
+    "Route 1",
+    "Route 2",
+    "Route 3",
+    "Route 4",
+    "Route 6",
+    "Route 7",
+    "Route 8",
+    "Route 10",
+    "Route 11",
+    "Route 12",
+    "Route 13",
+    "Route 14",
+    "Route 15",
+    "Route 16",
+    "Route 17",
+    "Route 18",
+    "Route 19",
+    "Route 21",
+    "Route 22",
+    "Route 23",
+    "Route 24",
+    "Route 25"
+   ]
+  },
+  "Let's Go Eevee": {
+   "bulbapedia": [
+    "Route 1",
+    "Route 2",
+    "Route 3",
+    "Route 4",
+    "Route 6",
+    "Route 7",
+    "Route 8",
+    "Route 9",
+    "Route 10",
+    "Route 11",
+    "Route 12",
+    "Route 13",
+    "Route 14",
+    "Route 15",
+    "Route 16",
+    "Route 17",
+    "Route 18",
+    "Route 19",
+    "Route 21",
+    "Route 22",
+    "Route 23",
+    "Route 24",
+    "Route 25"
+   ],
+   "serebii": [
+    "Route 2",
+    "Route 4",
+    "Route 7",
+    "Route 8",
+    "Route 10",
+    "Route 11",
+    "Route 12",
+    "Route 13",
+    "Route 14",
+    "Route 15",
+    "Route 16",
+    "Route 17",
+    "Route 18",
+    "Route 19",
+    "Route 21",
+    "Route 22",
+    "Route 23",
+    "Route 24",
+    "Route 25"
+   ]
+  },
+  "Sword": {
+   "bulbapedia": [
+    "Ballimere Lake",
+    "Giant's Bed",
+    "Path to the Peak",
+    "Frigid Sea",
+    "Three-Point Pass"
+   ],
+   "serebii": [
+    "Ballimere Lake",
+    "Giant's Bed",
+    "Path to the Peak",
+    "Frigid Sea",
+    "Three-Point Pass"
+   ]
+  },
+  "Shield": {
+   "bulbapedia": [
+    "Ballimere Lake",
+    "Giant's Bed",
+    "Path to the Peak",
+    "Frigid Sea",
+    "Three-Point Pass"
+   ],
+   "serebii": [
+    "Ballimere Lake",
+    "Giant's Bed",
+    "Path to the Peak",
+    "Frigid Sea",
+    "Three-Point Pass"
+   ]
+  },
+  "Brilliant Diamond": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Shining Pearl": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Scarlet": {
+   "bulbapedia": [
+    "North Province Area Two",
+    "Casseroya Lake"
+   ],
+   "serebii": [
+    "North Province Area Two",
+    "Casseroya Lake"
+   ]
+  },
+  "Violet": {
+   "bulbapedia": [
+    "North Province Area Two",
+    "Casseroya Lake"
+   ],
+   "serebii": [
+    "North Province Area Two",
+    "Casseroya Lake"
+   ]
+  },
+  "Legends: Z-A": {
+   "bulbapedia": [
+    "Wild Zone 20"
+   ],
+   "serebii": [
+    "Wild Zone 20"
+   ]
+  }
+ },
+ "Hoppip": {
+  "Red": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Blue": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Yellow": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Gold": {
+   "bulbapedia": [
+    "Route 13",
+    "Route 14",
+    "Route 15",
+    "Route 32",
+    "Route 33"
+   ],
+   "serebii": [
+    "Route 13",
+    "Route 14",
+    "Route 15",
+    "Route 32",
+    "Route 33"
+   ]
+  },
+  "Silver": {
+   "bulbapedia": [
+    "Route 13",
+    "Route 14",
+    "Route 15",
+    "Route 32",
+    "Route 33"
+   ],
+   "serebii": [
+    "Route 13",
+    "Route 14",
+    "Route 15",
+    "Route 32",
+    "Route 33"
+   ]
+  },
+  "Crystal": {
+   "bulbapedia": [
+    "Route 11",
+    "Route 13",
+    "Route 14",
+    "Route 15",
+    "Route 29",
+    "Route 30",
+    "Route 31",
+    "Route 32",
+    "Route 33"
+   ],
+   "serebii": [
+    "Route 11",
+    "Route 13",
+    "Route 14",
+    "Route 15",
+    "Route 29",
+    "Route 30",
+    "Route 31",
+    "Route 32",
+    "Route 33"
+   ]
+  },
+  "Ruby": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sapphire": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Emerald": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "FireRed": {
+   "bulbapedia": [
+    "Five Island",
+    "Resort Gorgeous",
+    "Water Labyrinth",
+    "Five Isle Meadow",
+    "Memorial Pillar"
+   ],
+   "serebii": [
+    "Five Island",
+    "Resort Gorgeous",
+    "Water Labyrinth",
+    "Five Isle Meadow",
+    "Memorial Pillar"
+   ]
+  },
+  "LeafGreen": {
+   "bulbapedia": [
+    "Five Island",
+    "Resort Gorgeous",
+    "Water Labyrinth",
+    "Five Isle Meadow",
+    "Memorial Pillar"
+   ],
+   "serebii": [
+    "Five Island",
+    "Resort Gorgeous",
+    "Water Labyrinth",
+    "Five Isle Meadow",
+    "Memorial Pillar"
+   ]
+  },
+  "Diamond": {
+   "bulbapedia": [
+    "Route 205"
+   ],
+   "serebii": [
+    "Route 205"
+   ]
+  },
+  "Pearl": {
+   "bulbapedia": [
+    "Route 205",
+    "Fuego Ironworks"
+   ],
+   "serebii": [
+    "Route 205",
+    "Fuego Ironworks"
+   ]
+  },
+  "Platinum": {
+   "bulbapedia": [
+    "Route 205"
+   ],
+   "serebii": [
+    "Route 205"
+   ]
+  },
+  "HeartGold": {
+   "bulbapedia": [
+    "Route 13",
+    "Route 14",
+    "Route 15",
+    "Route 32",
+    "Route 33",
+    "Route 48",
+    "Safari Zone"
+   ],
+   "serebii": [
+    "Route 13",
+    "Route 14",
+    "Route 15",
+    "Route 32",
+    "Route 33",
+    "Route 48",
+    "Safari Zone"
+   ]
+  },
+  "SoulSilver": {
+   "bulbapedia": [
+    "Route 13",
+    "Route 14",
+    "Route 15",
+    "Route 32",
+    "Route 33",
+    "Route 48",
+    "Safari Zone"
+   ],
+   "serebii": [
+    "Route 13",
+    "Route 14",
+    "Route 15",
+    "Route 32",
+    "Route 33",
+    "Route 48",
+    "Safari Zone"
+   ]
+  },
+  "Black": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "White": {
+   "bulbapedia": [
+    "White Forest"
+   ],
+   "serebii": [
+    "White Forest"
+   ]
+  },
+  "Black 2": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "White 2": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "X": {
+   "bulbapedia": [
+    "Route 7"
+   ],
+   "serebii": [
+    "Route 7"
+   ]
+  },
+  "Y": {
+   "bulbapedia": [
+    "Route 7"
+   ],
+   "serebii": [
+    "Route 7"
+   ]
+  },
+  "Omega Ruby": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Alpha Sapphire": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Let's Go Pikachu": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Let's Go Eevee": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sword": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Shield": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Brilliant Diamond": {
+   "bulbapedia": [
+    "Route 205"
+   ],
+   "serebii": [
+    "Route 205"
+   ]
+  },
+  "Shining Pearl": {
+   "bulbapedia": [
+    "Route 205",
+    "Fuego Ironworks"
+   ],
+   "serebii": [
+    "Route 205",
+    "Fuego Ironworks"
+   ]
+  },
+  "Scarlet": {
+   "bulbapedia": [
+    "South Province Area One",
+    "South Province Area Two",
+    "Poco Path"
+   ],
+   "serebii": [
+    "South Province Area One",
+    "South Province Area Two"
+   ]
+  },
+  "Violet": {
+   "bulbapedia": [
+    "South Province Area One",
+    "South Province Area Two",
+    "Poco Path"
+   ],
+   "serebii": [
+    "South Province Area One",
+    "South Province Area Two"
+   ]
+  },
+  "Legends: Z-A": {
+   "bulbapedia": [],
+   "serebii": []
+  }
+ },
+ "Wobbuffet": {
+  "Gold": {
+   "bulbapedia": [
+    "Dark Cave"
+   ],
+   "serebii": [
+    "Dark Cave"
+   ]
+  },
+  "Silver": {
+   "bulbapedia": [
+    "Dark Cave"
+   ],
+   "serebii": [
+    "Dark Cave"
+   ]
+  },
+  "Crystal": {
+   "bulbapedia": [
+    "Dark Cave"
+   ],
+   "serebii": [
+    "Dark Cave"
+   ]
+  },
+  "Ruby": {
+   "bulbapedia": [
+    "Safari Zone"
+   ],
+   "serebii": [
+    "Safari Zone"
+   ]
+  },
+  "Sapphire": {
+   "bulbapedia": [
+    "Safari Zone"
+   ],
+   "serebii": [
+    "Safari Zone"
+   ]
+  },
+  "Emerald": {
+   "bulbapedia": [
+    "Safari Zone"
+   ],
+   "serebii": [
+    "Safari Zone"
+   ]
+  },
+  "FireRed": {
+   "bulbapedia": [
+    "Cerulean Cave",
+    "Ruin Valley"
+   ],
+   "serebii": [
+    "Cerulean Cave",
+    "Ruin Valley"
+   ]
+  },
+  "LeafGreen": {
+   "bulbapedia": [
+    "Cerulean Cave",
+    "Ruin Valley"
+   ],
+   "serebii": [
+    "Cerulean Cave",
+    "Ruin Valley"
+   ]
+  },
+  "Diamond": {
+   "bulbapedia": [
+    "Lake Verity",
+    "Lake Acuity",
+    "Lake Valor"
+   ],
+   "serebii": [
+    "Lake Verity",
+    "Lake Valor",
+    "Lake Acuity"
+   ]
+  },
+  "Pearl": {
+   "bulbapedia": [
+    "Lake Verity",
+    "Lake Acuity",
+    "Lake Valor"
+   ],
+   "serebii": [
+    "Lake Verity",
+    "Lake Valor",
+    "Lake Acuity"
+   ]
+  },
+  "Platinum": {
+   "bulbapedia": [
+    "Lake Verity",
+    "Lake Valor"
+   ],
+   "serebii": [
+    "Lake Verity",
+    "Lake Valor"
+   ]
+  },
+  "HeartGold": {
+   "bulbapedia": [
+    "Cerulean Cave",
+    "Dark Cave",
+    "Safari Zone"
+   ],
+   "serebii": [
+    "Dark Cave",
+    "Safari Zone",
+    "Cerulean Cave"
+   ]
+  },
+  "SoulSilver": {
+   "bulbapedia": [
+    "Cerulean Cave",
+    "Dark Cave",
+    "Safari Zone"
+   ],
+   "serebii": [
+    "Dark Cave",
+    "Safari Zone",
+    "Cerulean Cave"
+   ]
+  },
+  "Black": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "White": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Black 2": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "White 2": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "X": {
+   "bulbapedia": [
+    "Reflection Cave"
+   ],
+   "serebii": [
+    "Reflection Cave"
+   ]
+  },
+  "Y": {
+   "bulbapedia": [
+    "Reflection Cave"
+   ],
+   "serebii": [
+    "Reflection Cave"
+   ]
+  },
+  "Omega Ruby": {
+   "bulbapedia": [
+    "Safari Zone"
+   ],
+   "serebii": [
+    "Safari Zone"
+   ]
+  },
+  "Alpha Sapphire": {
+   "bulbapedia": [
+    "Safari Zone"
+   ],
+   "serebii": [
+    "Safari Zone"
+   ]
+  },
+  "Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sword": {
+   "bulbapedia": [
+    "Route 5",
+    "Motostoke Riverbank",
+    "Bridge Field",
+    "Dusty Bowl",
+    "Hammerlocke Hills",
+    "Lake of Outrage",
+    "Stony Wilderness (Max Raid)"
+   ],
+   "serebii": [
+    "Route 5",
+    "Bridge Field",
+    "Dusty Bowl",
+    "Hammerlocke Hills",
+    "Lake of Outrage",
+    "Motostoke Riverbank",
+    "Stony Wilderness (Max Raid)"
+   ]
+  },
+  "Shield": {
+   "bulbapedia": [
+    "Route 5",
+    "Motostoke Riverbank",
+    "Bridge Field",
+    "Dusty Bowl",
+    "Hammerlocke Hills",
+    "Lake of Outrage",
+    "Stony Wilderness (Max Raid)"
+   ],
+   "serebii": [
+    "Route 5",
+    "Bridge Field",
+    "Dusty Bowl",
+    "Hammerlocke Hills",
+    "Lake of Outrage",
+    "Motostoke Riverbank",
+    "Stony Wilderness (Max Raid)"
+   ]
+  },
+  "Brilliant Diamond": {
+   "bulbapedia": [
+    "Lake Verity",
+    "Lake Acuity",
+    "Lake Valor"
+   ],
+   "serebii": [
+    "Lake Verity",
+    "Lake Valor",
+    "Lake Acuity"
+   ]
+  },
+  "Shining Pearl": {
+   "bulbapedia": [
+    "Lake Verity",
+    "Lake Acuity",
+    "Lake Valor"
+   ],
+   "serebii": [
+    "Lake Verity",
+    "Lake Valor",
+    "Lake Acuity"
+   ]
+  },
+  "Scarlet": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Violet": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Legends: Z-A": {
+   "bulbapedia": [],
+   "serebii": []
+  }
+ },
+ "Houndoom": {
+  "Gold": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Silver": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Crystal": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ruby": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sapphire": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Emerald": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "FireRed": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "LeafGreen": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Diamond": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Pearl": {
+   "bulbapedia": [
+    "Route 214",
+    "Route 215"
+   ],
+   "serebii": [
+    "Route 214",
+    "Route 215"
+   ]
+  },
+  "Platinum": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "HeartGold": {
+   "bulbapedia": [
+    "Safari Zone"
+   ],
+   "serebii": [
+    "Safari Zone"
+   ]
+  },
+  "SoulSilver": {
+   "bulbapedia": [
+    "Safari Zone"
+   ],
+   "serebii": [
+    "Safari Zone"
+   ]
+  },
+  "Black": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "White": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Black 2": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "White 2": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "X": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Y": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Omega Ruby": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Alpha Sapphire": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Sun": {
+   "bulbapedia": [
+    "Route 12"
+   ],
+   "serebii": [
+    "Route 12"
+   ]
+  },
+  "Ultra Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sword": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Shield": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Brilliant Diamond": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Shining Pearl": {
+   "bulbapedia": [
+    "Route 214",
+    "Route 215"
+   ],
+   "serebii": [
+    "Route 214",
+    "Route 215"
+   ]
+  },
+  "Scarlet": {
+   "bulbapedia": [
+    "South Province (Area Four)",
+    "South Province (Area Six)",
+    "North Province (Area Two)",
+    "Fellhorn Gorge",
+    "Oni Mountain",
+    "Infernal Pass",
+    "Crystal Pool",
+    "Chilling Waterhead",
+    "Paradise Barrens",
+    "Kitakami Wilds"
+   ],
+   "serebii": [
+    "North Province (Area Two)",
+    "South Province (Area Four)",
+    "South Province (Area Six)",
+    "Chilling Waterhead",
+    "Crystal Pool",
+    "Fellhorn Gorge",
+    "Infernal Pass",
+    "Kitakami Wilds",
+    "Oni Mountain",
+    "Paradise Barrens"
+   ]
+  },
+  "Violet": {
+   "bulbapedia": [
+    "South Province (Area Four)",
+    "South Province (Area Six)",
+    "North Province (Area Two)",
+    "Fellhorn Gorge",
+    "Oni Mountain",
+    "Infernal Pass",
+    "Crystal Pool",
+    "Chilling Waterhead",
+    "Paradise Barrens",
+    "Kitakami Wilds"
+   ],
+   "serebii": [
+    "North Province (Area Two)",
+    "South Province (Area Four)",
+    "South Province (Area Six)",
+    "Chilling Waterhead",
+    "Crystal Pool",
+    "Fellhorn Gorge",
+    "Infernal Pass",
+    "Kitakami Wilds",
+    "Oni Mountain",
+    "Paradise Barrens"
+   ]
+  },
+  "Legends: Z-A": {
+   "bulbapedia": [
+    "Lysandre Labs",
+    "Wild Zone 6"
+   ],
+   "serebii": [
+    "Wild Zone 6",
+    "Lysandre Labs"
+   ]
+  }
+ },
+ "Illumise": {
+  "Gold": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Silver": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Crystal": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ruby": {
+   "bulbapedia": [
+    "Route 117"
+   ],
+   "serebii": [
+    "Route 117"
+   ]
+  },
+  "Sapphire": {
+   "bulbapedia": [
+    "Route 117"
+   ],
+   "serebii": [
+    "Route 117"
+   ]
+  },
+  "Emerald": {
+   "bulbapedia": [
+    "Route 117"
+   ],
+   "serebii": [
+    "Route 117"
+   ]
+  },
+  "FireRed": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "LeafGreen": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Diamond": {
+   "bulbapedia": [
+    "Route 229"
+   ],
+   "serebii": [
+    "Route 229"
+   ]
+  },
+  "Pearl": {
+   "bulbapedia": [
+    "Route 229"
+   ],
+   "serebii": [
+    "Route 229"
+   ]
+  },
+  "Platinum": {
+   "bulbapedia": [
+    "Route 229"
+   ],
+   "serebii": [
+    "Route 229"
+   ]
+  },
+  "HeartGold": {
+   "bulbapedia": [
+    "National Park (Bug-Catching Contest)",
+    "Safari Zone"
+   ],
+   "serebii": [
+    "National Park (Bug-Catching Contest)",
+    "Safari Zone"
+   ]
+  },
+  "SoulSilver": {
+   "bulbapedia": [
+    "National Park (Bug-Catching Contest)",
+    "Safari Zone"
+   ],
+   "serebii": [
+    "National Park (Bug-Catching Contest)",
+    "Safari Zone"
+   ]
+  },
+  "Black": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "White": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Black 2": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "White 2": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "X": {
+   "bulbapedia": [
+    "Route 7",
+    "Berry fields"
+   ],
+   "serebii": [
+    "Route 7"
+   ]
+  },
+  "Y": {
+   "bulbapedia": [
+    "Route 7",
+    "Berry fields"
+   ],
+   "serebii": [
+    "Route 7"
+   ]
+  },
+  "Omega Ruby": {
+   "bulbapedia": [
+    "Route 117"
+   ],
+   "serebii": [
+    "Route 117"
+   ]
+  },
+  "Alpha Sapphire": {
+   "bulbapedia": [
+    "Route 117"
+   ],
+   "serebii": [
+    "Route 117"
+   ]
+  },
+  "Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sword": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Shield": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Brilliant Diamond": {
+   "bulbapedia": [
+    "Route 229"
+   ],
+   "serebii": [
+    "Route 229"
+   ]
+  },
+  "Shining Pearl": {
+   "bulbapedia": [
+    "Route 229"
+   ],
+   "serebii": [
+    "Route 229"
+   ]
+  },
+  "Scarlet": {
+   "bulbapedia": [
+    "Kitakami Road",
+    "Apple Hills",
+    "Loyalty Plaza",
+    "Reveler's Road",
+    "Mossfell Confluence",
+    "Fellhorn Gorge",
+    "Wistful Fields",
+    "Kitakami Wilds",
+    "Timeless Woods"
+   ],
+   "serebii": [
+    "Apple Hills",
+    "Fellhorn Gorge",
+    "Kitakami Road",
+    "Kitakami Wilds",
+    "Loyalty Plaza",
+    "Mossfell Confluence",
+    "Reveler's Road",
+    "Timeless Woods",
+    "Wistful Fields"
+   ]
+  },
+  "Violet": {
+   "bulbapedia": [
+    "Kitakami Road",
+    "Apple Hills",
+    "Loyalty Plaza",
+    "Reveler's Road",
+    "Mossfell Confluence",
+    "Fellhorn Gorge",
+    "Wistful Fields",
+    "Kitakami Wilds",
+    "Timeless Woods"
+   ],
+   "serebii": [
+    "Apple Hills",
+    "Fellhorn Gorge",
+    "Kitakami Road",
+    "Kitakami Wilds",
+    "Loyalty Plaza",
+    "Mossfell Confluence",
+    "Reveler's Road",
+    "Timeless Woods",
+    "Wistful Fields"
+   ]
+  },
+  "Legends: Z-A": {
+   "bulbapedia": [],
+   "serebii": []
+  }
+ },
+ "Claydol": {
+  "Gold": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Silver": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Crystal": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ruby": {
+   "bulbapedia": [
+    "Sky Pillar"
+   ],
+   "serebii": [
+    "Sky Pillar"
+   ]
+  },
+  "Sapphire": {
+   "bulbapedia": [
+    "Sky Pillar"
+   ],
+   "serebii": [
+    "Sky Pillar"
+   ]
+  },
+  "Emerald": {
+   "bulbapedia": [
+    "Sky Pillar"
+   ],
+   "serebii": [
+    "Sky Pillar"
+   ]
+  },
+  "FireRed": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "LeafGreen": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Diamond": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Pearl": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Platinum": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "HeartGold": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "SoulSilver": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Black": {
+   "bulbapedia": [
+    "Relic Castle"
+   ],
+   "serebii": [
+    "Relic Castle"
+   ]
+  },
+  "White": {
+   "bulbapedia": [
+    "Relic Castle"
+   ],
+   "serebii": [
+    "Relic Castle"
+   ]
+  },
+  "Black 2": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "White 2": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "X": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Y": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Omega Ruby": {
+   "bulbapedia": [
+    "Sky Pillar"
+   ],
+   "serebii": [
+    "Sky Pillar"
+   ]
+  },
+  "Alpha Sapphire": {
+   "bulbapedia": [
+    "Sky Pillar"
+   ],
+   "serebii": [
+    "Sky Pillar"
+   ]
+  },
+  "Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sword": {
+   "bulbapedia": [
+    "Axew's Eye",
+    "Lake of Outrage",
+    "Bridge Field",
+    "Dappled Grove",
+    "Dusty Bowl",
+    "Stony Wilderness",
+    "Hammerlocke Hills (Max Raid)",
+    "Motostoke Riverbank (Max Raid)",
+    "Giant's Foot",
+    "Three-Point Pass",
+    "Giant's Bed (Max Raid)",
+    "Snowslide Slope (Max Raid)",
+    "Path to the Peak (Max Raid)",
+    "Ballimere Lake (Max Raid)"
+   ],
+   "serebii": [
+    "Axew's Eye",
+    "Bridge Field",
+    "Dappled Grove",
+    "Dusty Bowl",
+    "Lake of Outrage",
+    "Stony Wilderness",
+    "Hammerlocke Hills (Max Raid)",
+    "Motostoke Riverbank (Max Raid)",
+    "Giant's Foot",
+    "Three-Point Pass",
+    "Giant's Bed (Max Raid)",
+    "Snowslide Slope (Max Raid)",
+    "Path to the Peak (Max Raid)",
+    "Ballimere Lake (Max Raid)"
+   ]
+  },
+  "Shield": {
+   "bulbapedia": [
+    "Axew's Eye",
+    "Lake of Outrage",
+    "Bridge Field",
+    "Dappled Grove",
+    "Dusty Bowl",
+    "Stony Wilderness",
+    "Hammerlocke Hills (Max Raid)",
+    "Motostoke Riverbank (Max Raid)",
+    "Giant's Foot",
+    "Three-Point Pass",
+    "Giant's Bed (Max Raid)",
+    "Snowslide Slope (Max Raid)",
+    "Path to the Peak (Max Raid)",
+    "Ballimere Lake (Max Raid)"
+   ],
+   "serebii": [
+    "Axew's Eye",
+    "Bridge Field",
+    "Dappled Grove",
+    "Dusty Bowl",
+    "Lake of Outrage",
+    "Stony Wilderness",
+    "Hammerlocke Hills (Max Raid)",
+    "Motostoke Riverbank (Max Raid)",
+    "Giant's Foot",
+    "Three-Point Pass",
+    "Giant's Bed (Max Raid)",
+    "Snowslide Slope (Max Raid)",
+    "Path to the Peak (Max Raid)",
+    "Ballimere Lake (Max Raid)"
+   ]
+  },
+  "Brilliant Diamond": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Shining Pearl": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Scarlet": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Violet": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Legends: Z-A": {
+   "bulbapedia": [],
+   "serebii": []
+  }
+ },
+ "Dusclops": {
+  "Gold": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Silver": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Crystal": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ruby": {
+   "bulbapedia": [
+    "Sky Pillar"
+   ],
+   "serebii": [
+    "Sky Pillar"
+   ]
+  },
+  "Sapphire": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Emerald": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "FireRed": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "LeafGreen": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Diamond": {
+   "bulbapedia": [
+    "Route 224"
+   ],
+   "serebii": [
+    "Route 224"
+   ]
+  },
+  "Pearl": {
+   "bulbapedia": [
+    "Route 224"
+   ],
+   "serebii": [
+    "Route 224"
+   ]
+  },
+  "Platinum": {
+   "bulbapedia": [
+    "Sendoff Spring",
+    "Turnback Cave"
+   ],
+   "serebii": [
+    "Sendoff Spring",
+    "Turnback Cave"
+   ]
+  },
+  "HeartGold": {
+   "bulbapedia": [
+    "Safari Zone"
+   ],
+   "serebii": [
+    "Safari Zone"
+   ]
+  },
+  "SoulSilver": {
+   "bulbapedia": [
+    "Safari Zone"
+   ],
+   "serebii": [
+    "Safari Zone"
+   ]
+  },
+  "Black": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "White": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Black 2": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "White 2": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "X": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Y": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Omega Ruby": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Alpha Sapphire": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sword": {
+   "bulbapedia": [
+    "Route 8",
+    "Giant's Seat",
+    "Watchtower Ruins",
+    "Giant's Mirror (Max Raid)",
+    "South Lake Miloch (Max Raid)",
+    "Stony Wilderness (Max Raid)"
+   ],
+   "serebii": [
+    "Route 8",
+    "Giant's Seat",
+    "Watchtower Ruins",
+    "Giant's Mirror (Max Raid)",
+    "South Lake Miloch (Max Raid)",
+    "Stony Wilderness (Max Raid)"
+   ]
+  },
+  "Shield": {
+   "bulbapedia": [
+    "Route 8",
+    "Giant's Seat",
+    "Watchtower Ruins",
+    "Giant's Mirror (Max Raid)",
+    "South Lake Miloch (Max Raid)",
+    "Stony Wilderness (Max Raid)"
+   ],
+   "serebii": [
+    "Route 8",
+    "Giant's Seat",
+    "Watchtower Ruins",
+    "Giant's Mirror (Max Raid)",
+    "South Lake Miloch (Max Raid)",
+    "Stony Wilderness (Max Raid)"
+   ]
+  },
+  "Brilliant Diamond": {
+   "bulbapedia": [
+    "Route 224"
+   ],
+   "serebii": [
+    "Route 224"
+   ]
+  },
+  "Shining Pearl": {
+   "bulbapedia": [
+    "Route 224"
+   ],
+   "serebii": [
+    "Route 224"
+   ]
+  },
+  "Scarlet": {
+   "bulbapedia": [
+    "Kitakami Wilds",
+    "Timeless Woods"
+   ],
+   "serebii": [
+    "Kitakami Wilds",
+    "Timeless Woods"
+   ]
+  },
+  "Violet": {
+   "bulbapedia": [
+    "Kitakami Wilds",
+    "Timeless Woods"
+   ],
+   "serebii": [
+    "Kitakami Wilds",
+    "Timeless Woods"
+   ]
+  },
+  "Legends: Z-A": {
+   "bulbapedia": [],
+   "serebii": []
+  }
+ },
+ "Pachirisu": {
+  "Gold": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Silver": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Crystal": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ruby": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sapphire": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Emerald": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "FireRed": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "LeafGreen": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Diamond": {
+   "bulbapedia": [
+    "Route 205",
+    "Fuego Ironworks",
+    "Valley Windworks"
+   ],
+   "serebii": [
+    "Route 205",
+    "Valley Windworks",
+    "Fuego Ironworks"
+   ]
+  },
+  "Pearl": {
+   "bulbapedia": [
+    "Route 205",
+    "Fuego Ironworks",
+    "Valley Windworks"
+   ],
+   "serebii": [
+    "Route 205",
+    "Valley Windworks",
+    "Fuego Ironworks"
+   ]
+  },
+  "Platinum": {
+   "bulbapedia": [
+    "Route 205",
+    "Valley Windworks"
+   ],
+   "serebii": [
+    "Route 205",
+    "Valley Windworks"
+   ]
+  },
+  "HeartGold": {
+   "bulbapedia": [
+    "Safari Zone"
+   ],
+   "serebii": [
+    "Safari Zone"
+   ]
+  },
+  "SoulSilver": {
+   "bulbapedia": [
+    "Safari Zone"
+   ],
+   "serebii": [
+    "Safari Zone"
+   ]
+  },
+  "Black": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "White": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Black 2": {
+   "bulbapedia": [
+    "Route 3 (Hidden Grotto)"
+   ],
+   "serebii": [
+    "Route 3 (Hidden Grotto)"
+   ]
+  },
+  "White 2": {
+   "bulbapedia": [
+    "Route 3 (Hidden Grotto)"
+   ],
+   "serebii": [
+    "Route 3 (Hidden Grotto)"
+   ]
+  },
+  "X": {
+   "bulbapedia": [
+    "Route 12"
+   ],
+   "serebii": [
+    "Route 12"
+   ]
+  },
+  "Y": {
+   "bulbapedia": [
+    "Route 12"
+   ],
+   "serebii": [
+    "Route 12"
+   ]
+  },
+  "Omega Ruby": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Alpha Sapphire": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sword": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Shield": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Brilliant Diamond": {
+   "bulbapedia": [
+    "Route 205",
+    "Fuego Ironworks",
+    "Valley Windworks"
+   ],
+   "serebii": [
+    "Route 205",
+    "Valley Windworks",
+    "Fuego Ironworks"
+   ]
+  },
+  "Shining Pearl": {
+   "bulbapedia": [
+    "Route 205",
+    "Fuego Ironworks",
+    "Valley Windworks"
+   ],
+   "serebii": [
+    "Route 205",
+    "Valley Windworks",
+    "Fuego Ironworks"
+   ]
+  },
+  "Scarlet": {
+   "bulbapedia": [
+    "South Province (Area One)",
+    "South Province (Area Two)",
+    "South Province (Area Three)",
+    "South Province (Area Four)",
+    "South Province (Area Five)",
+    "East Province (Area Two)",
+    "West Province (Area Three)",
+    "Reveler's Road",
+    "Kitakami Hall",
+    "Mossfell Confluence",
+    "Oni Mountain",
+    "Kitakami Wilds",
+    "Timeless Woods"
+   ],
+   "serebii": [
+    "South Province (Area One)",
+    "South Province (Area Two)",
+    "South Province (Area Three)",
+    "South Province (Area Four)",
+    "South Province (Area Five)",
+    "West Province (Area Three)",
+    "East Province (Area Two)",
+    "Kitakami Hall",
+    "Kitakami Wilds",
+    "Mossfell Confluence",
+    "Oni Mountain",
+    "Reveler's Road",
+    "Timeless Woods"
+   ]
+  },
+  "Violet": {
+   "bulbapedia": [
+    "South Province (Area One)",
+    "South Province (Area Two)",
+    "South Province (Area Three)",
+    "South Province (Area Four)",
+    "South Province (Area Five)",
+    "East Province (Area Two)",
+    "West Province (Area Three)",
+    "Reveler's Road",
+    "Kitakami Hall",
+    "Mossfell Confluence",
+    "Oni Mountain",
+    "Kitakami Wilds",
+    "Timeless Woods"
+   ],
+   "serebii": [
+    "South Province (Area One)",
+    "South Province (Area Two)",
+    "South Province (Area Three)",
+    "South Province (Area Four)",
+    "South Province (Area Five)",
+    "West Province (Area Three)",
+    "East Province (Area Two)",
+    "Kitakami Hall",
+    "Kitakami Wilds",
+    "Mossfell Confluence",
+    "Oni Mountain",
+    "Reveler's Road",
+    "Timeless Woods"
+   ]
+  },
+  "Legends: Z-A": {
+   "bulbapedia": [],
+   "serebii": []
+  }
+ },
+ "Liepard": {
+  "Gold": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Silver": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Crystal": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ruby": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sapphire": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Emerald": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "FireRed": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "LeafGreen": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Diamond": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Pearl": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Platinum": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "HeartGold": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "SoulSilver": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Black": {
+   "bulbapedia": [
+    "Route 5",
+    "Route 9",
+    "Route 16",
+    "Dreamyard"
+   ],
+   "serebii": [
+    "Route 5",
+    "Route 9",
+    "Route 16",
+    "Dreamyard"
+   ]
+  },
+  "White": {
+   "bulbapedia": [
+    "Route 5",
+    "Route 9",
+    "Route 16",
+    "Dreamyard"
+   ],
+   "serebii": [
+    "Route 5",
+    "Route 9",
+    "Route 16",
+    "Dreamyard"
+   ]
+  },
+  "Black 2": {
+   "bulbapedia": [
+    "Route 2",
+    "Route 5",
+    "Route 9",
+    "Route 16",
+    "Dreamyard"
+   ],
+   "serebii": [
+    "Route 3",
+    "Route 5",
+    "Route 9",
+    "Route 16",
+    "Dreamyard"
+   ]
+  },
+  "White 2": {
+   "bulbapedia": [
+    "Route 2",
+    "Route 5",
+    "Route 9",
+    "Route 16",
+    "Dreamyard"
+   ],
+   "serebii": [
+    "Route 3",
+    "Route 5",
+    "Route 9",
+    "Route 16",
+    "Dreamyard"
+   ]
+  },
+  "X": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Y": {
+   "bulbapedia": [
+    "Route 15"
+   ],
+   "serebii": [
+    "Route 15"
+   ]
+  },
+  "Omega Ruby": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Alpha Sapphire": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sword": {
+   "bulbapedia": [
+    "Route 7",
+    "Route 9",
+    "Axew's Eye",
+    "Giant's Seat",
+    "Bridge Field",
+    "Giant's Cap",
+    "West Lake Axewell (Max Raid)",
+    "Stony Wilderness (Max Raid)",
+    "Giant's Mirror (Max Raid)",
+    "Dusty Bowl (Max Raid)",
+    "Frostpoint Field (Max Raid)",
+    "Giant's Bed (Max Raid)",
+    "Snowslide Slope (Max Raid)",
+    "Giant's Foot (Max Raid)",
+    "Frigid Sea (Max Raid)"
+   ],
+   "serebii": [
+    "Route 7",
+    "Route 9",
+    "Axew's Eye",
+    "Bridge Field",
+    "Giant's Cap",
+    "Giant's Seat",
+    "North Lake Miloch",
+    "Dusty Bowl (Max Raid)",
+    "Giant's Mirror (Max Raid)",
+    "Stony Wilderness (Max Raid)",
+    "West Lake Axewell (Max Raid)",
+    "Soothing Wetlands (Max Raid)",
+    "Challenge Road (Max Raid)",
+    "Workout Sea (Max Raid)",
+    "Honeycalm Sea (Max Raid)",
+    "Frostpoint Field (Max Raid)",
+    "Giant's Bed (Max Raid)",
+    "Snowslide Slope (Max Raid)",
+    "Giant's Foot (Max Raid)",
+    "Frigid Sea (Max Raid)"
+   ]
+  },
+  "Shield": {
+   "bulbapedia": [
+    "Route 7",
+    "Route 9",
+    "Axew's Eye",
+    "Giant's Seat",
+    "Bridge Field",
+    "Giant's Cap",
+    "West Lake Axewell (Max Raid)",
+    "Stony Wilderness (Max Raid)",
+    "Giant's Mirror (Max Raid)",
+    "Dusty Bowl (Max Raid)",
+    "Frostpoint Field (Max Raid)",
+    "Giant's Bed (Max Raid)",
+    "Snowslide Slope (Max Raid)",
+    "Giant's Foot (Max Raid)",
+    "Frigid Sea (Max Raid)"
+   ],
+   "serebii": [
+    "Route 7",
+    "Route 9",
+    "Axew's Eye",
+    "Bridge Field",
+    "Giant's Cap",
+    "Giant's Seat",
+    "North Lake Miloch",
+    "Dusty Bowl (Max Raid)",
+    "Giant's Mirror (Max Raid)",
+    "Stony Wilderness (Max Raid)",
+    "West Lake Axewell (Max Raid)",
+    "Soothing Wetlands (Max Raid)",
+    "Challenge Road (Max Raid)",
+    "Workout Sea (Max Raid)",
+    "Honeycalm Sea (Max Raid)",
+    "Frostpoint Field (Max Raid)",
+    "Giant's Bed (Max Raid)",
+    "Snowslide Slope (Max Raid)",
+    "Giant's Foot (Max Raid)",
+    "Frigid Sea (Max Raid)"
+   ]
+  },
+  "Brilliant Diamond": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Shining Pearl": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Scarlet": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Violet": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Legends: Z-A": {
+   "bulbapedia": [],
+   "serebii": []
+  }
+ },
+ "Palpitoad": {
+  "Gold": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Silver": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Crystal": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ruby": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sapphire": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Emerald": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "FireRed": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "LeafGreen": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Diamond": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Pearl": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Platinum": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "HeartGold": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "SoulSilver": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Black": {
+   "bulbapedia": [
+    "Route 8",
+    "Icirrus City",
+    "Moor of Icirrus"
+   ],
+   "serebii": [
+    "Route 8",
+    "Icirrus City",
+    "Moor of Icirrus"
+   ]
+  },
+  "White": {
+   "bulbapedia": [
+    "Route 8",
+    "Icirrus City",
+    "Moor of Icirrus"
+   ],
+   "serebii": [
+    "Route 8",
+    "Icirrus City",
+    "Moor of Icirrus"
+   ]
+  },
+  "Black 2": {
+   "bulbapedia": [
+    "Pinwheel Forest",
+    "Route 8",
+    "Icirrus City",
+    "Moor of Icirrus"
+   ],
+   "serebii": [
+    "Pinwheel Forest",
+    "Route 8",
+    "Icirrus City",
+    "Moor of Icirrus"
+   ]
+  },
+  "White 2": {
+   "bulbapedia": [
+    "Pinwheel Forest",
+    "Route 8",
+    "Icirrus City",
+    "Moor of Icirrus"
+   ],
+   "serebii": [
+    "Pinwheel Forest",
+    "Route 8",
+    "Icirrus City",
+    "Moor of Icirrus"
+   ]
+  },
+  "X": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Y": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Omega Ruby": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Alpha Sapphire": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sword": {
+   "bulbapedia": [
+    "North Lake Miloch",
+    "Giant's Seat",
+    "Giant's Mirror",
+    "Giant's Cap",
+    "Bridge Field",
+    "Dusty Bowl",
+    "Hammerlocke Hills",
+    "Rolling Fields (Max Raid)",
+    "West Lake Axewell (Max Raid)",
+    "South Lake Miloch (Max Raid)"
+   ],
+   "serebii": [
+    "Bridge Field",
+    "Dusty Bowl",
+    "Giant's Cap",
+    "Giant's Mirror",
+    "Giant's Seat",
+    "Hammerlocke Hills",
+    "North Lake Miloch",
+    "West Lake Axewell",
+    "Rolling Fields (Max Raid)",
+    "South Lake Miloch (Max Raid)",
+    "Soothing Wetlands (Max Raid)",
+    "Forest of Focus (Max Raid)",
+    "Challenge Beach (Max Raid)"
+   ]
+  },
+  "Shield": {
+   "bulbapedia": [
+    "North Lake Miloch",
+    "Giant's Seat",
+    "Giant's Mirror",
+    "Giant's Cap",
+    "Bridge Field",
+    "Dusty Bowl",
+    "Hammerlocke Hills",
+    "Rolling Fields (Max Raid)",
+    "West Lake Axewell (Max Raid)",
+    "South Lake Miloch (Max Raid)"
+   ],
+   "serebii": [
+    "Bridge Field",
+    "Dusty Bowl",
+    "Giant's Cap",
+    "Giant's Mirror",
+    "Giant's Seat",
+    "Hammerlocke Hills",
+    "North Lake Miloch",
+    "West Lake Axewell",
+    "Rolling Fields (Max Raid)",
+    "South Lake Miloch (Max Raid)",
+    "Soothing Wetlands (Max Raid)",
+    "Forest of Focus (Max Raid)",
+    "Challenge Beach (Max Raid)"
+   ]
+  },
+  "Brilliant Diamond": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Shining Pearl": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Scarlet": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Violet": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Legends: Z-A": {
+   "bulbapedia": [],
+   "serebii": []
+  }
+ },
+ "Dwebble": {
+  "Gold": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Silver": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Crystal": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ruby": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sapphire": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Emerald": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "FireRed": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "LeafGreen": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Diamond": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Pearl": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Platinum": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "HeartGold": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "SoulSilver": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Black": {
+   "bulbapedia": [
+    "Route 18",
+    "Desert Resort"
+   ],
+   "serebii": [
+    "Route 18",
+    "Desert Resort"
+   ]
+  },
+  "White": {
+   "bulbapedia": [
+    "Route 18",
+    "Desert Resort"
+   ],
+   "serebii": [
+    "Route 18",
+    "Desert Resort"
+   ]
+  },
+  "Black 2": {
+   "bulbapedia": [
+    "Desert Resort"
+   ],
+   "serebii": [
+    "Desert Resort"
+   ]
+  },
+  "White 2": {
+   "bulbapedia": [
+    "Desert Resort"
+   ],
+   "serebii": [
+    "Desert Resort"
+   ]
+  },
+  "X": {
+   "bulbapedia": [
+    "Route 8",
+    "Route 12",
+    "Cyllage City",
+    "Ambrette Town",
+    "Glittering Cave",
+    "Azure Bay"
+   ],
+   "serebii": [
+    "Route 8",
+    "Route 12",
+    "Ambrette Town",
+    "Cyllage City",
+    "Glittering Cave"
+   ]
+  },
+  "Y": {
+   "bulbapedia": [
+    "Route 8",
+    "Route 12",
+    "Cyllage City",
+    "Ambrette Town",
+    "Glittering Cave",
+    "Azure Bay"
+   ],
+   "serebii": [
+    "Route 8",
+    "Route 12",
+    "Ambrette Town",
+    "Cyllage City",
+    "Glittering Cave"
+   ]
+  },
+  "Omega Ruby": {
+   "bulbapedia": [
+    "Route 111"
+   ],
+   "serebii": [
+    "Route 111"
+   ]
+  },
+  "Alpha Sapphire": {
+   "bulbapedia": [
+    "Route 111"
+   ],
+   "serebii": [
+    "Route 111"
+   ]
+  },
+  "Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sword": {
+   "bulbapedia": [
+    "Rolling Fields",
+    "West Lake Axewell",
+    "East Lake Axewell",
+    "North Lake Miloch",
+    "South Lake Miloch",
+    "Watchtower Ruins",
+    "Giant's Seat",
+    "Stony Wilderness",
+    "Hammerlocke Hills",
+    "Dappled Grove (Max Raid)",
+    "Bridge Field (Max Raid)",
+    "Dusty Bowl (Max Raid)",
+    "Courageous Cavern",
+    "Loop Lagoon",
+    "Fields of Honor (Max Raid)"
+   ],
+   "serebii": [
+    "East Lake Axewell",
+    "Giant's Seat",
+    "Hammerlocke Hills",
+    "North Lake Miloch",
+    "Rolling Fields",
+    "South Lake Miloch",
+    "Stony Wilderness",
+    "Watchtower Ruins",
+    "West Lake Axewell",
+    "Bridge Field (Max Raid)",
+    "Dappled Grove (Max Raid)",
+    "Dusty Bowl (Max Raid)",
+    "Courageous Cavern",
+    "Loop Lagoon",
+    "Fields of Honor (Max Raid)",
+    "Forest of Focus (Max Raid)",
+    "Training Lowlands (Max Raid)",
+    "Workout Sea (Max Raid)"
+   ]
+  },
+  "Shield": {
+   "bulbapedia": [
+    "Rolling Fields",
+    "West Lake Axewell",
+    "East Lake Axewell",
+    "North Lake Miloch",
+    "South Lake Miloch",
+    "Watchtower Ruins",
+    "Giant's Seat",
+    "Stony Wilderness",
+    "Hammerlocke Hills",
+    "Dappled Grove (Max Raid)",
+    "Bridge Field (Max Raid)",
+    "Dusty Bowl (Max Raid)",
+    "Courageous Cavern",
+    "Loop Lagoon",
+    "Fields of Honor (Max Raid)"
+   ],
+   "serebii": [
+    "East Lake Axewell",
+    "Giant's Seat",
+    "Hammerlocke Hills",
+    "North Lake Miloch",
+    "Rolling Fields",
+    "South Lake Miloch",
+    "Stony Wilderness",
+    "Watchtower Ruins",
+    "West Lake Axewell",
+    "Bridge Field (Max Raid)",
+    "Dappled Grove (Max Raid)",
+    "Dusty Bowl (Max Raid)",
+    "Courageous Cavern",
+    "Loop Lagoon",
+    "Fields of Honor (Max Raid)",
+    "Forest of Focus (Max Raid)",
+    "Training Lowlands (Max Raid)",
+    "Workout Sea (Max Raid)"
+   ]
+  },
+  "Brilliant Diamond": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Shining Pearl": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Scarlet": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Violet": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Legends: Z-A": {
+   "bulbapedia": [],
+   "serebii": []
+  }
+ },
+ "Cinccino": {
+  "Gold": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Silver": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Crystal": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ruby": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sapphire": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Emerald": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "FireRed": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "LeafGreen": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Diamond": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Pearl": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Platinum": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "HeartGold": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "SoulSilver": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Black": {
+   "bulbapedia": [
+    "Route 5",
+    "Route 9",
+    "Route 16",
+    "Cold Storage"
+   ],
+   "serebii": [
+    "Route 5",
+    "Route 9",
+    "Route 16",
+    "Cold Storage"
+   ]
+  },
+  "White": {
+   "bulbapedia": [
+    "Route 5",
+    "Route 9",
+    "Route 16",
+    "Cold Storage"
+   ],
+   "serebii": [
+    "Route 5",
+    "Route 9",
+    "Route 16",
+    "Cold Storage"
+   ]
+  },
+  "Black 2": {
+   "bulbapedia": [
+    "Route 5",
+    "Route 9",
+    "Route 16"
+   ],
+   "serebii": [
+    "Route 5",
+    "Route 9",
+    "Route 16"
+   ]
+  },
+  "White 2": {
+   "bulbapedia": [
+    "Route 5",
+    "Route 9",
+    "Route 16"
+   ],
+   "serebii": [
+    "Route 5",
+    "Route 9",
+    "Route 16"
+   ]
+  },
+  "X": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Y": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Omega Ruby": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Alpha Sapphire": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sword": {
+   "bulbapedia": [
+    "Giant's Cap",
+    "Rolling Fields (Max Raid)",
+    "East Lake Axewell (Max Raid)"
+   ],
+   "serebii": [
+    "Giant's Cap",
+    "East Lake Axewell (Max Raid)",
+    "Rolling Fields (Max Raid)",
+    "Soothing Wetlands (Max Raid)",
+    "Courageous Cavern (Max Raid)",
+    "Training Lowlands (Max Raid)"
+   ]
+  },
+  "Shield": {
+   "bulbapedia": [
+    "Giant's Cap",
+    "Rolling Fields (Max Raid)",
+    "East Lake Axewell (Max Raid)"
+   ],
+   "serebii": [
+    "Giant's Cap",
+    "East Lake Axewell (Max Raid)",
+    "Rolling Fields (Max Raid)",
+    "Soothing Wetlands (Max Raid)",
+    "Courageous Cavern (Max Raid)",
+    "Training Lowlands (Max Raid)"
+   ]
+  },
+  "Brilliant Diamond": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Shining Pearl": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Scarlet": {
+   "bulbapedia": [
+    "Canyon Biome",
+    "Chargestone Cavern",
+    "Polar Biome"
+   ],
+   "serebii": [
+    "Canyon Biome",
+    "Polar Biome"
+   ]
+  },
+  "Violet": {
+   "bulbapedia": [
+    "Canyon Biome",
+    "Chargestone Cavern",
+    "Polar Biome"
+   ],
+   "serebii": [
+    "Canyon Biome",
+    "Polar Biome"
+   ]
+  },
+  "Legends: Z-A": {
+   "bulbapedia": [],
+   "serebii": []
+  }
+ },
+ "Vanillish": {
+  "Black": {
+   "bulbapedia": [
+    "Dragonspiral Tower"
+   ],
+   "serebii": [
+    "Dragonspiral Tower"
+   ]
+  },
+  "White": {
+   "bulbapedia": [
+    "Dragonspiral Tower"
+   ],
+   "serebii": [
+    "Dragonspiral Tower"
+   ]
+  },
+  "Black 2": {
+   "bulbapedia": [
+    "Giant Chasm",
+    "Dragonspiral Tower"
+   ],
+   "serebii": [
+    "Giant Chasm",
+    "Dragonspiral Tower"
+   ]
+  },
+  "White 2": {
+   "bulbapedia": [
+    "Giant Chasm",
+    "Dragonspiral Tower"
+   ],
+   "serebii": [
+    "Giant Chasm",
+    "Dragonspiral Tower"
+   ]
+  },
+  "X": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Y": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Omega Ruby": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Alpha Sapphire": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sun": {
+   "bulbapedia": [
+    "Mount Lanakila"
+   ],
+   "serebii": [
+    "Mount Lanakila"
+   ]
+  },
+  "Moon": {
+   "bulbapedia": [
+    "Mount Lanakila"
+   ],
+   "serebii": [
+    "Mount Lanakila"
+   ]
+  },
+  "Ultra Sun": {
+   "bulbapedia": [
+    "Mount Lanakila"
+   ],
+   "serebii": [
+    "Mount Lanakila"
+   ]
+  },
+  "Ultra Moon": {
+   "bulbapedia": [
+    "Mount Lanakila"
+   ],
+   "serebii": [
+    "Mount Lanakila"
+   ]
+  },
+  "Sword": {
+   "bulbapedia": [
+    "Route 8",
+    "Route 10",
+    "Axew's Eye",
+    "Dusty Bowl",
+    "Dappled Grove",
+    "North Lake Miloch",
+    "Hammerlocke Hills",
+    "Frostpoint Field",
+    "Giant's Bed",
+    "Old Cemetery",
+    "Snowslide Slope",
+    "Giant's Foot",
+    "Frigid Sea",
+    "Three-Point Pass",
+    "Ballimere Lake",
+    "Roaring-Sea Caves"
+   ],
+   "serebii": [
+    "Route 8",
+    "Route 10",
+    "Axew's Eye",
+    "Dappled Grove",
+    "Dusty Bowl",
+    "Hammerlocke Hills",
+    "Frostpoint Field",
+    "Giant's Bed",
+    "Old Cemetery",
+    "Snowslide Slope",
+    "Giant's Foot",
+    "Roaring-Sea Caves",
+    "Frigid Sea",
+    "Three-Point Pass",
+    "Ballimere Lake"
+   ]
+  },
+  "Shield": {
+   "bulbapedia": [
+    "Route 8",
+    "Route 10",
+    "Axew's Eye",
+    "Dusty Bowl",
+    "Dappled Grove",
+    "North Lake Miloch",
+    "Hammerlocke Hills",
+    "Frostpoint Field",
+    "Giant's Bed",
+    "Old Cemetery",
+    "Snowslide Slope",
+    "Giant's Foot",
+    "Frigid Sea",
+    "Three-Point Pass",
+    "Ballimere Lake",
+    "Roaring-Sea Caves"
+   ],
+   "serebii": [
+    "Route 8",
+    "Route 10",
+    "Axew's Eye",
+    "Dappled Grove",
+    "Dusty Bowl",
+    "Hammerlocke Hills",
+    "Frostpoint Field",
+    "Giant's Bed",
+    "Old Cemetery",
+    "Snowslide Slope",
+    "Giant's Foot",
+    "Roaring-Sea Caves",
+    "Frigid Sea",
+    "Three-Point Pass",
+    "Ballimere Lake"
+   ]
+  },
+  "Scarlet": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Violet": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Legends: Z-A": {
+   "bulbapedia": [],
+   "serebii": []
+  }
+ },
+ "Foongus": {
+  "Black": {
+   "bulbapedia": [
+    "Route 6",
+    "Route 7",
+    "Route 10"
+   ],
+   "serebii": [
+    "Route 6",
+    "Route 7",
+    "Route 10"
+   ]
+  },
+  "White": {
+   "bulbapedia": [
+    "Route 6",
+    "Route 7",
+    "Route 10"
+   ],
+   "serebii": [
+    "Route 6",
+    "Route 7",
+    "Route 10"
+   ]
+  },
+  "Black 2": {
+   "bulbapedia": [
+    "Route 6",
+    "Route 7",
+    "Route 5",
+    "Route 13"
+   ],
+   "serebii": [
+    "Route 6",
+    "Route 7",
+    "Route 5",
+    "Route 13"
+   ]
+  },
+  "White 2": {
+   "bulbapedia": [
+    "Route 6",
+    "Route 7",
+    "Route 5",
+    "Route 13"
+   ],
+   "serebii": [
+    "Route 6",
+    "Route 7",
+    "Route 5",
+    "Route 13"
+   ]
+  },
+  "X": {
+   "bulbapedia": [
+    "Route 15",
+    "Route 16",
+    "Route 20",
+    "Pokémon Village"
+   ],
+   "serebii": [
+    "Route 15",
+    "Route 16",
+    "Route 20",
+    "Pokémon Village"
+   ]
+  },
+  "Y": {
+   "bulbapedia": [
+    "Route 15",
+    "Route 16",
+    "Route 20",
+    "Pokémon Village"
+   ],
+   "serebii": [
+    "Route 15",
+    "Route 16",
+    "Route 20",
+    "Pokémon Village"
+   ]
+  },
+  "Omega Ruby": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Alpha Sapphire": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sword": {
+   "bulbapedia": [
+    "Forest of Focus"
+   ],
+   "serebii": [
+    "Forest of Focus",
+    "Fields of Honor",
+    "Soothing Wetlands",
+    "Training Lowlands",
+    "Insular Sea"
+   ]
+  },
+  "Shield": {
+   "bulbapedia": [
+    "Forest of Focus"
+   ],
+   "serebii": [
+    "Forest of Focus",
+    "Fields of Honor",
+    "Soothing Wetlands",
+    "Training Lowlands",
+    "Insular Sea"
+   ]
+  },
+  "Scarlet": {
+   "bulbapedia": [
+    "Tagtree Thicket",
+    "West Province (Area Three)",
+    "North Province (Area Two)"
+   ],
+   "serebii": [
+    "North Province (Area Two)",
+    "Tagtree Thicket",
+    "West Province (Area Three)"
+   ]
+  },
+  "Violet": {
+   "bulbapedia": [
+    "Tagtree Thicket",
+    "West Province (Area Three)",
+    "North Province (Area Two)"
+   ],
+   "serebii": [
+    "North Province (Area Two)",
+    "Tagtree Thicket",
+    "West Province (Area Three)"
+   ]
+  },
+  "Legends: Z-A": {
+   "bulbapedia": [],
+   "serebii": []
+  }
+ },
+ "Chandelure": {
+  "Black": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "White": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Black 2": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "White 2": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "X": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Y": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Omega Ruby": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Alpha Sapphire": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sword": {
+   "bulbapedia": [
+    "Lake of Outrage",
+    "Dusty Bowl",
+    "Giant's Cap",
+    "Hammerlocke Hills",
+    "Stony Wilderness",
+    "Giant's Bed",
+    "Fields of Honor",
+    "Challenge Beach",
+    "Loop Lagoon",
+    "Potbottom Desert",
+    "Snowslide Slope",
+    "Ballimere Lake"
+   ],
+   "serebii": [
+    "Lake of Outrage",
+    "Dusty Bowl",
+    "Giant's Cap",
+    "Hammerlocke Hills",
+    "Stony Wilderness",
+    "Fields of Honor",
+    "Challenge Beach",
+    "Loop Lagoon",
+    "Potbottom Desert",
+    "Giant's Bed",
+    "Snowslide Slope",
+    "Ballimere Lake"
+   ]
+  },
+  "Shield": {
+   "bulbapedia": [
+    "Lake of Outrage",
+    "Dusty Bowl",
+    "Giant's Cap",
+    "Hammerlocke Hills",
+    "Stony Wilderness",
+    "Giant's Bed",
+    "Fields of Honor",
+    "Challenge Beach",
+    "Loop Lagoon",
+    "Potbottom Desert",
+    "Snowslide Slope",
+    "Ballimere Lake"
+   ],
+   "serebii": [
+    "Lake of Outrage",
+    "Dusty Bowl",
+    "Giant's Cap",
+    "Hammerlocke Hills",
+    "Stony Wilderness",
+    "Fields of Honor",
+    "Challenge Beach",
+    "Loop Lagoon",
+    "Potbottom Desert",
+    "Giant's Bed",
+    "Snowslide Slope",
+    "Ballimere Lake"
+   ]
+  },
+  "Scarlet": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Violet": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Legends: Z-A": {
+   "bulbapedia": [
+    "Wild Zone 20"
+   ],
+   "serebii": [
+    "Wild Zone 20"
+   ]
+  }
+ },
+ "Zweilous": {
+  "Black": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "White": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Black 2": {
+   "bulbapedia": [
+    "Victory Road"
+   ],
+   "serebii": [
+    "Victory Road"
+   ]
+  },
+  "White 2": {
+   "bulbapedia": [
+    "Victory Road"
+   ],
+   "serebii": [
+    "Victory Road"
+   ]
+  },
+  "X": {
+   "bulbapedia": [
+    "Victory Road"
+   ],
+   "serebii": [
+    "Victory Road"
+   ]
+  },
+  "Y": {
+   "bulbapedia": [
+    "Victory Road"
+   ],
+   "serebii": [
+    "Victory Road"
+   ]
+  },
+  "Omega Ruby": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Alpha Sapphire": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sword": {
+   "bulbapedia": [
+    "Lake of Outrage",
+    "Dusty Bowl",
+    "Giant's Mirror",
+    "Bridge Field"
+   ],
+   "serebii": [
+    "Lake of Outrage",
+    "Dusty Bowl",
+    "Giant's Mirror"
+   ]
+  },
+  "Shield": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Scarlet": {
+   "bulbapedia": [
+    "North Province (Area Two)",
+    "Glaseado Mountain",
+    "Area Zero"
+   ],
+   "serebii": [
+    "Area Zero",
+    "Glaseado Mountain",
+    "North Province (Area Two)"
+   ]
+  },
+  "Violet": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Legends: Z-A": {
+   "bulbapedia": [],
+   "serebii": []
+  }
+ },
+ "Fletchinder": {
+  "Black": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "White": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Black 2": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "White 2": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "X": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Y": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Omega Ruby": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Alpha Sapphire": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sun": {
+   "bulbapedia": [
+    "Route 8"
+   ],
+   "serebii": [
+    "Route 8"
+   ]
+  },
+  "Moon": {
+   "bulbapedia": [
+    "Route 8"
+   ],
+   "serebii": [
+    "Route 8"
+   ]
+  },
+  "Ultra Sun": {
+   "bulbapedia": [
+    "Route 8",
+    "Wela Volcano Park"
+   ],
+   "serebii": [
+    "Route 8",
+    "Wela Volcano Park"
+   ]
+  },
+  "Ultra Moon": {
+   "bulbapedia": [
+    "Route 8",
+    "Wela Volcano Park"
+   ],
+   "serebii": [
+    "Route 8",
+    "Wela Volcano Park"
+   ]
+  },
+  "Sword": {
+   "bulbapedia": [
+    "Workout Sea",
+    "Loop Lagoon",
+    "Stepping-Stone Sea",
+    "Insular Sea",
+    "Honeycalm Island",
+    "Honeycalm Sea",
+    "Fields of Honor",
+    "Soothing Wetlands",
+    "Training Lowlands"
+   ],
+   "serebii": [
+    "Fields of Honor",
+    "Soothing Wetlands",
+    "Challenge Beach",
+    "Training Lowlands",
+    "Workout Sea",
+    "Stepping-Stone Sea",
+    "Insular Sea",
+    "Honeycalm Sea",
+    "Honeycalm Island",
+    "Challenge Road",
+    "Loop Lagoon",
+    "Potbottom Desert"
+   ]
+  },
+  "Shield": {
+   "bulbapedia": [
+    "Workout Sea",
+    "Loop Lagoon",
+    "Stepping-Stone Sea",
+    "Insular Sea",
+    "Honeycalm Island",
+    "Honeycalm Sea",
+    "Fields of Honor",
+    "Soothing Wetlands",
+    "Training Lowlands"
+   ],
+   "serebii": [
+    "Fields of Honor",
+    "Soothing Wetlands",
+    "Challenge Beach",
+    "Training Lowlands",
+    "Workout Sea",
+    "Stepping-Stone Sea",
+    "Insular Sea",
+    "Honeycalm Sea",
+    "Honeycalm Island",
+    "Challenge Road",
+    "Loop Lagoon",
+    "Potbottom Desert"
+   ]
+  },
+  "Scarlet": {
+   "bulbapedia": [
+    "South Province (Area One)",
+    "South Province (Area Three)",
+    "South Province (Area Four)",
+    "South Province (Area Five)",
+    "East Province (Area One)",
+    "West Province (Area One)",
+    "West Province (Area Three)",
+    "Coastal Biome",
+    "Torchlit Labyrinth",
+    "Canyon Biome"
+   ],
+   "serebii": [
+    "South Province (Area One)",
+    "South Province (Area Three)",
+    "South Province (Area Four)",
+    "South Province (Area Five)",
+    "West Province (Area Three)",
+    "East Province (Area One)",
+    "West Province (Area Two)",
+    "Canyon Biome",
+    "Coastal Biome"
+   ]
+  },
+  "Violet": {
+   "bulbapedia": [
+    "South Province (Area One)",
+    "South Province (Area Three)",
+    "South Province (Area Four)",
+    "South Province (Area Five)",
+    "East Province (Area One)",
+    "West Province (Area One)",
+    "West Province (Area Three)",
+    "Coastal Biome",
+    "Torchlit Labyrinth",
+    "Canyon Biome"
+   ],
+   "serebii": [
+    "South Province (Area One)",
+    "South Province (Area Three)",
+    "South Province (Area Four)",
+    "South Province (Area Five)",
+    "West Province (Area Three)",
+    "East Province (Area One)",
+    "West Province (Area Two)",
+    "Canyon Biome",
+    "Coastal Biome"
+   ]
+  },
+  "Legends: Z-A": {
+   "bulbapedia": [
+    "Vert Sector 2",
+    "Vert Sector 4",
+    "Magenta Sector 6",
+    "Wild Zone 7",
+    "Wild Zone 9",
+    "Rouge Sector 3",
+    "Rouge Sector 8",
+    "Jaune Street",
+    "Jaune Sector 10"
+   ],
+   "serebii": [
+    "Wild Zone 5",
+    "Wild Zone 7",
+    "Wild Zone 9",
+    "Bleu District",
+    "Jaune District",
+    "Magenta District",
+    "Rouge District",
+    "Vert District"
+   ]
+  }
+ },
+ "Malamar": {
+  "Black": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "White": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Black 2": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "White 2": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "X": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Y": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Omega Ruby": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Alpha Sapphire": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sword": {
+   "bulbapedia": [
+    "Watchtower Ruins",
+    "West Lake Axewell",
+    "Motostoke Riverbank",
+    "Stony Wilderness",
+    "Giant's Mirror",
+    "Hammerlocke Hills",
+    "Fields of Honor",
+    "Soothing Wetlands",
+    "Loop Lagoon",
+    "Training Lowlands"
+   ],
+   "serebii": [
+    "Giant's Mirror",
+    "Hammerlocke Hills",
+    "Motostoke Riverbank",
+    "Stony Wilderness",
+    "Watchtower Ruins",
+    "West Lake Axewell",
+    "Fields of Honor",
+    "Soothing Wetlands",
+    "Challenge Beach",
+    "Loop Lagoon",
+    "Training Lowlands",
+    "Challenge Road",
+    "Workout Sea",
+    "Honeycalm Sea"
+   ]
+  },
+  "Shield": {
+   "bulbapedia": [
+    "Watchtower Ruins",
+    "West Lake Axewell",
+    "Motostoke Riverbank",
+    "Stony Wilderness",
+    "Giant's Mirror",
+    "Hammerlocke Hills",
+    "Fields of Honor",
+    "Soothing Wetlands",
+    "Loop Lagoon",
+    "Training Lowlands"
+   ],
+   "serebii": [
+    "Giant's Mirror",
+    "Hammerlocke Hills",
+    "Motostoke Riverbank",
+    "Stony Wilderness",
+    "Watchtower Ruins",
+    "West Lake Axewell",
+    "Fields of Honor",
+    "Soothing Wetlands",
+    "Challenge Beach",
+    "Loop Lagoon",
+    "Training Lowlands",
+    "Challenge Road",
+    "Workout Sea",
+    "Honeycalm Sea"
+   ]
+  },
+  "Scarlet": {
+   "bulbapedia": [],
+   "serebii": [
+    "Canyon Biome",
+    "Coastal Biome"
+   ]
+  },
+  "Violet": {
+   "bulbapedia": [],
+   "serebii": [
+    "Canyon Biome",
+    "Coastal Biome"
+   ]
+  },
+  "Legends: Z-A": {
+   "bulbapedia": [
+    "Wild Zone 20"
+   ],
+   "serebii": [
+    "Wild Zone 20"
+   ]
+  }
+ },
+ "Amaura": {
+  "Black": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "White": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Black 2": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "White 2": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "X": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Y": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Omega Ruby": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Alpha Sapphire": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sword": {
+   "bulbapedia": [
+    "Slippery Slope",
+    "Frostpoint Field",
+    "Snowslide Slope",
+    "Giant's Bed",
+    "Frigid Sea"
+   ],
+   "serebii": [
+    "Slippery Slope",
+    "Frostpoint Field",
+    "Snowslide Slope",
+    "Frigid Sea"
+   ]
+  },
+  "Shield": {
+   "bulbapedia": [
+    "Slippery Slope",
+    "Frostpoint Field",
+    "Snowslide Slope",
+    "Giant's Bed",
+    "Frigid Sea"
+   ],
+   "serebii": [
+    "Slippery Slope",
+    "Frostpoint Field",
+    "Snowslide Slope",
+    "Frigid Sea"
+   ]
+  },
+  "Scarlet": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Violet": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Legends: Z-A": {
+   "bulbapedia": [],
+   "serebii": []
+  }
+ },
+ "Dedenne": {
+  "Black": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "White": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Black 2": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "White 2": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "X": {
+   "bulbapedia": [
+    "Route 11"
+   ],
+   "serebii": [
+    "Route 11"
+   ]
+  },
+  "Y": {
+   "bulbapedia": [
+    "Route 11"
+   ],
+   "serebii": [
+    "Route 11"
+   ]
+  },
+  "Omega Ruby": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Alpha Sapphire": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Sun": {
+   "bulbapedia": [
+    "Blush Mountain"
+   ],
+   "serebii": [
+    "Blush Mountain"
+   ]
+  },
+  "Ultra Moon": {
+   "bulbapedia": [
+    "Blush Mountain"
+   ],
+   "serebii": [
+    "Blush Mountain"
+   ]
+  },
+  "Sword": {
+   "bulbapedia": [
+    "Challenge Beach",
+    "Frostpoint Field",
+    "Giant's Bed",
+    "Three-Point Pass",
+    "Frigid Sea",
+    "Ballimere Lake"
+   ],
+   "serebii": [
+    "Challenge Beach",
+    "Fields of Honor",
+    "Forest of Focus",
+    "Honeycalm Sea",
+    "Frostpoint Field",
+    "Giant's Bed",
+    "Frigid Sea",
+    "Three-Point Pass",
+    "Ballimere Lake"
+   ]
+  },
+  "Shield": {
+   "bulbapedia": [
+    "Challenge Beach",
+    "Frostpoint Field",
+    "Giant's Bed",
+    "Three-Point Pass",
+    "Frigid Sea",
+    "Ballimere Lake"
+   ],
+   "serebii": [
+    "Challenge Beach",
+    "Fields of Honor",
+    "Forest of Focus",
+    "Honeycalm Sea",
+    "Frostpoint Field",
+    "Giant's Bed",
+    "Frigid Sea",
+    "Three-Point Pass",
+    "Ballimere Lake"
+   ]
+  },
+  "Scarlet": {
+   "bulbapedia": [
+    "West Province (Area Three)",
+    "North Province (Area Three)"
+   ],
+   "serebii": [
+    "North Province (Area Three)",
+    "West Province (Area Three)"
+   ]
+  },
+  "Violet": {
+   "bulbapedia": [
+    "West Province (Area Three)",
+    "North Province (Area Three)"
+   ],
+   "serebii": [
+    "North Province (Area Three)",
+    "West Province (Area Three)"
+   ]
+  },
+  "Legends: Z-A": {
+   "bulbapedia": [
+    "Vert Sector 3",
+    "Vert Sector 8",
+    "Aymlis Park",
+    "Bleu Sector 4",
+    "Bleu Sector 6",
+    "North Boulevard",
+    "Magenta Sector 2",
+    "Magenta Sector 4",
+    "Magenta Sector 6",
+    "Magenta Sector 7",
+    "Rouge Sector 6",
+    "Rouge Sector 8",
+    "Jaune Sector 4",
+    "Jaune Sector 11",
+    "Wild Zone 20"
+   ],
+   "serebii": [
+    "Wild Zone 20",
+    "Bleu District",
+    "Jaune District",
+    "Magenta District",
+    "Rouge District",
+    "Vert District"
+   ]
+  }
+ },
+ "Noibat": {
+  "Black": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "White": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Black 2": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "White 2": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "X": {
+   "bulbapedia": [
+    "Terminus Cave",
+    "Victory Road"
+   ],
+   "serebii": [
+    "Terminus Cave",
+    "Victory Road"
+   ]
+  },
+  "Y": {
+   "bulbapedia": [
+    "Terminus Cave",
+    "Victory Road"
+   ],
+   "serebii": [
+    "Terminus Cave",
+    "Victory Road"
+   ]
+  },
+  "Omega Ruby": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Alpha Sapphire": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Sun": {
+   "bulbapedia": [
+    "Verdant Cavern"
+   ],
+   "serebii": [
+    "Verdant Cavern"
+   ]
+  },
+  "Ultra Moon": {
+   "bulbapedia": [
+    "Verdant Cavern"
+   ],
+   "serebii": [
+    "Verdant Cavern"
+   ]
+  },
+  "Sword": {
+   "bulbapedia": [
+    "Galar Mine No. 2",
+    "Bridge Field",
+    "Watchtower Ruins",
+    "Rolling Fields",
+    "Axew's Eye",
+    "Giant's Cap",
+    "Hammerlocke Hills",
+    "Frostpoint Field",
+    "Giant's Bed",
+    "Frigid Sea",
+    "Ballimere Lake",
+    "Dyna Tree Hill"
+   ],
+   "serebii": [
+    "Bridge Field",
+    "Galar Mine No. 2",
+    "Watchtower Ruins",
+    "Axew's Eye",
+    "Giant's Cap",
+    "Hammerlocke Hills",
+    "Rolling Fields",
+    "Frostpoint Field",
+    "Giant's Bed",
+    "Frigid Sea",
+    "Ballimere Lake",
+    "Dyna Tree Hill"
+   ]
+  },
+  "Shield": {
+   "bulbapedia": [
+    "Galar Mine No. 2",
+    "Bridge Field",
+    "Watchtower Ruins",
+    "Rolling Fields",
+    "Axew's Eye",
+    "Giant's Cap",
+    "Hammerlocke Hills",
+    "Frostpoint Field",
+    "Giant's Bed",
+    "Frigid Sea",
+    "Ballimere Lake",
+    "Dyna Tree Hill"
+   ],
+   "serebii": [
+    "Bridge Field",
+    "Galar Mine No. 2",
+    "Watchtower Ruins",
+    "Axew's Eye",
+    "Giant's Cap",
+    "Hammerlocke Hills",
+    "Rolling Fields",
+    "Frostpoint Field",
+    "Giant's Bed",
+    "Frigid Sea",
+    "Ballimere Lake",
+    "Dyna Tree Hill"
+   ]
+  },
+  "Scarlet": {
+   "bulbapedia": [
+    "West Province (Area Two)",
+    "North Province (Area One)",
+    "North Province (Area Two)",
+    "Apple Hills",
+    "Reveler's Road",
+    "Kitakami Hall",
+    "Mossfell Confluence",
+    "Fellhorn Gorge",
+    "Oni Mountain",
+    "Oni's Maw",
+    "Crystal Pool",
+    "Kitakami Wilds"
+   ],
+   "serebii": [
+    "North Province (Area One)",
+    "North Province (Area Two)",
+    "West Province (Area Two)",
+    "Apple Hills",
+    "Reveler's Road",
+    "Kitakami Hall",
+    "Mossfell Confluence",
+    "Fellhorn Gorge",
+    "Oni Mountain",
+    "Oni's Maw",
+    "Crystal Pool",
+    "Kitakami Wilds"
+   ]
+  },
+  "Violet": {
+   "bulbapedia": [
+    "West Province (Area Two)",
+    "North Province (Area One)",
+    "North Province (Area Two)",
+    "Apple Hills",
+    "Reveler's Road",
+    "Kitakami Hall",
+    "Mossfell Confluence",
+    "Fellhorn Gorge",
+    "Oni Mountain",
+    "Oni's Maw",
+    "Crystal Pool",
+    "Kitakami Wilds"
+   ],
+   "serebii": [
+    "North Province (Area One)",
+    "North Province (Area Two)",
+    "West Province (Area Two)",
+    "Apple Hills",
+    "Reveler's Road",
+    "Kitakami Hall",
+    "Mossfell Confluence",
+    "Fellhorn Gorge",
+    "Oni Mountain",
+    "Oni's Maw",
+    "Crystal Pool",
+    "Kitakami Wilds"
+   ]
+  },
+  "Legends: Z-A": {
+   "bulbapedia": [
+    "The Sewers",
+    "Wild Zone 18"
+   ],
+   "serebii": [
+    "Wild Zone 15",
+    "Wild Zone 18",
+    "Bleu District",
+    "Jaune District",
+    "Magenta District",
+    "Rouge District",
+    "Vert District",
+    "Lysandre Labs",
+    "The Sewers - Main Access",
+    "The Sewers - Canal Access"
+   ]
+  }
+ },
+ "Pyukumuku": {
+  "Black": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "White": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Black 2": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "White 2": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "X": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Y": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Omega Ruby": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Alpha Sapphire": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sun": {
+   "bulbapedia": [
+    "Route 7",
+    "Hano Beach"
+   ],
+   "serebii": [
+    "Route 7",
+    "Hano Beach"
+   ]
+  },
+  "Moon": {
+   "bulbapedia": [
+    "Route 7",
+    "Hano Beach"
+   ],
+   "serebii": [
+    "Route 7",
+    "Hano Beach"
+   ]
+  },
+  "Ultra Sun": {
+   "bulbapedia": [
+    "Route 7",
+    "Hano Beach"
+   ],
+   "serebii": [
+    "Route 7",
+    "Hano Beach"
+   ]
+  },
+  "Ultra Moon": {
+   "bulbapedia": [
+    "Route 7",
+    "Hano Beach"
+   ],
+   "serebii": [
+    "Route 7",
+    "Hano Beach"
+   ]
+  },
+  "Sword": {
+   "bulbapedia": [
+    "Route 9",
+    "South Lake Miloch",
+    "Giant's Seat",
+    "Bridge Field",
+    "Dusty Bowl",
+    "East Lake Axewell",
+    "Giant's Cap",
+    "Giant's Mirror",
+    "Lake of Outrage",
+    "North Lake Miloch",
+    "West Lake Axewell",
+    "Loop Lagoon"
+   ],
+   "serebii": [
+    "Route 9",
+    "Giant's Seat",
+    "South Lake Miloch",
+    "Bridge Field",
+    "Dusty Bowl",
+    "East Lake Axewell",
+    "Giant's Cap",
+    "Giant's Mirror",
+    "Lake of Outrage",
+    "North Lake Miloch",
+    "West Lake Axewell",
+    "Fields of Honor",
+    "Challenge Beach",
+    "Loop Lagoon"
+   ]
+  },
+  "Shield": {
+   "bulbapedia": [
+    "Route 9",
+    "South Lake Miloch",
+    "Giant's Seat",
+    "Bridge Field",
+    "Dusty Bowl",
+    "East Lake Axewell",
+    "Giant's Cap",
+    "Giant's Mirror",
+    "Lake of Outrage",
+    "North Lake Miloch",
+    "West Lake Axewell",
+    "Loop Lagoon"
+   ],
+   "serebii": [
+    "Route 9",
+    "Giant's Seat",
+    "South Lake Miloch",
+    "Bridge Field",
+    "Dusty Bowl",
+    "East Lake Axewell",
+    "Giant's Cap",
+    "Giant's Mirror",
+    "Lake of Outrage",
+    "North Lake Miloch",
+    "West Lake Axewell",
+    "Fields of Honor",
+    "Challenge Beach",
+    "Loop Lagoon"
+   ]
+  },
+  "Scarlet": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Violet": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Legends: Z-A": {
+   "bulbapedia": [],
+   "serebii": []
+  }
+ },
+ "Jangmo-o": {
+  "Sun": {
+   "bulbapedia": [
+    "Vast Poni Canyon"
+   ],
+   "serebii": [
+    "Vast Poni Canyon"
+   ]
+  },
+  "Moon": {
+   "bulbapedia": [
+    "Vast Poni Canyon"
+   ],
+   "serebii": [
+    "Vast Poni Canyon"
+   ]
+  },
+  "Ultra Sun": {
+   "bulbapedia": [
+    "Vast Poni Canyon"
+   ],
+   "serebii": [
+    "Vast Poni Canyon"
+   ]
+  },
+  "Ultra Moon": {
+   "bulbapedia": [
+    "Vast Poni Canyon"
+   ],
+   "serebii": [
+    "Vast Poni Canyon"
+   ]
+  },
+  "Sword": {
+   "bulbapedia": [
+    "Lake of Outrage",
+    "Axew's Eye (Max Raid)",
+    "Rolling Fields (Max Raid)",
+    "Challenge Road",
+    "Potbottom Desert",
+    "Challenge Road (Wanderer)",
+    "Loop Lagoon (Max Raid)"
+   ],
+   "serebii": [
+    "Lake of Outrage",
+    "Axew's Eye (Max Raid)",
+    "Rolling Fields (Max Raid)",
+    "Challenge Road",
+    "Training Lowlands (Wandering)",
+    "Potbottom Desert",
+    "Loop Lagoon (Max Raid)",
+    "Workout Sea (Max Raid)",
+    "Honeycalm Sea (Max Raid)"
+   ]
+  },
+  "Shield": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Scarlet": {
+   "bulbapedia": [
+    "Wistful Fields",
+    "Paradise Barrens",
+    "Kitakami Wilds"
+   ],
+   "serebii": [
+    "Kitakami Wilds",
+    "Paradise Barrens",
+    "Wistful Fields",
+    "Paradise Barrens (Fixed)"
+   ]
+  },
+  "Violet": {
+   "bulbapedia": [
+    "Wistful Fields",
+    "Paradise Barrens",
+    "Kitakami Wilds"
+   ],
+   "serebii": [
+    "Kitakami Wilds",
+    "Paradise Barrens",
+    "Wistful Fields",
+    "Paradise Barrens (Fixed)"
+   ]
+  },
+  "Legends: Z-A": {
+   "bulbapedia": [],
+   "serebii": []
+  }
+ },
+ "Skwovet": {
+  "Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sword": {
+   "bulbapedia": [
+    "Route 1",
+    "Route 2",
+    "Slumbering Weald",
+    "Route 3 (Berry tree)",
+    "Route 4 (Berry tree)",
+    "Route 5 (Berry tree)",
+    "Rolling Fields (Berry tree)",
+    "Motostoke Riverbank (Berry tree)",
+    "North Lake Miloch (Berry tree)",
+    "Dappled Grove (Berry tree)",
+    "Watchtower Ruins (Berry tree)",
+    "Rolling Fields (Max Raid)",
+    "East Lake Axewell (Max Raid)",
+    "Motostoke Riverbank (Max Raid)",
+    "Bridge Field (Max Raid)",
+    "Stony Wilderness (Max Raid)",
+    "Stepping-Stone Sea",
+    "Ballimere Lake",
+    "Fields of Honor (Berry tree)",
+    "Soothing Wetlands (Berry tree)",
+    "Challenge Beach (Berry tree)",
+    "Forest of Focus (Berry tree)",
+    "Training Lowlands (Berry tree)",
+    "Workout Sea (Berry tree)",
+    "Loop Lagoon (Berry tree)",
+    "Stepping-Stone Sea (Berry tree)",
+    "Insular Sea (Berry tree)",
+    "Slippery Slope (Berry tree)",
+    "Frostpoint Field (Berry tree)",
+    "Giant's Bed (Berry tree)",
+    "Giant's Foot (Berry tree)",
+    "Ballimere Lake (Berry tree)",
+    "Slippery Slope (Max Raid)",
+    "Giant's Bed (Max Raid)",
+    "Giant's Foot (Max Raid)",
+    "Ballimere Lake (Max Raid)"
+   ],
+   "serebii": [
+    "Route 1",
+    "Route 2",
+    "Slumbering Weald",
+    "Slumbering Weald (Wandering)",
+    "Route 3 (Berry tree)",
+    "Route 4 (Berry tree)",
+    "Route 5 (Berry tree)",
+    "Dappled Grove (Berry tree)",
+    "Motostoke Riverbank (Berry tree)",
+    "North Lake Miloch (Berry tree)",
+    "Rolling Fields (Berry tree)",
+    "Watchtower Ruins (Berry tree)",
+    "Bridge Field (Max Raid)",
+    "East Lake Axewell (Max Raid)",
+    "Motostoke Riverbank (Max Raid)",
+    "Rolling Fields (Max Raid)",
+    "Stony Wilderness (Max Raid)",
+    "Fields of Honor (Berry tree)",
+    "Soothing Wetlands (Berry tree)",
+    "Forest of Focus (Berry tree)",
+    "Challenge Beach (Berry tree)",
+    "Loop Lagoon (Berry tree)",
+    "Training Lowlands (Berry tree)",
+    "Workout Sea (Berry tree)",
+    "Stepping-Stone Sea",
+    "Stepping-Stone Sea (Berry tree)",
+    "Insular Sea (Berry tree)",
+    "Slippery Slope (Berry tree)",
+    "Frostpoint Field (Berry tree)",
+    "Giant's Bed (Berry tree)",
+    "Giant's Foot (Berry tree)",
+    "Ballimere Lake",
+    "Ballimere Lake (Berry tree)",
+    "Slippery Slope (Max Raid)",
+    "Giant's Bed (Max Raid)",
+    "Giant's Foot (Max Raid)",
+    "Ballimere Lake (Max Raid)"
+   ]
+  },
+  "Shield": {
+   "bulbapedia": [
+    "Route 1",
+    "Route 2",
+    "Slumbering Weald",
+    "Route 3 (Berry tree)",
+    "Route 4 (Berry tree)",
+    "Route 5 (Berry tree)",
+    "Rolling Fields (Berry tree)",
+    "Motostoke Riverbank (Berry tree)",
+    "North Lake Miloch (Berry tree)",
+    "Dappled Grove (Berry tree)",
+    "Watchtower Ruins (Berry tree)",
+    "Rolling Fields (Max Raid)",
+    "East Lake Axewell (Max Raid)",
+    "Motostoke Riverbank (Max Raid)",
+    "Bridge Field (Max Raid)",
+    "Stony Wilderness (Max Raid)",
+    "Stepping-Stone Sea",
+    "Ballimere Lake",
+    "Fields of Honor (Berry tree)",
+    "Soothing Wetlands (Berry tree)",
+    "Challenge Beach (Berry tree)",
+    "Forest of Focus (Berry tree)",
+    "Training Lowlands (Berry tree)",
+    "Workout Sea (Berry tree)",
+    "Loop Lagoon (Berry tree)",
+    "Stepping-Stone Sea (Berry tree)",
+    "Insular Sea (Berry tree)",
+    "Slippery Slope (Berry tree)",
+    "Frostpoint Field (Berry tree)",
+    "Giant's Bed (Berry tree)",
+    "Giant's Foot (Berry tree)",
+    "Ballimere Lake (Berry tree)",
+    "Slippery Slope (Max Raid)",
+    "Giant's Bed (Max Raid)",
+    "Giant's Foot (Max Raid)",
+    "Ballimere Lake (Max Raid)"
+   ],
+   "serebii": [
+    "Route 1",
+    "Route 2",
+    "Slumbering Weald",
+    "Slumbering Weald (Wandering)",
+    "Route 3 (Berry tree)",
+    "Route 4 (Berry tree)",
+    "Route 5 (Berry tree)",
+    "Dappled Grove (Berry tree)",
+    "Motostoke Riverbank (Berry tree)",
+    "North Lake Miloch (Berry tree)",
+    "Rolling Fields (Berry tree)",
+    "Watchtower Ruins (Berry tree)",
+    "Bridge Field (Max Raid)",
+    "East Lake Axewell (Max Raid)",
+    "Motostoke Riverbank (Max Raid)",
+    "Rolling Fields (Max Raid)",
+    "Stony Wilderness (Max Raid)",
+    "Fields of Honor (Berry tree)",
+    "Soothing Wetlands (Berry tree)",
+    "Forest of Focus (Berry tree)",
+    "Challenge Beach (Berry tree)",
+    "Loop Lagoon (Berry tree)",
+    "Training Lowlands (Berry tree)",
+    "Workout Sea (Berry tree)",
+    "Stepping-Stone Sea",
+    "Stepping-Stone Sea (Berry tree)",
+    "Insular Sea (Berry tree)",
+    "Slippery Slope (Berry tree)",
+    "Frostpoint Field (Berry tree)",
+    "Giant's Bed (Berry tree)",
+    "Giant's Foot (Berry tree)",
+    "Ballimere Lake",
+    "Ballimere Lake (Berry tree)",
+    "Slippery Slope (Max Raid)",
+    "Giant's Bed (Max Raid)",
+    "Giant's Foot (Max Raid)",
+    "Ballimere Lake (Max Raid)"
+   ]
+  },
+  "Scarlet": {
+   "bulbapedia": [
+    "South Province (Area One)",
+    "South Province (Area Two)",
+    "Reveler's Road",
+    "Kitakami Hall",
+    "Mossfell Confluence",
+    "Wistful Fields",
+    "Paradise Barrens"
+   ],
+   "serebii": [
+    "South Province (Area One)",
+    "South Province (Area Two)",
+    "Kitakami Hall",
+    "Mossfell Confluence",
+    "Paradise Barrens",
+    "Reveler's Road",
+    "Wistful Fields"
+   ]
+  },
+  "Violet": {
+   "bulbapedia": [
+    "South Province (Area One)",
+    "South Province (Area Two)",
+    "Reveler's Road",
+    "Kitakami Hall",
+    "Mossfell Confluence",
+    "Wistful Fields",
+    "Paradise Barrens"
+   ],
+   "serebii": [
+    "South Province (Area One)",
+    "South Province (Area Two)",
+    "Kitakami Hall",
+    "Mossfell Confluence",
+    "Paradise Barrens",
+    "Reveler's Road",
+    "Wistful Fields"
+   ]
+  },
+  "Legends: Z-A": {
+   "bulbapedia": [],
+   "serebii": []
+  }
+ },
+ "Blipbug": {
+  "Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sword": {
+   "bulbapedia": [
+    "Route 1",
+    "Route 2",
+    "Giant's Cap",
+    "Slumbering Weald",
+    "Bridge Field (Max Raid)",
+    "Dappled Grove (Max Raid)",
+    "Rolling Fields (Max Raid)",
+    "South Lake Miloch (Max Raid)",
+    "Fields of Honor",
+    "Challenge Beach",
+    "Training Lowlands",
+    "Challenge Road",
+    "Workout Sea",
+    "Loop Lagoon",
+    "Stepping-Stone Sea",
+    "Insular Sea",
+    "Honeycalm Island"
+   ],
+   "serebii": [
+    "Route 1",
+    "Route 2",
+    "Giant's Cap",
+    "Slumbering Weald",
+    "Bridge Field (Max Raid)",
+    "Dappled Grove (Max Raid)",
+    "Rolling Fields (Max Raid)",
+    "South Lake Miloch (Max Raid)",
+    "Fields of Honor",
+    "Challenge Beach",
+    "Challenge Road",
+    "Loop Lagoon",
+    "Training Lowlands",
+    "Workout Sea",
+    "Stepping-Stone Sea",
+    "Insular Sea",
+    "Honeycalm Island",
+    "Training Lowlands (Max Raid)"
+   ]
+  },
+  "Shield": {
+   "bulbapedia": [
+    "Route 1",
+    "Route 2",
+    "Giant's Cap",
+    "Slumbering Weald",
+    "Bridge Field (Max Raid)",
+    "Dappled Grove (Max Raid)",
+    "Rolling Fields (Max Raid)",
+    "South Lake Miloch (Max Raid)",
+    "Fields of Honor",
+    "Challenge Beach",
+    "Training Lowlands",
+    "Challenge Road",
+    "Workout Sea",
+    "Loop Lagoon",
+    "Stepping-Stone Sea",
+    "Insular Sea",
+    "Honeycalm Island"
+   ],
+   "serebii": [
+    "Route 1",
+    "Route 2",
+    "Giant's Cap",
+    "Slumbering Weald",
+    "Bridge Field (Max Raid)",
+    "Dappled Grove (Max Raid)",
+    "Rolling Fields (Max Raid)",
+    "South Lake Miloch (Max Raid)",
+    "Fields of Honor",
+    "Challenge Beach",
+    "Challenge Road",
+    "Loop Lagoon",
+    "Training Lowlands",
+    "Workout Sea",
+    "Stepping-Stone Sea",
+    "Insular Sea",
+    "Honeycalm Island",
+    "Training Lowlands (Max Raid)"
+   ]
+  },
+  "Scarlet": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Violet": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Legends: Z-A": {
+   "bulbapedia": [],
+   "serebii": []
+  }
+ },
+ "Wooloo": {
+  "Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sword": {
+   "bulbapedia": [
+    "Route 1",
+    "Route 4",
+    "Motostoke Riverbank",
+    "Bridge Field (Max Raid)",
+    "East Lake Axewell (Max Raid)",
+    "Motostoke Riverbank (Max Raid)",
+    "Rolling Fields (Max Raid)",
+    "Stony Wilderness (Max Raid)",
+    "Slippery Slope",
+    "Frostpoint Field",
+    "Giant's Bed",
+    "Snowslide Slope",
+    "Three-Point Pass",
+    "Slippery Slope (Max Raid)",
+    "Giant's Bed (Max Raid)",
+    "Giant's Foot (Max Raid)",
+    "Ballimere Lake (Max Raid)"
+   ],
+   "serebii": [
+    "Route 1",
+    "Route 4",
+    "Motostoke Riverbank",
+    "Bridge Field (Max Raid)",
+    "East Lake Axewell (Max Raid)",
+    "Motostoke Riverbank (Max Raid)",
+    "Rolling Fields (Max Raid)",
+    "Stony Wilderness (Max Raid)",
+    "Slippery Slope",
+    "Frostpoint Field",
+    "Giant's Bed",
+    "Snowslide Slope",
+    "Three-Point Pass",
+    "Slippery Slope (Max Raid)",
+    "Giant's Bed (Max Raid)",
+    "Giant's Foot (Max Raid)",
+    "Ballimere Lake (Max Raid)"
+   ]
+  },
+  "Shield": {
+   "bulbapedia": [
+    "Route 1",
+    "Route 4",
+    "Motostoke Riverbank",
+    "Bridge Field (Max Raid)",
+    "East Lake Axewell (Max Raid)",
+    "Motostoke Riverbank (Max Raid)",
+    "Rolling Fields (Max Raid)",
+    "Stony Wilderness (Max Raid)",
+    "Slippery Slope",
+    "Frostpoint Field",
+    "Giant's Bed",
+    "Snowslide Slope",
+    "Three-Point Pass",
+    "Slippery Slope (Max Raid)",
+    "Giant's Bed (Max Raid)",
+    "Giant's Foot (Max Raid)",
+    "Ballimere Lake (Max Raid)"
+   ],
+   "serebii": [
+    "Route 1",
+    "Route 4",
+    "Motostoke Riverbank",
+    "Bridge Field (Max Raid)",
+    "East Lake Axewell (Max Raid)",
+    "Motostoke Riverbank (Max Raid)",
+    "Rolling Fields (Max Raid)",
+    "Stony Wilderness (Max Raid)",
+    "Slippery Slope",
+    "Frostpoint Field",
+    "Giant's Bed",
+    "Snowslide Slope",
+    "Three-Point Pass",
+    "Slippery Slope (Max Raid)",
+    "Giant's Bed (Max Raid)",
+    "Giant's Foot (Max Raid)",
+    "Ballimere Lake (Max Raid)"
+   ]
+  },
+  "Scarlet": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Violet": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Legends: Z-A": {
+   "bulbapedia": [],
+   "serebii": []
+  }
+ },
+ "Drednaw": {
+  "Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sword": {
+   "bulbapedia": [
+    "Route 6",
+    "Bridge Field",
+    "Dusty Bowl",
+    "Giant's Cap",
+    "Giant's Mirror",
+    "Lake of Outrage",
+    "Route 2 (Wanderer)",
+    "Galar Mine No. 2 (Wanderer)",
+    "West Lake Axewell (Max Raid)",
+    "South Lake Miloch (Max Raid)",
+    "Bridge Field (Max Raid)",
+    "Giant's Cap (Max Raid)",
+    "Lake of Outrage (Max Raid)",
+    "Giant's Mirror (Max Raid)",
+    "Dusty Bowl (Max Raid)",
+    "Fields of Honor (Wanderer)",
+    "Soothing Wetlands (Wanderer)",
+    "Loop Lagoon (Wanderer)"
+   ],
+   "serebii": [
+    "Route 2 (Wandering)",
+    "Route 6 (Fishing)",
+    "Bridge Field (Fishing)",
+    "Dusty Bowl",
+    "Galar Mine No. 2 (Wandering)",
+    "Giant's Cap",
+    "Giant's Mirror (Fishing)",
+    "Lake of Outrage",
+    "West Lake Axewell (Wandering)",
+    "Bridge Field (Max Raid)",
+    "Dusty Bowl (Max Raid)",
+    "Giant's Mirror (Max Raid)",
+    "Lake of Outrage (Max Raid)",
+    "South Lake Miloch (Max Raid)",
+    "West Lake Axewell (Max Raid)",
+    "Fields of Honor (Wandering)",
+    "Soothing Wetlands (Wandering)",
+    "Challenge Beach (Wandering)",
+    "Courageous Cavern (Wandering)",
+    "Loop Lagoon (Wandering)",
+    "Soothing Wetlands (Max Raid)",
+    "Forest of Focus (Max Raid)",
+    "Challenge Beach (Max Raid)",
+    "Courageous Cavern (Max Raid)"
+   ]
+  },
+  "Shield": {
+   "bulbapedia": [
+    "Route 6",
+    "Bridge Field",
+    "Dusty Bowl",
+    "Giant's Cap",
+    "Giant's Mirror",
+    "Lake of Outrage",
+    "Route 2 (Wanderer)",
+    "Galar Mine No. 2 (Wanderer)",
+    "West Lake Axewell (Max Raid)",
+    "South Lake Miloch (Max Raid)",
+    "Bridge Field (Max Raid)",
+    "Giant's Cap (Max Raid)",
+    "Lake of Outrage (Max Raid)",
+    "Giant's Mirror (Max Raid)",
+    "Dusty Bowl (Max Raid)",
+    "Fields of Honor (Wanderer)",
+    "Soothing Wetlands (Wanderer)",
+    "Loop Lagoon (Wanderer)"
+   ],
+   "serebii": [
+    "Route 2 (Wandering)",
+    "Route 6 (Fishing)",
+    "Bridge Field (Fishing)",
+    "Dusty Bowl",
+    "Galar Mine No. 2 (Wandering)",
+    "Giant's Cap",
+    "Giant's Mirror (Fishing)",
+    "Lake of Outrage",
+    "West Lake Axewell (Wandering)",
+    "Bridge Field (Max Raid)",
+    "Dusty Bowl (Max Raid)",
+    "Giant's Mirror (Max Raid)",
+    "Lake of Outrage (Max Raid)",
+    "South Lake Miloch (Max Raid)",
+    "West Lake Axewell (Max Raid)",
+    "Fields of Honor (Wandering)",
+    "Soothing Wetlands (Wandering)",
+    "Challenge Beach (Wandering)",
+    "Courageous Cavern (Wandering)",
+    "Loop Lagoon (Wandering)",
+    "Soothing Wetlands (Max Raid)",
+    "Forest of Focus (Max Raid)",
+    "Challenge Beach (Max Raid)",
+    "Courageous Cavern (Max Raid)"
+   ]
+  },
+  "Scarlet": {
+   "bulbapedia": [
+    "South Province (Area One)",
+    "South Province (Area Four)",
+    "South Province (Area Five)",
+    "South Province (Area Six)",
+    "East Province (Area Two)",
+    "East Province (Area Three)",
+    "West Province (Area Two)",
+    "West Province (Area Three)",
+    "North Province (Area Two)",
+    "Casseroya Lake",
+    "Glaseado Mountain",
+    "Casseroya Lake (Fixed, Ice Tera)",
+    "Fellhorn Gorge",
+    "Kitakami Wilds",
+    "Timeless Woods"
+   ],
+   "serebii": [
+    "Casseroya Lake",
+    "East Province (Area Two)",
+    "East Province (Area Three)",
+    "Glaseado Mountain",
+    "South Province (Area Five)",
+    "South Province (Area Six)",
+    "West Province (Area Two)",
+    "Casseroya Lake (Fixed)",
+    "Fellhorn Gorge",
+    "Kitakami Wilds",
+    "Timeless Woods",
+    "Fellhorn Gorge (Fixed)"
+   ]
+  },
+  "Violet": {
+   "bulbapedia": [
+    "South Province (Area One)",
+    "South Province (Area Four)",
+    "South Province (Area Five)",
+    "South Province (Area Six)",
+    "East Province (Area Two)",
+    "East Province (Area Three)",
+    "West Province (Area Two)",
+    "West Province (Area Three)",
+    "North Province (Area Two)",
+    "Casseroya Lake",
+    "Glaseado Mountain",
+    "Casseroya Lake (Fixed, Ice Tera)",
+    "Fellhorn Gorge",
+    "Kitakami Wilds",
+    "Timeless Woods"
+   ],
+   "serebii": [
+    "Casseroya Lake",
+    "East Province (Area Two)",
+    "East Province (Area Three)",
+    "Glaseado Mountain",
+    "South Province (Area Five)",
+    "South Province (Area Six)",
+    "West Province (Area Two)",
+    "Casseroya Lake (Fixed)",
+    "Fellhorn Gorge",
+    "Kitakami Wilds",
+    "Timeless Woods",
+    "Fellhorn Gorge (Fixed)"
+   ]
+  },
+  "Legends: Z-A": {
+   "bulbapedia": [],
+   "serebii": []
+  }
+ },
+ "Centiskorch": {
+  "Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sword": {
+   "bulbapedia": [
+    "Dusty Bowl (Max Raid)",
+    "Giant's Cap (Max Raid)",
+    "Hammerlocke Hills (Max Raid)",
+    "Lake of Outrage (Max Raid)",
+    "Stony Wilderness (Max Raid)",
+    "Giant's Foot",
+    "Snowslide Slope (Max Raid)",
+    "Giant's Bed (Max Raid)",
+    "Ballimere Lake (Max Raid)"
+   ],
+   "serebii": [
+    "Dusty Bowl (Max Raid)",
+    "Giant's Cap (Max Raid)",
+    "Hammerlocke Hills (Max Raid)",
+    "Lake of Outrage (Max Raid)",
+    "Stony Wilderness (Max Raid)",
+    "Giant's Foot",
+    "Giant's Foot (Wandering)",
+    "Snowslide Slope (Max Raid)",
+    "Giant's Bed (Max Raid)",
+    "Ballimere Lake (Max Raid)"
+   ]
+  },
+  "Shield": {
+   "bulbapedia": [
+    "Dusty Bowl (Max Raid)",
+    "Giant's Cap (Max Raid)",
+    "Hammerlocke Hills (Max Raid)",
+    "Lake of Outrage (Max Raid)",
+    "Stony Wilderness (Max Raid)",
+    "Giant's Foot",
+    "Snowslide Slope (Max Raid)",
+    "Giant's Bed (Max Raid)",
+    "Ballimere Lake (Max Raid)"
+   ],
+   "serebii": [
+    "Dusty Bowl (Max Raid)",
+    "Giant's Cap (Max Raid)",
+    "Hammerlocke Hills (Max Raid)",
+    "Lake of Outrage (Max Raid)",
+    "Stony Wilderness (Max Raid)",
+    "Giant's Foot",
+    "Giant's Foot (Wandering)",
+    "Snowslide Slope (Max Raid)",
+    "Giant's Bed (Max Raid)",
+    "Ballimere Lake (Max Raid)"
+   ]
+  },
+  "Scarlet": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Violet": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Legends: Z-A": {
+   "bulbapedia": [],
+   "serebii": []
+  }
+ },
+ "Hatenna": {
+  "Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sword": {
+   "bulbapedia": [
+    "Hammerlocke Hills",
+    "Motostoke Outskirts",
+    "Stony Wilderness",
+    "Bridge Field (Max Raid)",
+    "Hammerlocke Hills (Max Raid)",
+    "Motostoke Riverbank (Max Raid)",
+    "Stony Wilderness (Max Raid)",
+    "Watchtower Ruins (Max Raid)",
+    "Slippery Slope",
+    "Frostpoint Field",
+    "Giant's Bed",
+    "Old Cemetery",
+    "Giant's Foot",
+    "Frigid Sea",
+    "Three-Point Pass",
+    "Ballimere Lake",
+    "Frostpoint Field (Max Raid)",
+    "Giant's Bed (Max Raid)",
+    "Snowslide Slope (Max Raid)",
+    "Frigid Sea (Max Raid)",
+    "Ballimere Lake (Max Raid)"
+   ],
+   "serebii": [
+    "Hammerlocke Hills",
+    "Motostoke Outskirts",
+    "Stony Wilderness",
+    "Bridge Field (Max Raid)",
+    "Hammerlocke Hills (Max Raid)",
+    "Motostoke Riverbank (Max Raid)",
+    "Stony Wilderness (Max Raid)",
+    "Watchtower Ruins (Max Raid)",
+    "Slippery Slope",
+    "Frostpoint Field",
+    "Giant's Bed",
+    "Old Cemetery",
+    "Giant's Foot",
+    "Frigid Sea",
+    "Three-Point Pass",
+    "Ballimere Lake",
+    "Frostpoint Field (Max Raid)",
+    "Giant's Bed (Max Raid)",
+    "Snowslide Slope (Max Raid)",
+    "Frigid Sea (Max Raid)",
+    "Ballimere Lake (Max Raid)"
+   ]
+  },
+  "Shield": {
+   "bulbapedia": [
+    "Hammerlocke Hills",
+    "Motostoke Outskirts",
+    "Stony Wilderness",
+    "Bridge Field (Max Raid)",
+    "Hammerlocke Hills (Max Raid)",
+    "Motostoke Riverbank (Max Raid)",
+    "Stony Wilderness (Max Raid)",
+    "Watchtower Ruins (Max Raid)",
+    "Slippery Slope",
+    "Frostpoint Field",
+    "Giant's Bed",
+    "Old Cemetery",
+    "Giant's Foot",
+    "Frigid Sea",
+    "Three-Point Pass",
+    "Ballimere Lake",
+    "Frostpoint Field (Max Raid)",
+    "Giant's Bed (Max Raid)",
+    "Snowslide Slope (Max Raid)",
+    "Frigid Sea (Max Raid)",
+    "Ballimere Lake (Max Raid)"
+   ],
+   "serebii": [
+    "Hammerlocke Hills",
+    "Motostoke Outskirts",
+    "Stony Wilderness",
+    "Bridge Field (Max Raid)",
+    "Hammerlocke Hills (Max Raid)",
+    "Motostoke Riverbank (Max Raid)",
+    "Stony Wilderness (Max Raid)",
+    "Watchtower Ruins (Max Raid)",
+    "Slippery Slope",
+    "Frostpoint Field",
+    "Giant's Bed",
+    "Old Cemetery",
+    "Giant's Foot",
+    "Frigid Sea",
+    "Three-Point Pass",
+    "Ballimere Lake",
+    "Frostpoint Field (Max Raid)",
+    "Giant's Bed (Max Raid)",
+    "Snowslide Slope (Max Raid)",
+    "Frigid Sea (Max Raid)",
+    "Ballimere Lake (Max Raid)"
+   ]
+  },
+  "Scarlet": {
+   "bulbapedia": [
+    "South Province (Area One)",
+    "South Province (Area Two)",
+    "South Province (Area Four)",
+    "West Province (Area Three)",
+    "Apple Hills",
+    "Oni Mountain",
+    "Oni's Maw",
+    "Infernal Pass",
+    "Crystal Pool",
+    "Paradise Barrens",
+    "Kitakami Wilds",
+    "Timeless Woods"
+   ],
+   "serebii": [
+    "South Province (Area One)",
+    "South Province (Area Two)",
+    "South Province (Area Four)",
+    "West Province (Area Three)",
+    "Apple Hills",
+    "Crystal Pool",
+    "Infernal Pass",
+    "Kitakami Wilds",
+    "Oni Mountain",
+    "Oni's Maw",
+    "Paradise Barrens",
+    "Reveler's Road",
+    "Timeless Woods",
+    "Reveler's Road (Fixed)",
+    "Wistful Fields (Fixed)"
+   ]
+  },
+  "Violet": {
+   "bulbapedia": [
+    "South Province (Area One)",
+    "South Province (Area Two)",
+    "South Province (Area Four)",
+    "West Province (Area Three)",
+    "Apple Hills",
+    "Oni Mountain",
+    "Oni's Maw",
+    "Infernal Pass",
+    "Crystal Pool",
+    "Paradise Barrens",
+    "Kitakami Wilds",
+    "Timeless Woods"
+   ],
+   "serebii": [
+    "South Province (Area One)",
+    "South Province (Area Two)",
+    "South Province (Area Four)",
+    "West Province (Area Three)",
+    "Apple Hills",
+    "Crystal Pool",
+    "Infernal Pass",
+    "Kitakami Wilds",
+    "Oni Mountain",
+    "Oni's Maw",
+    "Paradise Barrens",
+    "Reveler's Road",
+    "Timeless Woods",
+    "Reveler's Road (Fixed)",
+    "Wistful Fields (Fixed)"
+   ]
+  },
+  "Legends: Z-A": {
+   "bulbapedia": [],
+   "serebii": []
+  }
+ },
+ "Grimmsnarl": {
+  "Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sword": {
+   "bulbapedia": [
+    "Lake of Outrage",
+    "Stony Wilderness (Wanderer)",
+    "Bridge Field (Max Raid)",
+    "Dusty Bowl (Max Raid)",
+    "Giant's Mirror (Max Raid)",
+    "Hammerlocke Hills (Max Raid)",
+    "Lake of Outrage (Max Raid)",
+    "Rolling Fields (Max Raid)",
+    "Slippery Slope (Wanderer)",
+    "Giant's Bed (Wanderer)",
+    "Snowslide Slope (Wanderer)"
+   ],
+   "serebii": [
+    "Lake of Outrage",
+    "Stony Wilderness (Wanderer)",
+    "Bridge Field (Max Raid)",
+    "Dusty Bowl (Max Raid)",
+    "Giant's Mirror (Max Raid)",
+    "Hammerlocke Hills (Max Raid)",
+    "Lake of Outrage (Max Raid)",
+    "Rolling Fields (Max Raid)",
+    "Slippery Slope (Wanderer)",
+    "Giant's Bed (Wanderer)",
+    "Snowslide Slope (Wanderer)",
+    "Frostpoint Field (Max Raid)",
+    "Giant's Bed (Max Raid)",
+    "Snowslide Slope (Max Raid)",
+    "Giant's Foot (Max Raid)",
+    "Frigid Sea (Max Raid)"
+   ]
+  },
+  "Shield": {
+   "bulbapedia": [
+    "Lake of Outrage",
+    "Stony Wilderness (Wanderer)",
+    "Bridge Field (Max Raid)",
+    "Dusty Bowl (Max Raid)",
+    "Giant's Mirror (Max Raid)",
+    "Hammerlocke Hills (Max Raid)",
+    "Lake of Outrage (Max Raid)",
+    "Rolling Fields (Max Raid)",
+    "Slippery Slope (Wanderer)",
+    "Giant's Bed (Wanderer)",
+    "Snowslide Slope (Wanderer)"
+   ],
+   "serebii": [
+    "Lake of Outrage",
+    "Stony Wilderness (Wanderer)",
+    "Bridge Field (Max Raid)",
+    "Dusty Bowl (Max Raid)",
+    "Giant's Mirror (Max Raid)",
+    "Hammerlocke Hills (Max Raid)",
+    "Lake of Outrage (Max Raid)",
+    "Rolling Fields (Max Raid)",
+    "Slippery Slope (Wanderer)",
+    "Giant's Bed (Wanderer)",
+    "Snowslide Slope (Wanderer)",
+    "Frostpoint Field (Max Raid)",
+    "Giant's Bed (Max Raid)",
+    "Snowslide Slope (Max Raid)",
+    "Giant's Foot (Max Raid)",
+    "Frigid Sea (Max Raid)"
+   ]
+  },
+  "Scarlet": {
+   "bulbapedia": [
+    "Timeless Woods"
+   ],
+   "serebii": [
+    "Timeless Woods",
+    "Timeless Woods (Fixed)"
+   ]
+  },
+  "Violet": {
+   "bulbapedia": [
+    "Timeless Woods"
+   ],
+   "serebii": [
+    "Timeless Woods",
+    "Timeless Woods (Fixed)"
+   ]
+  },
+  "Legends: Z-A": {
+   "bulbapedia": [],
+   "serebii": []
+  }
+ },
+ "Obstagoon": {
+  "Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sword": {
+   "bulbapedia": [
+    "Lake of Outrage",
+    "Route 2 (Wanderer, only one)",
+    "Bridge Field (Wanderer)",
+    "Bridge Field (Max Raid)",
+    "Dusty Bowl (Max Raid)",
+    "Giant's Mirror (Max Raid)",
+    "Stony Wilderness (Max Raid)",
+    "West Lake Axewell (Max Raid)",
+    "Giant's Bed (Wanderer)",
+    "Ballimere Lake (Wanderer)",
+    "Frostpoint Field (Max Raid)",
+    "Giant's Bed (Max Raid)",
+    "Snowslide Slope (Max Raid)",
+    "Giant's Foot (Max Raid)",
+    "Frigid Sea (Max Raid)"
+   ],
+   "serebii": [
+    "Route 2 (Wandering)",
+    "Bridge Field (Wandering)",
+    "Lake of Outrage",
+    "Bridge Field (Max Raid)",
+    "Dusty Bowl (Max Raid)",
+    "Giant's Mirror (Max Raid)",
+    "Stony Wilderness (Max Raid)",
+    "West Lake Axewell (Max Raid)",
+    "Giant's Bed (Wandering)",
+    "Ballimere Lake (Wandering)",
+    "Frostpoint Field (Max Raid)",
+    "Giant's Bed (Max Raid)",
+    "Snowslide Slope (Max Raid)",
+    "Giant's Foot (Max Raid)",
+    "Frigid Sea (Max Raid)"
+   ]
+  },
+  "Shield": {
+   "bulbapedia": [
+    "Lake of Outrage",
+    "Route 2 (Wanderer, only one)",
+    "Bridge Field (Wanderer)",
+    "Bridge Field (Max Raid)",
+    "Dusty Bowl (Max Raid)",
+    "Giant's Mirror (Max Raid)",
+    "Stony Wilderness (Max Raid)",
+    "West Lake Axewell (Max Raid)",
+    "Giant's Bed (Wanderer)",
+    "Ballimere Lake (Wanderer)",
+    "Frostpoint Field (Max Raid)",
+    "Giant's Bed (Max Raid)",
+    "Snowslide Slope (Max Raid)",
+    "Giant's Foot (Max Raid)",
+    "Frigid Sea (Max Raid)"
+   ],
+   "serebii": [
+    "Route 2 (Wandering)",
+    "Bridge Field (Wandering)",
+    "Lake of Outrage",
+    "Bridge Field (Max Raid)",
+    "Dusty Bowl (Max Raid)",
+    "Giant's Mirror (Max Raid)",
+    "Stony Wilderness (Max Raid)",
+    "West Lake Axewell (Max Raid)",
+    "Giant's Bed (Wandering)",
+    "Ballimere Lake (Wandering)",
+    "Frostpoint Field (Max Raid)",
+    "Giant's Bed (Max Raid)",
+    "Snowslide Slope (Max Raid)",
+    "Giant's Foot (Max Raid)",
+    "Frigid Sea (Max Raid)"
+   ]
+  },
+  "Scarlet": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Violet": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Legends: Z-A": {
+   "bulbapedia": [],
+   "serebii": []
+  }
+ },
+ "Falinks": {
+  "Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Sun": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Ultra Moon": {
+   "bulbapedia": [],
+   "serebii": []
+  },
+  "Sword": {
+   "bulbapedia": [
+    "Route 8",
+    "Lake of Outrage",
+    "Dusty Bowl (Max Raid)",
+    "North Lake Miloch (Max Raid)",
+    "Rolling Fields (Max Raid)",
+    "Stony Wilderness (Max Raid)",
+    "Frostpoint Field (Max Raid)",
+    "Giant's Bed (Max Raid)",
+    "Snowslide Slope (Max Raid)",
+    "Frigid Sea (Max Raid)",
+    "Ballimere Lake (Max Raid)"
+   ],
+   "serebii": [
+    "Route 8",
+    "Route 8 (Wandering)",
+    "Lake of Outrage",
+    "Dusty Bowl (Max Raid)",
+    "North Lake Miloch (Max Raid)",
+    "Rolling Fields (Max Raid)",
+    "Stony Wilderness (Max Raid)",
+    "Fields of Honor (Max Raid)",
+    "Challenge Beach (Max Raid)",
+    "Challenge Road (Max Raid)",
+    "Honeycalm Sea (Max Raid)",
+    "Frostpoint Field (Max Raid)",
+    "Giant's Bed (Max Raid)",
+    "Snowslide Slope (Max Raid)",
+    "Frigid Sea (Max Raid)",
+    "Ballimere Lake (Max Raid)"
+   ]
+  },
+  "Shield": {
+   "bulbapedia": [
+    "Route 8",
+    "Lake of Outrage",
+    "Dusty Bowl (Max Raid)",
+    "North Lake Miloch (Max Raid)",
+    "Rolling Fields (Max Raid)",
+    "Stony Wilderness (Max Raid)",
+    "Frostpoint Field (Max Raid)",
+    "Giant's Bed (Max Raid)",
+    "Snowslide Slope (Max Raid)",
+    "Frigid Sea (Max Raid)",
+    "Ballimere Lake (Max Raid)"
+   ],
+   "serebii": [
+    "Route 8",
+    "Route 8 (Wandering)",
+    "Lake of Outrage",
+    "Dusty Bowl (Max Raid)",
+    "North Lake Miloch (Max Raid)",
+    "Rolling Fields (Max Raid)",
+    "Fields of Honor (Max Raid)",
+    "Challenge Beach (Max Raid)",
+    "Challenge Road (Max Raid)",
+    "Honeycalm Sea (Max Raid)",
+    "Frostpoint Field (Max Raid)",
+    "Giant's Bed (Max Raid)",
+    "Snowslide Slope (Max Raid)",
+    "Frigid Sea (Max Raid)",
+    "Ballimere Lake (Max Raid)"
+   ]
+  },
+  "Scarlet": {
+   "bulbapedia": [
+    "West Province (Area One)",
+    "West Province (Area Two)",
+    "North Province (Area Two)",
+    "East Province (Area Three) (Fixed, Steel Tera)"
+   ],
+   "serebii": [
+    "North Province (Area Two)",
+    "West Province (Area One)",
+    "West Province (Area Two)",
+    "East Province (Area Three) (Fixed)"
+   ]
+  },
+  "Violet": {
+   "bulbapedia": [
+    "West Province (Area One)",
+    "West Province (Area Two)",
+    "North Province (Area Two)",
+    "East Province (Area Three) (Fixed, Steel Tera)"
+   ],
+   "serebii": [
+    "North Province (Area Two)",
+    "West Province (Area One)",
+    "West Province (Area Two)",
+    "East Province (Area Three) (Fixed)"
+   ]
+  },
+  "Legends: Z-A": {
+   "bulbapedia": [
+    "Wild Zone 16",
+    "Wild Zone 20 (Alpha)"
+   ],
+   "serebii": [
+    "Wild Zone 16",
+    "Wild Zone 20"
+   ]
+  }
+ }
+}
