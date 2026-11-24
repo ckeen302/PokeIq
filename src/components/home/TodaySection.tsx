@@ -99,7 +99,7 @@ function DailyRow({ info, status, t }: { info: DailyInfo; status: DailyStatus; t
       </span>
       <span className="min-w-0 flex-1">
         <span className="block truncate text-base font-semibold leading-tight">{t(`games.${info.id}.name`)}</span>
-        <span className={cn("mt-0.5 block truncate text-sm", done ? "text-success" : status.state === "progress" ? "text-warning" : "text-muted-foreground")}>{subline(info, status, t)}</span>
+        <span className={cn("mt-0.5 line-clamp-2 text-sm", done ? "text-success" : status.state === "progress" ? "text-warning" : "text-muted-foreground")}>{subline(info, status, t)}</span>
       </span>
       <PlayPill info={info} status={status} className="shrink-0" t={t} />
     </Link>

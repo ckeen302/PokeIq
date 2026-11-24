@@ -61,7 +61,7 @@ export function ChromeAfter(_: { locale: Locale }) {
     <>
       <footer className="mb-[calc(4rem+env(safe-area-inset-bottom))] border-t border-foreground/[0.06] py-8 text-center text-xs text-muted-foreground lg:mb-0">
         <div className="container space-y-2">
-          <nav className="flex flex-wrap justify-center gap-x-5 gap-y-2 font-pixel text-[10px] uppercase tracking-wider max-md:grid max-md:grid-cols-2 max-md:gap-x-2 max-md:gap-y-0 max-md:text-[11px] max-md:[&>a:not([href='/privacy']):not([href='/credits'])]:hidden max-md:[&>:is(a,button)]:flex max-md:[&>:is(a,button)]:min-h-11 max-md:[&>:is(a,button)]:items-center max-md:[&>:is(a,button)]:justify-center max-md:[&>button]:col-span-2 max-md:[&>button]:text-[11px]">
+          <nav className="flex flex-wrap justify-center gap-x-5 gap-y-2 font-pixel text-[10px] uppercase tracking-wider max-md:grid max-md:grid-cols-2 max-md:gap-x-2 max-md:gap-y-0 max-md:text-[11px] max-md:[&>a:not([href$='/privacy']):not([href$='/credits'])]:hidden max-md:[&>:is(a,button)]:flex max-md:[&>:is(a,button)]:min-h-11 max-md:[&>:is(a,button)]:items-center max-md:[&>:is(a,button)]:justify-center max-md:[&>button]:col-span-2 max-md:[&>button]:text-[11px]">
             <Link href="/privacy" prefetch={false} className="hover:text-foreground">{t("footer.privacy")}</Link>
             <Link href="/credits" prefetch={false} className="hover:text-foreground">{t("footer.credits")}</Link>
             <ReportProblem />
