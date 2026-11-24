@@ -39,7 +39,7 @@ export default function CreditsPage() {
     <article className="mx-auto max-w-2xl space-y-8">
       <BackButton href="/" />
       <header className="space-y-2">
-        <h1 className="break-words font-display text-4xl font-bold uppercase tracking-tight">{t("title")}</h1>
+        <h1 className="break-words font-display text-4xl hyphens-auto font-bold uppercase tracking-tight">{t("title")}</h1>
         <p className="text-sm text-muted-foreground">
           {s("footer.disclaimer")}
         </p>

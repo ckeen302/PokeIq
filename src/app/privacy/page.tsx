@@ -39,7 +39,7 @@ export default function PrivacyPage() {
     <BackButton href="/" />
       <header className="space-y-2">
         <p className="hud-label max-md:hidden text-screen">{t("short")}</p>
-        <h1 className="break-words font-display text-4xl font-bold uppercase tracking-tight">{t("title")}</h1>
+        <h1 className="break-words font-display text-4xl hyphens-auto font-bold uppercase tracking-tight">{t("title")}</h1>
         <p className="text-sm text-muted-foreground">
           {t("intro")}
         </p>
