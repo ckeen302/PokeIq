@@ -1922,7 +1922,15 @@ function RoundReveal({
       )}
       <Notch>
         <div className="text-center">
-          <div className="font-display text-xl font-bold uppercase italic leading-none tracking-wide sm:text-2xl">{isStreak ? t("hud.streak", { n: streak }) : t("hud.round", { n: roundNumber })}</div>
+          <div className="font-display text-xl font-bold uppercase italic leading-none tracking-wide sm:text-2xl">{isStreak ? (
+              t("hud.streak", { n: streak })
+            ) : (
+              <>
+                {t("hud.round", { n: roundNumber })}
+                <span className="text-white/50">/{game.rounds}</span>
+              </>
+            )}
+          </div>
           <div className="mt-0.5 font-display text-[11px] font-semibold uppercase tracking-[0.14em] text-[#c8bfff]">{names.map(game.region)}</div>
         </div>
       </Notch>

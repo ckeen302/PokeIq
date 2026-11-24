@@ -658,9 +658,9 @@ export function RoundBadge({ label: given, value, of, mode, testId }: { label?: 
         <span className="flex h-7 min-w-7 items-center justify-center rounded-full rounded-br-sm bg-[#6c5ce7] px-1.5 font-display text-sm font-bold text-white shadow-inner">{value}</span>
         {of !== undefined && <span className="font-display text-xs font-semibold text-white/50">/{of}</span>}
       </div>
-      {/* The map and the mode (Daily #, Weekly #, difficulty), small under the badge. */}
+      {/* The map and the mode (Daily #, Weekly #, difficulty), small under the badge: a long one wraps rather than being cut off. */}
       {mode && (
-        <span className="max-w-full truncate rounded-md bg-[#1e1a3f]/70 px-2 py-0.5 font-display text-[10px] font-semibold uppercase tracking-[0.12em] text-[#c8bfff] backdrop-blur" data-testid="geo-round-mode">
+        <span className="line-clamp-2 max-w-full rounded-md bg-[#1e1a3f]/70 px-2 py-0.5 text-right font-display text-[10px] font-semibold uppercase leading-snug tracking-[0.12em] text-[#c8bfff] backdrop-blur" data-testid="geo-round-mode">
           {mode}
         </span>
       )}

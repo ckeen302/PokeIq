@@ -224,12 +224,12 @@ export function HuntGame({ maps }: { maps: GeoRegionInfo[] }) {
     if (msLeft === 0 && phase === "playing") void submit(true);
   }, [msLeft, phase, submit]);
 
-  // Space hunts once a pin is down, as PokéGuessr's Guess (the reveal binds its own keys).
+  // Space or Enter hunts once a pin is down, as PokéGuessr's Guess (the reveal binds its own keys).
   const anyPin = pins.some(Boolean);
   useEffect(() => {
     if (phase !== "playing") return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.code !== "Space" || !anyPin) return;
+      if ((e.code !== "Space" && e.key !== "Enter") || !anyPin) return;
       if ((e.target as HTMLElement | null)?.closest("input, textarea, select, button, a")) return;
       if (document.querySelector('[role="dialog"]:not([aria-hidden="true"])')) return;
       e.preventDefault();

@@ -18,7 +18,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ShareButton } from "@/components/share/ShareButton";
 import { GeoMap, LINE_DRAW_MS } from "./GeoMap";
-import { ExitButton, FullscreenButton, GameShell, GuessButton, Notch } from "./GameShell";
+import { ConfirmExit, ExitButton, FullscreenButton, GameShell, GuessButton, Notch } from "./GameShell";
 import { ShotCarousel, shotFit } from "./ShotCarousel";
 import { LearnCard } from "./LearnCard";
 import { ReportShot } from "./ReportShot";
@@ -83,6 +83,14 @@ export function StreakGame({ world }: { world: GeoRegionInfo }) {
 
   const streak = played.filter((p) => p.graded.correct).length;
   const current = phase === "revealed" ? played[played.length - 1] : null;
+  /** "Leave this game?" (Exit, Escape), asked while a run is still going, as in every PokéGuessr game. */
+  const [confirmExit, setConfirmExit] = useState(false);
+  const requestExit = () => (phase === "guessing" || phase === "submitting" || (phase === "revealed" && !current?.graded.done) ? setConfirmExit(true) : setPhase("setup"));
+  const exitRun = () => {
+    setConfirmExit(false);
+    setPhase("setup");
+  };
+  const confirm = confirmExit ? <ConfirmExit onLeave={exitRun} onStay={() => setConfirmExit(false)} /> : null;
   const localBest = progress?.best[`geo:${GEO_REGION_STREAK_KEY}`] ?? 0;
 
   async function start() {
@@ -145,6 +153,7 @@ export function StreakGame({ world }: { world: GeoRegionInfo }) {
         setZoomed(false);
         return;
       }
+      if (confirmExit) return;
       const t = e.target as HTMLElement | null;
       if (t?.closest("input, textarea, select, button, a")) return;
       if (phase === "guessing" && /^[1-9]$/.test(e.key)) {
@@ -269,22 +278,27 @@ export function StreakGame({ world }: { world: GeoRegionInfo }) {
   // ---- round result ------------------------------------------------------------
   if (phase === "revealed" && current) {
     return (
-      <GameShell onExit={() => setPhase("setup")}>
-        {() => <StreakReveal world={world} current={current} streak={streak} onNext={next} onExit={() => setPhase("setup")} notch={notch} t={t} names={names} />}
+      <GameShell onExit={requestExit}>
+        {() => (
+          <>
+            <StreakReveal world={world} current={current} streak={streak} onNext={next} onExit={requestExit} notch={notch} t={t} names={names} />
+            {confirm}
+          </>
+        )}
       </GameShell>
     );
   }
 
   // ---- guessing ------------------------------------------------------------------
   return (
-    <GameShell onExit={() => setPhase("setup")}>
+    <GameShell onExit={requestExit}>
       {({ fs, toggle }) => (
         <div className="relative h-full">
           <div className="absolute inset-0">
             <ShotCarousel views={[run.shot]} index={0} onIndex={() => undefined} onZoom={() => setZoomed(true)} fs />
           </div>
           <div className="geo-safe-tl absolute left-3 top-3 z-20 flex items-center gap-2">
-            <ExitButton onClick={() => setPhase("setup")} label={t("back")} />
+            <ExitButton onClick={requestExit} label={t("back")} />
             <FullscreenButton fs={fs} onClick={toggle} />
           </div>
           {notch}
@@ -347,6 +361,7 @@ export function StreakGame({ world }: { world: GeoRegionInfo }) {
               </motion.div>
             )}
           </AnimatePresence>
+          {confirm}
         </div>
       )}
     </GameShell>

@@ -22,7 +22,11 @@
     "waitingMore": "Esperando a {n} más…",
     "locked": "Respuesta fijada",
     "timeUp": "Se acabó el tiempo",
-    "watching": "Estás fuera: mirando · {guessed} de {playing} han respondido"
+    "watching": "Estás fuera: mirando · {guessed} de {playing} han respondido",
+    "zoom": "Ver la captura completa",
+    "zoomTitle": "Captura completa",
+    "fullScreen": "Captura a pantalla completa",
+    "close": "Cerrar"
   },
   "reveal": {
     "standings": "Ver clasificación ▶",

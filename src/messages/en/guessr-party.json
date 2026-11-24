@@ -22,7 +22,11 @@
     "waitingMore": "Waiting for {n} more…",
     "locked": "Locked in",
     "timeUp": "Time's up",
-    "watching": "You're out: watching · {guessed} of {playing} have guessed"
+    "watching": "You're out: watching · {guessed} of {playing} have guessed",
+    "zoom": "View the whole screenshot",
+    "zoomTitle": "Whole screenshot",
+    "fullScreen": "Screenshot, full screen",
+    "close": "Close"
   },
   "reveal": {
     "standings": "See standings ▶",

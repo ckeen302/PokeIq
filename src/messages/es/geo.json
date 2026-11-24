@@ -111,5 +111,6 @@
   },
   "scoreTotal": "Total",
   "roundOf": "Ronda {n}/{of}",
+  "roundN": "Ronda {n}",
   "retry": "Reintentar"
 }
