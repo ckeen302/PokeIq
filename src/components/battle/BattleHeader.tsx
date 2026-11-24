@@ -35,7 +35,9 @@ export function BattleHeader({
         <span>{crumb}</span>
       </nav>
       <h1 className={compact ? "font-display text-3xl font-bold uppercase tracking-tight sm:text-4xl" : "font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl"}>
-        {title} <span className="text-primary [text-shadow:0_0_30px_hsl(var(--primary)/0.45)]">{accent}</span>
+        {/* No space of our own: each language's title ends with one where its words part ("Battle " + "Lab"), and not
+            where they join ("Kampf" + "labor", "バトル" + "ラボ"), like the Pokédex's ListHeader. */}
+        {title}<span className="text-primary [text-shadow:0_0_30px_hsl(var(--primary)/0.45)]">{accent}</span>
       </h1>
       <p className={compact ? "max-w-2xl text-sm text-muted-foreground" : "max-w-2xl text-muted-foreground"}>{children}</p>
     </div>

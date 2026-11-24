@@ -44,7 +44,7 @@
   "playerInsights": {
     "title": "{name} · Team-Analyse",
     "description": "Die Kampf-Analyse von {name} auf PokéIQ: häufigste Starter, Siegquote pro Pokémon, härteste Gegner und Wertung im Verlauf.",
-    "heading": "{name}:",
+    "heading": "{name}: ",
     "accent": "Analyse",
     "intro": "Starter, Pokémon, härteste Gegner und Wertung über die gespeicherten Kämpfe von {name}, ermittelt aus den Replays.",
     "format": "Format",
@@ -107,7 +107,7 @@
     "title": "Showdown-Replay ansehen",
     "description": "Füge ein Kampf-Log von Pokémon Showdown ein oder öffne eine gespeicherte Replay-Datei und sieh sie dir Runde für Runde an.",
     "crumb": "Import",
-    "heading": "Ansehen:",
+    "heading": "Ansehen: ",
     "accent": "Showdown-Replay",
     "intro": "Füge ein Kampf-Log ein oder öffne eine Replay-Datei, die Showdown gespeichert hat, und spiel sie hier ab."
   },
@@ -115,7 +115,7 @@
     "title": "Turniere",
     "description": "Pokémon-Kampfturniere auf PokéIQ: K.-o.-System oder Jeder gegen jeden in jedem Format, dazu jede Stunde ein offizielles Zufallskampf-Turnier.",
     "crumb": "Turniere",
-    "heading": "Turniere",
+    "heading": "Turniere ",
     "accent": "live",
     "intro": "Tritt einem Turnierbaum bei oder eröffne dein eigenes Turnier in jedem Format. Jede Stunde startet ein offizielles Zufallskampf-Turnier: Die Anmeldung ist in den ersten zehn Minuten offen."
   },

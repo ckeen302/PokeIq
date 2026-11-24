@@ -101,7 +101,7 @@
       "description": "Combates Pokémon de verdad con el motor de Pokémon Showdown: Combate aleatorio, Dobles aleatorios o tu propio equipo de OU, contra la CPU, un Entrenador encontrado por emparejamiento o un amigo mediante un enlace de invitación."
     },
     "crumb": "Jugar",
-    "title": "Empieza un",
+    "title": "Empieza un ",
     "accent": "combate",
     "intro": "El propio motor de combate de Pokémon Showdown: cada movimiento, habilidad y objeto funciona como allí. Elige un rival, un formato y adelante."
   },
@@ -111,7 +111,7 @@
     },
     "description": "La Torre Batalla con el motor de Pokémon Showdown: lleva tu equipo con las Flat Rules (nivel 50, lleva seis y elige tres) y encadena victorias contra Entrenadores de la CPU, con el Magnate de la Torre cada séptimo combate.",
     "name": "Torre Batalla",
-    "title": "Torre",
+    "title": "Torre ",
     "accent": "Batalla",
     "intro": "Tu equipo, las Flat Rules y una racha de Entrenadores de la CPU cada vez más duros. Cada séptimo combate te espera el Magnate de la Torre con su mejor equipo."
   },
@@ -121,7 +121,7 @@
     },
     "description": "La Factoría Batalla con el motor de Pokémon Showdown: alquila seis Pokémon de los sets de Battle Factory de Showdown, gana siete seguidos contra una CPU cada vez más fuerte y cambia por un Pokémon de tu rival tras cada victoria.",
     "name": "Factoría Batalla",
-    "title": "Factoría",
+    "title": "Factoría ",
     "accent": "Batalla",
     "intro": "No necesitas equipo: alquila seis Pokémon de los sets de Battle Factory de Pokémon Showdown, gana siete seguidos y, tras cada victoria, cambia uno de los tuyos por uno de tu rival. O busca un rival que también alquile, desde la preparación del combate."
   }

@@ -312,7 +312,8 @@ export function BattleHome() {
             <span className="led h-1.5 w-1.5 animate-blink text-screen" /> {t("unit")}
           </p>
           <h1 className="font-display text-5xl font-bold uppercase leading-none tracking-tight">
-            {t("title")} <span className="text-primary [text-shadow:0_0_30px_hsl(var(--primary)/0.45)]">{t("accent")}</span>
+            {/* The title ends with its own space where the language wants one (BattleHeader). */}
+            {t("title")}<span className="text-primary [text-shadow:0_0_30px_hsl(var(--primary)/0.45)]">{t("accent")}</span>
           </h1>
         </div>
         <div className="flex gap-2" data-testid="live-counts">
