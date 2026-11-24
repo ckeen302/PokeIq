@@ -7,7 +7,7 @@ import og from "@/messages/og";
 /**
  * Share images in the page's language. An image route renders outside React (no `enterLocale`, so no `serverT`):
  * its language comes in its params instead. An English route has no `locale` param (English, exactly as before);
- * a /<lang>/ mirror of it (src/i18n/mirror.tsx `mirrorImage`) passes the language's code there.
+ * a /<lang>/ mirror of it (src/i18n/mirror.tsx `mirrorImageRoute`) passes the language's code there.
  */
 
 export type OgT = Translator<typeof og.en>;

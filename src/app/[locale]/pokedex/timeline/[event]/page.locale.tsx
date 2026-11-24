@@ -3,7 +3,7 @@
 import * as Source from "@/app/pokedex/timeline/[event]/page";
 import { mirrorPage } from "@/i18n/mirror";
 
-const m = mirrorPage("/pokedex/timeline/[event]", Source, { openParams: true });
+const m = mirrorPage("/pokedex/timeline/[event]", Source, { openParams: true, image: { route: "/pokedex/timeline/[event]", alt: "pokedex_timeline_event" } });
 
 export const dynamicParams = true;
 export const generateStaticParams = m.generateStaticParams;

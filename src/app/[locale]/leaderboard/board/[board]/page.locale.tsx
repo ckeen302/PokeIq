@@ -3,7 +3,7 @@
 import * as Source from "@/app/leaderboard/board/[board]/page";
 import { mirrorPage } from "@/i18n/mirror";
 
-const m = mirrorPage("/leaderboard/board/[board]", Source);
+const m = mirrorPage("/leaderboard/board/[board]", Source, { image: { route: "/leaderboard", alt: "leaderboard" } });
 
 export const revalidate = 60;
 export const dynamicParams = false;

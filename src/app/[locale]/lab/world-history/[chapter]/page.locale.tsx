@@ -3,7 +3,7 @@
 import * as Source from "@/app/lab/world-history/[chapter]/page";
 import { mirrorPage } from "@/i18n/mirror";
 
-const m = mirrorPage("/lab/world-history/[chapter]", Source);
+const m = mirrorPage("/lab/world-history/[chapter]", Source, { image: { route: "/lab/world-history/[chapter]", alt: "lab_world_history_chapter" } });
 
 export const dynamicParams = false;
 export const generateStaticParams = m.generateStaticParams;

@@ -3,7 +3,7 @@
 import * as Source from "@/app/pokemon/[slug]/page";
 import { mirrorPage } from "@/i18n/mirror";
 
-const m = mirrorPage("/pokemon/[slug]", Source);
+const m = mirrorPage("/pokemon/[slug]", Source, { image: { route: "/pokemon/[slug]", alt: "pokemon_slug" } });
 
 export const dynamicParams = false;
 export const generateStaticParams = m.generateStaticParams;

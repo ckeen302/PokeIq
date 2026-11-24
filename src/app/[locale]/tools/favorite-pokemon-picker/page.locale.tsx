@@ -3,7 +3,7 @@
 import * as Source from "@/app/tools/favorite-pokemon-picker/page";
 import { mirrorPage } from "@/i18n/mirror";
 
-const m = mirrorPage("/tools/favorite-pokemon-picker", Source);
+const m = mirrorPage("/tools/favorite-pokemon-picker", Source, { image: { route: "/", alt: "home" } });
 
 export const dynamicParams = false;
 export const generateMetadata = m.generateMetadata;

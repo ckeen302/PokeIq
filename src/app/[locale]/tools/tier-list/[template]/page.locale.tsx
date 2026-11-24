@@ -3,7 +3,7 @@
 import * as Source from "@/app/tools/tier-list/[template]/page";
 import { mirrorPage } from "@/i18n/mirror";
 
-const m = mirrorPage("/tools/tier-list/[template]", Source);
+const m = mirrorPage("/tools/tier-list/[template]", Source, { image: { route: "/", alt: "home" } });
 
 export const dynamicParams = false;
 export const generateStaticParams = m.generateStaticParams;

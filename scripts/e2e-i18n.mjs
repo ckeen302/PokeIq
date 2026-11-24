@@ -7,7 +7,7 @@
  *
  * With languages live (the build and this check both get LIVE_LOCALES=es,ja…; I18N_PREVIEW=1 builds serve every page):
  * per sampled page per language, a self-referencing canonical, the reciprocal hreflang set with itself, English and
- * x-default (the English URL), valid codes only, <html lang>, og:locale and Content-Language, alternates only to
+ * x-default (the English URL), valid codes only, <html lang>, og:locale, the language's own share card (an image) and Content-Language, alternates only to
  * 200 / indexable / self-canonical pages, head and sitemap sets equal; a language not live is a 404; the picker,
  * footer links and suggestion banner use real links to the same page; and no English text is left in a page's main
  * content (src/i18n/leftover-allow.json lists what may stay: names, brands).
@@ -48,6 +48,7 @@ export function headOf(html) {
     canonical: links.find((l) => l.rel === "canonical")?.href ?? null,
     alternates,
     ogLocale: metas.find((m) => m.property === "og:locale")?.content ?? null,
+    ogImage: metas.find((m) => m.property === "og:image")?.content ?? null,
     contentLanguage: metas.find((m) => m["http-equiv"]?.toLowerCase() === "content-language")?.content ?? null,
     noindex: metas.some((m) => m.name === "robots" && /noindex/.test(m.content ?? "")),
   };
@@ -144,6 +145,14 @@ async function languages({ BASE, errors, step }) {
       if (h.canonical !== entry.loc) errors.push(`i18n: ${path}'s canonical is ${h.canonical}, not itself (${entry.loc})`);
       if (h.ogLocale !== OG[l]) errors.push(`i18n: ${path} has og:locale ${h.ogLocale} (expected ${OG[l]})`);
       if (h.contentLanguage !== l) errors.push(`i18n: ${path} has Content-Language ${h.contentLanguage}`);
+      // The share card is the language's own and answers with an image (not the English card, not a 404).
+      if (!h.ogImage) errors.push(`i18n: ${path} has no og:image`);
+      else if (!local(BASE, h.ogImage).startsWith(`/${l}/`)) errors.push(`i18n: ${path}'s og:image ${h.ogImage} isn't the ${l} card`);
+      else {
+        const img = await fetch(BASE + local(BASE, h.ogImage));
+        if (img.status !== 200 || !/^image\//.test(img.headers.get("content-type") ?? "")) errors.push(`i18n: ${path}'s og:image ${h.ogImage} answered ${img.status} ${img.headers.get("content-type")}`);
+        await img.arrayBuffer();
+      }
       if (h.noindex) errors.push(`i18n: ${path} is noindex but in the sitemap`);
       if (JSON.stringify(sortKeys(h.alternates)) !== JSON.stringify(sortKeys(entry.alternates))) errors.push(`i18n: ${path}: head hreflang ${JSON.stringify(h.alternates)} ≠ sitemap ${JSON.stringify(entry.alternates)}`);
       checkSet(path, h.alternates, l, entry.loc, errors);

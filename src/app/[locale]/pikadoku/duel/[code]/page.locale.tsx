@@ -3,7 +3,7 @@
 import * as Source from "@/app/pikadoku/duel/[code]/page";
 import { mirrorPage } from "@/i18n/mirror";
 
-const m = mirrorPage("/pikadoku/duel/[code]", Source);
+const m = mirrorPage("/pikadoku/duel/[code]", Source, { image: { route: "/pikadoku/duel/[code]", alt: "pikadoku_duel_code" } });
 
 export const dynamicParams = false;
 export const generateMetadata = m.generateMetadata;

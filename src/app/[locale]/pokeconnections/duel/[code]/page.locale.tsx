@@ -3,7 +3,7 @@
 import * as Source from "@/app/pokeconnections/duel/[code]/page";
 import { mirrorPage } from "@/i18n/mirror";
 
-const m = mirrorPage("/pokeconnections/duel/[code]", Source);
+const m = mirrorPage("/pokeconnections/duel/[code]", Source, { image: { route: "/pokeconnections/duel/[code]", alt: "pokeconnections_duel_code" } });
 
 export const dynamicParams = false;
 export const generateMetadata = m.generateMetadata;

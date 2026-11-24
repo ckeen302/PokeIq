@@ -3,7 +3,7 @@
 import * as Source from "@/app/pokedex/theories/page";
 import { mirrorPage } from "@/i18n/mirror";
 
-const m = mirrorPage("/pokedex/theories", Source);
+const m = mirrorPage("/pokedex/theories", Source, { image: { route: "/pokedex/theories", alt: "pokedex_theories" } });
 
 export const revalidate = 3600;
 export const dynamicParams = false;

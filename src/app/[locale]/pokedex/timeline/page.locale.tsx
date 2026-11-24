@@ -3,7 +3,7 @@
 import * as Source from "@/app/pokedex/timeline/page";
 import { mirrorPage } from "@/i18n/mirror";
 
-const m = mirrorPage("/pokedex/timeline", Source);
+const m = mirrorPage("/pokedex/timeline", Source, { image: { route: "/pokedex/timeline", alt: "pokedex_timeline" } });
 
 export const dynamicParams = false;
 export const generateMetadata = m.generateMetadata;

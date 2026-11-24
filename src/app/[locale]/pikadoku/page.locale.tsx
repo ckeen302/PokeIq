@@ -3,7 +3,7 @@
 import * as Source from "@/app/pikadoku/page";
 import { mirrorPage } from "@/i18n/mirror";
 
-const m = mirrorPage("/pikadoku", Source);
+const m = mirrorPage("/pikadoku", Source, { image: { route: "/pikadoku", alt: "pikadoku" } });
 
 export const revalidate = 3600;
 export const dynamicParams = false;

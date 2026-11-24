@@ -4,6 +4,7 @@ import { Fragment, memo, useDeferredValue, useEffect, useMemo, useState } from "
 // `m` as `motion`: the rows below are `m` (a move). The light components draw once DexEntry's LazyMotion has its features.
 import { AnimatePresence, m as motion } from "framer-motion";
 import Link from "@/components/ui/Link";
+import Anchor from "@/components/ui/Anchor";
 import { ChevronDown, CircleDot, Search, Sparkle, Swords } from "lucide-react";
 import type { DexMove } from "@/lib/pokemon/dex-types";
 import { TypeBadge } from "../TypeBadge";
@@ -193,7 +194,7 @@ const OtherTabs = memo(function OtherTabs({ moves, tab }: { moves: DexMove[]; ta
           <ul>
             {list.map((m) => (
               <li key={`${m.id}-${m.level}`}>
-                <a href={`/pokedex/moves/${m.slug}`}>{m.name}</a>
+                <Anchor href={`/pokedex/moves/${m.slug}`}>{m.name}</Anchor>
                 {method === "M" && m.tm ? ` (${m.tm})` : ""}
               </li>
             ))}
