@@ -4,7 +4,7 @@
 import "./maker.css";
 import { useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { ChevronDown, Dices, Ellipsis, Lock, Share, X } from "lucide-react";
+import { ChevronDown, Dices, Ellipsis, Lock, Share2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useT } from "@/i18n/client";
 import type { Translator } from "@/i18n/catalog";
@@ -850,7 +850,7 @@ const Dock = ({ ref, sp, design, parts, sel, locked, panel, onPart, onPanel, onR
         className="ml-1 flex h-11 shrink-0 items-center gap-2 rounded-full bg-primary px-5 font-display text-sm font-semibold uppercase tracking-wider text-primary-foreground transition-[filter] hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
         data-testid="sm-share"
       >
-        <Share className="h-4 w-4" aria-hidden /> {t("dock.share")}
+        <Share2 className="h-4 w-4" aria-hidden /> {t("dock.share")}
       </button>
     </div>
   );
@@ -879,7 +879,7 @@ function PhoneControls({ sp, design, parts, sel, locked, onPart, onPanel, onRand
           <Dices className="h-[18px] w-[18px]" aria-hidden /> {t("dock.randomise")}
         </button>
         <button type="button" onClick={onShare} className="flex h-12 items-center justify-center gap-2 rounded-full bg-primary font-display text-sm font-semibold uppercase tracking-wider text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80" data-testid="sm-share">
-          <Share className="h-4 w-4" aria-hidden /> {t("dock.share")}
+          <Share2 className="h-4 w-4" aria-hidden /> {t("dock.share")}
         </button>
       </div>
     </div>
