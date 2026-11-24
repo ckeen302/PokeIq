@@ -25,7 +25,6 @@ import { HuntHub } from "./HuntHub";
 import { HuntRound } from "./HuntRound";
 import { HuntReveal, type HuntRevealPin, type HuntRevealSpot } from "./HuntReveal";
 import { HuntResults, type HuntResultRound } from "./HuntResults";
-import { HuntShareGrid } from "./HuntShareGrid";
 import { HuntState } from "./HuntState";
 import type { HuntPokemonView } from "./HuntCard";
 import type { HuntShareRound } from "./share";
@@ -128,6 +127,8 @@ export function HuntGame({ maps }: { maps: GeoRegionInfo[] }) {
   const [today, setToday] = useState<string>(HUNT_DAILY_FROM);
   const [daily, setDaily] = useState<DailyRecord | null>(null);
   const [best, setBest] = useState<Partial<Record<HuntMode, number>>>({});
+  /** The hunt just finished beat the mode's best (one before it, on this device). */
+  const [newBest, setNewBest] = useState(false);
   const lastMode = useRef<HuntMode>("classic");
 
   // The player's date (dailies follow the local day, like every daily on the site), today's Daily if played, best totals.
@@ -196,6 +197,7 @@ export function HuntGame({ maps }: { maps: GeoRegionInfo[] }) {
         write(RECENT_KEY, [body.reveal.id, ...recent.filter((id) => id !== body.reveal.id)].slice(0, RECENT_MAX));
         if (body.done && body.result) {
           const prev = read<Partial<Record<HuntMode, number>>>(BEST_KEY, {});
+          setNewBest(!!prev[game.mode] && body.result.score > (prev[game.mode] ?? 0));
           if (body.result.score > (prev[game.mode] ?? 0)) {
             const next = { ...prev, [game.mode]: body.result.score };
             write(BEST_KEY, next);
@@ -304,9 +306,15 @@ export function HuntGame({ maps }: { maps: GeoRegionInfo[] }) {
       ...revealView(p.body.reveal, regionName),
     }));
     return (
-      <HuntResults region={game.map} rounds={rounds} modeLine={modeLine} onAgain={() => (lastMode.current === "daily" ? leave() : void start(lastMode.current))} onHub={leave}>
-        {game.daily && <HuntShareGrid title={t("share.daily", { n: game.daily.number })} rounds={shareRounds(played)} url="/pokeguessr/hunt" />}
-      </HuntResults>
+      <HuntResults
+        region={game.map}
+        rounds={rounds}
+        modeLine={modeLine}
+        newBest={newBest}
+        share={game.daily ? { title: t("share.daily", { n: game.daily.number }), rounds: shareRounds(played) } : undefined}
+        onAgain={() => (lastMode.current === "daily" ? leave() : void start(lastMode.current))}
+        onHub={leave}
+      />
     );
   }
 

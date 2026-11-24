@@ -1,6 +1,7 @@
 /**
  * PokéGuessr's in-game UI, end to end against a running build: a solo round
- * (map docked and hovered), its result and summary, then a duel (versus intro,
+ * (map docked and hovered), its result and the end screen (GeoGuessr's: the
+ * score over the dimmed map, the bar, BREAKDOWN and NEXT), then a duel (versus intro,
  * round, the reveal with its damage sequence, Turbo, an emote, the end screen
  * and its post-game dances), and the background music (only while a game is
  * on: silent on the hub and in lobbies, carrying on between rounds, fading out
@@ -180,6 +181,101 @@ async function phoneMapGuess(p) {
 }
 
 // ---------------------------------------------------------------------------
+// The end screen
+// ---------------------------------------------------------------------------
+
+/** Whether a box sits inside the window (a pixel's slack). */
+const inView = (b, vp) => !!b && b.x >= -1 && b.y >= -1 && b.x + b.width <= vp.width + 1 && b.y + b.height <= vp.height + 1;
+
+/**
+ * GeoGuessr's end screen, after a game of `rounds` rounds: no side panel; the whole map behind, dimmed and
+ * blurred, with every round's line and numbered flag; the score counted up to the rounds' sum over "of N
+ * points"; the bar filled to it with its marker; the rows; BREAKDOWN and NEXT bottom centre. BREAKDOWN takes the
+ * dim and the panel away to the map, with the tracker (each round's score and the total) top right; B brings the
+ * end screen back. Returns the score. `once`: the Daily or the Weekly (no Play again; the Daily says when the next comes).
+ */
+async function checkEndScreen(p, { tag, rounds, phone, once, daily }) {
+  const vp = p.viewportSize();
+  const end = p.getByTestId("geo-results");
+  await end.waitFor({ timeout: 15_000 });
+  if (await p.getByTestId("geo-results-panel").count()) errors.push(`${tag}: the results still have a side panel`);
+  if ((await end.getAttribute("data-view")) !== "summary") errors.push(`${tag}: the end screen doesn't open on the score`);
+  // Mid count-up: the number and the bar are on their way.
+  await p.waitForTimeout(350);
+  const early = Number((await p.getByTestId("geo-results-total").innerText()).replace(/\D/g, ""));
+  await p.waitForTimeout(1900);
+  const score = Number(await p.getByTestId("geo-results-total").getAttribute("data-value"));
+  const shown = Number((await p.getByTestId("geo-results-total").innerText()).replace(/\D/g, ""));
+  if (shown !== score) errors.push(`${tag}: the score counted up to ${shown}, the game scored ${score}`);
+  if (score > 2000 && !(early < score)) errors.push(`${tag}: the score didn't count up (${early} at first, ${score} at the end)`);
+  const max = rounds * 5000;
+  const of = await p.getByTestId("geo-end-score").innerText();
+  if (!of.includes(max.toLocaleString("en-US"))) errors.push(`${tag}: the end screen doesn't say "of ${max.toLocaleString("en-US")} points" (${of.replace(/\n/g, " / ")})`);
+  // The bar: filled to the score, the marker at its end, a segment per round.
+  const bar = await p.getByTestId("geo-end-bar").evaluate((el) => {
+    const track = el.querySelector("[role=meter]").getBoundingClientRect();
+    const fill = el.querySelector("[data-testid=geo-end-fill]").getBoundingClientRect();
+    const marker = el.querySelector("[data-testid=geo-end-marker]").getBoundingClientRect();
+    return { track: [track.x, track.width], fill: fill.width, marker: marker.x + marker.width / 2, segments: el.querySelectorAll("[role=meter] > span[aria-hidden]").length + 1 };
+  });
+  const share = Math.max(0, bar.fill + 6) / bar.track[1];
+  if (Math.abs(share - score / max) > 0.03 && score / max > 0.02) errors.push(`${tag}: the bar is ${Math.round(share * 100)}% full for ${Math.round((score / max) * 100)}%`);
+  if (Math.abs((bar.marker - bar.track[0]) / bar.track[1] - score / max) > 0.02) errors.push(`${tag}: the bar's marker isn't at the score`);
+  if (bar.segments !== rounds) errors.push(`${tag}: the bar has ${bar.segments} segments for ${rounds} rounds`);
+  // The map is behind it all, dimmed, with every round drawn.
+  if ((await p.getByTestId("geo-end-dim").evaluate((el) => getComputedStyle(el).opacity)) !== "1") errors.push(`${tag}: the map behind the end screen isn't dimmed`);
+  if ((await p.getByTestId("geo-flag-number").count()) !== rounds) errors.push(`${tag}: the map has ${await p.getByTestId("geo-flag-number").count()} numbered flags for ${rounds} rounds`);
+  // The rows and the buttons.
+  await p.getByTestId("geo-share-card").waitFor();
+  const next = p.getByTestId("geo-results-again");
+  const toggle = p.getByTestId("geo-breakdown-toggle");
+  for (const [name, el] of [["NEXT", next], ["BREAKDOWN", toggle], ["the share card", p.getByTestId("geo-share-card")], ["the score", p.getByTestId("geo-end-score")]]) {
+    if (!inView(await el.boundingBox(), vp)) errors.push(`${tag}: ${name} isn't on screen (${JSON.stringify(await el.boundingBox())})`);
+  }
+  const nb = await next.boundingBox();
+  const tb = await toggle.boundingBox();
+  if (Math.abs(nb.y + nb.height / 2 - (tb.y + tb.height / 2)) > 4) errors.push(`${tag}: BREAKDOWN and NEXT aren't side by side`);
+  if (vp.height - (nb.y + nb.height) > vp.height * 0.2) errors.push(`${tag}: NEXT isn't at the bottom`);
+  if (Math.abs(nb.x + nb.width / 2 + tb.x + tb.width / 2 - vp.width) > vp.width * 0.25) errors.push(`${tag}: BREAKDOWN and NEXT aren't centred`);
+  if (!/next/i.test(await next.innerText())) errors.push(`${tag}: the big button doesn't say Next ("${await next.innerText()}")`);
+  if (once && /again/i.test(await end.innerText())) errors.push(`${tag}: a game played once offers to play again`);
+  if (daily && !/Next Daily in\s+\d\d:\d\d:\d\d/.test(await end.innerText())) errors.push(`${tag}: the Daily's end screen doesn't say when the next one comes`);
+  const sideways = await p.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  if (sideways > 0) errors.push(`${tag}: the end screen scrolls sideways by ${sideways}px`);
+  await p.screenshot({ path: `${OUT}/guessr-end-${tag}.png` });
+
+  // BREAKDOWN: the map itself, every round's line, the tracker with each score and the total.
+  await toggle.click();
+  await p.getByTestId("geo-breakdown").waitFor();
+  await p.waitForTimeout(700);
+  if ((await end.getAttribute("data-view")) !== "breakdown" || (await toggle.getAttribute("aria-pressed")) !== "true") errors.push(`${tag}: BREAKDOWN didn't switch to the breakdown`);
+  if ((await p.getByTestId("geo-end-dim").evaluate((el) => getComputedStyle(el).opacity)) !== "0") errors.push(`${tag}: the breakdown's map is still dimmed`);
+  if ((await p.getByTestId("geo-end-panel").evaluate((el) => getComputedStyle(el).opacity)) !== "0") errors.push(`${tag}: the score panel stays over the breakdown`);
+  const lines = await p.getByTestId("geo-reveal-line").count();
+  if (lines < 1 || lines > rounds) errors.push(`${tag}: the breakdown draws ${lines} lines for ${rounds} rounds`);
+  const cells = await p.locator("[data-testid^=geo-end-round-]").count();
+  if (cells !== rounds) errors.push(`${tag}: the tracker has ${cells} rounds, the game ${rounds}`);
+  const total = Number((await p.getByTestId("geo-end-tracker-total").innerText()).replace(/\D/g, ""));
+  if (total !== score) errors.push(`${tag}: the tracker's total is ${total}, the score ${score}`);
+  const tracker = await p.getByTestId("geo-end-tracker").boundingBox();
+  if (!inView(tracker, vp) || tracker.y > vp.height * 0.25 || (!phone && tracker.x + tracker.width < vp.width * 0.6)) errors.push(`${tag}: the tracker isn't top right (${JSON.stringify(tracker)})`);
+  if (!inView(await next.boundingBox(), vp)) errors.push(`${tag}: NEXT goes from the breakdown`);
+  await p.screenshot({ path: `${OUT}/guessr-breakdown-${tag}.png` });
+  // A round picked in the tracker: its place.
+  await p.getByTestId("geo-end-round-2").click();
+  const place = await p.getByTestId("geo-end-place").innerText().catch(() => "");
+  if (!place.trim()) errors.push(`${tag}: picking a round in the tracker doesn't name its place`);
+  await p.getByTestId("geo-end-round-2").click();
+  // B: back to the end screen.
+  await p.mouse.click(5, vp.height / 2).catch(() => {});
+  await p.keyboard.press("b");
+  await p.waitForTimeout(700);
+  if ((await end.getAttribute("data-view")) !== "summary") errors.push(`${tag}: B didn't bring the end screen back`);
+  if ((await p.getByTestId("geo-end-dim").evaluate((el) => getComputedStyle(el).opacity)) !== "1") errors.push(`${tag}: back from the breakdown, the map isn't dimmed again`);
+  return score;
+}
+
+// ---------------------------------------------------------------------------
 // Solo
 // ---------------------------------------------------------------------------
 
@@ -332,9 +428,11 @@ async function solo(width, height) {
     await next.click();
     if (/summary/i.test(label)) break;
   }
-  await page.getByTestId("geo-share-card").waitFor();
-  await page.waitForTimeout(1300);
-  await page.screenshot({ path: `${OUT}/guessr-summary-${tag}.png`, fullPage: true });
+  await checkEndScreen(page, { tag: `solo-${tag}`, rounds: 5, phone });
+  // Space is NEXT: back to the hub, where Play again is.
+  await page.keyboard.press("Space");
+  await page.getByTestId("geo-results").waitFor({ state: "detached", timeout: 5_000 }).catch(() => errors.push("solo: Space didn't go on from the end screen"));
+  await page.getByTestId("geo-hub").waitFor({ timeout: 5_000 }).catch(() => errors.push("solo: NEXT didn't go back to the hub"));
   await page.context().close();
 }
 
@@ -566,8 +664,7 @@ async function dailyResume(width, height) {
     await next.waitFor();
     await next.click();
   }
-  await page.getByTestId("geo-results").waitFor({ timeout: 15_000 });
-  await page.waitForTimeout(1500);
+  await checkEndScreen(page, { tag: `daily-${width}`, rounds: 5, phone, once: true, daily: true });
   const total = await page.getByTestId("geo-results-total").innerText();
   const back = await page.getByTestId("geo-results-again").innerText();
   if (/again/i.test(back)) errors.push(`daily: a finished Daily offers to play again ("${back}")`);
@@ -648,10 +745,10 @@ async function weekly(width, height) {
     if (/summary|results/i.test(text)) break;
   }
   await page.getByTestId("geo-share-card").waitFor();
-  const card = await page.getByTestId("geo-share-preview").innerText();
+  const card = (await page.getByTestId("geo-share-card").getAttribute("data-share")) ?? "";
   if (!/PokéGuessr Weekly #\d+/.test(card)) errors.push(`the weekly result card is off: ${card}`);
-  await page.waitForTimeout(1300);
-  await page.screenshot({ path: `${OUT}/guessr-weekly-summary-${tag}.png`, fullPage: true });
+  await checkEndScreen(page, { tag: `weekly-${tag}`, rounds: 5, phone, once: true });
+  if (!(await page.getByTestId("geo-results-next-weekly").isVisible())) errors.push("weekly: the end screen doesn't say when the next Weekly comes");
   // A second start the same week is refused: the Weekly is played once, like the Daily.
   const again = await page.request.post(`${BASE}/api/geo`, { data: { weekly: true } });
   if (again.status() !== 409 || (await again.json()).code !== "weekly-started") errors.push("a second weekly start wasn't refused");
@@ -1047,6 +1144,13 @@ async function crowd(width, height) {
   const early = await page.request.get(`${BASE}/api/geo/crowd?date=${date}`);
   if (early.status() !== 403) errors.push(`crowd map: today's map answered without a finished Daily (${early.status()})`);
   for (const [cx, cy] of [[0.42, 0.45], [0.44, 0.47], [0.6, 0.4]]) await seedDaily(date, cx, cy);
+  // What the end screen's crowd request got, to say why if no crowd map shows.
+  const answers = [];
+  page.on("response", async (res) => {
+    if (!new URL(res.url()).pathname.endsWith("/api/geo/crowd")) return;
+    const body = await res.json().catch(() => null);
+    answers.push(`${res.status()} ${body?.rounds ? `${body.rounds.length} rounds, ${body.rounds.map((r) => r.pins).join("/")} pins` : JSON.stringify(body).slice(0, 80)}`);
+  });
   await page.goto(`${BASE}/pokeguessr`, { waitUntil: "networkidle" });
   await closeHowTo(page);
   await page.getByTestId("geo-daily-card").getByRole("button").first().click();
@@ -1059,22 +1163,27 @@ async function crowd(width, height) {
     await next.click();
     if (/summary|results/i.test(text)) break;
   }
+  // The crowd map is in the breakdown: its switch lays everyone's pins over the round picked in the tracker.
+  await page.getByTestId("geo-results").waitFor({ timeout: 15_000 });
+  await page.getByTestId("geo-breakdown-toggle").click();
   const card = page.getByTestId("geo-crowd");
-  await card.waitFor({ timeout: 15_000 });
-  await card.getByTestId("geo-crowd-layer").waitFor({ timeout: 15_000 });
+  await card.waitFor({ timeout: 15_000 }).catch(async (e) => {
+    await page.screenshot({ path: `${OUT}/fail-crowd-${tag}.png` });
+    throw new Error(`crowd map: none in the breakdown (the crowd requests got: ${answers.join("; ") || "nothing"}): ${e.message.split("\n")[0]}`);
+  });
+  await page.getByTestId("geo-crowd-toggle").click();
+  await page.getByTestId("geo-crowd-layer").waitFor({ timeout: 15_000 });
   if (!/\d+ trainers pinned round 1/.test(await page.getByTestId("geo-crowd-count").innerText())) errors.push("crowd map: no pin count for round 1");
-  const tabs = await page.locator("[data-testid^=geo-crowd-round-]").count();
-  if (tabs !== 5) errors.push(`crowd map: ${tabs} round tabs, expected 5`);
-  await page.getByTestId("geo-crowd-round-3").click();
+  const tabs = await page.locator("[data-testid^=geo-end-round-]").count();
+  if (tabs !== 5) errors.push(`crowd map: ${tabs} rounds in the tracker, expected 5`);
+  await page.getByTestId("geo-end-round-3").click();
   if (!/round 3/.test(await page.getByTestId("geo-crowd-count").innerText())) errors.push("crowd map: picking round 3 didn't switch the map");
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   if (overflow > 0) errors.push(`crowd map: the page scrolls sideways by ${overflow}px`);
   const png = await page.request.get(`${BASE}/api/geo/crowd/card?date=${date}&round=3`);
   if (png.status() !== 403) errors.push(`crowd map: the share card answered without a finished Daily (${png.status()})`);
-  await card.scrollIntoViewIfNeeded();
   await page.waitForTimeout(1500);
-  await card.screenshot({ path: `${OUT}/guessr-crowd-${tag}.png` });
-  await page.screenshot({ path: `${OUT}/guessr-crowd-summary-${tag}.png`, fullPage: true });
+  await page.screenshot({ path: `${OUT}/guessr-crowd-${tag}.png` });
   await page.context().close();
 }
 

@@ -1,39 +1,48 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import Link from "@/components/ui/Link";
-import { motion } from "framer-motion";
-import { Check, Copy, Link2, RotateCcw, Trophy } from "lucide-react";
+import { Crown, Sparkles, Swords, TrendingUp } from "lucide-react";
 import { geoBoardKey, type GeoChallenge } from "@/lib/geo-types";
 import { dailyNumber } from "@/lib/daily";
 import { geoWeeklyBoard, geoWeeklyNumber } from "@/lib/geo-weekly";
-import { useProgress } from "@/lib/progress";
-import { copyText, guessrShareText, shareOrCopy, shareUrl, type GuessrShareResult } from "@/lib/share";
-import { COMPARE_MAX, COMPARE_MIN_PLAYERS, bucketOf, percentBeaten, type GeoDailyStats } from "@/lib/geo-compare";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { guessrShareText, shareUrl, type GuessrShareResult } from "@/lib/share";
+import { COMPARE_MIN_PLAYERS, bucketOf, percentBeaten, type GeoDailyStats } from "@/lib/geo-compare";
+import { geoAchievement, type GeoAchievementState } from "@/lib/geo-achievements";
+import { achievementText } from "@/lib/geo-achievements-text";
 import { BadgeMedal } from "@/components/game/BadgeMedal";
-import { CopyFallback } from "@/components/quiz/CopyFallback";
-import { ShareButton } from "@/components/share/ShareButton";
-import { GeoMap } from "./GeoMap";
-import { GeoCrowdMap } from "./GeoCrowdMap";
-import { cn } from "@/lib/utils";
-import { isCleanName } from "@/lib/name-filter";
-import { type Game, type Played, type Reward, emoji, maxTotal, placeName, post, useCountUp } from "./GeoGame";
+import { NextDailyCountdown } from "@/components/NextDailyCountdown";
 import { DailyEmailNudge } from "@/components/email/DailyEmailNudge";
+import { achievementIcon } from "./GeoAchievements";
+import { EndBoard, EndLines, EndMedals, EndProgress, EndRow, EndShareCard, ShareSquares, medalName } from "./EndScreen";
+import { cn } from "@/lib/utils";
+import { type Game, type Played, type Reward, emoji, post } from "./GeoGame";
 import { useT } from "@/i18n/client";
-import communityNs from "@/messages/community";
 import { type Translator } from "@/i18n/catalog";
 import { formatNumber } from "@/i18n/format";
 import geoNs from "@/messages/geo";
 import geoSolo from "@/messages/geo-solo";
 import badgesNs from "@/messages/badges";
+import geoRecord from "@/messages/geo-record";
+import geoNamesNs from "@/messages/geo-names";
 import share from "@/messages/share";
 import { localeHref } from "@/i18n/href";
 import { useGeoNames } from "@/lib/geo-i18n-client";
 
 type SoloT = Translator<typeof geoSolo.en>;
 
-/** The end-of-game summary; `compact` leaves the headline, map and round list to the results map it sits under. */
+/** Squares in a row on the share card, and rows at most. */
+const PER_ROW = 5;
+
+/**
+ * The end screen's rows for a solo game, the Daily, the Weekly and a challenge
+ * (GeoResults draws the score, the map and the breakdown), in GeoGuessr's order:
+ *  1. what the game did: beat the friend who sent the challenge, a new personal best, the game bonus;
+ *  2. the Daily: how the day's players compared;
+ *  3. the badges and achievements it earned (GeoGuessr's medal row), or, if none, the achievement it brought closer;
+ *  4. sharing: the result with its link (the challenge link: a friend plays the same places);
+ *  5. the leaderboard: a name to save the result under, or why this game isn't ranked;
+ *  6. the Daily and the Weekly: when the next one comes.
+ * Nothing here is made up: a row with nothing real to say isn't shown.
+ */
 export function GeoSummary({
   game,
   played,
@@ -41,8 +50,10 @@ export function GeoSummary({
   challengeToken,
   challenge,
   reward,
-  onRestart,
-  compact,
+  earned = [],
+  closer = null,
+  next,
+  onSeen,
 }: {
   game: Pick<Game, "region" | "kind" | "rounds" | "daily" | "weekly" | "practice" | "filter" | "guessGame" | "difficulty">;
   played: Played[];
@@ -50,31 +61,35 @@ export function GeoSummary({
   challengeToken?: string;
   challenge?: GeoChallenge;
   reward: Reward | null;
-  onRestart: () => void;
-  compact?: boolean;
+  /** Achievements this game earned (the server's record, read after the game). */
+  earned?: string[];
+  /** The achievement this game brought closest, not yet earned. */
+  closer?: GeoAchievementState | null;
+  /** The Weekly's "Next Weekly in …". */
+  next?: React.ReactNode;
+  /** The achievements shown here have been seen (no toast for them after). */
+  onSeen?: (id: string) => void;
 }) {
   const t = useT(geoSolo);
-  const ct = useT(communityNs);
-  const bt = useT(badgesNs);
   const g = useT(geoNs);
+  const bt = useT(badgesNs);
+  const rt = useT(geoRecord);
+  const nt = useT(geoNamesNs);
   const names = useGeoNames();
   const shareT = useT(share);
   const fmt = (n: number) => formatNumber(n, t.locale);
-  const progress = useProgress();
   const { region } = game;
   const isStreak = game.kind === "streak";
   const total = played.reduce((s, p) => s + p.graded.score, 0);
   const bonus = game.guessGame ? (played.at(-1)?.graded.bonusTotal ?? 0) : null;
   const streak = played.filter((p) => p.graded.hit).length;
-  const headline = useCountUp(isStreak ? streak : total, 1100);
-  const [name, setName] = useState("");
-  const [save, setSave] = useState<"idle" | "saving" | "saved" | "error">("idle");
-  const [saveError, setSaveError] = useState<string | null>(null);
-  const [shared, setShared] = useState<"done" | "failed" | null>(null);
 
-  useEffect(() => {
-    if (progress?.name && !name) setName(progress.name);
-  }, [progress?.name, name]);
+  // The achievements shown here are seen: they don't pop up again as toasts once this screen goes.
+  const seen = useRef<string[]>([]);
+  seen.current = earned;
+  const seenBy = useRef(onSeen);
+  seenBy.current = onSeen;
+  useEffect(() => () => seen.current.forEach((id) => seenBy.current?.(id)), []);
 
   const origin = typeof window !== "undefined" ? window.location.origin : "";
   const shareResult: GuessrShareResult = {
@@ -89,271 +104,152 @@ export function GeoSummary({
   const challengeUrl = challengeToken && !sharedPlaces ? `${origin}${localeHref(`/pokeguessr/c/${encodeURIComponent(challengeToken)}`, t.locale).href}` : null;
   const canRank = !game.practice && !!resultToken;
   const modeName = game.difficulty ? names.difficulty(game.difficulty) : undefined;
-  const shareTextFull = guessrShareText(shareResult, names.map(region), shareUrl(shareResult, t.locale), { mode: modeName }, shareT);
-  // The card to copy: the result, then the challenge link (same places) when there is one, else the result page.
+  // The result, then the challenge link (same places) when there is one, else the result's own page.
   const shareBody = guessrShareText(shareResult, names.map(region), undefined, { mode: modeName }, shareT);
   const shareLink = challengeUrl ?? shareUrl(shareResult, t.locale);
 
-  async function shareChallenge() {
-    const link = challengeUrl ?? (sharedPlaces ? shareUrl(shareResult, t.locale) : null);
-    if (!link) return;
-    const text = game.daily
-      ? t("summary.shareDaily", { score: fmt(total), n: dailyNumber(game.daily), places: played.length || 5 })
-      : game.weekly
-        ? t("summary.shareWeekly", { score: fmt(total), places: played.length || 5 })
-        : t("summary.shareGame", { score: fmt(total), places: played.length || 5 });
-    const outcome = await shareOrCopy(text, link);
-    if (outcome === "failed") setShared("failed");
-    else if (outcome !== "cancelled") setShared("done");
-  }
-
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!isCleanName(name)) {
-      setSaveError(ct("nameRejected"));
-      setSave("error");
-      return;
-    }
-    setSave("saving");
-    setSaveError(null);
-    try {
-      await post("/api/geo/leaderboard", { resultToken, playerName: name });
-      setSave("saved");
-    } catch (err) {
-      setSaveError(err instanceof Error ? err.message : t("summary.saveFailed"));
-      setSave("error");
-    }
-  }
-
   const theirs = challenge?.score ?? 0;
   const outcome = challenge ? (total > theirs ? "win" : total < theirs ? "lose" : "tie") : null;
+  const them = challenge?.name;
+
+  // 1. What the game did.
+  const lines = [
+    outcome && {
+      key: "challenge",
+      icon: outcome === "win" ? <Crown className="h-[1em] w-[1em]" aria-hidden /> : <Swords className="h-[1em] w-[1em]" aria-hidden />,
+      text: outcome === "win" ? (them ? t("summary.beat", { name: them }) : t("summary.beatThem")) : outcome === "lose" ? (them ? t("summary.lost", { name: them }) : t("summary.lostThem")) : t("summary.tie"),
+      tone: outcome === "win" ? ("win" as const) : outcome === "lose" ? ("lose" as const) : ("gold" as const),
+      testId: "geo-end-challenge",
+    },
+    // A best beaten (a first game on a board has none to beat: its badge says enough).
+    reward?.best && reward.previous ? { key: "best", icon: <TrendingUp className="h-[1em] w-[1em]" aria-hidden />, text: g("end.newBestWas", { score: fmt(reward.previous) }), testId: "geo-end-best" } : null,
+    bonus !== null && {
+      key: "bonus",
+      icon: <Sparkles className="h-[1em] w-[1em]" aria-hidden />,
+      text: <span className="text-[0.8em]">{t("summary.bonus", { bonus: fmt(bonus), total: fmt(total + bonus) })}</span>,
+      testId: "geo-bonus-total",
+    },
+  ].filter((l): l is Exclude<typeof l, false | null | undefined> => !!l);
+
+  // 3. The badges and achievements this game earned.
+  const medals = [
+    ...(reward?.newBadges ?? []).map((b) => {
+      const key = b.id as keyof typeof badgesNs.en & string;
+      return { key: `badge:${b.id}`, medal: <BadgeMedal id={b.id} />, text: g.rich("end.earned", { name: bt(`${key}.name`), b: medalName }) };
+    }),
+    ...earned.flatMap((id) => {
+      const def = geoAchievement(id);
+      return def ? [{ key: `geo:${id}`, medal: <BadgeMedal id={id} icon={achievementIcon(id)} />, text: g.rich("end.earned", { name: achievementText(def, rt, nt).name, b: medalName }) }] : [];
+    }),
+  ];
+  const closerDef = closer ? geoAchievement(closer.id) : null;
+
+  const rows: { key: string; node: React.ReactNode; testId?: string }[] = [];
+  if (lines.length) rows.push({ key: "lines", node: <EndLines lines={lines} /> });
+  if (game.daily && !isStreak) rows.push({ key: "compare", node: <DailyCompare date={game.daily} score={total} t={t} /> });
+  if (medals.length) rows.push({ key: "medals", node: <EndMedals items={medals.slice(0, 2)} more={medals.length > 2 ? g("end.more", { n: medals.length - 2 }) : undefined} /> });
+  else if (closer && closerDef)
+    rows.push({
+      key: "closer",
+      node: (
+        <EndProgress
+          medal={<BadgeMedal id={closer.id} icon={achievementIcon(closer.id)} unlocked={false} />}
+          text={g.rich("end.progress", { name: achievementText(closerDef, rt, nt).name, have: fmt(closer.have), need: fmt(closer.need), b: medalName })}
+          have={closer.have}
+          need={closer.need}
+        />
+      ),
+    });
+  rows.push({
+    key: "share",
+    node: (
+      <EndShareCard
+        title={challengeUrl ? g("end.challengeTitle") : g("end.shareTitle")}
+        sub={isStreak ? g("inARow", { n: streak }) : g("end.scoreLine", { score: fmt(total) })}
+        text={shareBody}
+        url={shareLink}
+        kind="guessr"
+        picture={<ShareSquares rows={squares(isStreak ? streak : null, played.map((p) => p.graded.score))} label={isStreak ? g("inARow", { n: streak }) : played.map((p) => fmt(p.graded.score)).join(" · ")} />}
+      />
+    ),
+  });
+  rows.push({
+    key: "board",
+    node: (
+      <EndBoard
+        href={
+          game.daily
+            ? `/leaderboard?board=geo&date=${game.daily}`
+            : game.weekly
+              ? `/leaderboard?board=geo&format=${geoWeeklyBoard(game.weekly)}`
+              : `/leaderboard?board=geo&format=${geoBoardKey({ region: region.id, kind: game.kind, era: game.filter.era, rounds: game.rounds })}`
+        }
+        boardLabel={t("summary.leaderboard")}
+        save={
+          canRank
+            ? {
+                label: t("summary.save"),
+                placeholder: t("summary.name"),
+                submit: t("summary.submit"),
+                saved: t("summary.saved"),
+                failed: t("summary.saveFailed"),
+                onSave: (name) => post("/api/geo/leaderboard", { resultToken, playerName: name }).then(() => undefined),
+              }
+            : undefined
+        }
+        note={
+          game.practice === "repeat-daily"
+            ? t("summary.practice.daily")
+            : game.practice === "repeat-weekly"
+              ? t("summary.practice.weekly")
+              : game.practice === "challenge"
+                ? t("summary.practice.challenge")
+                : game.practice === "filtered"
+                  ? t("summary.practice.filtered")
+                  : game.practice === "difficulty"
+                    ? t("summary.practice.difficulty")
+                    : undefined
+        }
+      />
+    ),
+  });
+  // 6. The Daily and the Weekly are played once: when the next one comes (and the Daily by email).
+  if (game.daily)
+    rows.push({
+      key: "next",
+      testId: "geo-results-next-daily",
+      node: (
+        <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1">
+          <NextDailyCountdown label={g("results.nextDaily")} />
+          <DailyEmailNudge className="border-none p-0 underline-offset-2 hover:underline" />
+        </div>
+      ),
+    });
+  else if (next) rows.push({ key: "next", node: next });
 
   return (
-    <div className={cn("mx-auto max-w-4xl space-y-6", compact && "space-y-4")}>
-      <div className="space-y-2 text-center">
-        {!compact && <p className="hud-label text-screen">{isStreak ? g("results.streakOver") : g("results.complete")}</p>}
-        {!compact && (
-          <div className="font-display text-6xl font-bold tabular-nums text-screen [text-shadow:0_0_18px_hsl(var(--screen)/0.5)]">
-            {isStreak ? g("inARow", { n: headline }) : fmt(headline)}
-          </div>
-        )}
-        {!isStreak && (
-          <>
-            {!compact && <div className="text-sm text-muted-foreground">{g("results.outOf", { max: fmt(maxTotal(game.rounds)) })}</div>}
-            {bonus !== null && (
-              <div className="text-sm font-semibold text-success" data-testid="geo-bonus-total">
-                {t("summary.bonus", { bonus: fmt(bonus), total: fmt(total + bonus) })}
-              </div>
-            )}
-            {!compact && (
-              <div className="meter mx-auto max-w-xl">
-                <motion.div className="h-full bg-primary" initial={{ width: 0 }} animate={{ width: `${(total / maxTotal(game.rounds)) * 100}%` }} transition={{ duration: 1.1 }} />
-              </div>
-            )}
-          </>
-        )}
-        {reward && (
-          <div className="flex flex-wrap justify-center gap-2 pt-1">
-            {reward.best && <span className="rounded-sm border border-warning/50 px-2 py-1 font-pixel text-[10px] text-warning">{t("summary.newBest")}</span>}
-          </div>
-        )}
-      </div>
-
-      {game.daily && !isStreak && <DailyCompare date={game.daily} score={total} t={t} />}
-      {game.daily && !isStreak && <GeoCrowdMap date={game.daily} region={region} played={played} resultToken={resultToken} />}
-      {game.daily && !isStreak && <DailyEmailNudge className="mx-auto max-w-md" />}
-
-      {outcome && challenge && (
-        <Card className={cn(outcome === "win" ? "border-success/50" : outcome === "lose" ? "border-destructive/40" : "")}>
-          <CardContent className="space-y-3 p-5">
-            <p className="text-center font-display text-2xl font-bold uppercase">
-              {outcome === "win"
-                ? challenge.name
-                  ? t("summary.beat", { name: challenge.name })
-                  : t("summary.beatThem")
-                : outcome === "lose"
-                  ? challenge.name
-                    ? t("summary.lost", { name: challenge.name })
-                    : t("summary.lostThem")
-                  : t("summary.tie")}
-            </p>
-            <div className="grid grid-cols-[auto_1fr_1fr] gap-x-4 gap-y-1 text-sm">
-              <span />
-              <span className="hud-label text-right">{t("summary.you")}</span>
-              <span className="hud-label text-right">{challenge.name || t("summary.them")}</span>
-              {played.map((p, i) => (
-                <div key={i} className="contents">
-                  <span className="font-pixel text-xs text-muted-foreground">{t("summary.r", { n: i + 1 })}</span>
-                  <span className={cn("text-right tabular-nums", p.graded.score >= (challenge.rounds[i] ?? 0) && "font-bold text-success")}>
-                    {fmt(p.graded.score)}
-                  </span>
-                  <span className={cn("text-right tabular-nums", (challenge.rounds[i] ?? 0) > p.graded.score && "font-bold text-success")}>
-                    {fmt(challenge.rounds[i] ?? 0)}
-                  </span>
-                </div>
-              ))}
-              <span className="font-pixel text-xs">{t("summary.total")}</span>
-              <span className="text-right font-bold tabular-nums">{fmt(total)}</span>
-              <span className="text-right font-bold tabular-nums">{fmt(theirs)}</span>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {!isStreak && !compact && (
-        <GeoMap region={region} revealed={played.map((p, i) => ({ guess: p.guess, answer: p.graded.answer, label: String(i + 1) }))} />
-      )}
-
-      <Card>
-        <CardContent className="space-y-5 p-5">
-          {reward && reward.newBadges.length > 0 && (
-            <div className="flex flex-wrap items-center justify-center gap-3 rounded-md border border-warning/40 bg-warning/[0.06] p-3">
-              {reward.newBadges.map((b) => (
-                <span key={b.id} className="flex items-center gap-2 text-sm">
-                  <BadgeMedal id={b.id} size="md" />
-                  <span>
-                    <span className="block font-semibold">{t("summary.badge", { name: bt(`${b.id as keyof typeof badgesNs.en & string}.name`) })}</span>
-                    <span className="text-xs text-muted-foreground">{bt(`${b.id as keyof typeof badgesNs.en & string}.description`)}</span>
-                  </span>
-                </span>
-              ))}
-            </div>
-          )}
-
-          <ol className={cn("space-y-2", compact && "hidden")} aria-hidden={compact || undefined}>
-            {played.map((p, i) => (
-              <li key={i} className="flex items-center gap-3 rounded-md border bg-shade/20 px-3 py-2">
-                <span className="font-pixel text-xs text-muted-foreground">{i + 1}</span>
-                <span aria-hidden>{isStreak ? (p.graded.hit ? "✅" : "❌") : emoji(p.graded.score)}</span>
-                <span className="min-w-0 flex-1 truncate text-sm">
-                  <span className="font-semibold">{t.locale === "en" ? placeName(p.graded.answer, region) : names.placeLabel(p.graded.answer, region)}</span>
-                  <span className="text-muted-foreground"> · {names.game(p.graded.answer.game)}</span>
-                  {p.graded.gameGuess?.correct && <span className="text-success"> · +{fmt(p.graded.gameGuess.bonus)}</span>}
-                </span>
-                {!isStreak && <span className="font-pixel text-xs tabular-nums">{fmt(p.graded.score)}</span>}
-              </li>
-            ))}
-          </ol>
-
-          <ShareCard body={shareBody} link={shareLink} challenge={!!challengeUrl} today={game.daily ? "daily" : game.weekly ? "weekly" : undefined} t={t} />
-
-          <div className="grid gap-2 sm:grid-cols-2">
-            {(challengeUrl || (sharedPlaces && !isStreak)) && (
-              <Button className="sm:col-span-2" size="lg" variant="success" onClick={() => void shareChallenge()}>
-                <Link2 className="h-4 w-4" aria-hidden />
-                {shared === "done" ? t("summary.challengeCopied") : t("summary.challenge")}
-              </Button>
-            )}
-            <ShareButton size="lg" variant="outline" kind="guessr" label={t("summary.share")} getText={() => shareTextFull} className={cn(compact && "sm:col-span-2")} />
-            {/* The results map above has its own Play again. */}
-            {!compact && (
-              <Button size="lg" variant="secondary" onClick={onRestart}>
-                <RotateCcw className="h-4 w-4" aria-hidden />{` ${g("results.again")}`}
-              </Button>
-            )}
-          </div>
-          {shared === "failed" && <CopyFallback text={challengeUrl ?? shareLink} />}
-
-          {canRank ? (
-            <form className="space-y-2" onSubmit={submit}>
-              <label htmlFor="geo-name" className="hud-label">
-                {t("summary.save")}
-              </label>
-              <div className="flex gap-2">
-                <input
-                  id="geo-name"
-                  value={name}
-                  onChange={(e) => {
-                    setName(e.target.value);
-                    setSaveError(null);
-                  }}
-                  maxLength={24}
-                  required
-                  placeholder={t("summary.name")}
-                  disabled={save === "saved"}
-                  className="h-10 min-w-0 flex-1 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
-                />
-                <Button type="submit" disabled={save === "saving" || save === "saved" || !name.trim()}>
-                  {save === "saved" ? t("summary.saved") : t("summary.submit")}
-                </Button>
-              </div>
-              {saveError && (
-                <p role="alert" className="text-sm text-destructive">
-                  {saveError}
-                </p>
-              )}
-            </form>
-          ) : game.practice === "repeat-daily" ? (
-            <p className="text-xs text-muted-foreground">{t("summary.practice.daily")}</p>
-          ) : game.practice === "repeat-weekly" ? (
-            <p className="text-xs text-muted-foreground">{t("summary.practice.weekly")}</p>
-          ) : game.practice === "challenge" ? (
-            <p className="text-xs text-muted-foreground">{t("summary.practice.challenge")}</p>
-          ) : game.practice === "filtered" ? (
-            <p className="text-xs text-muted-foreground">{t("summary.practice.filtered")}</p>
-          ) : game.practice === "difficulty" ? (
-            <p className="text-xs text-muted-foreground">{t("summary.practice.difficulty")}</p>
-          ) : null}
-
-          <Link
-            href={
-              game.daily
-                ? `/leaderboard?board=geo&date=${game.daily}`
-                : game.weekly
-                  ? `/leaderboard?board=geo&format=${geoWeeklyBoard(game.weekly)}`
-                  : `/leaderboard?board=geo&format=${geoBoardKey({ region: region.id, kind: game.kind, era: game.filter.era, rounds: game.rounds })}`
-            }
-            className={cn(buttonVariants({ variant: "outline", size: "lg" }), "w-full")}
-          >
-            <Trophy className="h-4 w-4" aria-hidden />{` ${t("summary.leaderboard")}`}
-          </Link>
-        </CardContent>
-      </Card>
-    </div>
+    <>
+      {rows.map((r, i) => (
+        <EndRow key={r.key} order={i} testId={r.testId}>
+          {r.node}
+        </EndRow>
+      ))}
+    </>
   );
 }
 
-/**
- * The Wordle-style result card: the share text as it'll paste (a square per
- * round by how close the pin landed, each round's points, the total), with a
- * Copy button. The link copied under it is the challenge link when there is
- * one (the same places for a friend), else the result page.
- */
-function ShareCard({ body, link, challenge, today, t }: { body: string; link: string; challenge: boolean; today?: "daily" | "weekly"; t: SoloT }) {
-  const [state, setState] = useState<"idle" | "copied" | "failed">("idle");
-  const timer = useRef<number | undefined>(undefined);
-  useEffect(() => () => window.clearTimeout(timer.current), []);
-  const full = `${body}\n${link}`;
-  async function copy() {
-    const ok = await copyText(full);
-    setState(ok ? "copied" : "failed");
-    window.clearTimeout(timer.current);
-    if (ok) timer.current = window.setTimeout(() => setState("idle"), 2200);
-  }
-  return (
-    <div className="space-y-2 rounded-md border bg-shade/20 p-3" data-testid="geo-share-card">
-      <div className="flex items-center justify-between gap-3">
-        <p className="hud-label">{t("summary.card")}</p>
-        <Button size="sm" variant={state === "copied" ? "success" : "secondary"} onClick={() => void copy()} data-testid="geo-copy-result">
-          {state === "copied" ? <Check className="h-4 w-4" aria-hidden /> : <Copy className="h-4 w-4" aria-hidden />}
-          {state === "copied" ? t("summary.copied") : t("summary.copy")}
-        </Button>
-      </div>
-      <pre className="whitespace-pre-wrap break-words font-sans text-sm leading-relaxed" data-testid="geo-share-preview">
-        {body}
-      </pre>
-      <p className="truncate text-xs text-muted-foreground">
-        {challenge ? t("summary.withChallenge") : today ? (today === "daily" ? t("summary.withToday") : t("summary.withWeek")) : t("summary.withLink")}
-      </p>
-      {state === "failed" && <CopyFallback text={full} />}
-    </div>
-  );
+/** The share card's squares: a round's colour each (five a row), or a streak's ticks and its cross. */
+function squares(streak: number | null, scores: number[]): string[][] {
+  const all = streak !== null ? [...Array<string>(Math.min(streak, PER_ROW * 2 - 1)).fill("✅"), "❌"] : scores.map(emoji);
+  const rows: string[][] = [];
+  for (let i = 0; i < all.length && rows.length < 2; i += PER_ROW) rows.push(all.slice(i, i + PER_ROW));
+  return rows;
 }
 
 /**
- * The Daily's "how you compared": the day's ranked scores in ten bars, yours
- * lit, and the share of players you beat. Shown only with enough players
- * (geo_runs: games saved to the daily leaderboard); otherwise nothing.
+ * The Daily's "how you compared": the share of the day's ranked players you
+ * beat, with the day's scores in ten small bars (yours lit). Shown only with
+ * enough players (games saved to the daily leaderboard); otherwise nothing.
  */
 function DailyCompare({ date, score, t }: { date: string; score: number; t: SoloT }) {
   const fmt = (n: number) => formatNumber(n, t.locale);
@@ -373,39 +269,24 @@ function DailyCompare({ date, score, t }: { date: string; score: number; t: Solo
   const mine = bucketOf(score);
   const tallest = Math.max(1, ...stats.buckets);
   return (
-    <Card data-testid="geo-daily-compare">
-      <CardContent className="space-y-3 p-5">
-        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-          <p className="hud-label text-warning">{t("compare.title")}</p>
-          <p className="text-sm text-muted-foreground">
-            {t("compare.players", { n: fmt(stats.players) })}
-            {stats.median !== undefined ? ` · ${t("compare.median", { score: fmt(stats.median) })}` : ""}
-          </p>
-        </div>
+    <div className="flex items-center gap-3" data-testid="geo-daily-compare">
+      <div className="flex h-8 items-end gap-[2px]" role="img" aria-label={t("compare.spread", { bar: mine + 1, bars: stats.buckets.length })}>
+        {stats.buckets.map((n, i) => (
+          <span key={i} className={cn("w-1.5 rounded-t-[1px]", i === mine ? "bg-[#ffd23c]" : "bg-white/30")} style={{ height: `${Math.max(n ? 12 : 6, (n / tallest) * 100)}%` }} />
+        ))}
+      </div>
+      <div className="text-left">
         {beaten !== null && (
-          <p className="font-display text-2xl font-bold uppercase" data-testid="geo-daily-percent">
+          <p className="font-display text-[clamp(1rem,2.9vh,1.4rem)] font-bold italic leading-tight text-[#ffd23c] [text-shadow:0_2px_0_#120f24]" data-testid="geo-daily-percent">
             {t("compare.better", { pct: beaten })}
           </p>
         )}
-        <div className="flex h-28 items-end gap-1" role="img" aria-label={t("compare.spread", { bar: mine + 1, bars: stats.buckets.length })}>
-          {stats.buckets.map((n, i) => (
-            <div key={i} className="flex h-full min-w-0 flex-1 flex-col items-stretch justify-end">
-              {i === mine && <span className="mb-1 text-center font-pixel text-[9px] uppercase text-primary">{t("summary.you")}</span>}
-              <motion.div
-                className={cn("rounded-t-sm", i === mine ? "bg-primary" : "bg-muted-foreground/30")}
-                initial={{ height: 0 }}
-                animate={{ height: `${Math.max(n ? 6 : 2, (n / tallest) * 82)}%` }}
-                transition={{ duration: 0.6, delay: i * 0.03 }}
-              />
-            </div>
-          ))}
-        </div>
-        <div className="flex justify-between font-pixel text-[10px] text-muted-foreground">
-          <span>0</span>
-          <span>{fmt(COMPARE_MAX / 2)}</span>
-          <span>{fmt(COMPARE_MAX)}</span>
-        </div>
-      </CardContent>
-    </Card>
+        <p className="text-xs text-white/70">
+          {t("compare.players", { n: fmt(stats.players) })}
+          {stats.median !== undefined ? ` · ${t("compare.median", { score: fmt(stats.median) })}` : ""}
+        </p>
+      </div>
+    </div>
   );
 }
+

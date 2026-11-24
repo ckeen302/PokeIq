@@ -169,3 +169,19 @@ export interface GeoProgress {
 
 /** Mastery as a whole percent (floored, so 100% means every place). */
 export const masteryPercent = (r: Pick<GeoMasteryRow, "mastered" | "places">) => (r.places ? Math.floor((r.mastered / r.places) * 100) : 0);
+
+/**
+ * The achievement a game brought closest without earning it, for its end screen: of those whose count went up
+ * between the read before the game (`before`) and the one after it, the nearest to done. None when nothing moved
+ * (or either read is missing): the end screen then says nothing rather than guess.
+ */
+export function achievementCloser(before: Pick<GeoProgress, "achievements"> | null, after: Pick<GeoProgress, "achievements"> | null): GeoAchievementState | null {
+  if (!before || !after || before === after) return null;
+  let best: GeoAchievementState | null = null;
+  for (const a of after.achievements) {
+    const b = before.achievements.find((x) => x.id === a.id);
+    if (a.earned || !b || b.earned || a.have <= b.have || a.need <= 1) continue;
+    if (!best || a.have / a.need > best.have / best.need) best = a;
+  }
+  return best;
+}

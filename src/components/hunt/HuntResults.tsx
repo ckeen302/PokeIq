@@ -1,22 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
-import { Crown, LayoutGrid, RotateCcw } from "lucide-react";
+import { useState } from "react";
+import { TrendingUp } from "lucide-react";
 import type { GeoRegionInfo } from "@/lib/geo-types";
+import { WORLD_REGION } from "@/lib/geo-types";
 import { bestAndWorst } from "@/lib/geo-results";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import { useT } from "@/i18n/client";
 import { formatNumber } from "@/i18n/format";
+import { localeHref } from "@/i18n/href";
 import huntNs from "@/messages/hunt";
-import { ExitButton, GameShell, Notch } from "@/components/geo/GameShell";
+import geoNs from "@/messages/geo";
 import { GeoMap } from "@/components/geo/GeoMap";
+import { END_MAP_PAD_PICKED, EndLines, EndRow, EndScreen, EndShareCard, EndTracker, ShareSquares, type TrackerCell } from "@/components/geo/EndScreen";
 import type { HuntPokemonView } from "./HuntCard";
 import { shortLabel, type HuntRevealPin, type HuntRevealSpot } from "./HuntReveal";
 import { HUNT_ROUND_MAX, verdictOf } from "./hunt-ui";
-import { WORLD_REGION } from "@/lib/geo-types";
 import { formTagOf } from "./HuntCard";
+import { huntShareText, huntSquare, type HuntShareRound } from "./share";
 
 export interface HuntResultRound {
   pokemon: HuntPokemonView;
@@ -28,137 +28,111 @@ export interface HuntResultRound {
 }
 
 /**
- * The end of a hunt, PokéGuessr's summary layout: the map (the round picked
- * in the list: its spots and the lines from its pins) beside the breakdown
- * panel: the total counting up, each round's Pokémon with its regions found
- * and score (best and worst lit), Hunt again and All hunts, then `children`
- * (the Daily's share grid, the leaderboard).
+ * The end of a hunt, PokéGuessr's end screen (GeoGuessr's): the total counting
+ * up over the dimmed map, the bar, what the hunt did (a new best, the regions
+ * found), the Daily Hunt's share card; NEXT hunts again (the Daily: back to the
+ * hunts), the X goes to every hunt. BREAKDOWN shows the map: one round's spots
+ * and the lines from its pins (the best round first), each round's Pokémon and
+ * score in the tracker to pick another.
  */
-export function HuntResults({ region, rounds, modeLine, onAgain, onHub, children }: {
+export function HuntResults({ region, rounds, modeLine, newBest, share, onAgain, onHub }: {
   region: GeoRegionInfo;
   rounds: HuntResultRound[];
   modeLine: string;
+  /** This hunt beat the mode's best on this device. */
+  newBest?: boolean;
+  /** The Daily Hunt's share card. */
+  share?: { title: string; rounds: HuntShareRound[] };
   onAgain: () => void;
   onHub: () => void;
-  children?: React.ReactNode;
 }) {
   const t = useT(huntNs);
+  const g = useT(geoNs);
   const fmt = (n: number) => formatNumber(n, t.locale);
   const scores = rounds.map((r) => r.score);
   const total = scores.reduce((a, b) => a + b, 0);
   const max = rounds.length * HUNT_ROUND_MAX;
   const { best, worst } = bestAndWorst(scores);
   const [focus, setFocus] = useState(best ?? 0);
-  const headline = useCountUp(total);
   const r = rounds[focus] ?? rounds[0];
+  const world = region.id === WORLD_REGION;
+  const found = rounds.reduce((s, x) => s + x.regionsFound, 0);
+  const regions = rounds.reduce((s, x) => s + x.regionsTotal, 0);
+
+  const cells: TrackerCell[] = rounds.map((x, i) => ({
+    // eslint-disable-next-line @next/next/no-img-element -- the round's art, already cached
+    top: <img src={x.pokemon.art} alt="" className="h-7 w-7 object-contain md:h-9 md:w-9" />,
+    value: fmt(x.score),
+    tone: i === best ? "best" : i === worst ? "worst" : undefined,
+    label: `${t("results.show", { n: i + 1 })}: ${x.pokemon.name} · ${fmt(x.score)}`,
+  }));
+
+  const lines = [
+    newBest && { key: "best", icon: <TrendingUp className="h-[1em] w-[1em]" aria-hidden />, text: g("end.newBest"), testId: "hunt-end-best" },
+    world && regions > 0 && { key: "found", text: <span className="text-[0.85em]">{t("results.regions", { found, total: regions })}</span>, testId: "hunt-end-found" },
+  ].filter((l): l is Exclude<typeof l, false | null | undefined> => !!l);
+
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  const formTag = r ? formTagOf(t, r.pokemon) : null;
   return (
-    <GameShell onExit={onHub}>
-      {() => (
-        <div className="flex h-full flex-col md:flex-row" data-testid="hunt-results">
-          <div className="relative h-[40vh] shrink-0 md:h-full md:flex-1">
-            {r && (
-              <GeoMap
-                key={focus}
-                region={region}
-                fill
-                spots={r.spots.map((s, i) => ({ x: s.x, y: s.y, mask: s.mask, found: r.pins.some((p) => p.spot === i && (p.found ?? true)), tag: tagged(r).has(i) ? shortLabel(s.labels ?? [`${s.game} · ${s.method}`], t) : undefined }))}
-                links={r.pins.map((p, i) => ({ pin: p.pin, spot: p.spot, n: i + 1 }))}
-                fit={{ duration: 700 }}
-              />
-            )}
-            <div className="geo-safe-tl absolute left-3 top-3 z-20">
-              <ExitButton onClick={onHub} />
-            </div>
-            <Notch>
-              <div className="text-center">
-                <div className="whitespace-nowrap font-display text-lg font-bold uppercase italic leading-none tracking-wide sm:text-2xl">{t("results.title")}</div>
-                <div className="mt-0.5 whitespace-nowrap font-display text-[11px] font-semibold uppercase tracking-[0.14em] text-[#c8bfff]">{modeLine}</div>
-              </div>
-            </Notch>
-            {r && (
-              <div className="pointer-events-none absolute bottom-3 left-3 z-10 flex items-center gap-2 rounded-md bg-black/60 py-1 pl-1 pr-3 text-white backdrop-blur" data-testid="hunt-results-focus">
-                {/* eslint-disable-next-line @next/next/no-img-element -- the round's art, already cached */}
-                <img src={r.pokemon.art} alt="" className="h-8 w-8 object-contain" />
-                <span className="font-display text-sm font-bold uppercase italic">{r.pokemon.name}</span>
-              </div>
-            )}
+    <EndScreen
+      testId="hunt-results"
+      nextTestId="hunt-again"
+      map={
+        r && (
+          <GeoMap
+            region={region}
+            fill
+            spots={r.spots.map((s, i) => ({ x: s.x, y: s.y, mask: s.mask, found: r.pins.some((p) => p.spot === i && (p.found ?? true)), tag: tagged(r).has(i) ? shortLabel(s.labels ?? [`${s.game} · ${s.method}`], t) : undefined }))}
+            links={r.pins.map((p, i) => ({ pin: p.pin, spot: p.spot, n: i + 1 }))}
+            fit={{ duration: 700, pad: END_MAP_PAD_PICKED }}
+          />
+        )
+      }
+      score={{ value: total, max, segments: rounds.length, label: g("end.yourScore"), unit: g("end.ofPoints", { max: fmt(max) }) }}
+      title={t("results.title")}
+      mode={modeLine}
+      tracker={<EndTracker cells={cells} total={fmt(total)} focus={focus} onFocus={(i) => i !== null && setFocus(i)} wide />}
+      aside={
+        r && (
+          <div className="flex w-[min(22rem,100%)] items-center gap-2.5 rounded-xl bg-[#1e1a3f]/95 p-2 pr-3 text-white shadow-[0_8px_28px_rgb(0_0_0/0.45)] ring-2 ring-[#5a4fb8]/70 backdrop-blur" data-testid="hunt-results-focus">
+            {/* eslint-disable-next-line @next/next/no-img-element -- the round's art, already cached */}
+            <img src={r.pokemon.art} alt="" className="h-10 w-10 shrink-0 object-contain" />
+            <span className="min-w-0 flex-1">
+              <span className="block truncate font-display text-sm font-bold uppercase italic leading-tight">{r.pokemon.name}</span>
+              <span className="block truncate text-xs text-white/70">
+                {formTag ? `${formTag} · ` : ""}
+                {world ? t("results.regions", { found: r.regionsFound, total: r.regionsTotal }) : t(`reveal.verdict.${verdictOf(r.score)}`)}
+              </span>
+            </span>
+            <span className="shrink-0 font-display text-base font-bold italic tabular-nums text-[#ffd23c]">{fmt(r.score)}</span>
           </div>
-
-          <div className="geo-results-panel flex min-h-0 flex-1 flex-col overflow-y-auto border-t-4 border-[#a99cff] bg-background text-foreground md:w-[27rem] md:flex-none md:border-l-4 md:border-t-0" data-testid="hunt-results-panel">
-            <div className="space-y-4 p-4 sm:p-5">
-              <div className="text-center">
-                <p className="hud-label text-screen">{t("results.total")}</p>
-                <div className="geo-glow mt-1 font-display text-5xl font-bold italic tabular-nums text-foreground sm:text-6xl" data-testid="hunt-results-total">
-                  {fmt(headline)}
-                </div>
-                <div className="text-sm text-muted-foreground">{t("results.outOf", { max: fmt(max) })}</div>
-                <div className="meter mx-auto mt-2 max-w-xs !bg-black/40">
-                  <motion.div className="h-full bg-[#9be15d]" initial={{ width: 0 }} animate={{ width: `${(total / max) * 100}%` }} transition={{ duration: 1.1 }} />
-                </div>
-              </div>
-
-              <ol className="space-y-1.5" aria-label={t("results.rounds")}>
-                {rounds.map((x, i) => {
-                  const tag = i === best ? t("results.best") : i === worst ? t("results.worst") : null;
-                  return (
-                    <li key={i}>
-                      <button
-                        type="button"
-                        onClick={() => setFocus(i)}
-                        onMouseEnter={() => setFocus(i)}
-                        onFocus={() => setFocus(i)}
-                        aria-pressed={focus === i}
-                        aria-label={`${t("results.show", { n: i + 1 })}: ${x.pokemon.name}`}
-                        className={cn(
-                          "flex w-full items-center gap-3 rounded-md border bg-shade/20 px-2.5 py-1.5 text-left transition-colors hover:border-[#a99cff]/60",
-                          i === best && "border-[#4cbb17]/60 bg-[#4cbb17]/10",
-                          i === worst && "border-[#ff5a5a]/60 bg-[#ff5a5a]/10",
-                          focus === i && "border-[#ffd23c] ring-1 ring-[#ffd23c]"
-                        )}
-                        data-testid={`hunt-results-round-${i + 1}`}
-                      >
-                        <span className="w-4 shrink-0 text-center font-pixel text-[9px] text-muted-foreground">{i + 1}</span>
-                        {/* eslint-disable-next-line @next/next/no-img-element -- the round's art, already cached */}
-                        <img src={x.pokemon.art} alt="" className="h-11 w-11 shrink-0 object-contain" />
-                        <span className="min-w-0 flex-1">
-                          <span className="block truncate text-sm font-semibold">{x.pokemon.name}</span>
-                          <span className="block truncate text-xs text-muted-foreground">
-                            {formTagOf(t, x.pokemon) ? `${formTagOf(t, x.pokemon)} · ` : ""}
-                            {region.id === WORLD_REGION ? t("results.regions", { found: x.regionsFound, total: x.regionsTotal }) : t(`reveal.verdict.${verdictOf(x.score)}`)}
-                          </span>
-                        </span>
-                        <span className="flex flex-col items-end">
-                          <span className="font-display text-base font-bold tabular-nums">{fmt(x.score)}</span>
-                          {tag && (
-                            <span className={cn("flex items-center gap-1 font-pixel text-[9px] uppercase", i === best ? "text-success" : "text-destructive")}>
-                              {i === best && <Crown className="h-3 w-3" aria-hidden />}
-                              {tag}
-                            </span>
-                          )}
-                        </span>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ol>
-
-              <div className="grid gap-2 sm:grid-cols-2">
-                <Button size="lg" variant="success" onClick={onAgain} data-testid="hunt-again">
-                  <RotateCcw className="h-4 w-4 shrink-0" aria-hidden />
-                  {t("results.again")}
-                </Button>
-                <Button size="lg" variant="outline" onClick={onHub} data-testid="hunt-hub">
-                  <LayoutGrid className="h-4 w-4 shrink-0" aria-hidden />
-                  {t("results.hub")}
-                </Button>
-              </div>
-            </div>
-            {children && <div className="border-t px-4 pb-6 pt-4 sm:px-5">{children}</div>}
-            <div className="h-[env(safe-area-inset-bottom)] shrink-0" aria-hidden />
-          </div>
-        </div>
+        )
+      }
+      onNext={onAgain}
+      onExit={onHub}
+      exitLabel={t("results.hub")}
+    >
+      {lines.length > 0 && (
+        <EndRow order={0}>
+          <EndLines lines={lines} />
+        </EndRow>
       )}
-    </GameShell>
+      {share && (
+        <EndRow order={1}>
+          <EndShareCard
+            testId="hunt-share"
+            buttonTestId="hunt-share-button"
+            title={share.title}
+            sub={g("end.scoreLine", { score: fmt(total) })}
+            text={huntShareText({ title: share.title, rounds: share.rounds, locale: t.locale })}
+            url={`${origin}${localeHref("/pokeguessr/hunt", t.locale).href}`}
+            kind="hunt"
+            picture={<ShareSquares rows={share.rounds.map((x) => (x.pins.length ? x.pins : [0]).map((p) => huntSquare(p, x.pinMax)))} label={t("share.legend")} />}
+          />
+        </EndRow>
+      )}
+    </EndScreen>
   );
 }
 
@@ -167,23 +141,4 @@ function tagged(r: HuntResultRound): Set<number> {
   const out = new Set(r.pins.map((p) => p.spot));
   for (const region of new Set(r.spots.map((s) => s.region))) if (!r.pins.some((p) => r.spots[p.spot]?.region === region)) out.add(r.spots.findIndex((s) => s.region === region));
   return out;
-}
-
-function useCountUp(value: number, ms = 1100): number {
-  const reduced = useReducedMotion();
-  const [shown, setShown] = useState(reduced ? value : 0);
-  useEffect(() => {
-    if (reduced) return setShown(value);
-    let raf = 0;
-    let start = 0;
-    const tick = (now: number) => {
-      start ||= now;
-      const k = Math.min(1, (now - start) / ms);
-      setShown(Math.round(value * (1 - (1 - k) ** 3)));
-      if (k < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [value, ms, reduced]);
-  return shown;
 }

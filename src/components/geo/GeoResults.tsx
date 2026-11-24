@@ -1,25 +1,20 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
-import { ArrowLeft, Check, ChevronDown, Crown, RotateCcw, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Check, X } from "lucide-react";
 import { GEO_MAX_ROUND_SCORE, type GeoGuessResponse, type GeoKind, type GeoRegionInfo } from "@/lib/geo-types";
 import { isWorldwide } from "@/lib/geo-themes";
 import { placeLabel, squaresText } from "@/lib/geo-names";
 import { BEST_COLOR, WORST_COLOR, bestAndWorst } from "@/lib/geo-results";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import { GeoMap, type MapPin, type RevealedRound } from "./GeoMap";
-import { ExitButton, GameShell, Notch } from "./GameShell";
-import { ShareResultLink } from "./ShareResultLink";
-import { NextDailyCountdown } from "@/components/NextDailyCountdown";
+import { END_MAP_PAD, END_MAP_PAD_PICKED, EndScreen, EndTracker, RoundTag, type TrackerCell } from "./EndScreen";
+import { CrowdPanel, useGeoCrowd } from "./GeoCrowdMap";
 import { useT } from "@/i18n/client";
 import { formatNumber } from "@/i18n/format";
 import geoNs from "@/messages/geo";
-import commonNs from "@/messages/common";
 import { useGeoNames } from "@/lib/geo-i18n-client";
 
-/** What the results map needs of a finished game: the map and the rounds as graded. */
+/** What the end screen needs of a finished game: the map and the rounds as graded. */
 export interface ResultsGame {
   region: GeoRegionInfo;
   kind: GeoKind;
@@ -33,224 +28,175 @@ export interface ResultsRound {
   graded: GeoGuessResponse;
 }
 
-/** Counts up to `value` once, eased; instant under reduced motion. */
-function useCountUp(value: number, ms = 1100): number {
-  const reduced = useReducedMotion();
-  const [shown, setShown] = useState(reduced ? value : 0);
-  useEffect(() => {
-    if (reduced) {
-      setShown(value);
-      return;
-    }
-    let raf = 0;
-    let start = 0;
-    const tick = (now: number) => {
-      start ||= now;
-      const t = Math.min(1, (now - start) / ms);
-      setShown(Math.round(value * (1 - (1 - t) ** 3)));
-      if (t < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [value, ms, reduced]);
-  return shown;
-}
+/** The picked round's pins on the map. */
+const FOCUS_COLOR = "#ffd23c";
 
 /**
- * The end of a game, GeoGuessr's summary: the whole map with every round's
- * pin and the place it was, a line between them, and a breakdown panel with
- * each round's distance and score (the best and the worst lit), the total,
- * play again and sharing. `children` is the rest of the summary (the
- * leaderboard form, the challenge link, the badges), scrolled under the
- * breakdown.
+ * The end of a PokéGuessr game (solo, a region or a themed map, the Daily, the
+ * Weekly, a challenge, a pin streak, Region Streak), GeoGuessr's: the score over
+ * the dimmed map with `children` (the rows) under it, and the breakdown: every
+ * round's pin, numbered flag and line, the tracker with each round's score (the
+ * best and the worst lit), the picked round's place, and on the Daily the crowd
+ * map. See EndScreen.
  */
 export function GeoResults({
   game,
   played,
   pinImage,
-  shareToken,
-  onRestart,
-  next,
+  mode,
+  resultToken,
+  rival,
+  onNext,
+  onExit,
   children,
 }: {
   game: ResultsGame;
   played: ResultsRound[];
   pinImage?: string;
-  /** Under Back, when the next one comes (the Weekly's; the Daily's is built in). */
-  next?: React.ReactNode;
-  /** A signed result, for the result page's link and preview card. */
-  shareToken?: string;
-  onRestart: () => void;
+  /** The map and the mode, under the title ("World · Daily #12"). */
+  mode?: string;
+  /** The signed result (the Daily's crowd map asks with it). */
+  resultToken?: string;
+  /** A challenge: the friend's score on the bar, and each of their rounds in the breakdown. */
+  rival?: { name: string; score: number; rounds: number[] };
+  onNext: () => void;
+  onExit: () => void;
   children?: React.ReactNode;
 }) {
   const t = useT(geoNs);
-  const common = useT(commonNs);
   const names = useGeoNames();
   const fmt = (n: number) => formatNumber(n, t.locale);
   const isStreak = game.kind === "streak";
-  const once = !!(game.daily || game.weekly);
   const isWorld = isWorldwide(game.region.id);
   const scores = played.map((p) => p.graded.score);
   const total = scores.reduce((s, x) => s + x, 0);
   const streak = played.filter((p) => p.graded.hit).length;
   const { best, worst } = isStreak ? { best: null, worst: null } : bestAndWorst(scores);
-  const headline = useCountUp(isStreak ? streak : total);
   const [focus, setFocus] = useState<number | null>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
-  const [more, setMore] = useState(false);
+  const crowd = useGeoCrowd(game.daily && !isStreak ? game.daily : undefined, resultToken, played.length);
+  const [crowdOn, setCrowdOn] = useState(false);
+  // The crowd map is one round's: switched on, it shows the picked round (the first one with a crowd, if none is picked).
+  useEffect(() => {
+    if (crowdOn && focus === null && crowd) setFocus(crowd.rounds[0].round - 1);
+  }, [crowdOn, focus, crowd]);
+  const crowdRound = crowdOn && crowd && focus !== null ? (crowd.rounds.find((r) => r.round === focus + 1) ?? null) : null;
 
+  const toneOf = (i: number): "best" | "worst" | undefined => (i === best ? "best" : i === worst || (isStreak && !played[i]?.graded.hit) ? "worst" : undefined);
   const revealed = useMemo<RevealedRound[]>(
     () =>
       played.map((p, i) => ({
         guess: p.guess,
         answer: p.graded.answer,
-        label: String(i + 1),
+        flag: String(i + 1),
         image: pinImage,
-        color: focus === i ? "#ffd23c" : i === best ? BEST_COLOR : i === worst ? WORST_COLOR : isStreak && !p.graded.hit ? WORST_COLOR : undefined,
+        color: focus === i ? FOCUS_COLOR : i === best ? BEST_COLOR : i === worst ? WORST_COLOR : undefined,
       })),
-    [played, pinImage, best, worst, focus, isStreak]
+    [played, pinImage, best, worst, focus]
   );
-  // The panel's lower part (leaderboard, sharing) scrolls into view from "More".
-  useEffect(() => {
-    if (!more || !panelRef.current) return;
-    panelRef.current.querySelector("[data-results-more]")?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, [more]);
 
   const max = game.rounds * GEO_MAX_ROUND_SCORE;
   /** "2.4 squares away", or spot on, in the page's language. */
   const squares = (n: number) => (n === 0 ? t("results.spotOn") : t("results.squares", { n, d: formatNumber(n, t.locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) }));
-  return (
-    <GameShell onExit={onRestart}>
-      {() => (
-        <div className="flex h-full flex-col md:flex-row" data-testid="geo-results">
-          {/* The map: every round's pin, flag and line. */}
-          <div className="relative h-[42vh] shrink-0 md:h-full md:flex-1">
-            <GeoMap region={game.region} revealed={revealed} fill fit={{ duration: 900 }} />
-            <div className="geo-safe-tl absolute left-3 top-3 z-20">
-              <ExitButton onClick={onRestart} />
-            </div>
-            <Notch>
-              <div className="text-center">
-                <div className="font-display text-xl font-bold uppercase italic leading-none tracking-wide sm:text-2xl">{isStreak ? t("results.streakOver") : t("results.complete")}</div>
-                <div className="mt-0.5 font-display text-[11px] font-semibold uppercase tracking-[0.14em] text-[#c8bfff]">{names.map(game.region)}</div>
-              </div>
-            </Notch>
-            {!isStreak && best !== null && (
-              <div className="pointer-events-none absolute bottom-3 left-3 z-10 flex gap-2 font-display text-[11px] font-semibold uppercase tracking-wider text-white" aria-hidden>
-                <span className="flex items-center gap-1.5 rounded bg-black/55 px-2 py-1 backdrop-blur">
-                  <span className="h-2.5 w-2.5 rounded-full" style={{ background: BEST_COLOR }} />{` ${t("results.bestRound")}`}
-                </span>
-                <span className="flex items-center gap-1.5 rounded bg-black/55 px-2 py-1 backdrop-blur">
-                  <span className="h-2.5 w-2.5 rounded-full" style={{ background: WORST_COLOR }} />{` ${t("results.worstRound")}`}
-                </span>
-              </div>
-            )}
-          </div>
+  const place = (i: number) => (t.locale === "en" ? placeLabel(played[i].graded.answer, game.region) : names.placeLabel(played[i].graded.answer, game.region));
 
-          {/* The breakdown panel. */}
-          <div
-            ref={panelRef}
-            className="geo-results-panel flex min-h-0 flex-1 flex-col overflow-y-auto border-t-4 border-[#a99cff] bg-background text-foreground md:w-[27rem] md:flex-none md:border-l-4 md:border-t-0"
-            data-testid="geo-results-panel"
-          >
-            <div className="space-y-4 p-4 sm:p-5">
-              <div className="text-center">
-                <p className="hud-label text-screen">{isStreak ? t("results.finalStreak") : t("results.total", { rounds: game.rounds })}</p>
-                <div className="geo-glow mt-1 font-display text-5xl font-bold italic tabular-nums text-white sm:text-6xl" data-testid="geo-results-total">
-                  {isStreak ? t("inARow", { n: headline }) : fmt(headline)}
-                </div>
-                {!isStreak && (
-                  <>
-                    <div className="text-sm text-muted-foreground">{t.locale === "en" ? <>out of {fmt(max)}</> : t("results.outOf", { max: fmt(max) })}</div>
-                    <div className="meter mx-auto mt-2 max-w-xs !bg-black/40">
-                      <motion.div className="h-full bg-[#9be15d]" initial={{ width: 0 }} animate={{ width: `${(total / max) * 100}%` }} transition={{ duration: 1.1 }} />
-                    </div>
-                  </>
-                )}
-              </div>
+  const cells: TrackerCell[] = played.map((p, i) => {
+    const n = i + 1;
+    if (isStreak) {
+      return {
+        top: <RoundTag n={n} tone={p.graded.hit ? undefined : "worst"} />,
+        value: p.graded.hit ? <Check className="h-4 w-4 text-[#9be15d]" aria-hidden /> : <X className="h-4 w-4 text-[#ff5a5a]" aria-hidden />,
+        label: `${t("roundN", { n })}: ${place(i)} · ${p.graded.hit ? t("results.correct") : t("results.missed")}`,
+      };
+    }
+    const theirs = rival?.rounds[i];
+    return {
+      top: <RoundTag n={n} tone={toneOf(i)} />,
+      value: fmt(p.graded.score),
+      sub: theirs !== undefined ? <span className={theirs > p.graded.score ? "text-[#ffd23c]" : undefined}>{fmt(theirs)}</span> : undefined,
+      tone: toneOf(i),
+      label: `${t("roundN", { n })}: ${place(i)} · ${fmt(p.graded.score)}`,
+    };
+  });
 
-              <ol className="space-y-1.5" aria-label={t("results.rounds")}>
-                {played.map((p, i) => {
-                  const tag = i === best ? t("results.best") : i === worst ? t("results.worst") : null;
-                  const miss = isStreak && !p.graded.hit;
-                  return (
-                    <li key={i}>
-                      <button
-                        type="button"
-                        onMouseEnter={() => setFocus(i)}
-                        onMouseLeave={() => setFocus(null)}
-                        onFocus={() => setFocus(i)}
-                        onBlur={() => setFocus(null)}
-                        onClick={() => setFocus((f) => (f === i ? null : i))}
-                        className={cn(
-                          "flex w-full items-center gap-3 rounded-md border bg-shade/20 px-3 py-2 text-left transition-colors hover:border-[#a99cff]/60",
-                          i === best && "border-[#4cbb17]/60 bg-[#4cbb17]/10",
-                          (i === worst || miss) && "border-[#ff5a5a]/60 bg-[#ff5a5a]/10",
-                          focus === i && "border-[#ffd23c]"
-                        )}
-                        data-testid={`geo-results-round-${i + 1}`}
-                      >
-                        <span
-                          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full font-display text-sm font-bold text-white"
-                          style={{ background: i === best ? BEST_COLOR : i === worst || miss ? WORST_COLOR : "#3a8dde" }}
-                        >
-                          {i + 1}
-                        </span>
-                        <span className="min-w-0 flex-1">
-                          <span className="block truncate text-sm font-semibold">{t.locale === "en" ? placeLabel(p.graded.answer, game.region) : names.placeLabel(p.graded.answer, game.region)}</span>
-                          <span className="block truncate text-xs text-muted-foreground">
-                            {names.game(p.graded.answer.game)}
-                            {p.graded.timedOut
-                              ? ` · ${t("results.timeUp")}`
-                              : ` · ${isStreak && isWorld ? (p.graded.hit ? t("results.rightRegion") : t("results.wrongRegion")) : t.locale === "en" ? squaresText(p.graded.answer.squares) : squares(p.graded.answer.squares)}`}
-                          </span>
-                        </span>
-                        {isStreak ? (
-                          p.graded.hit ? <Check className="h-5 w-5 text-[#9be15d]" aria-label={t("results.correct")} /> : <X className="h-5 w-5 text-[#ff5a5a]" aria-label={t("results.missed")} />
-                        ) : (
-                          <span className="flex flex-col items-end">
-                            <span className="font-display text-base font-bold tabular-nums">{fmt(p.graded.score)}</span>
-                            {tag && (
-                              <span className={cn("flex items-center gap-1 font-pixel text-[9px] uppercase", i === best ? "text-[#9be15d]" : "text-[#ff5a5a]")}>
-                                {i === best && <Crown className="h-3 w-3" aria-hidden />}
-                                {tag}
-                              </span>
-                            )}
-                          </span>
-                        )}
-                      </button>
-                    </li>
-                  );
-                })}
-              </ol>
+  const picked = focus !== null ? played[focus] : null;
+  const pickedLine = picked
+    ? [
+        names.game(picked.graded.answer.game),
+        picked.graded.timedOut
+          ? t("results.timeUp")
+          : isStreak && isWorld
+            ? picked.graded.hit
+              ? t("results.rightRegion")
+              : t("results.wrongRegion")
+            : t.locale === "en"
+              ? squaresText(picked.graded.answer.squares)
+              : squares(picked.graded.answer.squares),
+      ].join(" · ")
+    : "";
 
-              <div className="grid gap-2 sm:grid-cols-2">
-                {/* The Daily and the Weekly are played once: no Play again, back to the hub. */}
-                <Button size="lg" variant="success" onClick={onRestart} data-testid="geo-results-again">
-                  {once ? <ArrowLeft className="h-4 w-4" aria-hidden /> : <RotateCcw className="h-4 w-4" aria-hidden />}
-                  {` ${once ? common("back") : t("results.again")}`}
-                </Button>
-                {shareToken ? (
-                  <ShareResultLink token={shareToken} />
-                ) : (
-                  <Button size="lg" variant="outline" onClick={() => setMore(true)}>
-                    <ChevronDown className="h-4 w-4" aria-hidden />{` ${t("results.shareAndBoard")}`}
-                  </Button>
-                )}
-              </div>
-              {game.daily ? <NextDailyCountdown label={t("results.nextDaily")} /> : next}
-            </div>
-
-            {children && (
-              <div className="border-t px-4 pb-6 pt-4 sm:px-5" data-results-more>
-                {children}
-              </div>
-            )}
-            {/* Clear of a phone's home indicator. */}
-            <div className="h-[env(safe-area-inset-bottom)] shrink-0" aria-hidden />
-          </div>
+  const aside = (
+    <>
+      {picked && focus !== null && (
+        <div className="flex w-[min(22rem,100%)] items-start gap-2.5 rounded-xl bg-[#1e1a3f]/95 p-2.5 text-white shadow-[0_8px_28px_rgb(0_0_0/0.45)] ring-2 ring-[#5a4fb8]/70 backdrop-blur" data-testid="geo-end-place">
+          <span className="pt-0.5">
+            <RoundTag n={focus + 1} tone={toneOf(focus)} />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block font-display text-sm font-bold uppercase italic leading-tight">{place(focus)}</span>
+            <span className="mt-0.5 block text-xs text-white/70">
+              {pickedLine}
+              {picked.graded.gameGuess?.correct ? <span className="text-[#9be15d]"> · +{fmt(picked.graded.gameGuess.bonus)}</span> : null}
+            </span>
+          </span>
+          {!isStreak && <span className="shrink-0 font-display text-base font-bold italic tabular-nums text-[#ffd23c]">{fmt(picked.graded.score)}</span>}
         </div>
       )}
-    </GameShell>
+      {crowd && game.daily && resultToken && (
+        <CrowdPanel crowd={crowd} date={game.daily} resultToken={resultToken} round={(focus ?? crowd.rounds[0].round - 1) + 1} on={crowdOn} onToggle={() => setCrowdOn((on) => !on)} />
+      )}
+    </>
+  );
+
+  const legend =
+    best !== null ? (
+      <div className="flex gap-2 font-display text-[11px] font-semibold uppercase tracking-wider text-white" aria-hidden>
+        <span className="flex items-center gap-1.5 rounded bg-black/55 px-2 py-1 backdrop-blur">
+          <span className="h-2.5 w-2.5 rounded-full" style={{ background: BEST_COLOR }} />
+          {t("results.bestRound")}
+        </span>
+        <span className="flex items-center gap-1.5 rounded bg-black/55 px-2 py-1 backdrop-blur">
+          <span className="h-2.5 w-2.5 rounded-full" style={{ background: WORST_COLOR }} />
+          {t("results.worstRound")}
+        </span>
+      </div>
+    ) : null;
+
+  return (
+    <EndScreen
+      map={<GeoMap region={game.region} revealed={revealed} fill fit={{ duration: 900, pad: focus === null ? END_MAP_PAD : END_MAP_PAD_PICKED, whole: true }} focus={focus} density={crowdRound} />}
+      score={
+        isStreak
+          ? { value: streak, label: t("end.yourStreak"), unit: t("end.inARow") }
+          : { value: total, max, segments: game.rounds, label: t("end.yourScore"), unit: t("end.ofPoints", { max: fmt(max) }), ...(rival ? { rival: { value: rival.score, name: rival.name } } : {}) }
+      }
+      title={isStreak ? t("results.streakOver") : t("results.complete")}
+      mode={mode ?? names.map(game.region)}
+      tracker={
+        <EndTracker
+          cells={cells}
+          total={isStreak ? fmt(streak) : fmt(total)}
+          totalSub={rival && !isStreak ? `${rival.name} ${fmt(rival.score)}` : undefined}
+          focus={focus}
+          onFocus={setFocus}
+          perRow={isStreak ? 10 : 5}
+        />
+      }
+      aside={aside}
+      legend={legend}
+      onNext={onNext}
+      onExit={onExit}
+    >
+      {children}
+    </EndScreen>
   );
 }

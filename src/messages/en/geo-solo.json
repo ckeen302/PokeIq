@@ -146,7 +146,7 @@
     "beat": "You beat {name}!",
     "beatThem": "You beat them!",
     "lost": "{name} wins this one",
-    "lostThem": "They wins this one",
+    "lostThem": "They win this one",
     "tie": "Dead heat!",
     "you": "You",
     "them": "Them",
@@ -246,6 +246,7 @@
     "everyone": "Everyone's pins",
     "answer": "The answer",
     "making": "Making the picture…",
-    "share": "Share this map"
+    "share": "Share this map",
+    "none": "Not enough pins on round {round} yet"
   }
 }

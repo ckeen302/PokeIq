@@ -28,6 +28,7 @@ import { HubSection, HubTile, TileFlag } from "./HubParts";
 import { NextDailyCountdown } from "@/components/NextDailyCountdown";
 import { GeoYou } from "./GeoYou";
 import { AchievementToasts, useGeoProgress, type MyGeoProgress } from "./GeoAchievements";
+import { achievementCloser } from "@/lib/geo-achievements";
 import type { DuelQueue } from "./DuelCard";
 import { geoWeekOf, geoWeeklyLeftParts, geoWeeklyMap, geoWeeklyNumber } from "@/lib/geo-weekly";
 
@@ -125,6 +126,8 @@ const boardOf = (game: Pick<Game, "region" | "kind" | "filter" | "difficulty"> &
 export interface Reward {
   xp: number;
   best: boolean;
+  /** The personal best before this game (none before a first game). */
+  previous?: number;
   newBadges: BadgeDef[];
 }
 
@@ -363,18 +366,28 @@ export interface GeoGameProps {
 const tileImage = (src: string) => (src === WORLD_MAP_SRC ? WORLD_THUMB : src);
 
 export function GeoGame(props: GeoGameProps) {
-  // The player's achievements and mastery (the hub's You section), read again after each game for the toasts.
+  // The player's achievements and mastery (the hub's You section), read again after each game: the end screen shows what it earned.
   const { progress, fresh, refresh, dismiss } = useGeoProgress();
+  // On the end screen they're among its rows instead of toasts (which would sit on its buttons).
+  const [ending, setEnding] = useState(false);
   return (
     <>
-      <GeoGameInner {...props} mine={progress} onGameOver={refresh} />
+      <GeoGameInner {...props} mine={progress} onGameOver={refresh} fresh={fresh} onSeen={dismiss} onEnding={setEnding} />
       {!props.challenge && <GeoHowToLoader />}
-      <AchievementToasts ids={fresh} onDismiss={dismiss} />
+      <AchievementToasts ids={ending ? [] : fresh} onDismiss={dismiss} />
     </>
   );
 }
 
-function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoGameProps & { mine: MyGeoProgress | null; onGameOver: () => void }) {
+function GeoGameInner({
+  regions: allRegions,
+  challenge,
+  mine,
+  onGameOver,
+  fresh,
+  onSeen,
+  onEnding,
+}: GeoGameProps & { mine: MyGeoProgress | null; onGameOver: () => void; fresh: string[]; onSeen: (id: string) => void; onEnding: (on: boolean) => void }) {
   const t = useT(geoSolo);
   const g = useT(geoNs);
   const names = useGeoNames();
@@ -421,6 +434,12 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
   const [zoomed, setZoomed] = useState(false);
   const phone = usePhone();
   const [reward, setReward] = useState<Reward | null>(null);
+  /** The achievements as read before the end screen (the end screen shows what changed once they're read again after it). */
+  const endBase = useRef<{ fresh: string[]; mine: MyGeoProgress | null }>({ fresh: [], mine: null });
+  function toResults() {
+    endBase.current = { fresh, mine };
+    setPhase("results");
+  }
   const [isChallenge, setIsChallenge] = useState(false);
   const [filter, setFilter] = useState<FilterChoice>({ era: undefined, families: [] });
   const [gamePick, setGamePick] = useState<string | null>(null);
@@ -639,7 +658,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
       snap.current = null;
       setPausedBoth(false);
       leaveGameHistory();
-      setPhase("results");
+      toResults();
       return true;
     }
     snap.current = saved;
@@ -737,6 +756,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
     scrollTo("duels");
   }
 
+  useEffect(() => onEnding(phase === "results"), [phase, onEnding]);
   // A finished game: the rounds are logged a moment after the last guess, then the achievements are read again.
   useEffect(() => {
     if (phase !== "results") return;
@@ -991,7 +1011,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
       snap.current = null;
       if (kept) readKeptSaves();
       leaveGameHistory();
-      setPhase("results");
+      toResults();
       return;
     }
     const nextGame = { ...game, round: graded.next };
@@ -1516,11 +1536,23 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
     );
   };
 
+  /** The map and the mode, for the round's header and the end screen: "World · Daily #12", "Kanto · Classic 2D · Hard". */
+  const modeLineOf = (game: Game) =>
+    [
+      names.map(game.region),
+      game.filter.families.length ? t("hud.picked") : game.filter.era ? names.era(game.filter.era) : null,
+      game.daily ? t("hud.daily", { n: dailyNumber(game.daily) }) : null,
+      game.weekly ? t("hub.weekly.numbered", { n: geoWeeklyNumber(game.weekly) }) : null,
+      game.difficulty ? names.difficulty(game.difficulty) : null,
+    ]
+      .filter(Boolean)
+      .join(" · ");
+
   if (phase === "results" && game) {
     const last = played[played.length - 1]?.graded;
     const GeoResults = loaded.GeoResults ?? LazyResults;
     const GeoSummary = loaded.GeoSummary ?? LazySummary;
-    // The Weekly says when the next one comes, under Back, as the Daily does (in the hub card's words).
+    // The Weekly says when the next one comes, as the Daily does (in the hub card's words).
     const weeklyLeft = game.weekly ? geoWeeklyLeftParts(game.weekly, Date.now()) : null;
     const nextWeekly = weeklyLeft ? (
       <p className="flex items-center justify-center gap-2 text-sm text-muted-foreground" data-testid="geo-results-next-weekly">
@@ -1528,8 +1560,14 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
         {t("hub.weekly.next", { left: t(`hub.weekly.${weeklyLeft.unit}`, { d: weeklyLeft.d, h: weeklyLeft.h, m: weeklyLeft.m }) })}
       </p>
     ) : undefined;
+    // What the achievements read after the game show that it earned, or brought closer (a game just played here, not a result shown again).
+    const base = endBase.current;
+    const earned = reward ? fresh.filter((id) => !base.fresh.includes(id)) : [];
+    const rival = isChallenge && challenge ? { name: challenge.name || t("summary.them"), score: challenge.score, rounds: challenge.rounds } : undefined;
+    // NEXT: back to the hub (solo: where Play again is; the Daily and the Weekly are played once). Escape and the X: the same.
+    const leave = () => setPhase("setup");
     return (
-      <GeoResults game={game} played={played} pinImage={pinImage} shareToken={last?.resultToken} onRestart={() => setPhase("setup")} next={nextWeekly}>
+      <GeoResults game={game} played={played} pinImage={pinImage} mode={modeLineOf(game)} resultToken={last?.resultToken} rival={rival} onNext={leave} onExit={leave}>
         <GeoSummary
           game={game}
           played={played}
@@ -1537,8 +1575,10 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
           challengeToken={last?.challengeToken}
           challenge={isChallenge ? challenge : undefined}
           reward={reward}
-          onRestart={() => setPhase("setup")}
-          compact
+          earned={earned}
+          closer={reward && !earned.length ? achievementCloser(base.mine, mine) : null}
+          next={nextWeekly}
+          onSeen={onSeen}
         />
       </GeoResults>
     );
@@ -1548,15 +1588,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
   const guessViewOf = (game: Game) => {
   const isStreak = game.kind === "streak";
   const roundNumber = played.length + (phase === "revealed" ? 0 : 1);
-  const modeLine = [
-    names.map(game.region),
-    game.filter.families.length ? t("hud.picked") : game.filter.era ? names.era(game.filter.era) : null,
-    game.daily ? t("hud.daily", { n: dailyNumber(game.daily) }) : null,
-    game.weekly ? t("hub.weekly.numbered", { n: geoWeeklyNumber(game.weekly) }) : null,
-    game.difficulty ? names.difficulty(game.difficulty) : null,
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  const modeLine = modeLineOf(game);
   /** The top-centre notch: the round (or the streak), the map and mode; the countdown pill hangs under it. */
   const notch = (
     <Notch

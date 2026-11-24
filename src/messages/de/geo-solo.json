@@ -246,6 +246,7 @@
     "everyone": "Alle Nadeln",
     "answer": "Die Lösung",
     "making": "Bild wird erstellt …",
-    "share": "Diese Karte teilen"
+    "share": "Diese Karte teilen",
+    "none": "Für Runde {round} gibt es noch zu wenige Tipps"
   }
 }
