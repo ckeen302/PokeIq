@@ -424,7 +424,7 @@ export default function ShinyMaker({ initial, linkBroken }: { initial: Design | 
     <section
       ref={stageRef}
       className={cn(
-        "sm-stage relative overflow-hidden border border-white/[0.06]",
+        "dark-scope sm-stage relative overflow-hidden border border-white/[0.06]",
         phone ? "h-[min(440px,56svh)] min-h-[340px] rounded-[24px]" : "h-[calc(100dvh-108px)] min-h-[640px] rounded-[28px]",
         design?.bg === "none" && "sm-checker"
       )}
@@ -599,7 +599,9 @@ export default function ShinyMaker({ initial, linkBroken }: { initial: Design | 
   }
 
   return (
-    <div className="dark-scope relative" data-testid="shiny-maker">
+    // Like the Poké Ball Maker: the stage (all of the maker on a desktop) and the phone's sheets are dark in either
+    // theme; the phone's title and controls and the credit line below follow the page's theme, so they read in light mode.
+    <div className="relative" data-testid="shiny-maker">
       <svg width="0" height="0" className="absolute" aria-hidden>
         {(Object.keys(CB) as (keyof typeof CB)[]).map((k) => (
           <filter key={k} id={`sm-cb-${k}`} colorInterpolationFilters="linearRGB">
@@ -711,7 +713,7 @@ function Sparkles() {
 
 function Avatar({ id, size = 36 }: { id: number; size?: number }) {
   return (
-    <span className="flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/[0.06]" style={{ width: size, height: size }}>
+    <span className="flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-foreground/[0.06]" style={{ width: size, height: size }}>
       <img src={boardArtUrl(id)} alt="" width={size} height={size} className="scale-[1.15] object-contain" />
     </span>
   );
@@ -744,8 +746,8 @@ function PartChip({ sp, design, i, name, on, locked, onClick, onHover, phone }: 
         "flex h-11 shrink-0 items-center gap-2 rounded-full pl-3 pr-4 text-[14px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70",
         phone && "border",
         on
-          ? cn("bg-white/[0.1] text-foreground shadow-[inset_0_1px_0_rgb(255_255_255/0.06)]", phone && "border-white/20")
-          : cn("text-foreground/70 hover:bg-white/[0.05] hover:text-foreground", phone && "border-white/[0.07]")
+          ? cn("text-foreground shadow-[inset_0_1px_0_rgb(255_255_255/0.06)]", phone ? "border-foreground/20 bg-foreground/[0.1]" : "bg-white/[0.1]")
+          : cn("text-foreground/70 hover:text-foreground", phone ? "border-foreground/[0.07] hover:bg-foreground/[0.05]" : "hover:bg-white/[0.05]")
       )}
       data-testid={`sm-part-${i}`}
     >
@@ -860,22 +862,22 @@ function PhoneControls({ sp, design, parts, sel, locked, onPart, onPanel, onRand
   return (
     <div className="space-y-3" data-testid="sm-phone-controls">
       <div className="flex items-center justify-between">
-        <button type="button" onClick={() => onPanel("picker")} className="flex h-11 items-center gap-2.5 rounded-full pr-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70" aria-label={sp ? t("dock.pokemon", { name: sp.name }) : t("picker.title")} data-testid="sm-pokemon">
-          {sp ? <Avatar id={sp.id} /> : <span className="h-9 w-9 animate-pulse rounded-full bg-white/[0.06]" />}
+        <button type="button" onClick={() => onPanel("picker")} className="flex h-11 items-center gap-2.5 rounded-full pr-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label={sp ? t("dock.pokemon", { name: sp.name }) : t("picker.title")} data-testid="sm-pokemon">
+          {sp ? <Avatar id={sp.id} /> : <span className="h-9 w-9 animate-pulse rounded-full bg-foreground/[0.06]" />}
           <span className="text-[15px] font-medium">{sp?.name ?? " "}</span>
           <ChevronDown className="h-4 w-4 text-muted-foreground" aria-hidden />
         </button>
-        <button type="button" onClick={() => onPanel("extras")} aria-label={t("dock.more")} className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground transition-colors active:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70" data-testid="sm-more">
+        <button type="button" onClick={() => onPanel("extras")} aria-label={t("dock.more")} className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground transition-colors active:bg-foreground/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" data-testid="sm-more">
           <Ellipsis className="h-5 w-5" aria-hidden />
         </button>
       </div>
       <div className="sm-noscroll -mx-4 flex gap-2 overflow-x-auto px-4" role="group" aria-label={t("dock.parts")}>
         {sp && design
           ? parts.map(({ p, i }) => <PartChip key={i} phone sp={sp} design={design} i={i} name={p.l ?? p.n} on={sel === i} locked={locked.has(i)} onClick={() => onPart(i)} />)
-          : Array.from({ length: 4 }, (_, i) => <span key={i} className="h-11 w-24 shrink-0 animate-pulse rounded-full bg-white/[0.04]" aria-hidden />)}
+          : Array.from({ length: 4 }, (_, i) => <span key={i} className="h-11 w-24 shrink-0 animate-pulse rounded-full bg-foreground/[0.04]" aria-hidden />)}
       </div>
       <div className="grid grid-cols-2 gap-3 pt-1">
-        <button type="button" onClick={onRandomise} className="flex h-12 items-center justify-center gap-2 rounded-full border border-white/[0.1] text-[15px] font-medium text-foreground/85 transition-colors active:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70" data-testid="sm-randomise">
+        <button type="button" onClick={onRandomise} className="flex h-12 items-center justify-center gap-2 rounded-full border border-foreground/[0.1] text-[15px] font-medium text-foreground/85 transition-colors active:bg-foreground/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" data-testid="sm-randomise">
           <Dices className="h-[18px] w-[18px]" aria-hidden /> {t("dock.randomise")}
         </button>
         <button type="button" onClick={onShare} className="flex h-12 items-center justify-center gap-2 rounded-full bg-primary font-display text-sm font-semibold uppercase tracking-wider text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80" data-testid="sm-share">
