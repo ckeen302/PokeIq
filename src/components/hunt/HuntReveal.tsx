@@ -144,7 +144,7 @@ export function HuntReveal(p: HuntRevealProps) {
       if (e.key !== " " && e.key !== "Enter") return;
       const el = e.target as HTMLElement | null;
       if (el?.closest("button, a, input, textarea, select")) return;
-      if (document.querySelector('[role="dialog"]:not([aria-hidden="true"])')) return;
+      if (document.querySelector('[role="dialog"]:not([aria-hidden="true"]):not([inert])')) return;
       e.preventDefault();
       if (live.current.running) skip();
       else live.current.onNext();

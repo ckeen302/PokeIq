@@ -231,7 +231,7 @@ export function HuntGame({ maps }: { maps: GeoRegionInfo[] }) {
     const onKey = (e: KeyboardEvent) => {
       if ((e.code !== "Space" && e.key !== "Enter") || !anyPin) return;
       if ((e.target as HTMLElement | null)?.closest("input, textarea, select, button, a")) return;
-      if (document.querySelector('[role="dialog"]:not([aria-hidden="true"])')) return;
+      if (document.querySelector('[role="dialog"]:not([aria-hidden="true"]):not([inert])')) return;
       e.preventDefault();
       void submit();
     };

@@ -51,8 +51,8 @@ export function GameShell({ children, onExit, className }: { children: (api: Ful
       if (document.fullscreenElement) return;
       const t = e.target as HTMLElement | null;
       if (t?.closest("input, textarea, select")) return;
-      // An open dialog (the zoomed screenshot, the phone's map sheet) takes Escape first.
-      if (document.querySelector('[role="dialog"]:not([aria-hidden="true"])')) return;
+      // An open dialog (the zoomed screenshot, the phone's map sheet) takes Escape first; a closed one (the site's More sheet) is inert.
+      if (document.querySelector('[role="dialog"]:not([aria-hidden="true"]):not([inert])')) return;
       exitRef.current?.();
     };
     document.addEventListener("fullscreenchange", onChange);
