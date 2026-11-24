@@ -215,6 +215,7 @@ async function checkDots(p, tag) {
   await p.locator("[data-testid=geo-dock][data-open=true]").waitFor();
   await p.waitForTimeout(500);
   if ((await dots()) !== 0) errors.push(`dots: the whole world, hovered, shows ${await dots()} dots`);
+  await checkWholeWorld(p, tag);
   const zoomIn = p.getByTestId("geo-dock").getByRole("button", { name: "Zoom in" });
   const counts = [];
   for (let i = 0; i < 4; i++) {
@@ -230,6 +231,32 @@ async function checkDots(p, tag) {
   if ((await dots()) !== 0) errors.push(`dots: back on the whole world, ${await dots()} dots stay`);
   await p.mouse.move(120, 320);
   await p.waitForTimeout(800);
+}
+
+/**
+ * Hovered, the dock shows the whole world filling GeoGuessr's box: the land
+ * (x 138–5662, y 144–2470 on the 5850×2565 world map) with a few px of sea on
+ * every side, drawn taller than it is so no empty sea sits above and below it.
+ * Only the drawing is taller: a tap still puts the pin right under the pointer.
+ */
+async function checkWholeWorld(p, tag) {
+  const map = p.locator("[data-testid=geo-dock] [role=application][data-ready]");
+  const got = await map.evaluate((el) => ({ area: el.dataset.pickArea, w: el.clientWidth, h: el.clientHeight }));
+  // The pin area is the world map's box as drawn now.
+  const [l, t, r, b] = (got.area ?? "").split(",").map(Number);
+  const x = (wx) => l + ((r - l) * wx) / 5850;
+  const y = (wy) => t + ((b - t) * wy) / 2565;
+  const sea = [x(138), y(144), got.w - x(5662), got.h - y(2470)].map(Math.round);
+  if (sea.some((m) => !(m >= 2 && m <= 24))) errors.push(`whole world ${tag}: the land doesn't fill the open map with a little sea round it (sea left, top, right, bottom: ${sea.join(", ")} px; map ${got.w}×${got.h})`);
+  const taller = (b - t) / 2565 / ((r - l) / 5850);
+  if (!(taller > 1.2 && taller <= 1.9)) errors.push(`whole world ${tag}: the open map isn't drawn taller to fill the box (×${taller.toFixed(2)})`);
+  const at = { x: Math.round(got.w * 0.42), y: Math.round(got.h * 0.47) };
+  await map.click({ position: at });
+  await p.waitForTimeout(200);
+  const pin = await p.locator("[data-testid=geo-dock] svg > g[transform]").last().getAttribute("transform").catch(() => null);
+  const [, px, py] = (pin ?? "").match(/translate\(([-\d.]+)[ ,]+([-\d.]+)\)/) ?? [];
+  if (!(Math.abs(Number(px) - at.x) <= 1 && Math.abs(Number(py) - at.y) <= 1)) errors.push(`whole world ${tag}: a tap at ${at.x},${at.y} puts the pin at ${pin}`);
+  await p.screenshot({ path: `${OUT}/guessr-whole-world-${tag}.png` });
 }
 
 async function solo(width, height) {

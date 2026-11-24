@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { Loader2, Maximize2, Minus, Plus } from "lucide-react";
 import { WORLD_REGION, type GeoRegionInfo } from "@/lib/geo-types";
-import { createAtlas, loadAtlas, type AtlasData, type AtlasEngine, type AtlasView, type Box } from "@/components/atlas/atlas-engine";
+import { createAtlas, loadAtlas, screenOf, type AtlasData, type AtlasEngine, type AtlasView, type Box } from "@/components/atlas/atlas-engine";
 import { preloadImage } from "@/lib/preload";
 import { cn } from "@/lib/utils";
 import { crowdColor, type GeoCrowdRound } from "@/lib/geo-crowd";
@@ -11,7 +11,7 @@ import { useT } from "@/i18n/client";
 import geoNs from "@/messages/geo";
 import geoNamesNs from "@/messages/geo-names";
 import { localMap } from "@/lib/geo-i18n";
-import { DOCK_FLOOR_ZOOM, DOCK_ZOOM, restWidth } from "./dock-size";
+import { dockHome } from "./dock-size";
 
 export interface MapPin {
   x: number;
@@ -102,18 +102,6 @@ function landBox(atlas: AtlasData): Box {
   return [Math.max(0, x0 - LAND_MARGIN), Math.max(0, y0 - LAND_MARGIN), Math.min(atlas.W, x1 + LAND_MARGIN), Math.min(atlas.H, y1 + LAND_MARGIN)];
 }
 
-/** Where a whole-world guess map starts: the dock zoomed in on the land's middle (GeoGuessr's), the phone card filled with the land. */
-function dockHome(box: Box, worldW: number, dock: boolean) {
-  if (!dock) return { box, cover: true };
-  // A little left of and below the land's middle: the resting map has Paldea, Johto and Hoenn in it (GeoGuessr's shows three
-  // continents), and once open, Galar's name sits clear of the zoom buttons.
-  const at: [number, number] = [box[0] + (box[2] - box[0]) * 0.465, box[1] + (box[3] - box[1]) * 0.56];
-  // Zoomed right out, the world nearly fills the box's width, a little closer than all of it so there's less empty sea above
-  // and below (Unova's and Alola's outer edges are a drag away); the view stays on the world.
-  const floor: Box = [0, box[1], worldW, box[3]];
-  return { box, at, floor, floorZoom: DOCK_FLOOR_ZOOM, scale: () => (DOCK_ZOOM * restWidth()) / (box[2] - box[0]) };
-}
-
 /** A map's width over its height as drawn (very tall or wide maps sit in a box of sensible proportions). */
 export function mapAspect(region: Pick<GeoRegionInfo, "map">): number {
   const [x0, y0, x1, y1] = region.map.box;
@@ -191,7 +179,7 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
       bounds: region.id === WORLD_REGION ? undefined : box,
       // "fit" (the desktop dock): zoomed in like GeoGuessr's, the same zoom when the box grows, and never further out than the land
       // filling the box; true (the phone card): the land fills the card.
-      home: land && wholeWorld ? dockHome(landBox(atlas), atlas.W, land === "fit") : undefined,
+      home: land && wholeWorld ? dockHome(landBox(atlas), land === "fit") : undefined,
       // GeoGuessr's small, thin names: they label a region without covering it.
       quietLabels: true,
       onTap: (wx, wy) => {
@@ -260,13 +248,15 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
 
   const toScreen = (x: number, y: number): [number, number] => {
     const [wx, wy] = toWorld(x, y);
-    return view ? [wx * view.s + view.tx, wy * view.s + view.ty] : [0, 0];
+    return view ? screenOf(view, wx, wy) : [0, 0];
   };
+  /** The map's box as drawn now, in px from the map's top-left (left, top, right, bottom): it can run past the edges. */
+  const drawnBox = view ? [...screenOf(view, x0, y0), ...screenOf(view, x1, y1)] : null;
   // The answer's area: a dot of radius 6 world px on every area point (8 px apart), so they join into one patch at any zoom.
   const areaR = view ? Math.max(3, 6 * view.s) : 3;
   const maskId = useId();
   /** Where a tap places a pin, in px from the map's top-left (left, top, right, bottom): the map's box as framed now (it can run past the edges). */
-  const pickArea = onPick && view ? [x0 * view.s + view.tx, y0 * view.s + view.ty, x1 * view.s + view.tx, y1 * view.s + view.ty].map(Math.round).join(",") : undefined;
+  const pickArea = onPick && drawnBox ? drawnBox.map(Math.round).join(",") : undefined;
 
   return (
     <div
@@ -290,7 +280,7 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
         // Before the engine reports a view, the crop sits where the engine will frame the region (centred, with its room around it).
         <div
           className={cn("pointer-events-none absolute transition-opacity duration-300", cover === "fading" ? "opacity-0" : "opacity-100")}
-          style={view ? { left: x0 * view.s + view.tx, top: y0 * view.s + view.ty, width: bw * view.s, height: bh * view.s } : { inset: locked ? `${((1 - 1 / LOCKED_ROOM) / 2) * 100}%` : 0 }}
+          style={drawnBox ? { left: drawnBox[0], top: drawnBox[1], width: drawnBox[2] - drawnBox[0], height: drawnBox[3] - drawnBox[1] } : { inset: locked ? `${((1 - 1 / LOCKED_ROOM) / 2) * 100}%` : 0 }}
           data-testid="geo-map-cover"
           aria-hidden
         >
