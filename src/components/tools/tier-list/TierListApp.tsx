@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, ChevronUp, Download, Keyboard, Plus, Redo2, RotateCcw, Share2, Sparkles, Undo2, Check, Copy, Type } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useT } from "@/i18n/client";
+import { localUrl } from "@/i18n/paths";
 import { useRouter } from "@/i18n/navigation";
 import tierList from "@/messages/tier-list";
 import { getTemplate, type Template } from "@/lib/tier-list/templates";
@@ -326,7 +327,7 @@ export default function TierListApp({ roster, template, shared }: AppProps) {
   };
 
   // ---- Share.
-  const shareUrl = useCallback((st: ToolState) => `${window.location.origin}/tools/tier-list/${st.template}?s=${encodeShare(st, codec)}`, [codec]);
+  const shareUrl = useCallback((st: ToolState) => `${window.location.origin}${localUrl(`/tools/tier-list/${st.template}?s=${encodeShare(st, codec)}`)}`, [codec]);
   const copy = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);

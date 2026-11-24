@@ -733,7 +733,7 @@ export function StoryFilm({ initialChapter, story, children }: { initialChapter:
     const c = CHAPTERS[ui.chapter];
     const text = show.current.playhead < PROLOGUE * 0.6 || !c ? STORY.title : `${c.title} (${c.when}) · ${STORY.title}`;
     if (typeof navigator.share === "function" && window.matchMedia("(pointer: coarse)").matches) {
-      try { await navigator.share({ title: STORY.title, text, url }); return; } catch { /* closed: copy instead */ }
+      try { await navigator.share({ title: STORY.title, text, url }); return; } catch (e) { if ((e as Error).name === "AbortError") return; /* not allowed here: copy instead */ }
     }
     if (await copyText(url)) setToast(t("copied"));
   };

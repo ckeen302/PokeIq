@@ -1068,18 +1068,18 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
   };
   const shareHref = () => {
     const b = battleRef.current;
-    if (!b) return `${window.location.origin}${MASS_BATTLE_PATH}`;
+    if (!b) return `${window.location.origin}${localUrl(MASS_BATTLE_PATH)}`;
     const v = encodePlayback(playbackRef.current);
-    if (b.presetId) return `${window.location.origin}${MASS_BATTLE_PATH}/${b.presetId}${v ? `?v=${v}` : ""}`;
-    if (b.question) return `${window.location.origin}${MASS_BATTLE_PATH}?ask=${encodeQuestion(b.question, slugs)}${v ? `&v=${v}` : ""}`;
-    return `${window.location.origin}${MASS_BATTLE_PATH}?b=${encodeBattle(b.source ?? b.spec, slugs)}${v ? `&v=${v}` : ""}`;
+    if (b.presetId) return `${window.location.origin}${localUrl(`${MASS_BATTLE_PATH}/${b.presetId}${v ? `?v=${v}` : ""}`)}`;
+    if (b.question) return `${window.location.origin}${localUrl(`${MASS_BATTLE_PATH}?ask=${encodeQuestion(b.question, slugs)}${v ? `&v=${v}` : ""}`)}`;
+    return `${window.location.origin}${localUrl(`${MASS_BATTLE_PATH}?b=${encodeBattle(b.source ?? b.spec, slugs)}${v ? `&v=${v}` : ""}`)}`;
   };
   const share = async () => {
     const url = shareHref();
     const b = battleRef.current;
     const text = b?.hook ?? t("shareText");
     if (typeof navigator.share === "function" && window.matchMedia("(pointer: coarse)").matches) {
-      try { await navigator.share({ title: t("shareTitle"), text, url }); return; } catch { /* closed */ }
+      try { await navigator.share({ title: t("shareTitle"), text, url }); return; } catch (e) { if ((e as Error).name === "AbortError") return; /* not allowed here: copy instead */ }
     }
     try {
       await navigator.clipboard.writeText(url);

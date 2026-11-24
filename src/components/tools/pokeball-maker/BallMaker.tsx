@@ -5,6 +5,7 @@ import { useCallback, useContext, useEffect, useLayoutEffect, useRef, useState, 
 import { Box, Clapperboard, Dices, Download, Film, Image as ImageIcon, Link2, Printer, Redo2, Share, Sparkles, Undo2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useT } from "@/i18n/client";
+import { localUrl } from "@/i18n/paths";
 import msgs from "@/messages/pokeball-maker";
 import { isCleanName } from "@/lib/name-filter";
 import { play } from "@/lib/sound";
@@ -448,7 +449,7 @@ export default function BallMaker({ initial, linkBroken }: { initial: Design | n
 
   // ---- Share and downloads.
   const share = async () => {
-    const url = `${window.location.origin}/tools/pokeball-maker?d=${encodeDesign(designRef.current)}`;
+    const url = `${window.location.origin}${localUrl(`/tools/pokeball-maker?d=${encodeDesign(designRef.current)}`)}`;
     if (touch && navigator.share) {
       try {
         await navigator.share({ title: designRef.current.name || t("title"), url });

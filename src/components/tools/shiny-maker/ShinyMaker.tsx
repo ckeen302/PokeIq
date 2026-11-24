@@ -7,6 +7,7 @@ import { createPortal } from "react-dom";
 import { ChevronDown, Dices, Ellipsis, Lock, Share, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useT } from "@/i18n/client";
+import { localUrl } from "@/i18n/paths";
 import type { Translator } from "@/i18n/catalog";
 import tools from "@/messages/tools";
 import { boardArtUrl } from "@/lib/pokemon/art";
@@ -246,7 +247,7 @@ export default function ShinyMaker({ initial, linkBroken }: { initial: Design | 
 
   const share = async () => {
     if (!design) return;
-    const url = `${window.location.origin}/tools/shiny-maker?d=${encodeDesign(design)}`;
+    const url = `${window.location.origin}${localUrl(`/tools/shiny-maker?d=${encodeDesign(design)}`)}`;
     const coarse = window.matchMedia("(pointer: coarse)").matches;
     if (coarse && navigator.share) {
       try {
