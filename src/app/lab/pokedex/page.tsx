@@ -47,6 +47,7 @@ export default function Page() {
     </div>
   );
   if (locale === "en") return <LabDexApp rows={labRows()} intro={intro} />;
+  // The share and video buttons' words (lab-clip, share) come along too.
   return (
     <ClientMessages namespaces={[labDex, labClip, share]}>
       <LabDexApp rows={labRowsIn(locale, serverT(sizesNames))} local={labLocal(locale)} intro={intro} />

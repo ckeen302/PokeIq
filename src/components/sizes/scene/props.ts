@@ -213,7 +213,8 @@ function carGeometry(): { body: THREE.BufferGeometry; glass: THREE.BufferGeometr
   lower.translate(0, 0.72, 0);
   const roof = new RoundedBoxGeometry(2.25, 0.08, 1.5, 1, 0.04);
   roof.translate(-0.25, 1.62, 0);
-  const body = mergeGeometries([lower.toNonIndexed(), roof.toNonIndexed()]);
+  // A RoundedBoxGeometry has no index already: toNonIndexed() on it only printed a three.js warning.
+  const body = mergeGeometries([lower, roof]);
   const cabin = new RoundedBoxGeometry(2.55, 0.56, 1.6, 1, 0.18);
   cabin.translate(-0.25, 1.33, 0);
   const wheelParts: THREE.BufferGeometry[] = [];

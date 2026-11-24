@@ -697,7 +697,7 @@ function Lab({ rows, intro }: { rows: LabRow[]; intro?: React.ReactNode }) {
           <Suspense fallback={null}>
             <MakeClip
               subject={tc("labSubject", { name: mon.name })}
-              file={`${mon.slug}${mon.isForm ? `-${mon.id}` : ""}-3d`}
+              file={`pokeiq-${mon.slug}${mon.isForm ? `-${mon.id}` : ""}-3d`}
               kind="lab-dex"
               onClose={() => setClipOpen(false)}
               make={async (signal, onProgress) => {
