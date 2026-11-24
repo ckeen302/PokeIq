@@ -15,8 +15,9 @@ export function Sheet({ title, onClose, children, wide }: { title: string; onClo
   return (
     // Phones: a bottom sheet over the tab bar, scrolling inside itself, its title and close button pinned on top
     // (the sheet has no top padding there: a sticky title would otherwise stop that far down and cover the first line).
+    // Above the tab bar wherever it shows (below lg), so a tablet's tab bar never covers the sheet's bottom.
     // It fades in from transparent, so a first visit's how-to never counts as the page's largest paint: the board does.
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 p-4 max-md:z-[65] max-md:items-end max-md:overflow-hidden max-md:p-0" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 p-4 max-lg:z-[65] max-md:items-end max-md:overflow-hidden max-md:p-0" onClick={onClose}>
       <div
         role="dialog"
         aria-modal="true"
