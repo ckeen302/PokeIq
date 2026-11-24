@@ -63,7 +63,7 @@ export default async function TrainerAreaPage({ params }: PageProps) {
   const multi = data.sections.length > 1 || data.sections[0]?.name;
 
   return (
-    <article className="mx-auto max-w-6xl space-y-8">
+    <article className="mx-auto max-w-6xl space-y-10">
       <DetailNav href={`/pokedex/trainers/${g.key}`} label={t("area.back", { game: title })} pager={pager} home={{ href: "/pokedex/trainers", label: t("allTrainers") }} />
       <DetailHero kicker={t("area.kicker", { game: title, region: names.region(data.area.region) })} title={areaName}>
         <div className="space-y-3">

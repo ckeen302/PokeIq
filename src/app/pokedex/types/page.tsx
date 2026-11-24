@@ -26,11 +26,11 @@ export default function TypesPage() {
   const name = (type: string) => names?.[type] ?? capitalize(type);
   return (
     <div className="mx-auto max-w-7xl space-y-4">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbList([{ name: t("crumbs.pokedex"), path: "/pokedex" }, { name: t("crumbs.types"), path: "/pokedex/types" }])) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(itemList(t("types.listName"), TYPES.map((ty) => ({ name: t("type.name", { type: name(ty) }), path: `/pokedex/types/${ty}` })))) }} />
       <ListHeader kicker={t("types.kicker")} title={t("titleStart")} accent={t("titleAccent")} blurb={t("types.blurb")} />
       <DexTabs active="types" />
       <TypeChart />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbList([{ name: t("crumbs.pokedex"), path: "/pokedex" }, { name: t("crumbs.types"), path: "/pokedex/types" }])) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(itemList(t("types.listName"), TYPES.map((ty) => ({ name: t("type.name", { type: name(ty) }), path: `/pokedex/types/${ty}` })))) }} />
     </div>
   );
 }

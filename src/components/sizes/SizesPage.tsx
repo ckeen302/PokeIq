@@ -64,7 +64,6 @@ export function SizesPage({ preset = DEFAULT_PRESET, focus: focusEn, vs: vsEn, c
   };
   return (
     <div className="mx-auto max-w-4xl space-y-6">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(ld) }} />
       <ClientMessages namespaces={[sizesLines, sizes3d]}>
       <SizesExperience preset={preset.id} focus={focus?.key ?? null} vs={spec.vs} compare={compare} order={order} {...(local && { local })}>
         <div className="space-y-6">
@@ -104,6 +103,7 @@ export function SizesPage({ preset = DEFAULT_PRESET, focus: focusEn, vs: vsEn, c
         </div>
       </SizesExperience>
       </ClientMessages>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(ld) }} />
     </div>
   );
 }

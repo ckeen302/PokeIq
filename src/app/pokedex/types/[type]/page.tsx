@@ -14,8 +14,9 @@ import type { Locale } from "@/i18n/config";
 import type { Translator } from "@/i18n/catalog";
 import { getLocale, serverT } from "@/i18n/server";
 import pages from "@/messages/pokedex-pages";
+import dexRef from "@/messages/dex-ref";
 import { speciesName } from "@/lib/names/species";
-import { dexTable, listIn, nameIn, typeNames } from "@/lib/pokemon/dex-local";
+import { listIn, nameIn, typeNames } from "@/lib/pokemon/dex-local";
 
 export const dynamicParams = false;
 
@@ -99,14 +100,15 @@ function MatchupRows({ rows, names }: { rows: { label: string; mult: string; typ
 function MoveList({ moves }: { moves: MoveRecord[] }) {
   const t = serverT(pages);
   const locale = getLocale();
-  const classes = locale === "en" ? null : dexTable(locale, "damage-classes");
+  // The move pages' own words for the class (the games' tables have none in Italian).
+  const cls = serverT(dexRef);
   return (
     <ul className="hud divide-y divide-foreground/10 rounded-lg border bg-card">
       {moves.map((m) => (
         <li key={m.slug}>
           <Link href={`/pokedex/moves/${m.slug}`} className="group flex items-center gap-3 px-3 py-2.5">
             <span className="min-w-0 flex-1 truncate font-display font-bold uppercase tracking-wide group-hover:text-screen">{locale === "en" ? m.name : nameIn(locale, "moves", m.name)}</span>
-            <span className="hidden font-pixel text-[9px] uppercase tracking-wider text-muted-foreground sm:inline">{classes?.[m.cls] ?? m.cls}</span>
+            <span className="hidden font-pixel text-[9px] uppercase tracking-wider text-muted-foreground sm:inline">{locale === "en" ? m.cls : cls(`move.cls.${m.cls as "physical" | "special" | "status"}`)}</span>
             <span className="w-16 shrink-0 text-right font-mono text-sm tabular-nums">{m.power ?? "—"} <span className="text-[10px] text-muted-foreground">{t("type.pwr")}</span></span>
             <span className="w-20 shrink-0 text-right font-mono text-sm tabular-nums">
               {m.learners.length} <span className="text-[10px] text-muted-foreground">{t("type.mons")}</span>
@@ -143,8 +145,6 @@ export default async function TypePage({ params }: PageProps) {
 
   return (
     <article className="mx-auto max-w-6xl space-y-10">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(crumbs) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(list) }} />
       <DetailNav tab="types" label={t("type.back")} pager={pager} />
       <DetailHero kicker={t("type.kicker")} title={t("type.name", { type: name })}>
         <TypeBadge type={ty} size="lg" label={name} />
@@ -225,6 +225,8 @@ export default async function TypePage({ params }: PageProps) {
         <h2 className="font-pixel text-[10px] uppercase tracking-wider text-muted-foreground">{t("type.others")}</h2>
         <TypeLinks types={TYPES.filter((x) => x !== ty)} empty="" names={names} />
       </nav>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(crumbs) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(list) }} />
     </article>
   );
 }

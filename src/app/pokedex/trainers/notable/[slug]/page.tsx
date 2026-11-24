@@ -63,7 +63,6 @@ export default async function NotableTrainerPage({ params }: PageProps) {
 
   return (
     <article className="mx-auto max-w-6xl space-y-10">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd({ "@context": "https://schema.org", "@type": "Person", name: n.name, ...(en && { description: n.blurb }), url: `${SITE_URL}/pokedex/trainers/notable/${n.slug}` }) }} />
       <DetailNav href="/pokedex/trainers" label={t("allTrainers")} pager={pager} />
 
       <header className="hud flex flex-col gap-5 rounded-lg border bg-card p-5 sm:flex-row sm:items-center sm:p-6" data-testid="notable-hero">
@@ -147,6 +146,7 @@ export default async function NotableTrainerPage({ params }: PageProps) {
           </section>
         );
       })}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd({ "@context": "https://schema.org", "@type": "Person", name: n.name, ...(en && { description: n.blurb }), url: `${SITE_URL}/pokedex/trainers/notable/${n.slug}` }) }} />
     </article>
   );
 }

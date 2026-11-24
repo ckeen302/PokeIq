@@ -76,7 +76,6 @@ export default async function SetPage({ params }: PageProps) {
 
   return (
     <article className="mx-auto max-w-6xl space-y-8">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(crumbs) }} />
       {cards && cards.length > 0 && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(list) }} />}
       <DetailNav tab="tcg" label={t("set.allSets")} pager={pager} />
       <DetailHero
@@ -112,6 +111,7 @@ export default async function SetPage({ params }: PageProps) {
       <p className="text-center text-xs text-muted-foreground" data-testid="tcg-price-note">
         {t("set.priceNote", { note: note || t("set.noPrices") })}
       </p>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(crumbs) }} />
     </article>
   );
 }
