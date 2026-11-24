@@ -101,9 +101,10 @@ export function FullscreenButton({ fs, onClick, className }: { fs: boolean; onCl
 
 /**
  * "Leave this game?": asked before Exit, Escape or Back ends a game under way.
- * Escape (or a tap outside) keeps playing.
+ * Escape (or a tap outside) keeps playing. The Daily and the Weekly say they're
+ * saved (their round's clock stops where it is), any other game that it isn't.
  */
-export function ConfirmExit({ daily, onLeave, onStay }: { daily?: boolean; onLeave: () => void; onStay: () => void }) {
+export function ConfirmExit({ daily, weekly, onLeave, onStay }: { daily?: boolean; weekly?: boolean; onLeave: () => void; onStay: () => void }) {
   const t = useT(geoNs);
   const stay = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -127,7 +128,7 @@ export function ConfirmExit({ daily, onLeave, onStay }: { daily?: boolean; onLea
         data-testid="geo-confirm-exit"
       >
         <p id="geo-leave-title" className="font-display text-xl font-bold uppercase italic">{t("shell.leaveTitle")}</p>
-        <p className="mt-1.5 text-sm text-white/70">{daily ? t("shell.leaveDaily") : t("shell.leaveBody")}</p>
+        <p className="mt-1.5 text-sm text-white/70">{daily ? t("shell.leaveDaily") : weekly ? t("shell.leaveWeekly") : t("shell.leaveBody")}</p>
         <div className="mt-4 grid grid-cols-2 gap-2">
           <button type="button" onClick={onLeave} className="h-11 rounded-md bg-white/10 font-display text-sm font-bold uppercase tracking-wider text-white transition-colors hover:bg-white/20" data-testid="geo-leave">
             {t("shell.leave")}

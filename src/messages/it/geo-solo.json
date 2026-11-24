@@ -18,6 +18,7 @@
     "best": "Record {score}",
     "bestRow": "Record: {n} di fila",
     "played": "Giocata",
+    "result": "Vedi il tuo risultato",
     "atlas": "Atlante del mondo",
     "challenge": {
       "tag": "Sfida",
@@ -52,9 +53,9 @@
       "title": "Partita del giorno",
       "scored": "Oggi hai fatto {score}.",
       "blurb": "I luoghi di oggi, uguali per tutti.",
-      "again": "Gioca ancora",
       "play": "Gioca quella di oggi",
-      "resume": "Riprendi Giornaliera {num}"
+      "resume": "Riprendi Giornaliera {num}",
+      "started": "Hai già iniziato la Giornaliera di oggi in questo browser o sul tuo account. È una partita al giorno."
     },
     "weekly": {
       "numbered": "Settimanale #{n}",
@@ -66,8 +67,10 @@
       "m": "{m} min",
       "scored": "Questa settimana hai fatto {score}.",
       "blurb": "La mappa della settimana, uguale per tutti.",
-      "again": "Rigioca per allenarti",
-      "play": "Gioca quella della settimana"
+      "play": "Gioca quella della settimana",
+      "resume": "Riprendi Settimanale #{n}",
+      "started": "Hai già iniziato la Sfida settimanale di questa settimana in questo browser o sul tuo account. È una partita a settimana.",
+      "next": "Prossima Settimanale tra {left}"
     },
     "mode": {
       "game": "Partita da {n} round",

@@ -25,6 +25,7 @@ import { avatarSrc } from "@/lib/avatar";
 import { GlobePreview } from "@/components/globe/GlobePreview";
 import { GeoHowToLoader, HowToHelpButton } from "./GeoHowToButton";
 import { HubSection, HubTile, TileFlag } from "./HubParts";
+import { NextDailyCountdown } from "@/components/NextDailyCountdown";
 import { GeoYou } from "./GeoYou";
 import { AchievementToasts, useGeoProgress, type MyGeoProgress } from "./GeoAchievements";
 import type { DuelQueue } from "./DuelCard";
@@ -185,10 +186,20 @@ function distanceText(squares: number, t: SoloT): string {
   return t("reveal.squares", { n: squares, d: formatNumber(squares, t.locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) });
 }
 
+/** A request the server turned down, with its reason's code when it gives one ("daily-started"). */
+class ApiError extends Error {
+  constructor(message: string, readonly code?: string) {
+    super(message);
+  }
+}
+
 export async function post<T>(url: string, body: unknown): Promise<T> {
   const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error((data as { error?: string }).error ?? `Request failed (${res.status})`);
+  if (!res.ok) {
+    const { error, code } = data as { error?: string; code?: unknown };
+    throw new ApiError(error ?? `Request failed (${res.status})`, typeof code === "string" ? code : undefined);
+  }
   return data as T;
 }
 
@@ -218,47 +229,89 @@ async function postRetrying<T>(url: string, body: unknown, waits = [500, 1000, 2
 
 // ---- a game in progress, kept through a reload --------------------------------
 
-/** A game in progress, saved after every step: this tab's (sessionStorage), and the Daily's for the rest of the day (localStorage). */
+/**
+ * A game in progress, saved after every step: this tab's (sessionStorage), and
+ * the Daily's and the Weekly's for the rest of their day or week
+ * (localStorage). Those are played once: a finished one stays saved, to show
+ * its result again.
+ */
 interface SavedGame {
   v: 1;
   savedAt: number;
   game: Omit<Game, "region"> & { region: string };
   played: Played[];
-  phase: "guessing" | "revealed";
+  /** "done": a Daily or a Weekly played to the end. */
+  phase: "guessing" | "revealed" | "done";
   pick: MapPin | null;
-  /** When the round's clock started (its picture first showed), so a reload never gives a fresh clock. */
-  clock: { shot: string; at: number } | null;
+  /**
+   * When the round's clock started (its picture first showed), so a reload never gives a fresh clock.
+   * `left`: the clock stopped with this much time on it (ms), as a Daily or a Weekly was left; it goes on from there.
+   */
+  clock: RoundClock | null;
   challenge: boolean;
   /** A guess sent but not yet answered: sent again (the server replays it) on resume. */
   pending?: Record<string, unknown>;
 }
+type RoundClock = { shot: string; at: number; left?: number };
 const SAVE_KEY = "pokeiq:geo-game";
-const DAILY_SAVE_KEY = "pokeiq:geo-daily-game";
-/** A game's signed state lasts three hours on the server; a save is kept a little less. */
+/** The Daily's and the Weekly's own copies. */
+const KEPT_KEYS = { daily: "pokeiq:geo-daily-game", weekly: "pokeiq:geo-weekly-game" } as const;
+type Kept = keyof typeof KEPT_KEYS;
+/** A game kept on the device for its day or week (the Daily, the Weekly), or null. */
+const keptOf = (game: { daily?: string; weekly?: string } | null | undefined): Kept | null => (game?.daily ? "daily" : game?.weekly ? "weekly" : null);
+/** A game's signed state lasts three hours on the server; a save is kept a little less (the Daily's and the Weekly's, their day or week). */
 const SAVE_TTL_MS = 2.5 * 60 * 60 * 1000;
 
-function readSaved(store: "session" | "local"): SavedGame | null {
+function readSaved(store: "session" | Kept): SavedGame | null {
   try {
-    const raw = (store === "session" ? sessionStorage : localStorage).getItem(store === "session" ? SAVE_KEY : DAILY_SAVE_KEY);
+    const raw = store === "session" ? sessionStorage.getItem(SAVE_KEY) : localStorage.getItem(KEPT_KEYS[store]);
     const saved = raw ? (JSON.parse(raw) as SavedGame) : null;
-    return saved?.v === 1 && Date.now() - saved.savedAt < SAVE_TTL_MS ? saved : null;
+    // A Daily's or a Weekly's date is checked where it's picked up.
+    return saved?.v === 1 && (keptOf(saved.game) || Date.now() - saved.savedAt < SAVE_TTL_MS) ? saved : null;
   } catch {
     return null;
   }
 }
-function writeSaved(saved: SavedGame | null, daily?: boolean) {
+function writeSaved(saved: SavedGame | null, kept?: Kept | null) {
   try {
     if (saved) {
       const raw = JSON.stringify(saved);
       sessionStorage.setItem(SAVE_KEY, raw);
-      if (daily) localStorage.setItem(DAILY_SAVE_KEY, raw);
+      if (kept) localStorage.setItem(KEPT_KEYS[kept], raw);
     } else {
       sessionStorage.removeItem(SAVE_KEY);
-      if (daily) localStorage.removeItem(DAILY_SAVE_KEY);
+      if (kept) localStorage.removeItem(KEPT_KEYS[kept]);
     }
   } catch {
     // Private mode or full: the game just isn't kept through a reload.
   }
+}
+/** A Daily or a Weekly played to the end: kept on the device (its card shows the result again), out of the tab's copy. */
+function keepFinished(saved: SavedGame, kept: Kept) {
+  try {
+    sessionStorage.removeItem(SAVE_KEY);
+    localStorage.setItem(KEPT_KEYS[kept], JSON.stringify({ ...saved, phase: "done", pick: null, clock: null, pending: undefined, savedAt: Date.now() } satisfies SavedGame));
+  } catch {
+    // Private mode or full.
+  }
+}
+/** A finished Daily's or Weekly's score as saved here (undefined while it's still being played). */
+const savedScore = (saved: SavedGame | undefined) => (saved?.phase === "done" ? saved.played.reduce((sum, p) => sum + p.graded.score, 0) : undefined);
+/** The ms a round's clock shows: stopped (`left`), else counted from its start. */
+const clockLeft = (clock: RoundClock, timerMs: number, now = Date.now()) => (clock.left !== undefined ? clock.left : Math.max(0, clock.at + timerMs - now));
+
+/**
+ * The Daily's or the Weekly's round clock on the server, as the player leaves
+ * (the request may outlive the page: the server keeps the pause in a cookie)
+ * and comes back (the token going on from the pause, and its time left).
+ */
+function pauseOnServer(token: string, left: number | undefined): Promise<unknown> {
+  return fetch("/api/geo/clock", {
+    method: "POST",
+    keepalive: true,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token, action: "pause", ...(left !== undefined ? { left: Math.round(left) } : {}) }),
+  }).catch(() => undefined);
 }
 
 /** Counts up to `value` (eased) whenever it changes, after `delay` ms; instant under reduced motion. A tally tick sounds as it counts. */
@@ -342,8 +395,19 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
   const [viewIndex, setViewIndex] = useState(0);
   const [zoomPixelated, setZoomPixelated] = useState(false);
   const [settings, setSettings] = useState<GeoPlaySettings>(DEFAULT_GEO_SETTINGS);
-  /** When the round's clock started: the moment its picture was first on screen (kept through a reload). */
-  const [clock, setClock] = useState<{ shot: string; at: number } | null>(null);
+  /** When the round's clock started: the moment its picture was first on screen (kept through a reload); or, stopped, its time left. */
+  const [clock, setClock] = useState<RoundClock | null>(null);
+  /**
+   * The Daily's or the Weekly's round clock is stopped: the page is hidden or
+   * going, the game was left, or a game picked up again waits for the server
+   * to start the clock again. No guess goes until it has.
+   */
+  const [paused, setPaused] = useState(false);
+  const pausedRef = useRef(false);
+  const setPausedBoth = (on: boolean) => {
+    pausedRef.current = on;
+    setPaused(on);
+  };
   /** The picture that has loaded and decoded (the clock waits for it), and the tries at the round's picture so far. */
   const [readyShot, setReadyShot] = useState<string | null>(null);
   const [shotTry, setShotTry] = useState<{ shot: string; n: number; failed?: boolean }>({ shot: "", n: 0 });
@@ -400,11 +464,11 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
     if (!snap.current) return;
     const { game: g, ...rest } = patch;
     snap.current = { ...snap.current, ...rest, ...(g ? { game: { ...g, region: g.region.id } } : {}), savedAt: Date.now() };
-    writeSaved(snap.current, !!snap.current.game.daily);
+    writeSaved(snap.current, keptOf(snap.current.game));
   }
   function startSaving(g: Game, isChallenge: boolean) {
     snap.current = { v: 1, savedAt: Date.now(), game: { ...g, region: g.region.id }, played: [], phase: "guessing", pick: null, clock: null, challenge: isChallenge };
-    writeSaved(snap.current, !!g.daily);
+    writeSaved(snap.current, keptOf(g));
   }
   useEffect(() => {
     if (game && phase === "guessing") save({ pick });
@@ -459,40 +523,138 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
     // A game still starting is called off.
     startRun.current++;
     setConfirmExit(false);
-    // The Daily stays saved for the day (its card offers to resume it); any other game is let go.
-    writeSaved(null, false);
-    if (!game?.daily) snap.current = null;
+    // The Daily and the Weekly stay saved, their round's clock stopped (the card offers to resume them); any other game is let go.
+    const kept = keptOf(game);
+    if (kept) stopClock();
+    writeSaved(null, null);
+    if (!kept) snap.current = null;
     leaveGameHistory();
     setPhase("setup");
-    if (game?.daily) setDailySave(readSaved("local"));
+    if (kept) readKeptSaves();
   }
 
-  /** Picks a saved game up where it was left: the round, its pin, its clock (still running), or its result. */
+  // ---- the Daily and the Weekly: played once, left and picked up with the round's clock where it was ----
+  const stateRef = useRef({ game, phase, clock, timer: 0 });
+  /** The player is away (the page hidden or going, the game left): the server has been asked to stop the clock. */
+  const awayRef = useRef<{ left: number | undefined } | null>(null);
+  /** A pause on its way to the server (a resume waits for it), and a resume on its way (a pause waits for it): they land in order. */
+  const pausing = useRef<Promise<unknown> | null>(null);
+  const resuming = useRef(false);
+  /** Stops the round's clock as the player goes: here, in the saves, and on the server. */
+  function stopClock() {
+    const { game, phase, clock, timer } = stateRef.current;
+    if (!game || !keptOf(game) || awayRef.current || !(phase === "guessing" || phase === "submitting" || phase === "revealed")) return;
+    setPausedBoth(true);
+    // The round's own clock, once its picture is up (a round result being read: the next round's hasn't started).
+    const left = phase !== "revealed" && timer && clock?.shot === game.round.shot ? clockLeft(clock, timer * 1000) : undefined;
+    awayRef.current = { left };
+    if (left !== undefined && clock) {
+      const stopped = { shot: clock.shot, at: clock.at, left };
+      setClock(stopped);
+      save({ clock: stopped });
+    }
+    // While a resume is on its way, its new token is the one to stop (startClock sends it).
+    if (!resuming.current) pausing.current = pauseOnServer(game.token, left);
+  }
+  /** Starts it again from the server's pause: the token going on from it, and the time left (never more than this device's clock had). */
+  async function startClock(token: string, shot: string, revealed: boolean) {
+    awayRef.current = null;
+    setPausedBoth(true);
+    resuming.current = true;
+    await pausing.current;
+    // Sent again after a blip: the server answers the same resume the same way for a little while.
+    const back = await postRetrying<{ token: string; left: number }>("/api/geo/clock", { token, action: "resume" }).catch(() => null);
+    resuming.current = false;
+    if (back) {
+      setGame((g) => (g && g.token === token ? { ...g, token: back.token } : g));
+      if (snap.current?.game.token === token) {
+        snap.current = { ...snap.current, game: { ...snap.current.game, token: back.token }, savedAt: Date.now() };
+        writeSaved(snap.current, keptOf(snap.current.game));
+      }
+    }
+    // Gone again while it was being started: stopped again, from the new token.
+    const away = awayRef.current as { left: number | undefined } | null;
+    if (away) {
+      pausing.current = pauseOnServer(back?.token ?? token, away.left);
+      return;
+    }
+    const timerMs = (stateRef.current.game?.settings.timer ?? 0) * 1000;
+    if (back && !revealed && timerMs) setClock((c) => ({ shot, at: 0, left: Math.min(back.left, c?.shot === shot ? clockLeft(c, timerMs) : timerMs) }));
+    setPausedBoth(false);
+  }
+  /** The page hidden or going (a tab switched, closed or reloaded, a phone's app left): the clock stops; back in view, it goes on. */
+  const stopRef = useRef(stopClock);
+  stopRef.current = stopClock;
+  const backRef = useRef(() => {});
+  backRef.current = () => {
+    const { game, phase } = stateRef.current;
+    if (!awayRef.current || !game || !keptOf(game) || !(phase === "guessing" || phase === "submitting" || phase === "revealed")) return;
+    void startClock(game.token, game.round.shot, phase === "revealed");
+  };
+  useEffect(() => {
+    const onVisibility = () => (document.visibilityState === "hidden" ? stopRef.current() : backRef.current());
+    const onHide = () => stopRef.current();
+    const onShow = (e: PageTransitionEvent) => e.persisted && backRef.current();
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("pagehide", onHide);
+    window.addEventListener("pageshow", onShow);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("pagehide", onHide);
+      window.removeEventListener("pageshow", onShow);
+      // Off the page another way (a link): the same as leaving.
+      stopRef.current();
+    };
+  }, []);
+  // A guess answered while the page was hidden deals the next round on the server: its clock is stopped too.
+  useEffect(() => {
+    const away = awayRef.current;
+    if (!away || !game || !keptOf(game) || resuming.current || document.visibilityState !== "hidden") return;
+    pausing.current = pauseOnServer(game.token, phase === "revealed" ? undefined : away.left);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- each new token, while away
+  }, [game?.token]);
+
+  /** Picks a saved game up where it was left: the round, its pin, its clock (the Daily's and the Weekly's, from where it stopped), or its result. */
   const resendOnResume = useRef<Record<string, unknown> | null>(null);
   function resume(saved: SavedGame): boolean {
     const map = byId(saved.game.region) ?? allRegions.find((r) => r.id === saved.game.region);
-    if (!map || (saved.game.daily && saved.game.daily !== today)) {
-      writeSaved(null, !!saved.game.daily);
+    const kept = keptOf(saved.game);
+    if (!map || (saved.game.daily && saved.game.daily !== today) || (saved.game.weekly && saved.game.weekly !== geoWeekOf(Date.now()))) {
+      writeSaved(null, kept);
       return false;
     }
     unlockAudio();
     preloadAfterRound();
-    snap.current = saved;
-    writeSaved(saved, !!saved.game.daily);
+    startRun.current++;
     setGame({ ...saved.game, region: map });
     setPlayed(saved.played);
-    setPick(saved.pick);
-    setClock(saved.clock);
     setIsChallenge(saved.challenge);
     setReward(null);
     setViewIndex(0);
     setGamePick(null);
     setError(null);
+    setConfirmExit(false);
+    // Played to the end: its result, again.
+    if (saved.phase === "done") {
+      snap.current = null;
+      setPausedBoth(false);
+      leaveGameHistory();
+      setPhase("results");
+      return true;
+    }
+    snap.current = saved;
+    writeSaved(saved, kept);
+    setPick(saved.pick);
+    setClock(saved.clock);
     enterGameHistory();
     if (saved.pending) {
       resendOnResume.current = saved.pending;
       setPhase("submitting");
     } else setPhase(saved.phase === "revealed" && saved.played.length ? "revealed" : "guessing");
+    // The Daily's or the Weekly's clock stays stopped until the server has started it again (a guess on its way is sent as it was).
+    awayRef.current = null;
+    if (kept && !saved.pending) void startClock(saved.game.token, saved.game.round.shot, saved.phase === "revealed");
+    else setPausedBoth(false);
     return true;
   }
   // A guess that was on its way when the page went: sent again once the game is back (the server answers it the same way).
@@ -503,12 +665,21 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
     void guess(false, body);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- once, after a resume
   }, [game]);
-  /** Today's Daily, part played and saved: its card offers to resume it. */
-  const [dailySave, setDailySave] = useState<SavedGame | null>(null);
+  /** Today's Daily and this week's Weekly as saved here: part played (their card offers to resume them), or finished (their result). */
+  const [keptSaves, setKeptSaves] = useState<Partial<Record<Kept, SavedGame>>>({});
+  /** Today's Daily or this week's Weekly that the server won't start again, with nothing saved here to pick up (its day or week). */
+  const [refused, setRefused] = useState<Partial<Record<Kept, string>>>({});
+  function readKeptSaves() {
+    const daily = readSaved("daily");
+    const weekly = readSaved("weekly");
+    setKeptSaves({
+      ...(daily && daily.game.daily === today ? { daily } : {}),
+      ...(weekly && weekly.game.weekly === geoWeekOf(Date.now()) ? { weekly } : {}),
+    });
+  }
   useEffect(() => {
-    if (!today) return;
-    const saved = readSaved("local");
-    setDailySave(saved?.game.daily === today ? saved : null);
+    if (today) readKeptSaves();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once the local date is known
   }, [today]);
 
   // /pokeguessr?play=daily (the home page's Play) starts today's Daily straight away; ?play=game a game on the map.
@@ -521,15 +692,15 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
     const saved = readSaved("session");
     const nav = performance.getEntriesByType?.("navigation")[0] as PerformanceNavigationTiming | undefined;
     if (saved && (nav?.type === "reload" || nav?.type === "back_forward") && resume(saved)) return;
-    if (saved) writeSaved(null, false);
+    if (saved) writeSaved(null, null);
     if (challenge) return;
     const url = new URL(window.location.href);
     const play = url.searchParams.get("play");
     if (play !== "daily" && play !== "game") return;
     url.searchParams.delete("play");
     window.history.replaceState(null, "", url);
-    // Today's Daily, part played: picked up where it was left (starting it again would only be practice).
-    const daily = play === "daily" ? readSaved("local") : null;
+    // Today's Daily, already started here: picked up where it was left, or its result (it's played once).
+    const daily = play === "daily" ? readSaved("daily") : null;
     if (daily?.game.daily === today && resume(daily)) return;
     void start(play === "daily" ? { kind: "game", daily: today } : { kind: "game" });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- once, when the date is known
@@ -696,6 +867,9 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
 
   async function start(opts: StartOpts) {
     unlockAudio();
+    // A new game's clock runs (a Daily or a Weekly left before keeps its own stopped, in its save).
+    awayRef.current = null;
+    setPausedBoth(false);
     // The game's frame is up at once (it covers the hub, which stays where it is underneath).
     setGame(null);
     setPhase("loading");
@@ -745,6 +919,18 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
       setPhase("guessing");
     } catch (err) {
       if (run !== startRun.current) return;
+      // The Daily or the Weekly, already started here or on the account: picked up if it's saved here after all (another tab), else its card says so.
+      const kept: Kept | null = opts.daily ? "daily" : opts.weekly ? "weekly" : null;
+      if (kept && err instanceof ApiError && err.code === `${kept}-started`) {
+        const saved = readSaved(kept);
+        if (saved && resume(saved)) return;
+        setRefused((r) => ({ ...r, [kept]: kept === "daily" ? opts.daily : geoWeekOf(Date.now()) }));
+        setGame(null);
+        leaveGameHistory();
+        setPhase("setup");
+        readKeptSaves();
+        return;
+      }
       setError(err instanceof Error ? err.message : t("errors.start"));
       setGame(null);
       leaveGameHistory();
@@ -754,7 +940,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
 
   /** `timeUp`: the round's clock ran out, so the pin (if any) is guessed where it is. */
   async function guess(timeUp = false, resend?: Record<string, unknown>) {
-    if (!game || (!pick && !timeUp && !resend) || (phase !== "guessing" && !resend)) return;
+    if (!game || (!pick && !timeUp && !resend) || (phase !== "guessing" && !resend) || (pausedRef.current && !resend)) return;
     setPhase("submitting");
     try {
       const at = pick ?? { x: 0, y: 0, timeout: true };
@@ -798,7 +984,12 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
     const { graded } = current;
     if (graded.done || !graded.next) {
       play("fanfare");
-      writeSaved(null, !!game.daily);
+      // The Daily and the Weekly stay saved, finished: their card shows this result again (they're played once).
+      const kept = keptOf(game);
+      if (kept && snap.current) keepFinished(snap.current, kept);
+      else writeSaved(null, kept);
+      snap.current = null;
+      if (kept) readKeptSaves();
       leaveGameHistory();
       setPhase("results");
       return;
@@ -814,6 +1005,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
 
   // The Timer setting: a clock per round; at zero the pin is guessed where it is (no pin: no points).
   const timer = game?.settings.timer ?? 0;
+  stateRef.current = { game, phase, clock, timer };
   const roundShot = game?.round.shot;
   const nextShot = game?.round.preload;
   /**
@@ -865,17 +1057,33 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
     setShotTry((t) => (t.shot === roundShot && (t.failed || t.n > tries.n) ? t : { shot: roundShot, n: Math.min(SHOT_RETRIES.length, tries.n + 1) }));
   };
   const retryShot = () => roundShot && setShotTry({ shot: roundShot, n: tries.n + 1 });
-  const roundStartedAt = clock && clock.shot === roundShot ? clock.at : 0;
+  const roundClock = clock && clock.shot === roundShot ? clock : null;
+  /** The Daily's or the Weekly's clock, stopped (left, or waiting for the server): its time left, held. */
+  const stoppedLeft = roundClock?.left;
+  const roundStartedAt = roundClock && stoppedLeft === undefined ? roundClock.at : 0;
   useEffect(() => {
     if (clock && game && phase === "guessing") save({ clock });
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- saved when the clock starts
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- saved when the clock starts or stops
   }, [clock]);
+  // A stopped clock goes on from the time it had left, once the server has started it again and the round's picture is up.
+  useEffect(() => {
+    if (!roundShot || stoppedLeft === undefined || paused || !shotReady || !timer) return;
+    const t = Date.now();
+    setNow(t);
+    setClock({ shot: roundShot, at: t - (timer * 1000 - stoppedLeft) });
+  }, [roundShot, stoppedLeft, paused, shotReady, timer]);
   // The clock is worked out from timestamps (the round's start and now), never by counting ticks, so a
-  // hidden tab's slowed timers can't make it drift: it keeps running there, and is right the moment the tab is back.
-  const msLeft = timer && shotReady && roundStartedAt && (phase === "guessing" || phase === "submitting") ? Math.max(0, roundStartedAt + timer * 1000 - Math.max(now, roundStartedAt)) : null;
+  // hidden tab's slowed timers can't make it drift: it's right the moment the tab is back (the Daily's
+  // and the Weekly's stop while the page is hidden, and go on from where they were).
+  const msLeft =
+    timer && shotReady && roundClock && (phase === "guessing" || phase === "submitting")
+      ? stoppedLeft !== undefined
+        ? stoppedLeft
+        : Math.max(0, roundStartedAt + timer * 1000 - Math.max(now, roundStartedAt))
+      : null;
   const timeLeft = msLeft === null ? null : Math.ceil(msLeft / 1000);
   useEffect(() => {
-    if (!timer || !shotReady || phase !== "guessing") return;
+    if (!timer || !shotReady || phase !== "guessing" || !roundStartedAt) return;
     // A tick as each second turns over (not four a second), so the round re-renders only when the clock's text changes.
     let id = 0;
     const tick = () => {
@@ -893,11 +1101,12 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
     };
   }, [timer, shotReady, phase, roundStartedAt]);
   useEffect(() => {
+    if (paused) return;
     if (timeLeft === 0 && phase === "guessing") void guess(true);
     // The last ten seconds tick (the sound respects mute).
     else if (timeLeft !== null && timeLeft <= 10 && phase === "guessing") play("countdown");
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- fires once a second, and once when the clock hits zero
-  }, [timeLeft, phase]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fires once a second, once when the clock hits zero, and once it goes on after a stop
+  }, [timeLeft, phase, paused]);
 
   // GeoGuessr's shortcuts: Space / Enter to guess, then for the next round. Esc closes the zoomed view.
   useEffect(() => {
@@ -924,8 +1133,11 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
 
   // ---- setup: the hub (kept in place under a game, so starting one moves nothing) ----
   const renderHub = (covered: boolean) => {
-    const dailyDone = today ? progress?.best[`geo-daily:${today}`] : undefined;
-    const dailyResume = dailyDone === undefined && dailySave?.game.daily === today ? dailySave : null;
+    // The Daily and the Weekly are played once: part played, the card resumes it; played, it shows the result (when it's saved here) and when the next one comes.
+    const dailySave = today ? keptSaves.daily : undefined;
+    const dailyDone = today ? (progress?.best[`geo-daily:${today}`] ?? savedScore(dailySave)) : undefined;
+    const dailyPlayed = dailyDone !== undefined || (!!today && refused.daily === today && !dailySave);
+    const dailyResume = !dailyPlayed && dailySave ? dailySave : null;
     const dailyMap = today ? byId(geoDailyRegion(today, playable(byId(WORLD_REGION)))) : undefined;
     const bestGame = progress?.best[`geo:${boardOf({ region, kind: "game", filter, rounds: playRounds, difficulty: chosenMode })}`];
     const bestStreak = progress?.best[`geo:${boardOf({ region, kind: "streak", filter, difficulty: chosenMode })}`];
@@ -938,8 +1150,12 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
     // The Weekly Challenge, worked out once the page is in the browser (the week turns on the player's clock, at Monday 00:00 UTC).
     const week = today ? geoWeekOf(Date.now()) : null;
     const weeklyMap = week ? byId(geoWeeklyMap(week, (id) => playable(byId(id))) ?? "") : undefined;
-    const weeklyDone = week ? progress?.best[`geo-weekly:${week}`] : undefined;
+    const weeklySave = week ? keptSaves.weekly : undefined;
+    const weeklyDone = week ? (progress?.best[`geo-weekly:${week}`] ?? savedScore(weeklySave)) : undefined;
+    const weeklyPlayed = weeklyDone !== undefined || (!!week && refused.weekly === week && !weeklySave);
+    const weeklyResume = !weeklyPlayed && weeklySave ? weeklySave : null;
     const weeklyLeft = week ? geoWeeklyLeftParts(week, Date.now()) : null;
+    const weeklyLeftText = weeklyLeft ? t(`hub.weekly.${weeklyLeft.unit}`, { d: weeklyLeft.d, h: weeklyLeft.h, m: weeklyLeft.m }) : null;
     // The duel and party cards name the map as it stands: in the page's language.
     const shownRegion = t.locale === "en" ? region : { ...region, name: names.map(region) };
     return (
@@ -1022,20 +1238,31 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
               icon={<Compass className="h-5 w-5" />}
               label={`${t("hub.daily.label", { num: today ? `#${dailyNumber(today)}` : "" })}${dailyMap ? ` · ${names.map(dailyMap)}` : ""}`}
               title={t("hub.daily.title")}
-              badge={dailyDone !== undefined ? <TileFlag tone="success">{t("hub.played")}</TileFlag> : undefined}
-              blurb={dailyDone !== undefined ? t("hub.daily.scored", { score: fmt(dailyDone) }) : t("hub.daily.blurb")}
+              badge={dailyPlayed ? <TileFlag tone="success">{t("hub.played")}</TileFlag> : undefined}
+              blurb={dailyDone !== undefined ? t("hub.daily.scored", { score: fmt(dailyDone) }) : dailyPlayed ? t("hub.daily.started") : t("hub.daily.blurb")}
               action={
-                <Button
-                  className="w-full"
-                  disabled={!today || loading}
-                  // Today's Daily, part played: picked up where it was left (starting it again would only be practice).
-                  onClick={() => today && (dailyResume ? void resume(dailyResume) : void start({ kind: "game", daily: today }))}
-                  {...warmProps({ kind: "game", daily: today || "today" })}
-                  data-testid="geo-daily-play"
-                >
-                  {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Compass className="h-4 w-4" aria-hidden />}
-                  {dailyResume ? t("hub.daily.resume", { num: `#${dailyNumber(today!)}` }) : dailyDone !== undefined ? t("hub.daily.again") : t("hub.daily.play")}
-                </Button>
+                dailyPlayed ? (
+                  <div className="space-y-2" data-testid="geo-daily-played">
+                    {dailySave && (
+                      <Button variant="outline" className="w-full" onClick={() => resume(dailySave)} data-testid="geo-daily-result">
+                        <Trophy className="h-4 w-4" aria-hidden />{` ${t("hub.result")}`}
+                      </Button>
+                    )}
+                    <NextDailyCountdown label={g("results.nextDaily")} />
+                  </div>
+                ) : (
+                  <Button
+                    className="w-full"
+                    disabled={!today || loading}
+                    // Today's Daily, part played: picked up where it was left, its clock where it stopped.
+                    onClick={() => today && (dailyResume ? void resume(dailyResume) : void start({ kind: "game", daily: today }))}
+                    {...warmProps({ kind: "game", daily: today || "today" })}
+                    data-testid="geo-daily-play"
+                  >
+                    {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Compass className="h-4 w-4" aria-hidden />}
+                    {dailyResume ? t("hub.daily.resume", { num: `#${dailyNumber(today!)}` }) : t("hub.daily.play")}
+                  </Button>
+                )
               }
             />
             <HubTile
@@ -1048,25 +1275,37 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
               label={week ? `${t("hub.weekly.numbered", { n: geoWeeklyNumber(week) })}${weeklyMap ? ` · ${names.map(weeklyMap)}` : ""}` : t("hub.weekly.word")}
               title={t("hub.weekly.title")}
               badge={
-                weeklyDone !== undefined ? (
+                weeklyPlayed ? (
                   <TileFlag tone="success">{t("hub.played")}</TileFlag>
-                ) : weeklyLeft ? (
-                  <TileFlag>{t("hub.weekly.endsIn", { left: t(`hub.weekly.${weeklyLeft.unit}`, { d: weeklyLeft.d, h: weeklyLeft.h, m: weeklyLeft.m }) })}</TileFlag>
+                ) : weeklyLeftText ? (
+                  <TileFlag>{t("hub.weekly.endsIn", { left: weeklyLeftText })}</TileFlag>
                 ) : undefined
               }
-              blurb={weeklyDone !== undefined ? t("hub.weekly.scored", { score: fmt(weeklyDone) }) : t("hub.weekly.blurb")}
+              blurb={weeklyDone !== undefined ? t("hub.weekly.scored", { score: fmt(weeklyDone) }) : weeklyPlayed ? t("hub.weekly.started") : t("hub.weekly.blurb")}
               action={
-                <Button
-                  variant="success"
-                  className="w-full"
-                  disabled={!week || !weeklyMap || loading}
-                  onClick={() => void start({ kind: "game", weekly: true })}
-                  onPointerEnter={() => prefetch({ kind: "game", weekly: true })}
-                  data-testid="geo-weekly-play"
-                >
-                  {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <CalendarRange className="h-4 w-4" aria-hidden />}
-                  {weeklyDone !== undefined ? t("hub.weekly.again") : t("hub.weekly.play")}
-                </Button>
+                weeklyPlayed ? (
+                  <div className="space-y-2" data-testid="geo-weekly-played">
+                    {weeklySave && (
+                      <Button variant="outline" className="w-full" onClick={() => resume(weeklySave)} data-testid="geo-weekly-result">
+                        <Trophy className="h-4 w-4" aria-hidden />{` ${t("hub.result")}`}
+                      </Button>
+                    )}
+                    {weeklyLeftText && <p className="text-center text-sm text-muted-foreground">{t("hub.weekly.next", { left: weeklyLeftText })}</p>}
+                  </div>
+                ) : (
+                  <Button
+                    variant="success"
+                    className="w-full"
+                    disabled={!week || !weeklyMap || loading}
+                    // This week's, part played: picked up where it was left, its clock where it stopped.
+                    onClick={() => (weeklyResume ? void resume(weeklyResume) : void start({ kind: "game", weekly: true }))}
+                    onPointerEnter={() => prefetch({ kind: "game", weekly: true })}
+                    data-testid="geo-weekly-play"
+                  >
+                    {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <CalendarRange className="h-4 w-4" aria-hidden />}
+                    {weeklyResume && week ? t("hub.weekly.resume", { n: geoWeeklyNumber(week) }) : t("hub.weekly.play")}
+                  </Button>
+                )
               }
             />
             <RegionStreakCard />
@@ -1406,7 +1645,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
           </>
         }
         extra={game.guessGame && pick ? <GameGuessPicker options={gameGuessOptions(game.region, game.filter)} value={gamePick} onChange={setGamePick} /> : undefined}
-        button={<GuessButton hasPin={!!pick} busy={phase === "submitting"} disabled={phase === "submitting"} onClick={() => void guess()} />}
+        button={<GuessButton hasPin={!!pick} busy={phase === "submitting"} disabled={phase === "submitting" || paused} onClick={() => void guess()} />}
       />
 
       <AnimatePresence>
@@ -1503,7 +1742,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
                 </Card>
               </div>
             )}
-            {confirmExit && <ConfirmExit daily={!!game?.daily} onLeave={exitGame} onStay={() => setConfirmExit(false)} />}
+            {confirmExit && <ConfirmExit daily={!!game?.daily} weekly={!!game?.weekly} onLeave={exitGame} onStay={() => setConfirmExit(false)} />}
           </>
         )}
       </GameShell>,

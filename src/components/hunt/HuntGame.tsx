@@ -359,7 +359,8 @@ export function HuntGame({ maps }: { maps: GeoRegionInfo[] }) {
             />
           )}
           {error && phase === "playing" && <HuntState kind="error" message={error} onRetry={() => setError(null)} onBack={leave} />}
-          {confirmExit && <ConfirmExit daily={!!game.daily} onLeave={leave} onStay={() => setConfirmExit(false)} />}
+          {/* Pokémon Hunt's Daily isn't kept when it's left: the plain line ("This game won't be saved"). */}
+          {confirmExit && <ConfirmExit onLeave={leave} onStay={() => setConfirmExit(false)} />}
         </>
       )}
     </GameShell>
