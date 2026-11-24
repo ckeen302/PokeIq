@@ -492,7 +492,7 @@ export function BattleHome() {
               const cls = "menu-item flex items-center gap-2 rounded-lg border bg-card px-3 py-3 font-display text-sm font-bold uppercase tracking-wide hover:border-screen/60";
               const inner = (
                 <>
-                  <Icon className="h-4 w-4 shrink-0 text-primary" aria-hidden /> <span className="truncate">{label}</span>
+                  <Icon className="h-4 w-4 shrink-0 text-primary" aria-hidden /> <span className="min-w-0">{label}</span>
                 </>
               );
               return href ? (
