@@ -116,6 +116,20 @@ async function pinAndGuess(p, phone, at, shots) {
     }
     await p.waitForTimeout(350);
     if (shots) await p.screenshot({ path: `${OUT}/${shots}-hovered.png` });
+    if (shots) {
+      // Up from the map to its size buttons, across the gap between them: it stays open.
+      const grow = await p.getByTestId("geo-map-grow").boundingBox();
+      await p.mouse.move(grow.x + grow.width / 2, grow.y + grow.height / 2, { steps: 8 });
+      if ((await dock.getAttribute("data-open")) !== "true") errors.push("the map dock closed on the way to its size buttons");
+      // Off the dock: it shrinks back at once, as quickly as it grew.
+      await p.mouse.move(120, 320, { steps: 4 });
+      const closed = await p.waitForFunction(() => !document.querySelector("[data-testid=geo-dock]")?.getAttribute("data-open"), null, { timeout: 150 }).then(() => true, () => false);
+      if (!closed) errors.push("the map dock didn't shrink back as soon as the pointer left it");
+      const back = await dock.boundingBox();
+      await p.mouse.move(back.x + back.width / 2, back.y + back.height / 2, { steps: 4 });
+      await p.locator("[data-testid=geo-dock][data-open=true]").waitFor();
+      await p.waitForTimeout(350);
+    }
   }
   // Along the map's middle: on a phone the world sits in a band across the sheet. The tap waits for the map to take taps.
   const { area, at: spot } = await tapGuessMap(p, at, 0.5);

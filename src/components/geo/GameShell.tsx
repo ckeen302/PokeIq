@@ -296,8 +296,6 @@ const boxHeight = (h: string) => `min(max(${h}, ${MIN_H}px), calc(100vh - 9rem))
 /* v2: everyone starts again at GeoGuessr's size (an older remembered XL no longer carries over). */
 const SIZE_KEY = "pokeiq:geo-map-size-v2";
 const STICKY_KEY = "pokeiq:geo-map-sticky-v2";
-/** The map shrinks back this long after the pointer leaves (unless pinned). */
-const COLLAPSE_MS = 600;
 
 function readSize(): MapSize {
   try {
@@ -377,11 +375,9 @@ export function MapDock({
   const [size, setSize] = useState<MapSize>("s");
   const [sticky, setSticky] = useState(false);
   const [hot, setHot] = useState(false);
-  const leaveTimer = useRef<number | undefined>(undefined);
   useEffect(() => {
     setSize(readSize());
     setSticky(readSticky());
-    return () => window.clearTimeout(leaveTimer.current);
   }, []);
 
   const chooseSize = (next: MapSize) => {
@@ -394,13 +390,21 @@ export function MapDock({
       return !s;
     });
   };
-  const warm = () => {
-    window.clearTimeout(leaveTimer.current);
-    setHot(true);
+  // Open the moment the pointer is over it, and back to the corner size the moment it leaves (unless pinned), as quick both ways.
+  const over = useRef(false);
+  const warm = () => setHot(true);
+  const enter = () => {
+    over.current = true;
+    warm();
   };
-  const cool = () => {
-    window.clearTimeout(leaveTimer.current);
-    leaveTimer.current = window.setTimeout(() => setHot(false), COLLAPSE_MS);
+  const leave = () => {
+    over.current = false;
+    setHot(false);
+  };
+  // Focus moving between its own buttons, or leaving while the pointer is still on it, keeps it open.
+  const blur = (e: React.FocusEvent<HTMLDivElement>) => {
+    if (over.current || e.currentTarget.contains(e.relatedTarget as Node | null)) return;
+    setHot(false);
   };
 
   if (phone) return <PhoneMap resetKey={resetKey} map={map} button={button} extra={extra} hasPin={hasPin} tools={tools} testId={testId} hint={hint} />;
@@ -420,17 +424,18 @@ export function MapDock({
       // Its margins, the gap and the guess button scale with the window like GeoGuessr's (32, 16, 14 and 38 px in a 1710×987 window).
       className="geo-dock absolute z-10 flex flex-col transition-[width] duration-[250ms] ease-out [&_[data-testid=geo-guess]]:h-[3.85vh] [&_[data-testid=geo-guess]]:whitespace-nowrap [&_[data-testid=geo-guess]]:text-[1.62vh]"
       style={{ width: boxWidth(box.w), right: "1.87vw", bottom: "1.62vh", gap: "1.42vh" }}
-      onPointerOver={warm}
-      onPointerLeave={cool}
+      onPointerOver={enter}
+      onPointerLeave={leave}
       onFocusCapture={warm}
-      onBlurCapture={cool}
+      onBlurCapture={blur}
     >
       <div className="relative transition-[height] duration-[250ms] ease-out" style={{ height: boxHeight(box.h) }}>
         {/* The corner map's zoom buttons (small, top left) show once it's open: at rest they'd cover the names, and hovering opens it anyway. */}
         <div className={cn("h-full overflow-hidden rounded-md border-2 border-foreground/20 shadow-2xl [&_[data-map-controls]]:left-[0.6vh] [&_[data-map-controls]]:right-auto [&_[data-map-controls]]:top-[0.6vh] [&_[data-map-controls]]:gap-[0.4vh]", open ? "[&_[data-map-controls]>button]:h-[2.25vh] [&_[data-map-controls]>button]:w-[2.25vh] [&_[data-map-controls]_svg]:h-[1.2vh] [&_[data-map-controls]_svg]:w-[1.2vh]" : "[&_[data-map-controls]]:hidden")}>
           {map({ fill: true, land: "fit" })}
         </div>
-        <div className={cn("absolute bottom-full left-0 z-[2] mb-[0.81vh] flex gap-[0.4vh] transition-opacity duration-200", open ? "opacity-100" : "pointer-events-none opacity-0")} role="group" aria-label={t("dock.size")}>
+        {/* The row spans the map's width and its gap is padding, so the pointer stays on the dock between the map and these buttons. */}
+        <div className={cn("absolute inset-x-0 bottom-full z-[2] flex gap-[0.4vh] pb-[0.81vh] transition-opacity duration-200", open ? "opacity-100" : "pointer-events-none opacity-0")} role="group" aria-label={t("dock.size")}>
           <button type="button" className={control} onClick={() => chooseSize(MAP_SIZES[Math.min(MAP_SIZES.length - 1, idx + 1)])} disabled={idx >= MAP_SIZES.length - 1} aria-label={t("dock.bigger")} title={t("dock.bigger")} data-testid="geo-map-grow">
             <Expand className="h-3.5 w-3.5" />
           </button>
