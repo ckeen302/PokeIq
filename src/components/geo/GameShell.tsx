@@ -229,7 +229,7 @@ export function ScoreTracker({ scores, current, total, rounds, className }: {
   const cols = Math.min(rounds, 5);
   return (
     <div className={cn("flex items-stretch overflow-hidden rounded-lg bg-[#1e1a3f]/90 text-white shadow-lg ring-1 ring-white/10 backdrop-blur", className)} data-testid="geo-score-chip" role="group" aria-label={`${t("round")} ${current + 1}/${rounds}, ${t("scoreTotal")} ${total}`}>
-      <span className="flex w-5 rotate-180 items-center justify-center bg-[#6c5ce7]/35 font-display text-[9px] font-bold uppercase tracking-[0.2em] text-[#c8bfff] [writing-mode:vertical-rl] xl:w-6 xl:text-[10px]" aria-hidden>
+      <span className="flex w-5 rotate-180 items-center justify-center bg-[#6c5ce7]/35 font-display text-[8px] font-bold uppercase leading-none tracking-[0.1em] text-[#c8bfff] [writing-mode:vertical-rl] xl:w-6 xl:text-[9px]" aria-hidden>
         {t("round")}
       </span>
       <ol className="grid gap-px p-1" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }} aria-hidden>
