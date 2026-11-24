@@ -927,7 +927,8 @@ async function playGeoRounds(rounds) {
 step("pokéguessr: 5-round game + challenge link");
 let geoChallenge = null;
 page.on("response", async (res) => {
-  if (res.url().endsWith("/api/geo/guess") && res.ok()) {
+  // Guesses only (a round's start may wake the endpoint with a GET).
+  if (res.url().endsWith("/api/geo/guess") && res.request().method() === "POST" && res.ok()) {
     const body = await res.json().catch(() => null);
     if (body?.challengeToken) geoChallenge = body.challengeToken;
   }
@@ -1036,7 +1037,7 @@ await page.getByTestId("geo-rounds-3").click();
 await page.getByRole("button", { name: /3-round game/ }).click();
 let geoPlayed = 0;
 const countGuess = (res) => {
-  if (res.url().endsWith("/api/geo/guess") && res.ok()) geoPlayed++;
+  if (res.url().endsWith("/api/geo/guess") && res.request().method() === "POST" && res.ok()) geoPlayed++;
 };
 page.on("response", countGuess);
 await playGeoRounds(3);

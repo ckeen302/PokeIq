@@ -507,7 +507,7 @@ async function sturdy(width, height) {
   await page.route("**/api/geo/shot/**", (route) => route.abort("failed"));
   // A lost answer: the guess is sent again and graded once.
   let dropped = 0;
-  await page.route("**/api/geo/guess", (route) => (dropped++ === 0 ? route.abort("connectionreset") : route.continue()));
+  await page.route("**/api/geo/guess", (route) => (route.request().method() === "POST" && dropped++ === 0 ? route.abort("connectionreset") : route.continue()));
   await page.getByTestId("geo-guess").click();
   await page.getByTestId("geo-next").waitFor({ timeout: 20_000 }).catch(() => errors.push("sturdy: a dropped guess wasn't sent again"));
   await page.unroute("**/api/geo/guess");
