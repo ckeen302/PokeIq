@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "@/components/ui/Link";
-import { usePathname } from "@/i18n/navigation";
+import { useNavPathname } from "./nav-path";
 import { useLayoutEffect, useRef } from "react";
 import {
   MessagesSquare,
@@ -78,7 +78,7 @@ function ActiveBar({ className }: { className: string }) {
 }
 
 export function DesktopNav() {
-  const pathname = usePathname();
+  const pathname = useNavPathname();
   const account = useAccount();
   const t = useT(nav);
   return (

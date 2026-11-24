@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
-import { usePathname } from "@/i18n/navigation";
+import { useNavPathname } from "./nav-path";
 import { ChevronDown, ChevronRight, LogIn, LogOut, Users } from "lucide-react";
 import Link from "@/components/ui/Link";
 import { Avatar } from "@/components/avatar/Avatar";
@@ -29,7 +29,7 @@ const PANEL_AT = { opacity: 1, transform: "none" };
 const PANEL_OUT = { opacity: 0, transform: "translateY(-4px) scale(0.98)" };
 
 export function AccountMenu({ className }: { className?: string }) {
-  const pathname = usePathname();
+  const pathname = useNavPathname();
   const account = useAccount();
   const progress = useProgress();
   const community = useCommunity();

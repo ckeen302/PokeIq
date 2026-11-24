@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 export default function NotFound() {
   const t = serverT(site);
   return (
-    <div className="flex min-h-[60vh] flex-col items-center justify-center gap-6 text-center">
+    <div data-not-found className="flex min-h-[60vh] flex-col items-center justify-center gap-6 text-center">
       <div className="screen spotlight flex h-44 w-44 items-center justify-center rounded-md border-[3px] border-black/70">
         <img src="/api/art/201?s=160" alt="" className="relative z-[1] h-32 w-32 object-contain [filter:brightness(0)]" />
       </div>

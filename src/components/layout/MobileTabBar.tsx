@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { usePathname } from "@/i18n/navigation";
+import { useNavPathname } from "./nav-path";
 import {
   BookOpen,
   Box,
@@ -82,7 +82,7 @@ function tabActive(pathname: string, href: string) {
  * Its height is --tabbar-h (globals.css).
  */
 export function MobileTabBar() {
-  const pathname = usePathname();
+  const pathname = useNavPathname();
   const community = useCommunity();
   const waiting = community.requests + community.challenges.length;
   const [open, setOpen] = useState(false);
