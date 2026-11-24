@@ -9,7 +9,7 @@ import {
   type PokemonType,
 } from "@/lib/pokemon/type-matrix";
 import type { GenerateOptions, Question, QuestionBuilder } from "../types";
-import { clampRating, difficultyPool, genRating, pickTarget, typeLabel } from "../shared";
+import { aOrAn, clampRating, difficultyPool, genRating, pickTarget, typeLabel } from "../shared";
 import type { QuizLang } from "../i18n";
 import { localizable, wordOptions } from "../localize";
 import { pokemonName } from "../words";
@@ -130,7 +130,7 @@ function effectivenessQuestion(rng: Rng, opts: GenerateOptions): Question | null
   const q: Question = {
     itemKey: `types:eff:${attacker}>${typingKey(target.types)}${opts.difficulty === "hard" ? ":hidden" : ""}`,
     module: "types",
-    prompt: `How effective is a ${capitalize(attacker)}-type move against ${defenderLabel(target, opts)}?`,
+    prompt: `How effective is ${aOrAn(attacker)} ${capitalize(attacker)}-type move against ${defenderLabel(target, opts)}?`,
     media: { kind: "artwork", pokemonId: target.id },
     options: rng.shuffle([multiplier, ...distractors].map(formatMultiplier)),
     answer: formatMultiplier(multiplier),
