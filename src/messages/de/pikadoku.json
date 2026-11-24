@@ -126,7 +126,7 @@
     "gen9": { "name": "Gen-9-Woche", "blurb": "Paldeas Pokémon und die Formen, die mit ihnen kamen." },
     "competitive": { "name": "Kompetitive Woche", "blurb": "OU-Klassiker: Werte, Typen und die Werkzeuge des Metagames." }
   },
-  "countdown": "Nächstes Pikadoku in <b>{time}</b>",
+  "nextIn": "Nächstes Pikadoku in",
   "rarity": {
     "p": "unter 1 % haben es gewählt",
     "b": "unter 10 % haben es gewählt",

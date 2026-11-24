@@ -126,7 +126,7 @@
     "gen9": { "name": "Semana de la 9.ª generación", "blurb": "Los Pokémon de Paldea y las formas que llegaron con ellos." },
     "competitive": { "name": "Semana competitiva", "blurb": "Clásicos de OU: estadísticas, tipos y las herramientas del metajuego." }
   },
-  "countdown": "Próximo Pikadoku en <b>{time}</b>",
+  "nextIn": "Próximo Pikadoku en",
   "rarity": {
     "p": "lo eligió menos del 1 %",
     "b": "lo eligió menos del 10 %",

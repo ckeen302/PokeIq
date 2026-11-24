@@ -704,7 +704,7 @@ function PokedleGame({ names, community }: { names: NameEntry[]; community?: Com
                   ))}
                 </div>
                 <div className="grid gap-2 sm:grid-cols-2">
-                  <ShareButton getText={shareTextNow} label={t("result.share")} kind="pokedle" />
+                  <ShareButton getText={shareTextNow} label={t("shareResult")} kind="pokedle" />
                   <Button variant={mode === "practice" ? "default" : "outline"} onClick={() => newPractice()}>
                     <RefreshCw className="h-4 w-4" /> {mode === "practice" ? t("result.newPuzzle") : t("result.practiceMode")}
                   </Button>
