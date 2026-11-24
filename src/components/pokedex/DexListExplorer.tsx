@@ -326,7 +326,7 @@ export function DexListExplorer({
               </span>
               <span className="min-w-0">
                 {/* A long name wraps onto a second line, so "Fossilized Bird" and "Fossilized Dino" (or "Ability Capsule" in six columns) can be told apart. */}
-                <span className="line-clamp-2 break-words font-display text-sm font-bold uppercase leading-tight tracking-wide group-hover:text-screen">{it.name}</span>
+                <span className="line-clamp-2 hyphens-auto break-words font-display text-sm font-bold uppercase leading-tight tracking-wide group-hover:text-screen">{it.name}</span>
                 <span className="mt-0.5 block font-pixel text-[9px] uppercase leading-snug tracking-wider text-muted-foreground">{it.category}</span>
               </span>
             </Link>
