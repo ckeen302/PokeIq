@@ -309,9 +309,10 @@ export function DexListExplorer({
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {(filtered.slice(0, visible) as PlaceListItem[]).map((it) => (
             <Link key={it.slug} href={`/pokedex/places/${it.slug}`} data-testid="place-card" className="group rounded-lg border bg-card p-3 transition-colors hover:border-screen/60">
-              <span className="block truncate font-display text-sm font-bold uppercase tracking-wide group-hover:text-screen">{it.name}</span>
-              <span className="block truncate font-pixel text-[9px] uppercase tracking-wider text-muted-foreground">
-                {placeLabels?.types[it.type] ?? it.type} · {it.parent ? `${it.parent}, ` : ""}{placeLabels?.regions[it.region] ?? it.region}
+              <span className="block font-display text-sm font-bold uppercase leading-tight tracking-wide group-hover:text-screen">{it.name}</span>
+              {/* Blueberry Academy's places sit in the Blueberry Academy "region": the parent isn't said twice. */}
+              <span className="mt-1 block font-pixel text-[9px] uppercase leading-snug tracking-wider text-muted-foreground">
+                {placeLabels?.types[it.type] ?? it.type} · {it.parent && it.parent !== it.region ? `${it.parent}, ` : ""}{placeLabels?.regions[it.region] ?? it.region}
               </span>
             </Link>
           ))}
@@ -324,9 +325,9 @@ export function DexListExplorer({
                 <img src={itemSpriteUrl(it.slug)} alt="" loading="lazy" decoding="async" width={32} height={32} className="relative z-[1] h-8 w-8 object-contain [image-rendering:pixelated]" />
               </span>
               <span className="min-w-0">
-                {/* Two to a row on a phone: a long name wraps onto a second line there, so "Fossilized Bird" and "Fossilized Dino" can be told apart. */}
-                <span className="block truncate font-display text-sm font-bold uppercase tracking-wide group-hover:text-screen max-sm:line-clamp-2 max-sm:whitespace-normal max-sm:leading-tight">{it.name}</span>
-                <span className="block truncate font-pixel text-[9px] uppercase tracking-wider text-muted-foreground">{it.category}</span>
+                {/* A long name wraps onto a second line, so "Fossilized Bird" and "Fossilized Dino" (or "Ability Capsule" in six columns) can be told apart. */}
+                <span className="line-clamp-2 break-words font-display text-sm font-bold uppercase leading-tight tracking-wide group-hover:text-screen">{it.name}</span>
+                <span className="mt-0.5 block font-pixel text-[9px] uppercase leading-snug tracking-wider text-muted-foreground">{it.category}</span>
               </span>
             </Link>
           ))}

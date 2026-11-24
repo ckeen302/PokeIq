@@ -102,8 +102,6 @@ export default async function CardPage({ params }: PageProps) {
 
   return (
     <article className="mx-auto max-w-6xl space-y-8">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(ld) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(crumbs) }} />
       {set ? <DetailNav tab={`tcg/${set.id}`} label={set.name} pager={pager} home={{ href: "/pokedex/tcg", label: t("set.allSets") }} /> : <DetailNav tab="tcg" label={t("set.allSets")} />}
 
       <div className="grid grid-cols-1 gap-8 md:grid-cols-[minmax(0,22rem)_1fr] lg:grid-cols-[minmax(0,26rem)_1fr]">
@@ -311,6 +309,8 @@ export default async function CardPage({ params }: PageProps) {
         ))}{" "}
         {t("card.footerEnd")}
       </p>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(ld) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(crumbs) }} />
     </article>
   );
 }

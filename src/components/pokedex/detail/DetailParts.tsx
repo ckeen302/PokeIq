@@ -8,6 +8,7 @@ import { getLocale } from "@/i18n/server";
 import { typeNames } from "@/lib/pokemon/dex-local";
 import type { Pager, PagerLink } from "@/lib/dex/neighbours";
 import { DexPager } from "./DexPager";
+import { cn } from "@/lib/utils";
 import { serverT } from "@/i18n/server";
 import dexPager from "@/messages/dex-pager";
 
@@ -65,11 +66,23 @@ export function DetailHero({
       {media}
       <div className="min-w-0 flex-1 space-y-3">
         <p className="hud-label text-screen">{kicker}</p>
-        <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">{title}</h1>
+        <h1 className={cn("break-words font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl", phoneTitleSize(title, !!media))}>{title}</h1>
         {children}
       </div>
     </header>
   );
+}
+
+/**
+ * On a phone the title's longest word must fit the card: about 300px wide, or 200px beside an item's sprite
+ * ("Kangaskhanite", "Electromorphosis"). A title whose word wouldn't fit at the usual size is a step or two smaller.
+ */
+function phoneTitleSize(title: string, media: boolean): string | false {
+  const longest = Math.max(0, ...title.split(/\s+/).map((w) => w.length));
+  const room = media ? 200 : 300;
+  // The display font's capitals are about 0.6 of the font size wide.
+  const fits = (px: number) => longest * 0.6 * px <= room;
+  return fits(36) ? false : fits(30) ? "max-sm:text-3xl" : "max-sm:text-2xl";
 }
 
 export function StatBox({ label, value }: { label: string; value: React.ReactNode }) {
