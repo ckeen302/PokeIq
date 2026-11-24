@@ -723,7 +723,7 @@ export function WorldHistoryExperience({ initialChapter, localized, children }: 
     const c = CHAPTERS[ui.chapter];
     const text = show.current.playhead < PROLOGUE * 0.6 || !c ? HISTORY.title : `${c.title} (${c.region}) · ${HISTORY.title}`;
     if (typeof navigator.share === "function" && window.matchMedia("(pointer: coarse)").matches) {
-      try { await navigator.share({ title: HISTORY.title, text, url }); return; } catch { /* closed: copy instead */ }
+      try { await navigator.share({ title: HISTORY.title, text, url }); return; } catch (e) { if ((e as Error).name === "AbortError") return; /* not allowed here: copy instead */ }
     }
     if (await copyText(url)) setToast(t("copied"));
   };

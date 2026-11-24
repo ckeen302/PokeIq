@@ -28,6 +28,7 @@ import { startBattle } from "./start-battle";
 import type { TeamSource } from "./TeamPick";
 import { RulesVerdictNote, useRulesCheck } from "./RulesCheck";
 import { useT } from "@/i18n/client";
+import { localUrl } from "@/i18n/paths";
 import { formatNumber } from "@/i18n/format";
 import type { Translator } from "@/i18n/catalog";
 import home from "@/messages/battle-home";
@@ -286,7 +287,7 @@ export function BattleHome() {
         rules: custom ? rules : undefined,
         ...(mode === "pvp" ? { hidden } : {}),
       });
-      if (copyLink) await navigator.clipboard?.writeText(`${window.location.origin}${href}`).catch(() => undefined);
+      if (copyLink) await navigator.clipboard?.writeText(`${window.location.origin}${localUrl(href)}`).catch(() => undefined);
       router.push(href);
     } catch (err) {
       setError(err instanceof Error ? err.message : t("startFailed"));

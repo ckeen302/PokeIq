@@ -1186,7 +1186,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
     const url = window.location.href;
     const text = comparing ? t("shareCompare", { hook: compareHookText(line, order, tl) }) : focusItem && focusItem.kind !== "ref" && isDefaultOrder(order) ? t("shareFocus", { name: focusItem.name, size: other ? sizeText(focusItem, tl) : sizeLine(focusItem) }) : t("shareLine", { hook: hookText });
     if (typeof navigator.share === "function" && window.matchMedia("(pointer: coarse)").matches) {
-      try { await navigator.share({ title: t("shareTitle"), text, url }); return; } catch { /* closed, or not allowed: copy instead */ }
+      try { await navigator.share({ title: t("shareTitle"), text, url }); return; } catch (e) { if ((e as Error).name === "AbortError") return; /* not allowed here: copy instead */ }
     }
     if (await copyText(url)) setToast(t("copied"));
   };

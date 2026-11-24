@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { cleanMasterSeed, newMasterSeed } from "@/lib/battle/lab/seed";
 import { useT } from "@/i18n/client";
+import { localUrl } from "@/i18n/paths";
 import battleLab from "@/messages/battle-lab";
 import { decodeSetup, defaultSetup, fitToGen, labQuery, normalizeSetup, runSettingsSchema, setupIssue, setupJson, type SetupIssue } from "@/lib/battle/lab/setup";
 import { margin, wilson } from "@/lib/battle/lab/stats";
@@ -158,7 +159,7 @@ export function BattleLab() {
   }
 
   async function copySetupLink() {
-    const url = `${window.location.origin}/battle/lab?${await labQuery(setup)}`;
+    const url = `${window.location.origin}${localUrl(`/battle/lab?${await labQuery(setup)}`)}`;
     const ok = await copyText(url);
     setLinkState({ copied: ok, url: ok ? null : url });
     if (ok) window.setTimeout(() => setLinkState((l) => ({ ...l, copied: false })), 1600);
@@ -166,7 +167,7 @@ export function BattleLab() {
 
   async function copyResultLink(): Promise<boolean> {
     if (!run) return false;
-    const url = `${window.location.origin}/battle/lab?${await labQuery(run.setup, { runs: run.total, seed: run.seed })}`;
+    const url = `${window.location.origin}${localUrl(`/battle/lab?${await labQuery(run.setup, { runs: run.total, seed: run.seed })}`)}`;
     const ok = await copyText(url);
     if (!ok) setLinkState({ copied: false, url });
     return ok;

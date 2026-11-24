@@ -11,6 +11,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import type { BattleHandle } from "./use-battle";
 import { cn } from "@/lib/utils";
 import { useT } from "@/i18n/client";
+import { localUrl } from "@/i18n/paths";
 import roomNs from "@/messages/battle-room";
 import shareNs from "@/messages/share";
 import formatsNs from "@/messages/battle-formats";
@@ -35,7 +36,7 @@ export function ShareReplay({ id, result, formatName, size = "sm" }: { id: strin
       label={t("after.share")}
       kind="replay"
       data-testid="share-replay"
-      getText={() => replayShareText(result, formatName, `${window.location.origin}/battle/replay/${id}`, ts)}
+      getText={() => replayShareText(result, formatName, `${window.location.origin}${localUrl(`/battle/replay/${id}`)}`, ts)}
     />
   );
 }
@@ -64,7 +65,7 @@ function ShareWin({ view, result }: { view: BattleView; result: BattleShareResul
     <ShareButton
       size="sm"
       kind="battle"
-      getText={() => battleShareText(result, view.replay ? `${window.location.origin}/battle/replay/${view.replay}` : shareUrl(result), formatName, ts)}
+      getText={() => battleShareText(result, view.replay ? `${window.location.origin}${localUrl(`/battle/replay/${view.replay}`)}` : shareUrl(result, ts.locale), formatName, ts)}
     />
   );
 }

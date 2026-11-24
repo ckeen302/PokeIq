@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { BattleSprite } from "./BattleSprite";
 import { CardSection, SIDE_COLOR } from "./lab/charts";
 import { useT } from "@/i18n/client";
+import { localUrl } from "@/i18n/paths";
 import battleAnalysis from "@/messages/battle-analysis";
 import { useBattleNames, type BattleNames } from "./use-battle-names";
 
@@ -303,7 +304,9 @@ function ShareCard({ stats, viewer, replay, turning, t, names }: { stats: Battle
   useEffect(() => setOrigin(window.location.origin), []);
   useEffect(() => () => window.clearTimeout(timer.current), []);
   const biggest = turning.length ? turning.reduce((a, b) => (Math.abs(b.delta) > Math.abs(a.delta) ? b : a)) : null;
-  const url = `${origin}/battle/replay/${replay.id}?analysis=1&side=${viewer}`;
+  const path = `/battle/replay/${replay.id}?analysis=1&side=${viewer}`;
+  // The link in the page's language, once in the browser (the first render matches the server's).
+  const url = `${origin}${origin ? localUrl(path) : path}`;
   const full = shareText(stats, viewer, { formatName: replay.formatName, url, turning: biggest }, t, names.species);
   // The card as it pastes, without the brand line (shown as the heading) and the link (said underneath).
   const body = full.split("\n").slice(1, -1).join("\n");
