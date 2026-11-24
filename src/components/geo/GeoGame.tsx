@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import Link from "@/components/ui/Link";
 import dynamic from "next/dynamic";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { CalendarRange, Check, ChevronDown, Compass, Flame, Globe2, Loader2, Shapes, SlidersHorizontal, MapPin as MapPinIcon, Swords, Trophy, Users, X, Map as MapIcon } from "lucide-react";
+import { CalendarRange, Check, ChevronDown, Clock, Compass, Flame, Globe2, Loader2, Shapes, SlidersHorizontal, MapPin as MapPinIcon, Swords, Trophy, Users, X, Map as MapIcon } from "lucide-react";
 import { GEO_FILTER_MIN_PLACES, GEO_MAX_ROUND_SCORE, GEO_ROUNDS, WORLD_REGION, isGeoRounds, type GeoRounds, geoBoardKey, geoDailyRegion, geoMapRank, type GeoChallenge, type GeoGuessResponse, type GeoKind, type GeoRegionInfo, type GeoRoundPublic, type GeoStartResponse } from "@/lib/geo-types";
 import { dailyNumber } from "@/lib/daily";
 import { useToday } from "@/lib/use-today";
@@ -1520,8 +1520,16 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
     const last = played[played.length - 1]?.graded;
     const GeoResults = loaded.GeoResults ?? LazyResults;
     const GeoSummary = loaded.GeoSummary ?? LazySummary;
+    // The Weekly says when the next one comes, under Back, as the Daily does (in the hub card's words).
+    const weeklyLeft = game.weekly ? geoWeeklyLeftParts(game.weekly, Date.now()) : null;
+    const nextWeekly = weeklyLeft ? (
+      <p className="flex items-center justify-center gap-2 text-sm text-muted-foreground" data-testid="geo-results-next-weekly">
+        <Clock className="h-4 w-4" aria-hidden />
+        {t("hub.weekly.next", { left: t(`hub.weekly.${weeklyLeft.unit}`, { d: weeklyLeft.d, h: weeklyLeft.h, m: weeklyLeft.m }) })}
+      </p>
+    ) : undefined;
     return (
-      <GeoResults game={game} played={played} pinImage={pinImage} shareToken={last?.resultToken} onRestart={() => setPhase("setup")}>
+      <GeoResults game={game} played={played} pinImage={pinImage} shareToken={last?.resultToken} onRestart={() => setPhase("setup")} next={nextWeekly}>
         <GeoSummary
           game={game}
           played={played}
