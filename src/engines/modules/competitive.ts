@@ -2,6 +2,7 @@ import { Dex } from "@pkmn/dex";
 import type { Rng } from "@/lib/rng";
 import type { Difficulty, GenerateOptions, Question, QuestionBuilder } from "../types";
 import type { QuizLang } from "../i18n";
+import { aOrAn } from "../shared";
 import { localizable, must, wordOptions, type Wording } from "../localize";
 
 /**
@@ -146,7 +147,7 @@ export const competitive: QuestionBuilder = (rng, opts): Question | null => {
     if (pool.length === 0) return null;
     const m = rng.pick(pool);
     if (kind === "move-type") {
-      return make(m.name, m, `What type is the move ${m.name}?`, m.type, rng.sample(TYPES.filter((t) => t !== m.type), 3), `${m.name} is a ${m.type}-type move.`, "In the current games", (q, L) => {
+      return make(m.name, m, `What type is the move ${m.name}?`, m.type, rng.sample(TYPES.filter((t) => t !== m.type), 3), `${m.name} is ${aOrAn(m.type)} ${m.type}-type move.`, "In the current games", (q, L) => {
         const move = must(L.name("moves", m.name), m.name);
         const named = wordOptions(q, (t) => L.type(t.toLowerCase()));
         return named && { prompt: L.t("comp.moveTypePrompt", { move }), detail: L.t("comp.current"), ...named, explanation: L.t("comp.moveTypeExplanation", { move, type: named.answer }) };

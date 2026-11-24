@@ -8,6 +8,11 @@ import {
 import { capitalize } from "@/lib/pokemon/type-matrix";
 import type { Difficulty, GenerateOptions } from "./types";
 
+/** "a" or "an" before an English word ("an Ice-type move", "a Fire-type move"). */
+export function aOrAn(word: string): string {
+  return /^[aeiou]/i.test(word) ? "an" : "a";
+}
+
 /**
  * Prior recognisability by generation on the PokéIQ rating scale.
  * These seed the item-difficulty model until enough real answers exist
