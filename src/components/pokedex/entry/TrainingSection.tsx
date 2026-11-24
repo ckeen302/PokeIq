@@ -4,6 +4,7 @@ import { m } from "framer-motion";
 import type { DexEntryData } from "@/lib/pokemon/dex-types";
 import type { StatKey } from "@/lib/pokemon/constants";
 import { catchChance } from "@/lib/pokemon/stat-calc";
+import { titleCase } from "@/lib/pokemon/constants";
 import { useT } from "@/i18n/client";
 import dexEntryNs from "@/messages/dex-entry";
 
@@ -50,7 +51,7 @@ export function TrainingSection({ data }: { data: DexEntryData }) {
           )}
         </div>
         <Row label={t("train.differences")} value={data.genderDifferences ? t("train.yes") : t("train.no")} />
-        <Row label={t("train.habitat")} value={data.core.habitat ? data.core.habitat.replace(/-/g, " ") : "—"} />
+        <Row label={t("train.habitat")} value={data.core.habitat ? titleCase(data.core.habitat) : "—"} />
       </Card>
 
       <Card title={t("train.otherNames")}>
