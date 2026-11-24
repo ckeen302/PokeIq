@@ -79,7 +79,8 @@ export function HowToDialog({
   const title = titleProp ?? t("title");
   return (
     // !m-0: a parent's space-y would push the overlay down (PokéGuessr's put its card 20px lower than the others).
-    <div className="fixed inset-0 z-50 !m-0 flex items-center justify-center bg-black/60 p-4 max-md:z-[65]" onClick={onClose}>
+    // Above the tab bar wherever it shows (below lg), or a tablet's tab bar covers the card's buttons.
+    <div className="fixed inset-0 z-50 !m-0 flex items-center justify-center bg-black/60 p-4 max-lg:z-[65]" onClick={onClose}>
       <div
         role="dialog"
         aria-modal="true"
