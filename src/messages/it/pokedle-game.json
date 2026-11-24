@@ -10,10 +10,10 @@
   },
   "title": {
     "practice": "Allenamento",
-    "daily": "Sfida del giorno n. {n}",
-    "dailyStats": "Sfida del giorno n. {n} · Dati",
-    "archive": "Sfida del giorno n. {n} · Archivio ({date})",
-    "loading": "Sfida del giorno"
+    "daily": "Giornaliero n. {n}",
+    "dailyStats": "Giornaliero n. {n} · Dati",
+    "archive": "Giornaliero n. {n} · Archivio ({date})",
+    "loading": "Giornaliero"
   },
   "formats": {
     "label": "Formato della sfida del giorno",
@@ -145,7 +145,7 @@
     "solvedIn": "Indovinata in {n}",
     "missed": "Non indovinata",
     "inProgress": "In corso · {n}/{max}",
-    "daily": "{status} (sfida del giorno)"
+    "daily": "{status} (giornaliero)"
   },
   "community": {
     "label": "Com'è andata oggi a tutti",
