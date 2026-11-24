@@ -155,3 +155,9 @@ html.tlm-dragging .tlm-tile:hover { background: hsl(var(--foreground) / 0.045); 
   .tlm-tile, .tlm-duel-card, .tlm-marker { transition: none; }
   .tlm-duel-card:hover { transform: none; }
 }
+
+/* Phones: the pool is a drawer fixed above the tab bar (40svh open, its 52px handle closed). The footer's margin, which
+   keeps the page's end clear of the tab bar, grows by the drawer's height, so the last tier, the credits and the footer
+   scroll up above it instead of staying underneath. */
+html:has([data-tl-drawer="open"]) body > footer { margin-bottom: calc(4rem + env(safe-area-inset-bottom) + 40svh); }
+html:has([data-tl-drawer="closed"]) body > footer { margin-bottom: calc(4rem + env(safe-area-inset-bottom) + 52px); }

@@ -439,7 +439,7 @@ export default function TierListApp({ roster, template, shared }: AppProps) {
         )}
       >
         <section
-          className={cn("min-w-0", showPool && "tlm-scroll lg:overflow-y-auto lg:pr-1", showPool && phone && poolOpen && "pb-[calc(40svh+16px)]")}
+          className={cn("min-w-0", showPool && "tlm-scroll lg:overflow-y-auto lg:pr-1")}
           data-scroll={showPool ? "" : undefined}
           data-testid="tl-stage"
         >
@@ -561,6 +561,8 @@ export default function TierListApp({ roster, template, shared }: AppProps) {
             )}
             aria-label={t("pool.label")}
             data-testid="tl-pool-panel"
+            // Phones: the page's end (the tiers, the credits, the footer) scrolls clear of the drawer (tier-list.css).
+            data-tl-drawer={phone ? (poolOpen ? "open" : "closed") : undefined}
           >
             {phone && (
               <button type="button" onClick={() => setPoolOpen((v) => !v)} className="flex h-11 w-full shrink-0 items-center justify-between text-[14px] font-semibold" aria-expanded={poolOpen} data-testid="pool-toggle">

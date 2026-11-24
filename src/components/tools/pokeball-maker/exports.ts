@@ -16,7 +16,8 @@ export { saveBlob };
 
 export function fileBase(d: Design): string {
   const s = (d.name || "poke-ball").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-  return s || "poke-ball";
+  // "pokeiq-poke-ball.png": named like the site's other downloads.
+  return `pokeiq-${s || "poke-ball"}`;
 }
 
 /** The pose for a still picture: three-quarters on, the button towards you. */
