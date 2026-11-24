@@ -40,6 +40,8 @@ export interface FitTiming {
   duration?: number;
   /** Screen px along the top and bottom kept clear of the pins (the end screen's tracker and buttons sit there). */
   pad?: { top: number; bottom: number };
+  /** With no round picked, frame the whole map, centred and uncut (the world, or a region's own crop), as GeoGuessr's breakdown does, not just the pins. */
+  whole?: boolean;
 }
 
 interface Props {
@@ -281,7 +283,8 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
 
   // A revealed round zooms to show the guess and the answer together, once the line has drawn (a focused one, it alone).
   const framed = focus !== null && revealed[focus] ? [revealed[focus]] : revealed;
-  const revealKey = [...framed.map((r) => `${r.guess?.x},${r.guess?.y},${flagAt(r.answer)}`), ...(spots ?? []).map((p) => `${p.x},${p.y}`), ...(links ?? []).map((l) => `${l.pin.x},${l.pin.y}`), `${density?.cells.length ?? ""}`].join("|");
+  const fitWhole = !!fit?.whole && framed === revealed;
+  const revealKey = [...framed.map((r) => `${r.guess?.x},${r.guess?.y},${flagAt(r.answer)}`), ...(spots ?? []).map((p) => `${p.x},${p.y}`), ...(links ?? []).map((l) => `${l.pin.x},${l.pin.y}`), `${density?.cells.length ?? ""}`, `${fitWhole}`].join("|");
   const fitDelay = fit?.delay ?? 0;
   const fitDuration = fit?.duration;
   const fitPad = fit?.pad;
@@ -304,6 +307,9 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
     const xs = pts.map((p) => p[0]);
     const ys = pts.map((p) => p[1]);
     const box: Box = [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
+    // GeoGuessr's breakdown: the whole map, centred and none of it cut off (the world, or a region's own crop), not just
+    // the pins, which on one side would push the map off-centre.
+    if (fitWhole && atlas) [box[0], box[1], box[2], box[3]] = locked ? [x0, y0, x1, y1] : [0, 0, atlas.W, atlas.H];
     // Room kept clear at the top and bottom: the box grows into them, so the pins sit in what's left between.
     const stageH = stageRef.current?.clientHeight ?? 0;
     if (fitPad && stageH > fitPad.top + fitPad.bottom + 80) {
@@ -313,7 +319,7 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
       box[3] += (h * fitPad.bottom) / free;
     }
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const id = window.setTimeout(() => void engine.current?.fitBox(box, REVEAL_MIN_BOX, fitDuration), reduced ? 0 : fitDelay);
+    const id = window.setTimeout(() => void engine.current?.fitBox(box, REVEAL_MIN_BOX, fitDuration, fitWhole ? 1 : undefined), reduced ? 0 : fitDelay);
     return () => window.clearTimeout(id);
     // The engine is made once the first paint's crop is in (cropPainted): a reveal that is the page's first map (Region Streak,
     // say) fits then, not before, when there's no engine yet to move.

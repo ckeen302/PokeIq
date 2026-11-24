@@ -591,7 +591,7 @@ export function EndShareCard({ title, sub, text, url, picture, kind, testId = "g
   return (
     <div className="flex w-full flex-col items-center gap-2">
       <div
-        className="flex w-[min(100%,24rem)] items-center gap-3 rounded-xl bg-gradient-to-r from-[#2d2766] via-[#3b2f8f] to-[#4a3aa8] p-1.5 pr-2 text-left text-white shadow-[0_8px_24px_rgb(0_0_0/0.45)] ring-2 ring-[#8b7cff]/45"
+        className="flex w-[min(100%,26rem)] xl:w-[min(100%,28rem)] items-center gap-3 rounded-xl bg-gradient-to-r from-[#2d2766] via-[#3b2f8f] to-[#4a3aa8] p-1.5 pr-2 text-left text-white shadow-[0_8px_24px_rgb(0_0_0/0.45)] ring-2 ring-[#8b7cff]/45"
         data-testid={testId}
         data-share={full}
         title={full}
@@ -612,7 +612,7 @@ export function EndShareCard({ title, sub, text, url, picture, kind, testId = "g
         </button>
       </div>
       {state === "failed" && (
-        <div className="w-[min(100%,24rem)]">
+        <div className="w-[min(100%,26rem)] xl:w-[min(100%,28rem)]">
           <CopyFallback text={full} />
         </div>
       )}
@@ -672,7 +672,7 @@ export function EndBoard({ href, boardLabel, save, note }: {
     </Link>
   );
   return (
-    <div className="flex w-[min(100%,24rem)] flex-col gap-1.5" data-testid="geo-end-board">
+    <div className="flex w-[min(100%,26rem)] xl:w-[min(100%,28rem)] flex-col gap-1.5" data-testid="geo-end-board">
       <div className="flex items-center gap-2.5 rounded-xl bg-[#1e1a3f]/85 p-1.5 text-white ring-1 ring-white/15 backdrop-blur">
         {trophy}
         {save ? (

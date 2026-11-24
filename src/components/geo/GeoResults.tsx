@@ -173,7 +173,7 @@ export function GeoResults({
 
   return (
     <EndScreen
-      map={<GeoMap region={game.region} revealed={revealed} fill fit={{ duration: 900, pad: focus === null ? END_MAP_PAD : END_MAP_PAD_PICKED }} focus={focus} density={crowdRound} />}
+      map={<GeoMap region={game.region} revealed={revealed} fill fit={{ duration: 900, pad: focus === null ? END_MAP_PAD : END_MAP_PAD_PICKED, whole: true }} focus={focus} density={crowdRound} />}
       score={
         isStreak
           ? { value: streak, label: t("end.yourStreak"), unit: t("end.inARow") }
