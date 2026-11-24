@@ -23,13 +23,14 @@ export default function BattleFactoryPage() {
   const t = serverT(pagesNs);
   return (
     <div className="mx-auto max-w-6xl space-y-8">
-      <GameJsonLd name={t("factory.name")} path="/battle/factory" description={t("factory.description")} />
       <BattleHeader crumb={t("factory.name")} title={t("factory.title")} accent={t("factory.accent")}>
         {t("factory.intro")}
       </BattleHeader>
       <ClientMessages namespaces={[frontierNs, formatsNs]}>
         <FrontierHub mode="factory" />
       </ClientMessages>
+      {/* Last: an invisible <script> first in a spaced stack would push the header down. */}
+      <GameJsonLd name={t("factory.name")} path="/battle/factory" description={t("factory.description")} />
     </div>
   );
 }

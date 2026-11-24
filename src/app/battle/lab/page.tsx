@@ -26,13 +26,14 @@ export default function LabPage() {
   const t = serverT(battlePages);
   return (
     <div className="mx-auto max-w-6xl space-y-8">
-      <GameJsonLd name={t("lab.name")} path="/battle/lab" description={t("lab.description")} />
       <BattleHeader crumb={t("lab.crumb")} title={t("lab.heading")} accent={t("lab.accent")}>
         {t("lab.intro")}
       </BattleHeader>
       <ClientMessages namespaces={[battleLab, battleLabCharts, battleTeams, battleTerms, battlePickers, battleInputs]}>
         <BattleLab />
       </ClientMessages>
+      {/* Last: an invisible <script> first in a spaced stack would push the header down. */}
+      <GameJsonLd name={t("lab.name")} path="/battle/lab" description={t("lab.description")} />
     </div>
   );
 }
