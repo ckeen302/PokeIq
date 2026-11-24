@@ -420,6 +420,7 @@ export function GeoDuel({ code, regions, names }: GeoDuelProps) {
     const final = view.status === "finished";
     const pressed = view.next?.pressed[me] ?? false;
     const nextIn = view.next ? seconds(view.next.at - now) : 0;
+    const nextLabel = final ? t("reveal.results") : pressed ? t("reveal.waiting", { name: them, n: nextIn }) : t("reveal.next", { n: nextIn });
     return (
       <GameShell>
         {() => (
@@ -430,11 +431,11 @@ export function GeoDuel({ code, regions, names }: GeoDuelProps) {
               onClick={() => (final ? showResults() : void nextRound())}
               data-testid="geo-duel-next"
               className={cn(
-                "flex h-12 w-full items-center justify-center gap-2 rounded-md px-6 font-display text-base font-bold uppercase tracking-wider text-white shadow-lg transition-[background-color,transform]",
+                "flex h-12 w-full min-w-0 items-center justify-center gap-2 whitespace-nowrap rounded-md px-6 font-display text-base font-bold uppercase tracking-wider text-white shadow-lg transition-[background-color,transform]",
                 !final && (pressed || busy) ? "cursor-wait bg-black/60" : "bg-[#4cbb17] hover:bg-[#58d01c] active:scale-[0.98]"
               )}
             >
-              {final ? t("reveal.results") : pressed ? t("reveal.waiting", { name: them, n: nextIn }) : t("reveal.next", { n: nextIn })}
+              <span className="min-w-0 truncate" title={nextLabel}>{nextLabel}</span>
             </button>
             {!final && (
               <div className="mt-2 flex justify-center">
@@ -528,7 +529,7 @@ function DuelReveal({
               {/* eslint-disable-next-line @next/next/no-img-element -- the same cached screenshot, as a thumbnail */}
               <img src={result.shot} alt="" className="hidden h-12 w-16 shrink-0 rounded border border-white/20 object-cover sm:block" />
               <div className="min-w-0">
-                <p className="font-display text-base font-extrabold uppercase italic leading-tight sm:text-lg" data-testid="geo-duel-headline">
+                <p className="truncate font-display text-base font-extrabold uppercase italic leading-tight sm:text-lg" data-testid="geo-duel-headline">
                   {headline}
                   {result.hurt !== null && result.multiplier > 1 && <span className="text-[#ffd23c]">{t("reveal.multiplier", { m: multIn(t.locale, result.multiplier) })}</span>}
                 </p>
@@ -545,7 +546,7 @@ function DuelReveal({
                 </div>
               </div>
             </div>
-            <div className="w-full md:w-72">{children}</div>
+            <div className="w-full min-w-0 md:w-auto md:min-w-72 md:max-w-[26rem]">{children}</div>
           </div>
         </motion.div>
       </div>

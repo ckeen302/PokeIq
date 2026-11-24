@@ -67,7 +67,7 @@ const PREFETCH_TTL_MS = 60_000;
 /** The likeliest game is started ahead this long after the page has loaded, clear of its first paints. */
 const WARM_AFTER_LOAD_MS = 2000;
 import { ShotCarousel, shotFit } from "./ShotCarousel";
-import { BAR_BTN, ConfirmExit, CountdownPill, ExitButton, FullscreenButton, GameShell, GuessButton, HudDials, MapDock, Notch, RoundBadge, RoundReadout, ScoreTracker, TimerDial, usePhone } from "./GameShell";
+import { BAR_BTN, ConfirmExit, CountdownPill, ExitButton, FullscreenButton, GameShell, GuessButton, HudDials, MapDock, Notch, RESULT_BAR_GRID, RESULT_BAR_VERDICT, ResultNextButton, RoundBadge, RoundReadout, ScoreTracker, TimerDial, usePhone } from "./GameShell";
 import { roundViewsOf } from "@/lib/geo-look";
 import { DifficultyPicker, GeoSettingsButton, RoundsPicker, TimerPicker } from "./GeoSettings";
 import { DEFAULT_GEO_SETTINGS, GEO_DEFAULT_TIMER, GEO_ZOOM, readGeoSettings, rememberGeoSettings, visibleViews, zoomOrigin, type GeoPlaySettings, type GeoTimer } from "@/lib/geo-settings";
@@ -1908,6 +1908,14 @@ function RoundReveal({
   const roundNumber = Math.min(game.rounds, round);
   const bar = { initial: { width: 0 }, animate: { width: `${(graded.score / GEO_MAX_ROUND_SCORE) * 100}%` }, transition: { duration: reduced ? 0 : SCORE_COUNT_MS / 1000, delay: reduced ? 0 : countDelay / 1000, ease: "easeOut" as const } };
   const rise = (delay: number) => ({ initial: reduced ? false : { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.35, delay: reduced ? 0 : delay, ease: [0.2, 0.8, 0.2, 1] as const } });
+  const streakVerdict = graded.hit ? (isWorld ? t("reveal.rightRegion") : t("reveal.correct")) : isWorld ? t("reveal.wrongRegion") : t("reveal.over");
+  const gameSaid = !graded.gameGuess
+    ? ""
+    : graded.gameGuess.correct
+      ? t("reveal.rightGame", { bonus: fmt(graded.gameGuess.bonus) })
+      : graded.gameGuess.guessed
+        ? t("reveal.wrongGame", { game: names.game(geoFamily(graded.gameGuess.guessed).name) })
+        : t("reveal.noGame", { bonus: fmt(GEO_GAME_BONUS) });
   return (
     <div className="relative flex h-full flex-col md:block" data-testid="geo-reveal">
       {/* Phone: the map takes what the bottom bar leaves, so the camera frames both pins in view. */}
@@ -1945,23 +1953,23 @@ function RoundReveal({
 
       {/* The bottom bar. */}
       <motion.div {...rise(0.15)} className="relative z-20 shrink-0 border-t-4 md:absolute md:inset-x-0 md:bottom-0 border-[#a99cff] bg-[#1e1a3f]/95 text-white shadow-[0_-12px_40px_rgba(0,0,0,0.5)] backdrop-blur">
-        <div className="mx-auto grid max-w-6xl items-center gap-3 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 sm:gap-6 sm:px-6 md:grid-cols-[1fr_auto_1fr]">
+        <div className={RESULT_BAR_GRID}>
           {/* The score (or the streak) and its bar. */}
-          <div className="min-w-0 text-center md:text-left">
+          <div className={RESULT_BAR_VERDICT}>
             {isStreak ? (
               <>
-                <p className={cn("hud-label", graded.hit ? "!text-[#9be15d]" : "!text-[#ff5a5a]")}>
-                  {graded.hit ? (isWorld ? t("reveal.rightRegion") : t("reveal.correct")) : isWorld ? t("reveal.wrongRegion") : t("reveal.over")}
+                <p className={cn("hud-label truncate", graded.hit ? "!text-[#9be15d]" : "!text-[#ff5a5a]")} title={streakVerdict}>
+                  {streakVerdict}
                 </p>
-                <p className="flex items-center justify-center gap-2 font-display text-4xl font-bold italic md:justify-start md:text-3xl lg:text-4xl">
-                  {graded.hit ? <Check className="h-8 w-8 text-[#9be15d]" aria-hidden /> : <X className="h-8 w-8 text-[#ff5a5a]" aria-hidden />}
-                  {graded.hit ? t("reveal.inARow", { n: streak }) : t("reveal.final", { n: streak })}
+                <p className="flex items-center justify-center gap-2 whitespace-nowrap font-display text-4xl font-bold italic md:justify-start md:text-2xl lg:text-4xl">
+                  {graded.hit ? <Check className="h-8 w-8 shrink-0 text-[#9be15d] md:h-6 md:w-6 lg:h-8 lg:w-8" aria-hidden /> : <X className="h-8 w-8 shrink-0 text-[#ff5a5a] md:h-6 md:w-6 lg:h-8 lg:w-8" aria-hidden />}
+                  <span className="min-w-0 truncate">{graded.hit ? t("reveal.inARow", { n: streak }) : t("reveal.final", { n: streak })}</span>
                 </p>
               </>
             ) : (
               <>
-                <p className="hud-label !text-[#c8bfff]">{verdict(graded.score, t)}</p>
-                <p className="geo-glow font-display text-4xl font-bold italic tabular-nums sm:text-5xl" data-testid="geo-round-score">
+                <p className="hud-label truncate !text-[#c8bfff]">{verdict(graded.score, t)}</p>
+                <p className="geo-glow whitespace-nowrap font-display text-4xl font-bold italic tabular-nums sm:text-5xl" data-testid="geo-round-score">
                   {fmt(shown)} <span className="text-lg not-italic text-white/60">{t("hud.pts")}</span>
                 </p>
                 <div className="mt-1.5 flex items-center gap-2">
@@ -1973,19 +1981,15 @@ function RoundReveal({
               </>
             )}
             {graded.gameGuess && (
-              <p className={cn("mt-1 text-sm font-semibold", graded.gameGuess.correct ? "text-[#9be15d]" : "text-white/60")} data-testid="geo-game-bonus">
-                {graded.gameGuess.correct
-                  ? t("reveal.rightGame", { bonus: fmt(graded.gameGuess.bonus) })
-                  : graded.gameGuess.guessed
-                    ? t("reveal.wrongGame", { game: names.game(geoFamily(graded.gameGuess.guessed).name) })
-                    : t("reveal.noGame", { bonus: fmt(GEO_GAME_BONUS) })}
+              <p className={cn("mt-1 truncate text-sm font-semibold", graded.gameGuess.correct ? "text-[#9be15d]" : "text-white/60")} data-testid="geo-game-bonus" title={gameSaid}>
+                {gameSaid}
               </p>
             )}
           </div>
 
           {/* The distance pill and the place. */}
           <motion.div {...rise(reduced ? 0 : (LINE_DRAW_MS + FIT_MS) / 1000)} className="flex min-w-0 flex-col items-center gap-2">
-            <span className="inline-flex items-center gap-2 rounded-full border-2 border-[#a99cff] bg-[#4cbb17] px-4 py-1.5 font-display text-sm font-bold uppercase italic tracking-wide text-white shadow-lg" data-testid="geo-distance">
+            <span className="inline-flex max-w-full items-center gap-2 whitespace-nowrap rounded-full border-2 border-[#a99cff] bg-[#4cbb17] px-4 py-1.5 font-display text-sm font-bold uppercase italic tracking-wide text-white shadow-lg" data-testid="geo-distance">
               <MapPinIcon className="h-4 w-4" aria-hidden />
               {graded.timedOut ? t("reveal.timeUp") : distanceText(graded.answer.squares, t)}
             </span>
@@ -1995,16 +1999,10 @@ function RoundReveal({
 
           {/* Next, with its hotkey, and the report link. */}
           <div className="flex flex-col items-center gap-1.5 md:items-end">
-            <button
-              type="button"
-              onClick={onNext}
-              data-testid="geo-next"
-              className="flex min-h-12 w-full max-w-xs items-center justify-center gap-2 rounded-md bg-[#4cbb17] px-6 py-1.5 font-display text-base leading-tight font-bold uppercase tracking-wider text-white shadow-lg transition-[background-color,transform] hover:bg-[#58d01c] active:scale-[0.98]"
-            >
-              {graded.done ? (isStreak ? t("reveal.results") : t("reveal.summary")) : t("reveal.next")} ▶
-              <kbd aria-hidden className="ml-1 hidden rounded border border-white/40 px-1.5 text-[10px] font-normal normal-case sm:inline [@media(pointer:coarse)]:!hidden">{t("reveal.space")}</kbd>
-            </button>
-            <div className="text-white/60 [&_button]:text-white/60 [&_button:hover]:text-white">
+            <ResultNextButton onClick={onNext} testId="geo-next" hint={t("reveal.space")}>
+              {graded.done ? (isStreak ? t("reveal.results") : t("reveal.summary")) : t("reveal.next")}
+            </ResultNextButton>
+            <div className="whitespace-nowrap text-white/60 [&_button]:text-white/60 [&_button:hover]:text-white">
               <ReportShot key={current.shot} shot={current.shot} mode={game.daily ? "daily" : "solo"} />
             </div>
           </div>

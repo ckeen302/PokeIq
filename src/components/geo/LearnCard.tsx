@@ -51,30 +51,36 @@ export function LearnCard({ answer, shot, map, className, learn: given }: { answ
       off = true;
     };
   }, [answer, given]);
+  const place = en ? placeLabel(answer, map) : names.placeLabel(answer, map);
+  const game = en ? `Pokémon ${answer.game}` : gn("game", { game: names.game(answer.game) });
+  // One line each, in every language: a long name or game tag truncates (its whole text in the tooltip). On a phone the
+  // links can drop to a second line, each one whole; on a small computer screen (md, below lg) they're their icons alone.
   return (
-    <div className={cn("flex min-w-0 items-start gap-3", className)} data-testid="geo-learn-card">
+    <div className={cn("flex min-w-0 max-w-full items-start gap-3", className)} data-testid="geo-learn-card">
       {shot && (
         // eslint-disable-next-line @next/next/no-img-element -- the same cached screenshot, as a thumbnail
         <img src={shot} alt="" className="mt-0.5 h-12 w-16 shrink-0 rounded border border-white/20 object-cover" />
       )}
       <div className="min-w-0">
-        <p className="truncate font-display text-base font-bold uppercase leading-tight max-md:whitespace-normal max-md:text-sm max-md:[overflow-wrap:anywhere]" data-testid="geo-answer-place">
-          {en ? placeLabel(answer, map) : names.placeLabel(answer, map)}
+        <p className="truncate font-display text-base font-bold uppercase leading-tight max-md:text-sm" data-testid="geo-answer-place" title={place}>
+          {place}
         </p>
-        <p className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-white/70">
-          {answer.region && <span>{names.region(answer.region)}</span>}
+        <p className="flex min-w-0 items-center gap-x-2 gap-y-0.5 whitespace-nowrap text-xs text-white/70 max-md:flex-wrap">
+          {answer.region && <span className="shrink-0">{names.region(answer.region)}</span>}
           {learn?.type && learn.type !== "Other" && learn.type !== "Building" && (
-            <span className="text-white/50">· {t.locale === "en" ? learn.type : gn.has(`types.${learn.type}`) ? gn(`types.${learn.type}` as "types.City") : learn.type}</span>
+            <span className="shrink-0 text-white/50">· {t.locale === "en" ? learn.type : gn.has(`types.${learn.type}`) ? gn(`types.${learn.type}` as "types.City") : learn.type}</span>
           )}
-          <span className="rounded-sm border border-white/30 px-1.5 py-0.5 text-[11px] text-white" data-testid="geo-answer-game">
-            {en ? <>Pokémon {answer.game}</> : gn("game", { game: names.game(answer.game) })}
+          <span className="min-w-0 max-w-full truncate rounded-sm border border-white/30 px-1.5 py-0.5 text-[11px] text-white" data-testid="geo-answer-game" title={game}>
+            {game}
           </span>
-          <Link href={atlasSearchHref(answer)} target="_blank" className="inline-flex items-center gap-1 underline underline-offset-2 hover:text-white" data-testid="geo-atlas-link">
-            <MapIcon className="h-3 w-3" aria-hidden />{` ${t("learn.atlas")}`}
+          <Link href={atlasSearchHref(answer)} target="_blank" className="inline-flex shrink-0 items-center gap-1 underline underline-offset-2 hover:text-white" data-testid="geo-atlas-link" title={t("learn.atlas")}>
+            <MapIcon className="h-3 w-3" aria-hidden />
+            <span className="md:max-lg:sr-only">{t("learn.atlas")}</span>
           </Link>
           {learn?.href && (
-            <Link href={learn.href} target="_blank" className="inline-flex items-center gap-1 underline underline-offset-2 hover:text-white" data-testid="geo-learn-link">
-              <BookOpen className="h-3 w-3" aria-hidden />{` ${t("learn.dex")}`}
+            <Link href={learn.href} target="_blank" className="inline-flex shrink-0 items-center gap-1 underline underline-offset-2 hover:text-white" data-testid="geo-learn-link" title={t("learn.dex")}>
+              <BookOpen className="h-3 w-3" aria-hidden />
+              <span className="md:max-lg:sr-only">{t("learn.dex")}</span>
             </Link>
           )}
         </p>
