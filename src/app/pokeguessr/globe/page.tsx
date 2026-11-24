@@ -7,6 +7,8 @@ import { serverT } from "@/i18n/server";
 import { ClientMessages } from "@/i18n/ClientMessages";
 import pokeguessr from "@/messages/pokeguessr";
 import globeNs from "@/messages/globe";
+import labClip from "@/messages/lab-clip";
+import shareNs from "@/messages/share";
 
 export function generateMetadata(): Metadata {
   const t = serverT(pokeguessr);
@@ -22,7 +24,7 @@ export default function GlobePage() {
   // Another language's page gets its cards and names in that language (English: exactly as before).
   const { cards, local } = globeLocal(regions);
   return (
-    <ClientMessages namespaces={[globeNs]}>
+    <ClientMessages namespaces={[globeNs, labClip, shareNs]}>
       <GlobeLoader regions={cards} eras={globeEras(regions)} {...(local && { local })} />
     </ClientMessages>
   );

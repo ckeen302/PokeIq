@@ -6,6 +6,8 @@ import { LabDexApp } from "@/components/lab-dex/LabDexApp";
 import { ClientMessages } from "@/i18n/ClientMessages";
 import { getLocale, serverT } from "@/i18n/server";
 import labDex from "@/messages/lab-dex";
+import labClip from "@/messages/lab-clip";
+import shareNs from "@/messages/share";
 import labDexPage from "@/messages/lab-dex-page";
 import sizesNames from "@/messages/sizes-names";
 import lab from "@/messages/lab";
@@ -45,8 +47,9 @@ export default function Page() {
     </div>
   );
   if (locale === "en") return <LabDexApp rows={labRows()} intro={intro} />;
+  // The share and video buttons' words (lab-clip, share) come along too.
   return (
-    <ClientMessages namespaces={[labDex]}>
+    <ClientMessages namespaces={[labDex, labClip, shareNs]}>
       <LabDexApp rows={labRowsIn(locale, serverT(sizesNames))} local={labLocal(locale)} intro={intro} />
     </ClientMessages>
   );
