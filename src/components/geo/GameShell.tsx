@@ -1,6 +1,6 @@
 "use client";
 
-import { cloneElement, isValidElement, useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, cloneElement, isValidElement, useCallback, useEffect, useRef, useState } from "react";
 import { Check, Expand, Hourglass, MapPinned, Maximize, Minimize, Pin, PinOff, Shrink, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useT } from "@/i18n/client";
@@ -661,7 +661,13 @@ export function RoundBadge({ label: given, value, of, mode, testId }: { label?: 
       {/* The map and the mode (Daily #, Weekly #, difficulty), small under the badge: a long one wraps rather than being cut off. */}
       {mode && (
         <span className="line-clamp-2 max-w-full rounded-md bg-[#1e1a3f]/70 px-2 py-0.5 text-right font-display text-[10px] font-semibold uppercase leading-snug tracking-[0.12em] text-[#c8bfff] backdrop-blur" data-testid="geo-round-mode">
-          {mode}
+          {/* It breaks between the parts ("Towns and Cities · / Weekly #5"), never inside one. */}
+          {mode.split(" · ").map((part, i) => (
+            <Fragment key={i}>
+              {i > 0 && " · "}
+              <span className="whitespace-nowrap">{part}</span>
+            </Fragment>
+          ))}
         </span>
       )}
     </div>
