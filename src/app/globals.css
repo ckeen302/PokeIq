@@ -339,6 +339,9 @@
 .geo-band { margin-top: env(safe-area-inset-top); }
 /* The phone's corner minimap: its width, which the picture's bottom-left strip keeps clear of. */
 .geo-frame { --geo-bar: 0px; }
+/* The page's scrollbar gutter (scrollbar-gutter: stable) is painted over everything, the game's full-window frame too: a dark band
+   down its right edge. The game hides the page's scrollbar anyway, so the gutter goes while a game is up. */
+html:has(.geo-frame) { scrollbar-gutter: auto; }
 /* Phones (as usePhone in GameShell.tsx): the round's solid bottom bar, which the picture stops above. */
 @media (max-width: 767px), (pointer: coarse) and (max-height: 520px) {
   .geo-frame { --geo-bar: calc(5rem + env(safe-area-inset-bottom)); }

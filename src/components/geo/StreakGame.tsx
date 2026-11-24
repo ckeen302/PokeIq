@@ -358,16 +358,17 @@ function StreakReveal({ world, current, streak, notch, onNext, onExit, t, names 
   const reduced = useReducedMotion();
   const rise = (delay: number) => ({ initial: reduced ? false : { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.35, delay: reduced ? 0 : delay, ease: [0.2, 0.8, 0.2, 1] as const } });
   return (
-    <div className="relative h-full" data-testid="streak-reveal">
-      <div className="absolute inset-x-0 top-0 bottom-[8.5rem] md:bottom-[6.75rem]">
+    <div className="relative flex h-full flex-col md:block" data-testid="streak-reveal">
+      {/* As a solo round's result: on a phone the map takes what the bottom bar leaves, so the camera frames the answer in view. */}
+      <div className="relative min-h-0 flex-1 md:absolute md:inset-x-0 md:top-0 md:bottom-[6.75rem]">
         <GeoMap region={world} revealed={[{ guess: null, answer: graded.answer }]} fit={{ delay: LINE_DRAW_MS / 2, duration: FIT_MS }} fill controls={false} />
       </div>
       <div className="geo-safe-tl absolute left-3 top-3 z-20">
         <ExitButton onClick={onExit} label={t("back")} />
       </div>
       {notch}
-      <motion.div {...rise(0.15)} className="absolute inset-x-0 bottom-0 z-20 border-t-4 border-[#a99cff] bg-[#1e1a3f]/95 text-white shadow-[0_-12px_40px_rgba(0,0,0,0.5)] backdrop-blur">
-        <div className="mx-auto grid max-w-6xl items-center gap-3 px-4 py-3 sm:gap-6 sm:px-6 md:grid-cols-[1fr_auto_1fr]">
+      <motion.div {...rise(0.15)} className="relative z-20 shrink-0 border-t-4 border-[#a99cff] bg-[#1e1a3f]/95 text-white shadow-[0_-12px_40px_rgba(0,0,0,0.5)] backdrop-blur md:absolute md:inset-x-0 md:bottom-0">
+        <div className="mx-auto grid max-w-6xl items-center gap-3 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 sm:gap-6 sm:px-6 md:grid-cols-[1fr_auto_1fr]">
           <div className="min-w-0 text-center md:text-left">
             <p className={cn("hud-label", graded.correct ? "!text-[#9be15d]" : "!text-[#ff5a5a]")} data-testid="streak-verdict">
               {graded.correct ? t("reveal.right") : t("reveal.wrong")}

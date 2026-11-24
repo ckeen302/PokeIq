@@ -297,8 +297,10 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const id = window.setTimeout(() => void engine.current?.fitBox(box, REVEAL_MIN_BOX, fitDuration), reduced ? 0 : fitDelay);
     return () => window.clearTimeout(id);
+    // The engine is made once the first paint's crop is in (cropPainted): a reveal that is the page's first map (Region Streak,
+    // say) fits then, not before, when there's no engine yet to move.
     // eslint-disable-next-line react-hooks/exhaustive-deps -- refit only when the revealed rounds or the map change
-  }, [revealKey, atlas]);
+  }, [revealKey, atlas, cropPainted]);
 
   const toScreen = (x: number, y: number): [number, number] => {
     const [wx, wy] = toWorld(x, y);
