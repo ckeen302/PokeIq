@@ -12,6 +12,7 @@
     "eyebrow": "PokéGuessr · nouveau mode",
     "title": "<b>Chasse</b> aux Pokémon",
     "tagline": "On te montre un Pokémon. Tu places un repère là où il vit à l'état sauvage.",
+    "modesEyebrow": "Solo",
     "modes": "Choisis une chasse",
     "daily": {
       "label": "Chasse du jour nº {n} · Monde",

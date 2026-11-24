@@ -12,6 +12,7 @@
     "eyebrow": "PokéGuessr · modo nuevo",
     "title": "<b>Caza</b> Pokémon",
     "tagline": "Te enseñamos un Pokémon. Tú marcas dónde vive en estado salvaje.",
+    "modesEyebrow": "Un jugador",
     "modes": "Elige una caza",
     "daily": {
       "label": "Caza diaria n.º {n} · Mundo",

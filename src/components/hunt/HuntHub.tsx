@@ -1,9 +1,9 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, CalendarDays, Crosshair, Globe2, Loader2, MapPinned, Sparkles, Trophy } from "lucide-react";
+import { ArrowLeft, ArrowRight, CalendarDays, ChevronDown, Crosshair, Globe2, Loader2, MapPinned, Sparkles, Trophy } from "lucide-react";
 import Link from "@/components/ui/Link";
 import type { GeoRegionInfo } from "@/lib/geo-types";
-import { boardArtUrl } from "@/lib/pokemon/art";
+import { artUrl, boardArtUrl } from "@/lib/pokemon/art";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/i18n/client";
@@ -17,6 +17,48 @@ export type HuntMode = "classic" | "region" | "daily";
 
 /** The Pokémon on the entry banner: three famous, memorable finds. */
 const BANNER_ART = [143, 131, 150];
+
+/** Each region's three starters: the Region Hunt card shows the picked region's. */
+const STARTERS: Record<string, number[]> = {
+  kanto: [1, 4, 7],
+  johto: [152, 155, 158],
+  hoenn: [252, 255, 258],
+  sinnoh: [387, 390, 393],
+  unova: [495, 498, 501],
+  kalos: [650, 653, 656],
+  alola: [722, 725, 728],
+  galar: [810, 813, 816],
+  paldea: [906, 909, 912],
+};
+
+/** Three Pokémon peeking over a hub card's map, the middle one a little lower, rising on hover like the entry banner's. */
+function CardArt({ ids }: { ids: number[] }) {
+  return (
+    <div className="flex h-full items-end pb-1">
+      {ids.map((id, i) => (
+        // eslint-disable-next-line @next/next/no-img-element -- the site's own art
+        <img
+          key={id}
+          src={artUrl(id, 256)}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          className={cn("h-[78%] w-auto object-contain drop-shadow-[0_6px_10px_rgba(0,0,0,0.55)] transition-transform duration-300 group-hover:-translate-y-1", i > 0 && "-ml-[6%]", i === 1 && "h-[66%]")}
+          style={{ transitionDelay: `${i * 40}ms` }}
+        />
+      ))}
+    </div>
+  );
+}
+
+/** Today's Pokémon stay a secret until you play: a big question mark over the map. */
+function MysteryArt() {
+  return (
+    <span className="mb-2 mr-4 font-display text-7xl font-bold leading-none text-warning drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)] transition-transform duration-300 group-hover:-translate-y-1 sm:text-8xl">
+      ?
+    </span>
+  );
+}
 
 /**
  * The entry on PokéGuessr's hub (the one change to its screens): a wide
@@ -117,7 +159,7 @@ export function HuntHub({
         </p>
       )}
 
-      <HubSection id="hunt-modes" eyebrow={t("name")} title={t("hub.modes")}>
+      <HubSection id="hunt-modes" eyebrow={t("hub.modesEyebrow")} title={t("hub.modes")}>
         <div className="grid gap-4 md:grid-cols-3">
           <HubTile
             testId="hunt-daily-card"
@@ -125,6 +167,7 @@ export function HuntHub({
             tone="warning"
             priority
             image={WORLD_THUMB}
+            art={<MysteryArt />}
             icon={<CalendarDays className="h-5 w-5" />}
             label={daily ? t("hub.daily.label", { n: daily.n }) : t("hub.daily.title")}
             title={t("hub.daily.title")}
@@ -140,7 +183,8 @@ export function HuntHub({
           <HubTile
             testId="hunt-classic-card"
             tone="screen"
-            image={null}
+            image={WORLD_THUMB}
+            art={<CardArt ids={BANNER_ART} />}
             icon={<Globe2 className="h-5 w-5" />}
             label={t("hub.classic.label")}
             title={t("hub.classic.title")}
@@ -157,37 +201,36 @@ export function HuntHub({
             testId="hunt-region-card"
             tone="success"
             image={picked?.map.src ?? null}
+            art={picked && STARTERS[picked.id] ? <CardArt key={picked.id} ids={STARTERS[picked.id]} /> : undefined}
             icon={<MapPinned className="h-5 w-5" />}
             label={t("hub.region.label")}
             title={t("hub.region.title")}
-            blurb={
-              <div className="space-y-2">
-                <p>{t("hub.region.blurb")}</p>
-                <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={t("hub.region.pick")} data-testid="hunt-region-picker">
-                  {regions.map((r) => (
-                    <button
-                      key={r.id}
-                      type="button"
-                      role="radio"
-                      aria-checked={r.id === picked?.id}
-                      onClick={() => onRegion(r.id)}
-                      className={cn(
-                        "tap rounded-md border px-2.5 py-1 font-display text-xs font-semibold uppercase tracking-wider transition-colors",
-                        r.id === picked?.id ? "border-success bg-success/15 text-foreground" : "bg-card text-muted-foreground hover:border-success/50 hover:text-foreground"
-                      )}
-                    >
-                      {names.map(r)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            }
+            blurb={t("hub.region.blurb")}
             stat={stat("region")}
             action={
-              <Button variant="success" className="w-full" disabled={!picked || !!busy} onClick={() => onPlay("region")} data-testid="hunt-play-region">
-                {spin("region", <MapPinned className="h-4 w-4" aria-hidden />)}
-                {t("hub.region.play", { region: picked ? names.map(picked) : "" })}
-              </Button>
+              <div className="flex gap-2">
+                <label className="relative shrink-0">
+                  <span className="sr-only">{t("hub.region.pick")}</span>
+                  <select
+                    value={picked?.id}
+                    onChange={(e) => onRegion(e.target.value)}
+                    disabled={!!busy}
+                    className="tap h-10 appearance-none rounded-md border border-success/50 bg-card pl-3 pr-8 font-display text-sm font-semibold uppercase tracking-wider text-foreground transition-colors hover:border-success focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success disabled:opacity-60"
+                    data-testid="hunt-region-picker"
+                  >
+                    {regions.map((r) => (
+                      <option key={r.id} value={r.id}>
+                        {names.map(r)}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
+                </label>
+                <Button variant="success" className="min-w-0 flex-1" disabled={!picked || !!busy} onClick={() => onPlay("region")} data-testid="hunt-play-region">
+                  {spin("region", <MapPinned className="h-4 w-4" aria-hidden />)}
+                  <span className="truncate">{t("hub.region.play", { region: picked ? names.map(picked) : "" })}</span>
+                </Button>
+              </div>
             }
           />
         </div>

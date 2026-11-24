@@ -12,6 +12,7 @@
     "eyebrow": "PokéGuessr · neuer Modus",
     "title": "Pokémon-<b>Jagd</b>",
     "tagline": "Wir zeigen dir ein Pokémon. Du setzt eine Nadel, wo es in freier Wildbahn lebt.",
+    "modesEyebrow": "Einzelspieler",
     "modes": "Wähle eine Jagd",
     "daily": {
       "label": "Tagesjagd Nr. {n} · Welt",

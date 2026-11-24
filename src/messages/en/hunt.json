@@ -12,6 +12,7 @@
     "eyebrow": "PokéGuessr · new mode",
     "title": "Pokémon <b>Hunt</b>",
     "tagline": "We show you a Pokémon. You pin where it lives in the wild.",
+    "modesEyebrow": "Single player",
     "modes": "Pick a hunt",
     "daily": {
       "label": "Daily Hunt #{n} · World",

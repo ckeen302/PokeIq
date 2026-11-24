@@ -171,7 +171,7 @@ export async function runHunt({ browser, BASE, OUT, errors, step }) {
       await page.getByTestId("hunt-card").waitFor();
       // Back to the hunt's hub for Region mode.
       await page.goto(`${BASE}/pokeguessr/hunt`, { waitUntil: "load" });
-      await page.getByTestId("hunt-region-picker").getByRole("radio", { name: "Galar" }).click();
+      await page.getByTestId("hunt-region-picker").selectOption("galar");
       await page.getByTestId("hunt-play-region").click();
       await page.getByTestId("hunt-card").waitFor();
       if ((await pinMax(page)) !== 1) f("region mode takes more than one pin");

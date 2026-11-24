@@ -63,6 +63,7 @@ export function HubTile({
   testId,
   badge,
   priority,
+  art,
 }: {
   tone?: TileTone;
   /** A picture for the banner (a CDN-cached preview, or the site's own art, sized by next/image; null: a tinted banner while it's worked out); no banner at all when left out. */
@@ -80,6 +81,8 @@ export function HubTile({
   badge?: React.ReactNode;
   /** The banner is the first screen's biggest picture: fetched ahead of the page's other pictures (the others wait until they're near the screen). */
   priority?: boolean;
+  /** Drawn over the banner's picture, on its right (Pokémon Hunt's Pokémon). */
+  art?: React.ReactNode;
 }) {
   const t = TONE[tone];
   return (
@@ -103,6 +106,11 @@ export function HubTile({
             <img src={image} alt="" decoding="async" loading={priority ? undefined : "lazy"} fetchPriority={priority ? "high" : undefined} className={TILE_IMG} />
           ) : null}
           <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent" aria-hidden />
+          {art && (
+            <div className="pointer-events-none absolute inset-y-0 right-2 flex items-end" aria-hidden>
+              {art}
+            </div>
+          )}
           <span className={cn("absolute bottom-2 left-3 flex h-9 w-9 items-center justify-center rounded-md border bg-card/90 backdrop-blur", t.label)} aria-hidden>
             {icon}
           </span>

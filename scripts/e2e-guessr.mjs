@@ -1440,7 +1440,7 @@ async function music(width, height) {
   // Pokémon Hunt: silent in its menu, playing through a hunt's rounds and reveals, fading out on its results.
   step(`music: hunt at ${width}`);
   await page.goto(`${BASE}/pokeguessr/hunt`, { waitUntil: "networkidle" });
-  await page.getByTestId("hunt-region-picker").getByRole("radio", { name: "Galar" }).click();
+  await page.getByTestId("hunt-region-picker").selectOption("galar");
   await page.waitForTimeout(2500);
   await expectSilent(page, "Pokémon Hunt's menu");
   await page.getByTestId("hunt-play-region").click();

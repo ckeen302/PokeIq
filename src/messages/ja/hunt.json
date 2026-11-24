@@ -12,6 +12,7 @@
     "eyebrow": "PokéGuessr・新モード",
     "title": "ポケモン<b>ハント</b>",
     "tagline": "ポケモンが出てくるよ。野生で出会える場所にピンを置こう。",
+    "modesEyebrow": "ひとりで遊ぶ",
     "modes": "ハントを選ぼう",
     "daily": {
       "label": "デイリーハント #{n}・世界",
