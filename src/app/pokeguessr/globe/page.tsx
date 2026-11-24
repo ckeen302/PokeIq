@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
+import { pageMetadata } from "@/lib/seo";
 import { GlobeLoader } from "@/components/globe/GlobeLoader";
 import { globeEras, globeRegionCards } from "@/lib/globe/regions";
 import { globeLocal } from "@/lib/globe/local";
@@ -14,7 +14,6 @@ export function generateMetadata(): Metadata {
     title: t("globe.title"),
     description: t("globe.description"),
     path: "/pokeguessr/globe",
-    image: SHARE_IMAGES.guessr,
   });
 }
 
