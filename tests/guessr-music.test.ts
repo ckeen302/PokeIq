@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { ShufflePlaylist } from "@/lib/guessr-playlist";
 import { DEFAULT_GUESSR_MUSIC, musicGain, parseGuessrMusicPrefs } from "@/lib/guessr-music-prefs";
 
@@ -100,5 +100,121 @@ describe("PokéGuessr music: the settings", () => {
     expect(musicGain(2)).toBe(1);
     expect(musicGain(-1)).toBe(0);
     for (let v = 0.05; v <= 1; v += 0.05) expect(musicGain(v)).toBeGreaterThan(musicGain(v - 0.05));
+  });
+});
+
+/**
+ * A page without WebAudio: enough browser for the player to decide whether the
+ * music should sound (where it should, it then waits for the audio, so the
+ * state reads "waiting"). Returns the page's data-guessr-music.
+ */
+function fakePage({ muted = false, prefs }: { muted?: boolean; prefs?: { on: boolean; volume: number } } = {}) {
+  const store = new Map<string, string>();
+  if (muted) store.set("pokeiq-muted", "1");
+  if (prefs) store.set("pokeiq-guessr-music", JSON.stringify(prefs));
+  const win = Object.assign(new EventTarget(), {
+    localStorage: {
+      getItem: (k: string) => store.get(k) ?? null,
+      setItem: (k: string, v: string) => void store.set(k, v),
+      removeItem: (k: string) => void store.delete(k),
+    },
+  });
+  const dataset: Record<string, string> = {};
+  const doc = Object.assign(new EventTarget(), { visibilityState: "visible", documentElement: { dataset } });
+  vi.stubGlobal("window", win);
+  vi.stubGlobal("document", doc);
+  vi.stubGlobal(
+    "Audio",
+    class {
+      canPlayType() {
+        return "";
+      }
+    },
+  );
+  return { state: () => dataset.guessrMusic };
+}
+
+/** A new player, with the sound and settings modules it listens to. */
+async function freshPlayer() {
+  vi.resetModules();
+  const { GuessrMusicPlayer } = await import("@/lib/guessr-music");
+  const { setMuted } = await import("@/lib/sound");
+  const { setGuessrMusicPrefs } = await import("@/lib/guessr-music-prefs");
+  return { player: new GuessrMusicPlayer(), setMuted, setGuessrMusicPrefs };
+}
+
+describe("PokéGuessr music: only while a game is on", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
+  });
+
+  it("plays while a game holds it, and fades out at once when the game ends", async () => {
+    const page = fakePage();
+    const { player } = await freshPlayer();
+    expect(page.state()).toBeUndefined();
+    const release = player.acquire();
+    expect(player.wanted).toBe(true);
+    expect(page.state()).toBe("waiting");
+    release(true);
+    expect(player.wanted).toBe(false);
+    expect(page.state()).toBe("off");
+    // The next game brings it back.
+    player.acquire();
+    expect(page.state()).toBe("waiting");
+  });
+
+  it("a screen closing stops it a moment later, unless the next screen's game takes it up", async () => {
+    vi.useFakeTimers();
+    const page = fakePage();
+    const { player } = await freshPlayer();
+    const first = player.acquire();
+    first();
+    expect(page.state()).toBe("waiting");
+    vi.advanceTimersByTime(1000);
+    const second = player.acquire();
+    vi.advanceTimersByTime(5000);
+    expect(page.state()).toBe("waiting");
+    second();
+    vi.advanceTimersByTime(1400);
+    expect(page.state()).toBe("waiting");
+    vi.advanceTimersByTime(200);
+    expect(page.state()).toBe("off");
+  });
+
+  it("stays on while another screen still holds it, and each release counts once", async () => {
+    const page = fakePage();
+    const { player } = await freshPlayer();
+    const a = player.acquire();
+    const b = player.acquire();
+    a(true);
+    a(true);
+    expect(player.wanted).toBe(true);
+    expect(page.state()).toBe("waiting");
+    b(true);
+    expect(page.state()).toBe("off");
+  });
+
+  it("stays silent while the site is muted, and follows the mute", async () => {
+    const page = fakePage({ muted: true });
+    const { player, setMuted } = await freshPlayer();
+    player.acquire();
+    expect(player.wanted).toBe(false);
+    expect(page.state()).toBe("off");
+    setMuted(false);
+    expect(page.state()).toBe("waiting");
+    setMuted(true);
+    expect(page.state()).toBe("off");
+  });
+
+  it("follows the Music settings: off, or the volume at 0, is silent", async () => {
+    const page = fakePage({ prefs: { on: false, volume: 0.35 } });
+    const { player, setGuessrMusicPrefs } = await freshPlayer();
+    player.acquire();
+    expect(page.state()).toBe("off");
+    setGuessrMusicPrefs({ on: true });
+    expect(page.state()).toBe("waiting");
+    setGuessrMusicPrefs({ volume: 0 });
+    expect(page.state()).toBe("off");
   });
 });

@@ -63,7 +63,6 @@ async function post<T>(url: string, body: unknown): Promise<T> {
  * the results map. The answer only ever arrives with the grade.
  */
 export function StreakGame({ world }: { world: GeoRegionInfo }) {
-  useGuessrMusic();
   const t = useT(geoStreak);
   const g = useT(geoNs);
   const names = useGeoNames();
@@ -71,6 +70,8 @@ export function StreakGame({ world }: { world: GeoRegionInfo }) {
   const account = useAccount();
   const pinImage = account.user?.avatar ? avatarSrc(account.user.avatar) : undefined;
   const [phase, setPhase] = useState<Phase>("setup");
+  // The music plays while a run is on (from Start, through its rounds and their results), not on the setup or the final results.
+  useGuessrMusic(phase === "loading" || phase === "guessing" || phase === "submitting" || phase === "revealed");
   const [error, setError] = useState<string | null>(null);
   const [run, setRun] = useState<Run | null>(null);
   const [pick, setPick] = useState<GeoStreakRegion | null>(null);
