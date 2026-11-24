@@ -8,7 +8,8 @@
     "loading": "Caricamento del round",
     "leaveTitle": "Uscire da questa partita?",
     "leaveBody": "Questa partita non verrà salvata.",
-    "leaveDaily": "Puoi riprendere la Giornaliera di oggi dalla sua scheda.",
+    "leaveDaily": "La tua Giornaliera è salvata, con il tempo che ti restava. Puoi tornare e finirla oggi.",
+    "leaveWeekly": "La tua Sfida settimanale è salvata, con il tempo che ti restava. Puoi tornare e finirla questa settimana.",
     "leave": "Esci",
     "stay": "Continua a giocare"
   },
@@ -105,6 +106,7 @@
     "correct": "Giusto",
     "missed": "Mancato",
     "again": "Gioca ancora",
+    "nextDaily": "Prossima Giornaliera tra",
     "shareAndBoard": "Condividi e classifica"
   },
   "scoreTotal": "Totale",

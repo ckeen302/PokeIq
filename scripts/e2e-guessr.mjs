@@ -461,26 +461,123 @@ async function sturdy(width, height) {
   await page.context().close();
 }
 
-/** Today's Daily, part played and closed: its card offers "Resume Daily #N" (a new tab), and picks up on round 2. */
+/**
+ * Today's Daily is played once. A second start is refused by the server. Left
+ * mid-round (a reload, another page, Exit), it comes back on the same round
+ * with the time it had (its clock waits while the player is away), from its
+ * card in a new tab too. Finished, its card and the home page's Play show
+ * today's result and when the next one comes, never a new game.
+ */
 async function dailyResume(width, height) {
-  step(`resume the Daily at ${width}`);
+  step(`the Daily, once a day, at ${width}`);
+  const phone = width < 768;
   const page = await newPage({ width, height });
+  // The crowd map is the crowd check's: answered here, so this early finish leaves the server no empty map of today cached for it.
+  await page.route("**/api/geo/crowd**", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ date: "", rounds: [] }) }));
+  // Every game the page starts.
+  const starts = [];
+  page.on("request", (r) => r.method() === "POST" && new URL(r.url()).pathname === "/api/geo" && starts.push(r.url()));
   await page.goto(`${BASE}/pokeguessr`, { waitUntil: "networkidle" });
   await closeHowTo(page);
+  const date = await page.evaluate(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  });
   await page.getByTestId("geo-daily-play").click();
   await shotLoaded(page);
-  await pinAndGuess(page, width < 768, 0.5);
-  await page.getByTestId("geo-next").waitFor();
-  // A new tab (the tab's own copy gone): only the Daily's copy is left.
-  await page.evaluate(() => sessionStorage.removeItem("pokeiq:geo-game"));
-  await page.goto(`${BASE}/pokeguessr`, { waitUntil: "networkidle" });
-  const play = page.getByTestId("geo-daily-play");
-  await play.filter({ hasText: /Resume Daily #\d+/ }).waitFor({ timeout: 10_000 }).catch(async () => errors.push(`the Daily's card doesn't offer to resume it ("${await play.innerText()}")`));
-  await play.click();
-  await page.getByTestId("geo-next").waitFor({ timeout: 15_000 }).catch(() => errors.push("resuming the Daily didn't bring back its round result"));
+  await pinAndGuess(page, phone, 0.5);
   await page.getByTestId("geo-next").click();
   await shotLoaded(page);
-  if (!/round\s*2/i.test(await page.getByTestId("geo-round").innerText())) errors.push("the resumed Daily isn't on round 2");
+  const clock = page.getByTestId("geo-time-left").first();
+  await clock.waitFor();
+  await page.waitForTimeout(2500);
+  /** The round's clock in seconds, and that it's round 2. */
+  const onRound2 = async (when) => {
+    await shotLoaded(page);
+    await clock.waitFor({ timeout: 10_000 });
+    // The clock goes on once the server has started it again.
+    await page.waitForTimeout(400);
+    if (!/round\s*2/i.test(await page.getByTestId("geo-round").first().innerText())) errors.push(`daily: ${when} didn't come back on round 2`);
+    const text = await clock.innerText();
+    return Number(text.slice(0, 2)) * 60 + Number(text.slice(3));
+  };
+  const sameTime = (when, before, after) => {
+    console.log(`  ${when}: ${before}s left before, ${after}s after`);
+    if (after > before || before - after > 4) errors.push(`daily: ${when} didn't keep the round's time (${before}s left before, ${after}s after)`);
+  };
+
+  // The server won't start it again for this browser, as a new game or as practice.
+  const again = await page.request.post(`${BASE}/api/geo`, { data: { daily: date } });
+  const refused = await again.json().catch(() => ({}));
+  if (again.status() !== 409 || refused.code !== "daily-started" || refused.token) errors.push(`daily: a second start the same day wasn't refused (${again.status()} ${JSON.stringify(refused).slice(0, 120)})`);
+
+  // A reload: the same round, the same time.
+  let before = await onRound2("the round");
+  await page.reload({ waitUntil: "load" });
+  let after = await onRound2("a reload");
+  sameTime("a reload", before, after);
+
+  // Another page for a while, then back from its card (a new visit: only the Daily's own copy is left): the clock waited.
+  before = after;
+  await page.goto(`${BASE}/`, { waitUntil: "load" });
+  await page.waitForTimeout(6000);
+  await page.goto(`${BASE}/pokeguessr`, { waitUntil: "networkidle" });
+  const play = page.getByTestId("geo-daily-play");
+  await play.filter({ hasText: /Resume Daily #\d+/ }).waitFor({ timeout: 10_000 }).catch(async () => errors.push(`daily: the card doesn't offer to resume it ("${await play.innerText().catch(() => "?")}")`));
+  await play.click();
+  after = await onRound2("going to another page and back");
+  sameTime("going to another page and back", before, after);
+
+  // Exit: the dialog says it's saved; Leave, a while on the hub, Resume: the same round and time again.
+  before = after;
+  await page.locator("[data-testid=geo-exit]:visible").first().click();
+  const dialog = page.getByTestId("geo-confirm-exit");
+  await dialog.waitFor({ timeout: 5_000 });
+  const said = await dialog.innerText();
+  if (!/saved/i.test(said) || !/today/i.test(said)) errors.push(`daily: the Leave dialog doesn't say the Daily is saved for today ("${said}")`);
+  await page.screenshot({ path: `${OUT}/guessr-daily-leave-${width}.png` });
+  await page.getByTestId("geo-leave").click();
+  await page.getByTestId("geo-shell").waitFor({ state: "detached", timeout: 5_000 });
+  await page.waitForTimeout(4000);
+  await play.filter({ hasText: /Resume Daily #\d+/ }).click();
+  after = await onRound2("Exit and Resume");
+  sameTime("Exit and Resume", before, after);
+
+  // Rounds 2 to 5, then the result: no Play again.
+  for (let i = 2; i <= 5; i++) {
+    await shotLoaded(page);
+    await pinAndGuess(page, phone, 0.3 + i * 0.08);
+    const next = page.getByTestId("geo-next");
+    await next.waitFor();
+    await next.click();
+  }
+  await page.getByTestId("geo-results").waitFor({ timeout: 15_000 });
+  await page.waitForTimeout(1500);
+  const total = await page.getByTestId("geo-results-total").innerText();
+  const back = await page.getByTestId("geo-results-again").innerText();
+  if (/again/i.test(back)) errors.push(`daily: a finished Daily offers to play again ("${back}")`);
+
+  // Back on the hub: the card shows today's result and when the next one comes, with no Play.
+  await page.getByTestId("geo-results-again").click();
+  const card = page.getByTestId("geo-daily-card");
+  await card.getByTestId("geo-daily-result").waitFor({ timeout: 5_000 }).catch(() => errors.push("daily: the finished Daily's card has no result to show"));
+  if (await card.getByTestId("geo-daily-play").count()) errors.push("daily: the finished Daily's card still has a Play button");
+  if (!/Next Daily in/i.test(await card.innerText())) errors.push("daily: the finished Daily's card doesn't say when the next one comes");
+  await card.screenshot({ path: `${OUT}/guessr-daily-card-done-${width}.png` });
+  await card.getByTestId("geo-daily-result").click();
+  await page.getByTestId("geo-results").waitFor({ timeout: 10_000 });
+  await page.waitForTimeout(1500);
+  if ((await page.getByTestId("geo-results-total").innerText()) !== total) errors.push("daily: the card's result isn't the game just played");
+
+  // The home page's Play (?play=daily) on a new visit: today's result again, no new game.
+  const started = starts.length;
+  await page.goto(`${BASE}/pokeguessr?play=daily`, { waitUntil: "networkidle" });
+  await page.getByTestId("geo-results").waitFor({ timeout: 10_000 }).catch(() => errors.push("daily: Play on a finished Daily didn't show today's result"));
+  await page.waitForTimeout(1500);
+  if ((await page.getByTestId("geo-results-total").innerText().catch(() => "")) !== total) errors.push("daily: Play on a finished Daily shows another result");
+  if (starts.length !== started) errors.push("daily: Play on a finished Daily started a new game");
+  await page.screenshot({ path: `${OUT}/guessr-daily-done-${width}.png` });
+  if ((await page.request.post(`${BASE}/api/geo`, { data: { daily: date } })).status() !== 409) errors.push("daily: a finished Daily could be started again");
   await page.context().close();
 }
 
@@ -540,9 +637,9 @@ async function weekly(width, height) {
   if (!/PokéGuessr Weekly #\d+/.test(card)) errors.push(`the weekly result card is off: ${card}`);
   await page.waitForTimeout(1300);
   await page.screenshot({ path: `${OUT}/guessr-weekly-summary-${tag}.png`, fullPage: true });
-  // A second start the same week is practice.
+  // A second start the same week is refused: the Weekly is played once, like the Daily.
   const again = await page.request.post(`${BASE}/api/geo`, { data: { weekly: true } });
-  if ((await again.json()).practice !== "repeat-weekly") errors.push("a second weekly start wasn't practice");
+  if (again.status() !== 409 || (await again.json()).code !== "weekly-started") errors.push("a second weekly start wasn't refused");
   await page.goto(`${BASE}/leaderboard?board=geo&format=weekly`, { waitUntil: "networkidle" });
   await page.getByTestId("geo-board-weekly").click();
   await page.getByTestId("geo-weekly-board-title").waitFor();

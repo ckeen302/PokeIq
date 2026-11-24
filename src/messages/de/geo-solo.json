@@ -18,6 +18,7 @@
     "best": "Rekord {score}",
     "bestRow": "Rekord: {n} in Folge",
     "played": "Gespielt",
+    "result": "Dein Ergebnis ansehen",
     "atlas": "Weltatlas",
     "challenge": {
       "tag": "Herausforderung",
@@ -52,9 +53,9 @@
       "title": "Tagesspiel",
       "scored": "Heute hast du {score} Punkte.",
       "blurb": "Die Orte von heute, für alle gleich.",
-      "again": "Nochmal spielen",
       "play": "Heutiges spielen",
-      "resume": "Tagesspiel {num} fortsetzen"
+      "resume": "Tagesspiel {num} fortsetzen",
+      "started": "Du hast das heutige Tagesspiel schon in diesem Browser oder mit deinem Konto begonnen. Es gibt ein Spiel pro Tag."
     },
     "weekly": {
       "numbered": "Woche #{n}",
@@ -66,8 +67,10 @@
       "m": "{m} Min.",
       "scored": "Diese Woche hast du {score} Punkte.",
       "blurb": "Die Karte dieser Woche, für alle gleich.",
-      "again": "Zum Üben wiederholen",
-      "play": "Diese Woche spielen"
+      "play": "Diese Woche spielen",
+      "resume": "Woche #{n} fortsetzen",
+      "started": "Du hast die Wochen-Challenge dieser Woche schon in diesem Browser oder mit deinem Konto begonnen. Es gibt ein Spiel pro Woche.",
+      "next": "Nächste Wochen-Challenge in {left}"
     },
     "mode": {
       "game": "Spiel mit {n} Runden",

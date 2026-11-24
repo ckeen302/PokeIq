@@ -18,6 +18,7 @@
     "best": "Record {score}",
     "bestRow": "Record : {n} d'affilée",
     "played": "Joué",
+    "result": "Voir ton résultat",
     "atlas": "Atlas du monde",
     "challenge": {
       "tag": "Défi",
@@ -52,9 +53,9 @@
       "title": "Partie du jour",
       "scored": "Tu as marqué {score} aujourd'hui.",
       "blurb": "Les lieux du jour, les mêmes pour tout le monde.",
-      "again": "Rejouer",
       "play": "Jouer celle du jour",
-      "resume": "Reprendre le Quotidien {num}"
+      "resume": "Reprendre le Quotidien {num}",
+      "started": "Tu as déjà commencé le Quotidien du jour dans ce navigateur ou sur ton compte. C'est une partie par jour."
     },
     "weekly": {
       "numbered": "Hebdo #{n}",
@@ -66,8 +67,10 @@
       "m": "{m} min",
       "scored": "Tu as marqué {score} cette semaine.",
       "blurb": "La carte de la semaine, la même pour tout le monde.",
-      "again": "Rejouer pour s'entraîner",
-      "play": "Jouer celui de la semaine"
+      "play": "Jouer celui de la semaine",
+      "resume": "Reprendre l'Hebdo #{n}",
+      "started": "Tu as déjà commencé le Défi de la semaine dans ce navigateur ou sur ton compte. C'est une partie par semaine.",
+      "next": "Prochain Hebdo dans {left}"
     },
     "mode": {
       "game": "Partie en {n} manches",
