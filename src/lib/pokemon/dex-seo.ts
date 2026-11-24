@@ -29,11 +29,12 @@ export function dexDescription(p: Pokemon): string {
   }Stats, abilities, moves and evolution.`;
 }
 
-export function dexSummary(p: Pokemon): string {
+/** `named`: the abilities by their names ("Solar Power"); the species record holds their ids ("solar-power"). */
+export function dexSummary(p: Pokemon, named: { name: string; hidden: boolean }[] = p.abilities): string {
   const types = p.types.map(capitalize);
   const weak = weaknessesOf(p).map((w) => `${w.type}${w.multiplier > 2 ? " (4×)" : ""}`);
-  const abilities = p.abilities.filter((a) => !a.hidden).map((a) => a.name);
-  const hidden = p.abilities.filter((a) => a.hidden).map((a) => a.name);
+  const abilities = named.filter((a) => !a.hidden).map((a) => a.name);
+  const hidden = named.filter((a) => a.hidden).map((a) => a.name);
   return (
     `${p.name} is a ${types.join("/")}-type ${p.genus} introduced in Generation ${p.gen}, ` +
     `number ${p.id} in the National Pokédex. It has a base stat total of ${p.bst} ` +
