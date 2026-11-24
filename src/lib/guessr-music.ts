@@ -1,7 +1,8 @@
 /**
  * PokéGuessr's background music: four calm, free-licensed tracks (8-bit lo-fi,
  * lo-fi hip hop and deep house; public/audio/guessr/CREDITS.md) shuffled with long crossfades, carrying on
- * from round to round and page to page while any PokéGuessr screen is open.
+ * from round to round while a game is on (use-guessr-music.ts says when), and
+ * fading out when it ends.
  *
  * - Streams from two <audio> elements (no multi-megabyte decoded buffers on
  *   phones), routed through the site's AudioContext so fades, the volume and
@@ -26,7 +27,7 @@ export type GuessrTrack = (typeof GUESSR_TRACKS)[number];
 export const CROSSFADE_S = 2.6;
 /** The first track's (and a resumed track's) fade in. */
 const FADE_IN_S = 2.0;
-/** Fading out to stop (leaving PokéGuessr, muting, Music off). */
+/** Fading out to stop (a game ending, leaving PokéGuessr, muting, Music off). */
 const FADE_OUT_S = 0.8;
 /** The music's share under a sound effect, and how long it waits after the last one before coming back. */
 export const DUCK = 0.5;
@@ -35,7 +36,7 @@ const DUCK_HOLD_MS = 650;
 const NO_DUCK = new Set<SoundKind>(["pin", "click", "ping"]);
 /** Start fetching the next track this many seconds before the crossfade. */
 const PRELOAD_S = 30;
-/** A screen closing waits this long before the music stops, so moving between PokéGuessr pages doesn't. */
+/** A screen closing waits this long before the music stops, so a screen handing over to another (the game going on) doesn't. */
 const RELEASE_MS = 1500;
 
 /** A silent, 0.05 s WAV: played inside the first gesture to unlock the second element on iOS, with no request. */
@@ -111,26 +112,36 @@ export class GuessrMusicPlayer {
   private ext: "ogg" | "mp3" = "mp3";
   state: GuessrMusicState = "off";
 
-  /** A PokéGuessr screen opened: the music may play. Returns its release. */
-  acquire(): () => void {
+  /**
+   * A PokéGuessr game is on: the music may play. Returns its release:
+   * `release()` (the screen closing) stops it a moment later, so a screen
+   * handing over to another doesn't; `release(true)` (the game is over) fades
+   * it out now.
+   */
+  acquire(): (now?: boolean) => void {
     this.init();
     this.users++;
     if (this.releaseTimer) {
       clearTimeout(this.releaseTimer);
       this.releaseTimer = null;
     }
-    this.sync();
+    // Acquired inside a tap (a game's Start): unlock the second element too, as the first tap would.
+    const activation = typeof navigator === "undefined" ? undefined : (navigator as Navigator & { userActivation?: { isActive: boolean } }).userActivation;
+    this.sync(!!activation?.isActive);
     let released = false;
-    return () => {
+    return (now = false) => {
       if (released) return;
       released = true;
       this.users = Math.max(0, this.users - 1);
-      if (this.users === 0) {
-        this.releaseTimer = setTimeout(() => {
-          this.releaseTimer = null;
-          this.sync();
-        }, RELEASE_MS);
+      if (this.users > 0) return;
+      if (now) {
+        this.sync();
+        return;
       }
+      this.releaseTimer = setTimeout(() => {
+        this.releaseTimer = null;
+        this.sync();
+      }, RELEASE_MS);
     };
   }
 

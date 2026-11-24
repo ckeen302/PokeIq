@@ -5,6 +5,7 @@ import { useT } from "@/i18n/client";
 import huntNs from "@/messages/hunt";
 import { localDateString } from "@/lib/daily";
 import { play, unlockAudio } from "@/lib/sound";
+import { useGuessrMusic } from "@/lib/use-guessr-music";
 import { useGeoNames } from "@/lib/geo-i18n-client";
 import { WORLD_REGION, type GeoRegionInfo } from "@/lib/geo-types";
 import type { MapPin } from "@/components/geo/GeoMap";
@@ -112,6 +113,8 @@ export function HuntGame({ maps }: { maps: GeoRegionInfo[] }) {
   const regionName = useCallback((id: string) => names.region(id[0].toUpperCase() + id.slice(1)), [names]);
 
   const [phase, setPhase] = useState<Phase>("hub");
+  // PokéGuessr's music plays while a hunt is on (from a mode's Play, through its rounds and their reveals), not in the menus or on the final results.
+  useGuessrMusic(phase === "starting" || phase === "playing" || phase === "grading" || phase === "reveal");
   const [busyMode, setBusyMode] = useState<HuntMode | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [game, setGame] = useState<Game | null>(null);

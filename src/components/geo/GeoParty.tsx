@@ -65,7 +65,6 @@ const FIT_MS = 800;
 const joinNames = (t: P, names: string[]) => names.reduce((a, b) => t("and", { a, b }));
 
 export function GeoParty({ code, regions, names }: { code: string; regions: GeoRegionInfo[]; names?: GuessrNames }) {
-  useGuessrMusic();
   const router = useRouter();
   const t = useT(partyNs);
   const { view, now, gone, offline, error, setError, busy, sawPlay, act, send, join, refresh, setLive } = useDuel<PartyView>(`/api/geo/party/${code}`, code);
@@ -167,6 +166,10 @@ export function GeoParty({ code, regions, names }: { code: string; regions: GeoR
   });
 
   const map = view ? regions.find((r) => r.id === view.settings.region) : undefined;
+  /** The standings: the game is over and its last reveal (if this trainer saw the game) has been seen. */
+  const ended = view?.status === "finished" && (summary || !sawPlay || !last || view.end?.reason === "left");
+  // The music plays while this trainer's game is on (the line-up, the rounds and their reveals), not in the lobby, for a watcher or on the standings.
+  useGuessrMusic(!gone && !!map && me !== null && (view?.status === "playing" || (view?.status === "finished" && !ended)));
   if (gone || (view && !map)) return <DuelGone message={gone ?? t("gone")} href="/pokeguessr" label={t("back")} />;
   if (!view || !map) return <DuelLoading />;
 
@@ -205,7 +208,7 @@ export function GeoParty({ code, regions, names }: { code: string; regions: GeoR
     return <PartyWatch view={view} mapName={shownMap} />;
   }
 
-  if (view.status === "finished" && (summary || !sawPlay || !last || view.end?.reason === "left")) {
+  if (ended) {
     return (
       <GameShell onExit={() => router.push("/pokeguessr")}>
         {() => (

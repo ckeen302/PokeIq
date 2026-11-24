@@ -62,7 +62,6 @@ export interface GeoDuelProps {
 }
 
 export function GeoDuel({ code, regions, names }: GeoDuelProps) {
-  useGuessrMusic();
   const router = useRouter();
   const t = useT(duelNs);
   const fmt = fmtIn(t.locale);
@@ -161,6 +160,10 @@ export function GeoDuel({ code, regions, names }: GeoDuelProps) {
 
   const map = view ? regions.find((r) => r.id === view.region) : undefined;
   const race = view?.mode === "race";
+  /** The end screen: the match is over and its last reveal (if this trainer saw the match) has been seen. */
+  const ended = view?.status === "finished" && (summary || !sawPlay || view.end?.reason === "left" || !last);
+  // The music plays while this trainer's match is on (the versus intro, the rounds and their reveals), not in the lobby, for a visitor or on the end screen.
+  useGuessrMusic(!gone && !!map && !!view && view.you !== null && (view.status === "playing" || (view.status === "finished" && !ended)));
   if (gone || (view && !map)) {
     return <DuelGone message={gone ?? t("gone")} href="/pokeguessr" label={t("back")} />;
   }
@@ -254,7 +257,7 @@ export function GeoDuel({ code, regions, names }: GeoDuelProps) {
   const me = view.you;
   const them = shownName(view.players[1 - me]) ?? t("yourOpponent");
 
-  if (view.status === "finished" && (summary || !sawPlay || view.end?.reason === "left" || !last)) {
+  if (ended) {
     return (
       <GameShell onExit={() => router.push("/pokeguessr")}>
         {() => (

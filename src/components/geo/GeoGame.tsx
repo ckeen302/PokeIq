@@ -310,7 +310,6 @@ export interface GeoGameProps {
 const tileImage = (src: string) => (src === WORLD_MAP_SRC ? WORLD_THUMB : src);
 
 export function GeoGame(props: GeoGameProps) {
-  useGuessrMusic();
   // The player's achievements and mastery (the hub's You section), read again after each game for the toasts.
   const { progress, fresh, refresh, dismiss } = useGeoProgress();
   return (
@@ -434,6 +433,8 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
   const inGame = phase === "loading" || phase === "guessing" || phase === "submitting" || phase === "revealed" || (phase === "error" && !!game);
   const inGameRef = useRef(inGame);
   inGameRef.current = inGame;
+  // The music plays while a game is on (its rounds and the results between them), not on the hub or the final results.
+  useGuessrMusic(inGame);
   useEffect(() => {
     const onPop = () => {
       if (ignorePop.current) {
