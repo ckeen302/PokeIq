@@ -15,7 +15,7 @@
  */
 import { chromium, request } from "playwright";
 import fs from "fs";
-import { tapGuessMap } from "./e2e-geo-map.mjs";
+import { guessMapReady, spotIn, tapGuessMap } from "./e2e-geo-map.mjs";
 
 const BASE = process.argv[2] ?? "http://localhost:3000";
 const OUT = process.argv[3] ?? "e2e-screenshots";
@@ -1074,7 +1074,8 @@ async function exitGame(p) {
  * carries on between rounds without restarting; it pauses while the tab is
  * hidden or the site is muted (M), and comes back after; the final summary
  * fades it out, and the next game starts it again. A Region Streak's game
- * over fades it out; a duel's lobby is silent, the match plays it, and
+ * over fades it out; so do Pokémon Hunt's results (its menu is silent, Play
+ * again starts it again); a duel's lobby is silent, the match plays it, and
  * leaving mid-match fades it out for both trainers. With the site muted from
  * the start, no music is ever requested.
  */
@@ -1216,10 +1217,38 @@ async function music(width, height) {
   await page.getByTestId("streak-summary").waitFor();
   await expectFadedOut(page, endedAt, "the streak's game over");
 
+  // Pokémon Hunt: silent in its menu, playing through a hunt's rounds and reveals, fading out on its results.
+  step(`music: hunt at ${width}`);
+  await page.goto(`${BASE}/pokeguessr/hunt`, { waitUntil: "networkidle" });
+  await page.getByTestId("hunt-region-picker").getByRole("radio", { name: "Galar" }).click();
+  await page.waitForTimeout(2500);
+  await expectSilent(page, "Pokémon Hunt's menu");
+  await page.getByTestId("hunt-play-region").click();
+  if (!(await musicPlays(page))) errors.push(`music: starting a hunt didn't start it (${JSON.stringify(await musicNow(page))})`);
+  for (let r = 0; r < 10; r++) {
+    await page.getByTestId("hunt-card").waitFor();
+    if (phone) await page.getByTestId("geo-map-pill").click();
+    const { map, area } = await guessMapReady(page);
+    await map.click({ position: spotIn(area, 0.5, 0.5) });
+    await page.getByTestId("geo-guess").click();
+    await page.getByTestId("hunt-reveal").waitFor();
+    await page.getByTestId("hunt-skip").click({ timeout: 2_000 }).catch(() => {});
+    if ((await musicNow(page)).state !== "playing") errors.push(`music: not playing on the hunt's reveal ${r + 1}`);
+    endedAt = await pageNow(page);
+    await page.locator('[data-testid="hunt-next"]:visible').first().click();
+    if (await page.getByTestId("hunt-results").waitFor({ timeout: 3_000 }).then(() => true, () => false)) break;
+  }
+  await page.getByTestId("hunt-results").waitFor();
+  await expectFadedOut(page, endedAt, "the hunt's results");
+  // Play again: the next hunt starts it again.
+  await page.getByTestId("hunt-again").click();
+  if (!(await musicPlays(page))) errors.push(`music: Play again didn't start the hunt's music again (${JSON.stringify(await musicNow(page))})`);
+
   // A duel: silent in the lobby; the match plays it; Red leaving mid-match fades it out for both.
   step(`music: duel at ${width}`);
   const red = page;
-  const blue = await newPage({ width, height });
+  // Blue without WebGL (as party guests): the end screen's 3D trainers, drawn in software here, would hold up its timers.
+  const blue = await newPage({ width, height }, { noWebGL: true });
   await watchAudio(blue.context());
   await red.goto(`${BASE}/pokeguessr?region=kanto`, { waitUntil: "networkidle" });
   await closeHowTo(red);
