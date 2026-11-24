@@ -1,6 +1,7 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element -- screenshots come from the preview proxy, artwork from /api/art */
+import { STAGE_POSTERS, StagePoster } from "@/components/lab/StagePoster";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "@/components/ui/PlainLink";
 import { ChevronLeft, ChevronRight, Pause, Play, Volume2, VolumeX, X } from "lucide-react";
@@ -359,12 +360,16 @@ export function WorldGlobe({ regions, eras, local }: { regions: GlobeRegionCard[
       {/* A soft glow of space behind the world, under the canvas. */}
       <div aria-hidden className="pointer-events-none absolute inset-0" style={{ background: "radial-gradient(ellipse at 50% 55%, hsl(var(--screen) / 0.10), transparent 60%)" }} />
       <div ref={layerRef} className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden />
+      {/* Phones: a still of the world until the scene has drawn it (over the canvas, which goes in before the labels). */}
+      <StagePoster src={STAGE_POSTERS.globe} gone={state !== "loading"} fullScreen />
       {/* Soft scrims keep the HUD readable over a bright, zoomed-in world. */}
       <div aria-hidden className={"pointer-events-none absolute inset-x-0 top-0 h-40 transition-opacity duration-700 " + (hudOn ? "opacity-100" : "opacity-0")} style={{ background: "linear-gradient(hsl(var(--background) / .72), transparent)" }} />
       <div aria-hidden className={"pointer-events-none absolute inset-x-0 bottom-0 h-56 transition-opacity duration-700 " + (hudOn ? "opacity-100" : "opacity-0")} style={{ background: "linear-gradient(transparent, hsl(var(--background) / .78))" }} />
       {state === "nogl" && (
-        <div className="absolute inset-0 flex items-center justify-center p-6 text-center" data-testid="globe-fallback">
+        <div className="absolute inset-0 overflow-y-auto px-4 pb-10 pt-24 text-center" data-testid="globe-fallback">
           <p className="font-display text-lg font-semibold uppercase tracking-wider text-muted-foreground">{t("noGl")}</p>
+          {/* Without 3D, the world's regions as a list: each one's generation, starters and links. */}
+          <RegionList regions={regions} local={local} />
         </div>
       )}
       {state === "failed" && <p className="absolute inset-0 flex items-center justify-center font-display text-muted-foreground">{t("failed")}</p>}
@@ -586,6 +591,35 @@ function EraControl({ eras, era, playing, onEra, onPlay, caption, local }: { era
         })}
       </div>
     </div>
+  );
+}
+
+/** Every region (the world without 3D): name, generation and year, where it comes from, and its links. */
+function RegionList({ regions, local }: { regions: GlobeRegionCard[]; local?: GlobeLocal }) {
+  const t = useT(globeNs);
+  return (
+    <ul className="mx-auto mt-6 grid max-w-3xl gap-3 text-left sm:grid-cols-2" data-testid="globe-region-list">
+      {regions.map((card) => (
+        <li key={card.name} className="rounded-xl border bg-card/80 p-4">
+          <p className="font-pixel text-[10px] uppercase tracking-[0.16em] text-screen">
+            {t("generation", { gen: t.locale === "ja" ? String(card.gen) : ROMAN[card.gen] })}{card.year ? ` · ${card.year}` : ""}
+          </p>
+          <h2 className="mt-1 font-display text-xl font-bold uppercase tracking-[0.12em]">{local?.names[card.name] ?? card.name}</h2>
+          {card.origin && <p className="mt-1 text-xs leading-snug text-foreground/80">{card.origin}</p>}
+          {card.starters.length > 0 && (
+            <p className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs">
+              {card.starters.map((s) => (
+                <Link key={s.id} href={`/pokemon/${s.slug}`} className="underline-offset-2 hover:text-screen hover:underline">{s.name}</Link>
+              ))}
+            </p>
+          )}
+          <p className="mt-3 flex flex-wrap gap-x-4 gap-y-1 font-display text-xs font-semibold uppercase tracking-wider">
+            {card.guessr && <Link href={card.guessr} className="text-primary hover:underline">{t("play")}</Link>}
+            {card.places && <Link href={card.places} className="hover:text-screen hover:underline">{t("dex")}</Link>}
+          </p>
+        </li>
+      ))}
+    </ul>
   );
 }
 

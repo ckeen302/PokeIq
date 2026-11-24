@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { deviceInfo } from "@/lib/gl/device-tier";
 import { watchContext } from "@/lib/gl/context-loss";
 import { CSS3DObject, CSS3DRenderer } from "three/examples/jsm/renderers/CSS3DRenderer.js";
 import { artUrl } from "@/lib/pokemon/art";
@@ -670,7 +671,9 @@ export function createScene(host: HTMLElement, entries: SceneEntry[], eras: Scen
     placeLaneObjects();
   }
   // Phones and small windows start a level down; the frame-time monitor takes it from there.
-  quality = reduce ? 1 : small ? 2 : 3;
+  // Weak devices (a software renderer, an old GPU, a slow CPU, little memory) start lower still.
+  const tier = deviceInfo().tier;
+  quality = reduce || tier === 0 ? 1 : small || tier === 1 ? 2 : 3;
   let ftEma = FRAME_BUDGET_MS, slowFor = 0, fastFor = 0, lastQChange = 0, qCeiling = 3, stepsDown = 0, warm = 0, lastPerf = 0;
   const ro = new ResizeObserver(resize);
   ro.observe(host);

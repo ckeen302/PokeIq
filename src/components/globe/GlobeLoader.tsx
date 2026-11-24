@@ -5,6 +5,7 @@ import type { GlobeEra, GlobeRegionCard } from "@/lib/globe/regions";
 import type { GlobeLocal } from "./WorldGlobe";
 import { useT } from "@/i18n/client";
 import globeNs from "@/messages/globe";
+import { STAGE_POSTERS, StagePoster } from "@/components/lab/StagePoster";
 
 // three.js only loads on this page.
 const WorldGlobe = dynamic(() => import("./WorldGlobe").then((m) => m.WorldGlobe), {
@@ -20,6 +21,8 @@ function GlobeCover() {
   const t = useT(globeNs);
   return (
     <div className="fixed inset-0 z-[60] bg-background">
+      {/* On a phone, a still of the world (the page's largest paint) until the globe's code has arrived. */}
+      <StagePoster src={STAGE_POSTERS.globe} gone={false} fullScreen />
       <div className="sr-only">
         <h1>{t.rich("title", { accent: (chunks) => chunks })}</h1>
         <p>{t("tagline")}</p>

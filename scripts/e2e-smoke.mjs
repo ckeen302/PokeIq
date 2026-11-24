@@ -33,6 +33,7 @@ import { runGames } from "./e2e-games.mjs";
 import { runWorldHistory } from "./e2e-world-history.mjs";
 import { runPokemonStory } from "./e2e-pokemon-story.mjs";
 import { runLabDex } from "./e2e-lab-dex.mjs";
+import { runLabPhone } from "./e2e-lab-phone.mjs";
 import { runLabShare } from "./e2e-lab-share.mjs";
 import { runGroupBattles } from "./e2e-battle-group.mjs";
 import { runEmptyQueue } from "./e2e-battle-queue.mjs";
@@ -139,6 +140,12 @@ async function chatTo(from, to, text, shown = text) {
   await to.getByTestId("chat").last().getByTestId("chat-text").filter({ hasText: shown }).first().waitFor({ timeout: 15_000 });
   // One message a second per trainer.
   await from.waitForTimeout(1_100);
+}
+
+// E2E_ONLY=lab-phone runs just the 3D Lab's phone posters and the globe without WebGL, then exits.
+if (process.env.E2E_ONLY === "lab-phone") {
+  await runLabPhone({ browser, BASE, errors, step });
+  await finish();
 }
 
 // E2E_ONLY=lab-share runs just the 3D Lab's share links and short videos (Professor's Lab, World Globe), then exits.
@@ -2695,6 +2702,7 @@ await runGames({ browser, BASE, OUT, errors, step });
 await runWorldHistory({ browser, BASE, OUT, errors, step });
 await runPokemonStory({ browser, BASE, OUT, errors, step });
 await runLabDex({ browser, BASE, OUT, errors, step });
+await runLabPhone({ browser, BASE, errors, step });
 await runLabShare({ browser, BASE, errors, step });
 
 step("trainer, leaderboard, pokémon page");
