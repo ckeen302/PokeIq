@@ -1,6 +1,7 @@
 {
   "header": {
-    "battle": "バトル"
+    "battle": "バトル",
+    "breadcrumb": "パンくずリスト"
   },
   "play": {
     "title": "コンピューターとバトル"

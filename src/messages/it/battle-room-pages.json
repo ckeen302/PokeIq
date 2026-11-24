@@ -1,6 +1,7 @@
 {
   "header": {
-    "battle": "Lotta"
+    "battle": "Lotta",
+    "breadcrumb": "Percorso di navigazione"
   },
   "play": {
     "title": "Lotta contro il computer"

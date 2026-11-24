@@ -1,6 +1,7 @@
 {
   "header": {
-    "battle": "Battle"
+    "battle": "Battle",
+    "breadcrumb": "Breadcrumb"
   },
   "play": {
     "title": "Battle vs Computer"

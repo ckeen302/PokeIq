@@ -101,7 +101,7 @@
       "description": "Real Pokémon battles on Pokémon Showdown's engine: Random Battle, Random Doubles or your own OU team, against a computer opponent, a trainer found by matchmaking, or a friend through an invite link."
     },
     "crumb": "Play",
-    "title": "Start a",
+    "title": "Start a ",
     "accent": "battle",
     "intro": "Pokémon Showdown's own battle engine: every move, ability and item works as it does there. Pick an opponent, a format and go."
   },
@@ -111,7 +111,7 @@
     },
     "description": "The Battle Tower on Pokémon Showdown's engine: bring your team under Flat Rules (level 50, bring six, pick three) and build a streak against computer trainers, with the Tower Tycoon every seventh battle.",
     "name": "Battle Tower",
-    "title": "Battle",
+    "title": "Battle ",
     "accent": "Tower",
     "intro": "Your team, Flat Rules, and a streak of computer trainers that get tougher as you climb. Every seventh battle is the Tower Tycoon, with its best team."
   },
@@ -121,7 +121,7 @@
     },
     "description": "The Battle Factory on Pokémon Showdown's engine: rent six Pokémon from Showdown's Battle Factory sets, win seven in a row against a computer that gets stronger, and trade for your opponent's Pokémon after every win.",
     "name": "Battle Factory",
-    "title": "Battle",
+    "title": "Battle ",
     "accent": "Factory",
     "intro": "No team needed: rent six Pokémon from Pokémon Showdown's Battle Factory sets, win seven in a row, and trade one of yours for one of your opponent's after every win. Or find an opponent who rents one too, from the battle setup."
   }

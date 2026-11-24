@@ -101,7 +101,7 @@
       "description": "Vere lotte Pokémon con il motore di Pokémon Showdown: Lotta casuale, Doppio casuale o la tua squadra OU, contro il computer, un Allenatore trovato con il matchmaking o un amico tramite un link d’invito."
     },
     "crumb": "Gioca",
-    "title": "Inizia una",
+    "title": "Inizia una ",
     "accent": "lotta",
     "intro": "Il motore di lotta stesso di Pokémon Showdown: ogni mossa, abilità e strumento funziona come lì. Scegli un avversario, un formato e via."
   },
@@ -111,7 +111,7 @@
     },
     "description": "La Torre Lotta con il motore di Pokémon Showdown: porta la tua squadra con le Flat Rules (livello 50, porti sei, ne scegli tre) e costruisci una serie di vittorie contro Allenatori del computer, con il Magnate della Torre ogni settima lotta.",
     "name": "Torre Lotta",
-    "title": "Torre",
+    "title": "Torre ",
     "accent": "Lotta",
     "intro": "La tua squadra, le Flat Rules e una serie di Allenatori del computer sempre più tosti man mano che sali. Ogni settima lotta c’è il Magnate della Torre, con la sua squadra migliore."
   },
@@ -121,7 +121,7 @@
     },
     "description": "L’Industria Lotta con il motore di Pokémon Showdown: noleggia sei Pokémon dai set Battle Factory di Showdown, vinci sette volte di fila contro un computer sempre più forte e scambia con un Pokémon dell’avversario dopo ogni vittoria.",
     "name": "Industria Lotta",
-    "title": "Industria",
+    "title": "Industria ",
     "accent": "Lotta",
     "intro": "Non serve una squadra: noleggia sei Pokémon dai set Battle Factory di Pokémon Showdown, vinci sette volte di fila e, dopo ogni vittoria, scambia uno dei tuoi con uno dell’avversario. Oppure trova un avversario che noleggia anche lui, dalla preparazione della lotta."
   }
