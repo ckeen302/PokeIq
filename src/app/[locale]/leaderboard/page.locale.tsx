@@ -3,7 +3,7 @@
 import * as Source from "@/app/leaderboard/page";
 import { mirrorPage } from "@/i18n/mirror";
 
-const m = mirrorPage("/leaderboard", Source);
+const m = mirrorPage("/leaderboard", Source, { image: { route: "/leaderboard", alt: "leaderboard" } });
 
 export const dynamic = "force-dynamic";
 export const dynamicParams = true;

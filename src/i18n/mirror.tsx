@@ -35,7 +35,7 @@ function fill(route: string, params: Params): string {
  * with its metadata pointed at the language's own URL. `openParams`: the English page renders params it doesn't
  * list in generateStaticParams (dynamicParams = true), so they aren't checked against that list.
  */
-export function mirrorPage(route: string, source: Source, { openParams = false }: { openParams?: boolean } = {}) {
+export function mirrorPage(route: string, source: Source, { openParams = false, image }: { openParams?: boolean; image?: ShareImage } = {}) {
   // Unknown params 404 like the English page's own (whose generateStaticParams lists every valid one).
   let valid: Promise<Set<string>> | null = null;
   const validPaths = () =>
@@ -58,7 +58,7 @@ export function mirrorPage(route: string, source: Source, { openParams = false }
     async generateMetadata(props: Props, parent: ResolvingMetadata): Promise<Metadata> {
       const { locale } = await guard(props);
       const meta = source.generateMetadata ? await source.generateMetadata(props as never, parent) : (source.metadata ?? {});
-      return localizeMetadata(meta, locale);
+      return withShareImage(localizeMetadata(meta, locale), locale, image, await props.params, parent);
     },
     Page: async function LocalePage(props: Props) {
       await guard(props);
@@ -71,43 +71,78 @@ export function mirrorPage(route: string, source: Source, { openParams = false }
 /** An English share-image route (opengraph-image.tsx) as app/[locale]'s mirror of it imports it. */
 interface ImageSource {
   default: (props: never) => unknown;
-  alt?: string;
-  size?: { width: number; height: number };
-  contentType?: string;
 }
 
 /**
- * The /<lang>/ version of a share image (src/app/[locale]/**\/opengraph-image.locale.tsx, see scripts/i18n/mirror.mjs):
- * the English route's own drawing, given the language in its params (lib/og/i18n reads it there: an image route
- * renders outside React, so `enterLocale` can't carry it), and its alt text from og-alt under `altKey`. Next reads the
- * alt per request through generateImageMetadata (an English route's alt is a fixed export), so the language's image
- * sits one segment deeper: /<lang>/<path>/opengraph-image-<hash>/<lang>.
+ * The /<lang>/<path>/share-image route handler (src/app/[locale]/**\/share-image/route.locale.ts, see
+ * scripts/i18n/mirror.mjs): the English route's own drawing, given the language in its params (lib/og/i18n reads it
+ * there: an image route renders outside React, so `enterLocale` can't carry it). Drawn on request.
  */
-export function mirrorImage(altKey: string, source: ImageSource) {
-  return {
-    async generateImageMetadata({ params }: { params: Params & { locale?: string } }) {
-      const locale = params?.locale;
-      if (!isLiveLocale(locale)) return [];
-      const t = await getT(ogAlt, locale);
-      const alt = t.has(altKey) ? t(altKey as never) : source.alt;
-      return [{ id: locale, alt, size: source.size, contentType: source.contentType }];
-    },
-    async Image(props: { params: Params | Promise<Params>; id?: string }) {
-      const params = await props.params;
-      if (!isLiveLocale(params?.locale)) notFound();
-      return source.default({ ...props, params } as never);
-    },
+export function mirrorImageRoute(source: ImageSource) {
+  return async function GET(_request: Request, context: { params: Promise<Params> }): Promise<Response> {
+    const params = await context.params;
+    if (!isLiveLocale(params?.locale)) notFound();
+    return (await source.default({ params: Promise.resolve(params) } as never)) as Response;
   };
 }
 
+/** The share image a mirrored page or layout shows: the English route (pattern) of its image and its og-alt key. */
+export interface ShareImage {
+  route: string;
+  alt: string;
+}
+
+/** An English share-image URL ("/battle/opengraph-image", "/opengraph-image?…") as its folder ("/battle", ""), or null. */
+function imageFolder(url: unknown): string | null {
+  const href = typeof url === "string" ? url : url instanceof URL ? url.pathname : null;
+  const m = href ? /^(\/[^?#]*?)?\/opengraph-image(?:[?#].*)?$/.exec(href) : null;
+  return m ? (m[1] ?? "") : null;
+}
+
+const shareImageUrl = (locale: Locale, folder: string) => `/${locale}${folder === "/" ? "" : folder}/share-image`;
+
+type OgImage = { url: string | URL; alt?: string; width?: number | string; height?: number | string; type?: string };
+
+/**
+ * A page's share image in its language. The language's pages have no image files of their own (see mirrorImageRoute),
+ * so every one names its image here: a site card the English page names (SHARE_IMAGES, "/leaderboard/opengraph-image")
+ * becomes the language's copy of it, and a page that names none gets the language's copy of the image its English page
+ * shows (its folder's, or the nearest one above). Another image (a card scan, a set logo) stays as it is.
+ */
+async function withShareImage(meta: Metadata, locale: Locale, image: ShareImage | undefined, params: Params, parent: ResolvingMetadata): Promise<Metadata> {
+  const t = await getT(ogAlt, locale);
+  const altOf = (key: string, fallback?: string) => (t.has(key) ? t(key as never) : fallback);
+  const localized = (img: OgImage): OgImage => {
+    const folder = imageFolder(img.url);
+    if (folder === null) return img;
+    const key = folder.replace(/^\//, "").replace(/[^A-Za-z0-9]+/g, "_") || "home";
+    return { ...img, url: shareImageUrl(locale, folder || "/"), alt: altOf(key, img.alt) };
+  };
+  const list = (images: unknown): OgImage[] | null =>
+    images === undefined ? null : (Array.isArray(images) ? images : [images]).map((i) => (typeof i === "string" || i instanceof URL ? { url: i } : (i as OgImage)));
+
+  const named = list(meta.openGraph?.images) ?? list(meta.twitter?.images);
+  let images: OgImage[] | null = named ? named.map(localized) : null;
+  if (!images && image) {
+    images = [{ url: shareImageUrl(locale, fill(image.route, params)), alt: altOf(image.alt), width: 1200, height: 630, type: "image/png" }];
+  }
+  if (!images) return meta;
+  // A page without Open Graph or Twitter fields of its own keeps its layout's, with this image.
+  const from = meta.openGraph && meta.twitter ? null : await parent;
+  const openGraph = meta.openGraph ?? (from?.openGraph as Metadata["openGraph"]) ?? {};
+  const twitter = meta.twitter ?? (from?.twitter as Metadata["twitter"]) ?? {};
+  return { ...meta, openGraph: { ...openGraph, images }, twitter: { ...twitter, images } as Metadata["twitter"] };
+}
+
 /** A mirrored layout's metadata: the English layout's, pointed at the language's URL. */
-export function mirrorMetadata(source: Pick<Source, "metadata" | "generateMetadata">) {
+export function mirrorMetadata(source: Pick<Source, "metadata" | "generateMetadata">, image?: ShareImage) {
   return async function generateMetadata(props: { params: Promise<{ locale: string }> }, parent: ResolvingMetadata): Promise<Metadata> {
-    const { locale } = await props.params;
+    const params = await props.params;
+    const { locale } = params;
     if (!isLiveLocale(locale)) return {};
     await enterLocale(locale);
     const meta = source.generateMetadata ? await source.generateMetadata(props as never, parent) : (source.metadata ?? {});
-    return localizeMetadata(meta, locale);
+    return withShareImage(localizeMetadata(meta, locale), locale, image, params, parent);
   };
 }
 

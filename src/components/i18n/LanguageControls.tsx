@@ -38,6 +38,16 @@ export function pageIn(path: string, locale: Locale): string {
   return localizePath(isPageLive(path, locale) ? path : "/", locale);
 }
 
+/**
+ * Opens the page in the chosen language, remembering the choice. The same page keeps its query and anchor (a
+ * leaderboard's board, a Pokédex filter); a page not translated into it goes to that language's home page.
+ */
+function switchTo(path: string, locale: Locale) {
+  remember(locale);
+  const target = pageIn(path, locale);
+  window.location.assign(isPageLive(path, locale) ? target + window.location.search + window.location.hash : target);
+}
+
 function remember(locale: Locale) {
   try {
     localStorage.setItem(CHOICE_KEY, locale);
@@ -75,8 +85,7 @@ export function LanguageSelect({ size, testId }: { size: "sm" | "md"; testId: st
         onChange={(e) => {
           const next = e.target.value;
           if (!isLiveLocale(next) || next === locale) return;
-          remember(next);
-          window.location.assign(pageIn(path, next));
+          switchTo(path, next);
         }}
         className={cn(
           "appearance-none rounded-full bg-primary/15 font-display font-semibold shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
@@ -111,8 +120,7 @@ export function LanguageSquare({ className }: { className?: string }) {
         onChange={(e) => {
           const next = e.target.value;
           if (!isLiveLocale(next) || next === locale) return;
-          remember(next);
-          window.location.assign(pageIn(path, next));
+          switchTo(path, next);
         }}
         className="absolute inset-0 h-full w-full cursor-pointer appearance-none rounded-2xl opacity-0"
       >

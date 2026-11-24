@@ -15,7 +15,8 @@ import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
 import { readOnly } from "./read-only-browser.mjs";
 
-export const HYDRATION_ROUTES = ["/leaderboard", "/pokedex", "/pokemon/pikachu", "/lab/games"];
+// The last one is a missing move: it gets the prebuilt 404 (rendered for /_not-found) under a nav tab of its own.
+export const HYDRATION_ROUTES = ["/leaderboard", "/pokedex", "/pokemon/pikachu", "/lab/games", "/pokedex/moves/not-a-move"];
 /** UTC+14 and UTC-10: for most of the day they're on different dates (and both differ from the server's UTC date). */
 const ZONES = [
   { timezoneId: "Pacific/Kiritimati", locale: "en-US" },

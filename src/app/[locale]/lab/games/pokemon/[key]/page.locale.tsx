@@ -3,7 +3,7 @@
 import * as Source from "@/app/lab/games/pokemon/[key]/page";
 import { mirrorPage } from "@/i18n/mirror";
 
-const m = mirrorPage("/lab/games/pokemon/[key]", Source, { openParams: true });
+const m = mirrorPage("/lab/games/pokemon/[key]", Source, { openParams: true, image: { route: "/lab/games", alt: "lab_games" } });
 
 export const revalidate = 604800;
 export const dynamicParams = true;

@@ -3,7 +3,7 @@
 import * as Source from "@/app/battle/ladder/page";
 import { mirrorPage } from "@/i18n/mirror";
 
-const m = mirrorPage("/battle/ladder", Source);
+const m = mirrorPage("/battle/ladder", Source, { image: { route: "/battle", alt: "battle" } });
 
 export const dynamic = "force-dynamic";
 export const dynamicParams = true;
