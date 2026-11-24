@@ -6,7 +6,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { Expand, Flag as FlagIcon, Maximize2, MapPin as MapPinIcon, MapPinned, Minus, MousePointer2, Pin, Plus, Shrink, X } from "lucide-react";
 import { GEO_FALLOFF, GEO_MAX_ROUND_SCORE } from "@/lib/geo-types";
 import { cn } from "@/lib/utils";
-import { BAR_BTN, ExitButton, FullscreenButton, GuessButton, HudDials, Notch, PHONE_QUERY, RoundBadge, ValueDial, dockWidth } from "@/components/geo/GameShell";
+import { BAR_BTN, CountdownPill, ExitButton, FullscreenButton, GuessButton, HudDials, Notch, PHONE_QUERY, RoundBadge, RoundReadout, ScoreTracker, TimerDial, dockWidth } from "@/components/geo/GameShell";
 import { Flag, GuessPin, LINE_DRAW_MS } from "@/components/geo/GeoMap";
 import { ShotCarousel } from "@/components/geo/ShotCarousel";
 import { HowToHelpButton } from "@/components/geo/GeoHowToButton";
@@ -334,7 +334,10 @@ const noop = () => undefined;
 // The round
 // ---------------------------------------------------------------------------
 
-/** The desktop round, as GeoGame lays it out: exit and full screen, the notch, the score chip, the map dock with Guess under it. */
+/** The round's clock, full (the demo doesn't count down). */
+const ROUND_MS = 90_000;
+
+/** The desktop round, as GeoGame lays it out: exit and full screen, the notch with its 01:30 pill, the score tracker, the map dock with Guess under it. */
 function DesktopRound({ open, pinned, pressed, reduced }: { open: boolean; pinned: boolean; pressed: boolean; reduced: boolean }) {
   const t = useT(geoHowto);
   return (
@@ -346,18 +349,15 @@ function DesktopRound({ open, pinned, pressed, reduced }: { open: boolean; pinne
         <ExitButton onClick={noop} testId="howto-demo-exit" />
         <FullscreenButton fs={false} onClick={noop} />
       </div>
-      <Notch>
+      <Notch below={<CountdownPill ms={ROUND_MS} totalMs={ROUND_MS} clock />}>
         <div className="min-w-0 text-center">
           <div className="font-display text-xl font-bold uppercase italic leading-none tracking-wide sm:text-2xl">
             {t("demo.round", { n: 1 })}<span className="text-white/50">/5</span>
           </div>
         </div>
       </Notch>
-      <div className="absolute right-3 top-3 z-20 flex items-center gap-2">
-        <div className="flex h-9 items-center gap-2 rounded-md bg-black/55 px-3 backdrop-blur">
-          <span className="hud-label hidden !text-white/60 sm:inline">{t("demo.score")}</span>
-          <span className="font-display text-base font-bold tabular-nums text-[#9be15d]">0</span>
-        </div>
+      <div className="absolute right-3 top-3 z-20 flex items-start gap-2">
+        <ScoreTracker rounds={5} scores={[]} current={0} total="0" />
         <HowToHelpButton className="hud-btn !hidden !p-0 !text-white sm:!flex" />
       </div>
       {/* MapDock: half see-through until the pointer reaches it, when it grows a size step (S to M) in 250 ms. */}
@@ -393,7 +393,8 @@ function PhoneRound({ open, pinned, pressed, reduced }: { open: boolean; pinned:
         <ShotCarousel views={[SHOT]} index={0} onIndex={noop} onZoom={noop} fs dock />
       </div>
       <HudDials>
-        <ValueDial value="0" unit="pts" />
+        <TimerDial ms={ROUND_MS} totalMs={ROUND_MS} clock />
+        <RoundReadout round={1} rounds={5} total="0" />
       </HudDials>
       <RoundBadge value={1} of={5} />
       {/* PhoneMap: the card over the picture, under its "Tap the map" label. */}

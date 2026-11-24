@@ -22,7 +22,11 @@
     "waitingMore": "Warte auf {n} weitere …",
     "locked": "Festgelegt",
     "timeUp": "Zeit abgelaufen",
-    "watching": "Ausgeschieden: Du schaust zu · {guessed} von {playing} haben getippt"
+    "watching": "Ausgeschieden: Du schaust zu · {guessed} von {playing} haben getippt",
+    "zoom": "Ganzen Screenshot ansehen",
+    "zoomTitle": "Ganzer Screenshot",
+    "fullScreen": "Screenshot im Vollbild",
+    "close": "Schließen"
   },
   "reveal": {
     "standings": "Zur Rangliste ▶",

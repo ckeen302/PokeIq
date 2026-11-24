@@ -111,5 +111,6 @@
   },
   "scoreTotal": "Gesamt",
   "roundOf": "Runde {n}/{of}",
+  "roundN": "Runde {n}",
   "retry": "Erneut versuchen"
 }

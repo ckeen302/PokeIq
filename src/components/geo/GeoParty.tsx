@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "@/components/ui/Link";
 import { useRouter } from "@/i18n/navigation";
-import { motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Check, Crown, Eye, Heart, Link2, Loader2, LogOut, Play, RotateCcw, Share2, Swords, UserMinus, Users, X } from "lucide-react";
 import type { DuelEmote } from "@/lib/pvp-types";
 import type { TauntId } from "@/lib/trainer/taunts";
@@ -40,7 +40,7 @@ import { GeoMap, LINE_DRAW_MS, mapAspect, type MapPin, type RevealedRound } from
 import { CountdownPill, FullscreenButton, GameShell, GuessButton, MapDock } from "./GameShell";
 import { EmoteButton, LivePill, fmtIn, multIn } from "./DuelHud";
 import { useDuelLive } from "./use-duel-live";
-import { shotFit } from "./ShotCarousel";
+import { LiveShot, shotFit } from "./ShotCarousel";
 import { ReportShot } from "./ReportShot";
 import { Lives, MAX_3D, PartyEmoteFeed, PartyLineup, PartyTrainer, Roster, TauntBar, TeamHp, seatColor, seatPin, usePartyTaunts } from "./PartyParts";
 import { cn } from "@/lib/utils";
@@ -81,12 +81,15 @@ export function GeoParty({ code, regions, names }: { code: string; regions: GeoR
   }, [endAt, liveStatus, refresh]);
   const [pick, setPick] = useState<MapPin | null>(null);
   const [summary, setSummary] = useState(false);
+  /** The round's whole screenshot, full screen (as a duel's and a solo round's). */
+  const [zoomed, setZoomed] = useState(false);
   const heard = useRef({ tick: -1, end: false });
   const aim = useRef({ at: 0, timer: 0 as number | undefined });
 
   const roundIndex = view?.round?.index;
   useEffect(() => {
     setPick(null);
+    setZoomed(false);
     setError(null);
   }, [roundIndex, setError]);
   // A new game in the room: the standings close.
@@ -148,8 +151,13 @@ export function GeoParty({ code, regions, names }: { code: string; regions: GeoR
     setSummary(true);
   }
 
+  // Space / Enter to guess, then for the next round; Esc closes the zoomed view.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setZoomed(false);
+        return;
+      }
       if (e.key !== "Enter" && e.key !== " ") return;
       const t = e.target as HTMLElement | null;
       if (t?.closest("input, textarea, select, button, a")) return;
@@ -262,30 +270,24 @@ export function GeoParty({ code, regions, names }: { code: string; regions: GeoR
       <GameShell>
         {({ fs, toggle }) => (
           <div className="relative flex h-full flex-col">
-            <PartyBand view={view} round={live.index + 1} below={<CountdownPill ms={left} totalMs={totalMs} urgentMs={live.countdown ? DUEL_COUNTDOWN_FLASH_MS : 10_000} testId="party-clock" />} />
+            <PartyBand view={view} round={live.index + 1} below={<CountdownPill ms={left} totalMs={totalMs} urgentMs={live.countdown ? DUEL_COUNTDOWN_FLASH_MS : 10_000} testId="party-clock" clock />} />
             <div className="relative min-h-0 flex-1">
               <div className="absolute inset-0">
                 {notice && <div className="absolute inset-x-0 top-12 z-30 px-4">{notice}</div>}
                 <div className="screen relative h-full w-full overflow-hidden rounded-none" style={{ height: "calc(100% - var(--geo-bar))" }}>
-                  {live.shot && (
-                    // eslint-disable-next-line @next/next/no-img-element -- server-proxied, CDN-cached screenshot
-                    <img
-                      key={live.shot}
-                      src={live.shot}
-                      alt={t("round.alt")}
-                      data-testid="geo-shot"
-                      onLoad={(e) => {
-                        e.currentTarget.style.imageRendering = shotFit(e.currentTarget).pixelated ? "pixelated" : "auto";
-                        e.currentTarget.style.opacity = "1";
-                      }}
-                      className="absolute inset-0 h-full w-full object-cover object-center opacity-0 transition-opacity duration-[350ms]"
-                    />
-                  )}
+                  {live.shot && <LiveShot key={live.shot} src={live.shot} alt={t("round.alt")} />}
                 </div>
                 <div className="absolute left-3 top-3 z-20 flex items-center gap-2">
                   {leaveButton}
                   <FullscreenButton fs={fs} onClick={toggle} />
                   {livePill}
+                </div>
+                <div className="absolute left-3 z-[3] bottom-[calc(var(--geo-bar)+0.75rem)] md:bottom-3">
+                  <button type="button" onClick={() => setZoomed(true)} className="hud-btn" aria-label={t("round.zoom")} title={t("round.zoomTitle")} data-testid="party-zoom">
+                    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                      <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+                    </svg>
+                  </button>
                 </div>
                 {/* Who's in and who has guessed: a column on the right on desktop, a strip on a phone. */}
                 <Roster view={view} guessed={live.guessed} className="absolute right-3 top-3 z-20 max-h-[calc(100%-7rem)] flex-col items-end overflow-y-auto max-md:left-[7.5rem] max-md:flex-row max-md:items-start max-md:justify-end max-md:overflow-x-auto max-md:overflow-y-hidden" />
@@ -333,6 +335,30 @@ export function GeoParty({ code, regions, names }: { code: string; regions: GeoR
                 )}
               </div>
             </div>
+            <AnimatePresence>
+              {zoomed && live.shot && (
+                <motion.div
+                  className="fixed inset-0 z-[70] flex items-center justify-center bg-black/90 p-4"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setZoomed(false)}
+                  role="dialog"
+                  aria-label={t("round.fullScreen")}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element -- same cached screenshot, full size */}
+                  <img
+                    src={live.shot}
+                    alt={t("round.alt")}
+                    onLoad={(e) => (e.currentTarget.style.imageRendering = shotFit(e.currentTarget).pixelated ? "pixelated" : "auto")}
+                    className="max-h-[calc(100vh-2rem)] max-w-full rounded-md object-contain"
+                  />
+                  <button type="button" className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20" aria-label={t("round.close")}>
+                    <X className="h-5 w-5" />
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         )}
       </GameShell>

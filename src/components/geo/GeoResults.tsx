@@ -70,11 +70,14 @@ export function GeoResults({
   pinImage,
   shareToken,
   onRestart,
+  next,
   children,
 }: {
   game: ResultsGame;
   played: ResultsRound[];
   pinImage?: string;
+  /** Under Back, when the next one comes (the Weekly's; the Daily's is built in). */
+  next?: React.ReactNode;
   /** A signed result, for the result page's link and preview card. */
   shareToken?: string;
   onRestart: () => void;
@@ -235,7 +238,7 @@ export function GeoResults({
                   </Button>
                 )}
               </div>
-              {game.daily && <NextDailyCountdown label={t("results.nextDaily")} />}
+              {game.daily ? <NextDailyCountdown label={t("results.nextDaily")} /> : next}
             </div>
 
             {children && (

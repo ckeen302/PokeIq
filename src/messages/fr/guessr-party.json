@@ -22,7 +22,11 @@
     "waitingMore": "Encore {n} à attendre…",
     "locked": "Réponse validée",
     "timeUp": "Temps écoulé",
-    "watching": "Éliminé : tu regardes · {guessed} sur {playing} ont répondu"
+    "watching": "Éliminé : tu regardes · {guessed} sur {playing} ont répondu",
+    "zoom": "Voir toute la capture",
+    "zoomTitle": "Capture entière",
+    "fullScreen": "Capture en plein écran",
+    "close": "Fermer"
   },
   "reveal": {
     "standings": "Voir le classement ▶",

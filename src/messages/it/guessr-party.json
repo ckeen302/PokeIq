@@ -22,7 +22,11 @@
     "waitingMore": "In attesa di altri {n}…",
     "locked": "Risposta bloccata",
     "timeUp": "Tempo scaduto",
-    "watching": "Sei fuori: stai guardando · {guessed} su {playing} hanno risposto"
+    "watching": "Sei fuori: stai guardando · {guessed} su {playing} hanno risposto",
+    "zoom": "Vedi la schermata intera",
+    "zoomTitle": "Schermata intera",
+    "fullScreen": "Schermata a tutto schermo",
+    "close": "Chiudi"
   },
   "reveal": {
     "standings": "Vedi la classifica ▶",

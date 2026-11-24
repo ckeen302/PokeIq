@@ -111,5 +111,6 @@
   },
   "scoreTotal": "Total",
   "roundOf": "Manche {n}/{of}",
+  "roundN": "Manche {n}",
   "retry": "Réessayer"
 }

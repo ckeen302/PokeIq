@@ -97,7 +97,7 @@ export function HuntRound(p: HuntRoundProps) {
           <Notch below={p.msLeft !== null ? <CountdownPill ms={p.msLeft} totalMs={p.totalMs} urgentMs={10_000} testId="geo-time-left" clock /> : undefined}>
             <div className="min-w-0 text-center">
               <div className="font-display text-xl font-bold uppercase italic leading-none tracking-wide sm:text-2xl" data-testid="geo-round">
-                {t("round")} {round}
+                {t("roundN", { n: round })}
                 <span className="text-white/50">/{p.rounds}</span>
               </div>
               <div className="mt-0.5 truncate font-display text-[11px] font-semibold uppercase tracking-[0.14em] text-[#c8bfff]">{p.modeLine}</div>

@@ -20,7 +20,6 @@
     "labelDesktop": "Demo of a round: a Pokémon screenshot fills the screen, the map in the corner grows, a pin goes down and Guess is pressed; the result draws a line to the real spot and scores {score} of {max}",
     "labelPhone": "Demo of a round: a Pokémon screenshot fills the screen, the map opens, a pin goes down and Guess is pressed; the result draws a line to the real spot and scores {score} of {max}",
     "round": "Round {n}",
-    "score": "Score",
     "tapMove": "Tap again to move your pin",
     "tapPlace": "Tap the map to place your guess",
     "spotOn": "Spot on!",

@@ -1,6 +1,6 @@
 "use client";
 
-import { cloneElement, isValidElement, useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, cloneElement, isValidElement, useCallback, useEffect, useRef, useState } from "react";
 import { Check, Expand, Hourglass, MapPinned, Maximize, Minimize, Pin, PinOff, Shrink, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useT } from "@/i18n/client";
@@ -51,8 +51,8 @@ export function GameShell({ children, onExit, className }: { children: (api: Ful
       if (document.fullscreenElement) return;
       const t = e.target as HTMLElement | null;
       if (t?.closest("input, textarea, select")) return;
-      // An open dialog (the zoomed screenshot, the phone's map sheet) takes Escape first.
-      if (document.querySelector('[role="dialog"]:not([aria-hidden="true"])')) return;
+      // An open dialog (the zoomed screenshot, the phone's map sheet) takes Escape first; a closed one (the site's More sheet) is inert.
+      if (document.querySelector('[role="dialog"]:not([aria-hidden="true"]):not([inert])')) return;
       exitRef.current?.();
     };
     document.addEventListener("fullscreenchange", onChange);
@@ -658,10 +658,16 @@ export function RoundBadge({ label: given, value, of, mode, testId }: { label?: 
         <span className="flex h-7 min-w-7 items-center justify-center rounded-full rounded-br-sm bg-[#6c5ce7] px-1.5 font-display text-sm font-bold text-white shadow-inner">{value}</span>
         {of !== undefined && <span className="font-display text-xs font-semibold text-white/50">/{of}</span>}
       </div>
-      {/* The map and the mode (Daily #, Weekly #, difficulty), small under the badge. */}
+      {/* The map and the mode (Daily #, Weekly #, difficulty), small under the badge: a long one wraps rather than being cut off. */}
       {mode && (
-        <span className="max-w-full truncate rounded-md bg-[#1e1a3f]/70 px-2 py-0.5 font-display text-[10px] font-semibold uppercase tracking-[0.12em] text-[#c8bfff] backdrop-blur" data-testid="geo-round-mode">
-          {mode}
+        <span className="line-clamp-2 max-w-full rounded-md bg-[#1e1a3f]/70 px-2 py-0.5 text-right font-display text-[10px] font-semibold uppercase leading-snug tracking-[0.12em] text-[#c8bfff] backdrop-blur" data-testid="geo-round-mode">
+          {/* It breaks between the parts ("Towns and Cities · / Weekly #5"), never inside one. */}
+          {mode.split(" · ").map((part, i) => (
+            <Fragment key={i}>
+              {i > 0 && " · "}
+              <span className="whitespace-nowrap">{part}</span>
+            </Fragment>
+          ))}
         </span>
       )}
     </div>
