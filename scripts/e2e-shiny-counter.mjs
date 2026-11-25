@@ -3,7 +3,8 @@
  * HTML), picking a target, setting the game, method and Shiny Charm (the odds follow), counting by click, Space, Enter
  * and "+", subtracting with "−", undo with Z, a custom step, typing the count in, a reload that keeps everything, a
  * phase, the "Found it!" celebration and the trophy case, a share link that opens the hunt with its own title and
- * preview card, and the phone layout (no sideways scroll at 390 px, the count button in thumb reach). Each part records
+ * preview card, the chain and level inputs (Poké Radar, DexNav, Ultra Wormholes, Brilliant Pokémon), and the phone layout
+ * (no sideways scroll at 390 px, the count button in thumb reach). Each part records
  * a failure instead of stopping the rest. Screenshots go to $SHOTS (or e2e-screenshots).
  *
  *   node scripts/e2e-shiny-counter.mjs [baseUrl]      (CHROMIUM_PATH picks the browser)
@@ -170,6 +171,67 @@ export async function runShinyCounter({ browser, BASE, OUT, errors, step }) {
   }
   await ctx.close();
 
+  step("shiny counter: chains and levels (Poké Radar, DexNav, Ultra Wormholes, Brilliant Pokémon)");
+  const c2 = await newContext(browser, BASE);
+  const pg = await c2.newPage();
+  watch(pg, consoleErrors);
+  try {
+    await pg.goto(`${BASE}${PATH}`, { waitUntil: "load" });
+    await ready(pg);
+    await pg.getByTestId("sh-picker-search").fill("ralts");
+    await pg.getByTestId("sh-pick-280").click();
+    await pg.getByTestId("sh-counter").waitFor();
+    // Brilliant Diamond/Shining Pearl's Poké Radar: 1 in 99 from a chain of 40, and no Shiny Charm switch.
+    await pg.getByTestId("sh-game").selectOption("bdsp");
+    await pg.getByTestId("sh-method-pokeRadar").click();
+    if (await pg.getByTestId("sh-charm").count()) fail("BD/SP Poké Radar shows a Shiny Charm switch");
+    await pg.getByTestId("sh-chain-value").fill("16");
+    if ((await odds(pg)) !== "1 in 2,048") fail(`BD/SP radar at 16: ${await odds(pg)}`);
+    await pg.getByTestId("sh-chain-up").click();
+    if ((await pg.getByTestId("sh-chain-value").inputValue()) !== "17") fail("the chain's + didn't add one");
+    await pg.getByTestId("sh-chain-value").fill("40");
+    if ((await odds(pg)) !== "1 in 99") fail(`BD/SP radar at 40: ${await odds(pg)}`);
+    // Platinum's radar: 1 in 195 at 40 (the forced 328/65536 plus the normal 1/8192).
+    await pg.getByTestId("sh-game").selectOption("dppt");
+    await pg.getByTestId("sh-method-pokeRadar").click();
+    await pg.getByTestId("sh-chain-value").fill("40");
+    if ((await odds(pg)) !== "1 in 195") fail(`DPPt radar at 40: ${await odds(pg)}`);
+    // DexNav: Search Level 999, the 50th of a chain: 1 in 62.
+    await pg.getByTestId("sh-game").selectOption("oras");
+    await pg.getByTestId("sh-method-dexNav").click();
+    await pg.getByTestId("sh-level-value").fill("999");
+    await pg.getByTestId("sh-chain-value").fill("49");
+    if ((await odds(pg)) !== "1 in 62") fail(`DexNav 999 / 50th: ${await odds(pg)}`);
+    await pg.getByTestId("sh-charm").click();
+    await pg.getByTestId("sh-chain-value").fill("99");
+    if ((await odds(pg)) !== "1 in 36.3") fail(`DexNav 999 / 100th with the charm: ${await odds(pg)}`);
+    if (OUT) await pg.getByTestId("sh-setup").screenshot({ path: `${OUT}/shiny-counter-dexnav-desktop.png` }).catch(() => undefined);
+    // Ultra Wormholes: 3 rings at 5,000 light-years is 36%; the distance steps by 100.
+    await pg.getByTestId("sh-game").selectOption("usum");
+    await pg.getByTestId("sh-method-wormhole").click();
+    await pg.getByTestId("sh-choice-rings-3").click();
+    await pg.getByTestId("sh-level-value").fill("4900");
+    await pg.getByTestId("sh-level-up").click();
+    if ((await pg.getByTestId("sh-level-value").inputValue()) !== "5,000") fail(`the distance's + made ${await pg.getByTestId("sh-level-value").inputValue()}`);
+    if ((await odds(pg)) !== "1 in 2.8") fail(`3-ring wormhole at 5,000 ly: ${await odds(pg)}`);
+    // Sword/Shield Brilliant Pokémon at 500 battled with the charm: 1 in 456.
+    await pg.getByTestId("sh-game").selectOption("swsh");
+    await pg.getByTestId("sh-method-brilliant").click();
+    await pg.getByTestId("sh-choice-battled-500").click();
+    if ((await odds(pg)) !== "1 in 456") fail(`Brilliant, 500 battled, charm: ${await odds(pg)}`);
+    // Kept across a reload, level included.
+    await pg.getByTestId("sh-game").selectOption("oras");
+    await pg.getByTestId("sh-method-dexNav").click();
+    await pg.getByTestId("sh-level-value").fill("250");
+    await pg.reload({ waitUntil: "load" });
+    await ready(pg);
+    await pg.getByTestId("sh-counter").waitFor();
+    if ((await pg.getByTestId("sh-level-value").inputValue()) !== "250") fail("the Search Level didn't survive a reload");
+  } catch (e) {
+    fail(`chains and levels stopped: ${e.message.split("\n")[0]}`);
+  }
+  await c2.close();
+
   step("shiny counter: a shared link opens the hunt with its own title and card");
   if (shareUrl) {
     try {
@@ -211,6 +273,13 @@ export async function runShinyCounter({ browser, BASE, OUT, errors, step }) {
       if ((await wide()) > 391) fail(`${theme} phone: the counter scrolls sideways (${await wide()}px)`);
       await m.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
       if ((await wide()) > 391) fail(`${theme} phone: the page scrolls sideways at the bottom`);
+      // The DexNav's two inputs fit the phone.
+      await m.getByTestId("sh-game").selectOption("oras");
+      await m.getByTestId("sh-method-dexNav").click();
+      await m.getByTestId("sh-level-value").fill("300");
+      await m.getByTestId("sh-chain-value").fill("24");
+      if ((await wide()) > 391) fail(`${theme} phone: the DexNav setup scrolls sideways (${await wide()}px)`);
+      if (OUT) await m.getByTestId("sh-setup").screenshot({ path: `${OUT}/shiny-counter-dexnav-phone-${theme}.png` }).catch(() => undefined);
     } catch (e) {
       fail(`${theme} phone stopped: ${e.message.split("\n")[0]}`);
     }

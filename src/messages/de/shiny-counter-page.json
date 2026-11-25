@@ -2,7 +2,7 @@
   "title": "Shiny-Hunt-Zähler",
   "subtitle": "Zähle jede Begegnung, sieh deine echten Odds und sammle jedes gefundene Shiny in deiner Vitrine.",
   "metaTitle": "Shiny-Hunt-Zähler: Begegnungen zählen mit echten Shiny-Odds",
-  "metaDescription": "Ein kostenloser Shiny-Hunting-Zähler für alle Pokémon-Hauptspiele: Wähle Ziel, Spiel und Methode (Masuda, Kettenangeln, SOS-Ketten, Massenausbrüche, Schillerkraft, Schillerpin) und sieh deine echten Odds, deine bisherige Chance und deine Begegnungen pro Stunde. Mit Phasen, Vitrine und Bildern zum Teilen.",
+  "metaDescription": "Ein kostenloser Shiny-Hunting-Zähler für alle Pokémon-Hauptspiele: Wähle Ziel, Spiel und Methode (Masuda, Pokéradar, Pokédex-Navi, Kettenangeln, SOS-Ketten, Massenausbrüche, Schillerkraft, Schillerpin) und sieh deine echten Odds, deine bisherige Chance und deine Begegnungen pro Stunde. Mit Phasen, Vitrine und Bildern zum Teilen.",
   "metaSharedFound": "Ich habe ein schillerndes {pokemon} nach {n} Begegnungen gefunden",
   "metaSharedHunting": "Jagd auf ein schillerndes {pokemon}: bisher {n} Begegnungen",
   "metaSharedDescription": "Gezählt mit dem Shiny-Hunt-Zähler auf PokéIQ. Starte deine eigene Jagd, kostenlos.",
@@ -37,7 +37,7 @@
     "s1t": "Wähle dein Ziel",
     "s1": "Suche jedes Pokémon nach Name oder Nummer. Seine schillernden Farben erscheinen sofort, damit du weißt, worauf du achten musst.",
     "s2t": "Wähle Spiel und Methode",
-    "s2": "Alle Hauptspiele von Gold und Silber bis Legenden: Z-A, mit den Methoden, die die Odds ändern: Schillerpin, Masuda-Methode, Kettenangeln, SOS-Ketten, Fangkombos, Massenausbrüche und Schillerkraft.",
+    "s2": "Alle Hauptspiele von Gold und Silber bis Legenden: Z-A, mit den Methoden, die die Odds ändern: Schillerpin, Masuda-Methode, Pokéradar, Kontaktsafari, Kettenangeln, Pokédex-Navi, SOS-Ketten, Ultrapforten, Fangkombos, Pokémon mit Aura, Massenausbrüche und Schillerkraft.",
     "s3t": "Zähle jede Begegnung",
     "s3": "Tippe auf den großen Knopf oder drücke die Leertaste oder Enter. Zähle bei Horden in Fünferschritten, mach einen Fehler rückgängig oder tippe den Stand ein. Der Timer startet mit deinem ersten Zählen und berechnet deine Begegnungen pro Stunde.",
     "s4t": "Feiern und teilen",
@@ -46,5 +46,5 @@
     "odds": "Bei jeder Begegnung wird ein- oder mehrmals ausgewürfelt, ob sie schillert. Die Grundchance ist 1 zu 8.192 in den Generationen 2 bis 5 und 1 zu 4.096 ab X und Y; der Schillerpin und die anderen Methoden fügen Würfe hinzu. Deine bisherige Chance ist 1 − (1 − p)ⁿ: genau bei den Odds liegt sie bei etwa 63 %, und 100 % erreicht sie nie. Jede Begegnung ist eine neue Chance – wer über den Odds ist, hat bei der nächsten keine bessere.",
     "privacy": "Deine Jagden werden in diesem Browser auf diesem Gerät gespeichert. Nichts wird hochgeladen, und ein geteilter Link enthält nur die Jagd, die du teilst."
   },
-  "credit": "Bilder: Pokémon-HOME-Renderings und Sprites von PokéAPI. Odds von Bulbapedia und Serebii. Pokémon ist © Nintendo, Game Freak und Creatures."
+  "credit": "Bilder: Pokémon-HOME-Renderings und Sprites von PokéAPI. Odds aus dem Code und den Analysen der Spiele, geprüft mit Bulbapedia und Serebii. Pokémon ist © Nintendo, Game Freak und Creatures."
 }

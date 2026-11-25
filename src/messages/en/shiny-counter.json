@@ -62,15 +62,36 @@
     "method": "Method",
     "charm": "Shiny Charm",
     "lure": "Lure active",
+    "diglett": "Diglett bonus active",
     "chain": {
       "chainFishing": "Fishing chain",
       "sos": "SOS chain",
-      "catchCombo": "Catch combo"
+      "catchCombo": "Catch combo",
+      "pokeRadar": "Radar chain",
+      "dexNav": "DexNav chain so far"
     },
     "chainHint": "The bonus stops growing at {n}.",
+    "chainHintDexNav": "Every 5th Pokémon in a chain gets extra checks, the 50th and 100th more still. The odds are for the next one.",
+    "chainHintWrap": "The bonus stops growing at {n}. The game's counter starts over after {max}.",
     "chainDown": "Shorter chain",
     "chainUp": "Longer chain",
     "chainReset": "Reset",
+    "level": {
+      "searchLevel": "Search Level",
+      "distance": "Distance (light-years)"
+    },
+    "levelDown": {
+      "searchLevel": "Lower Search Level",
+      "distance": "Shorter distance"
+    },
+    "levelUp": {
+      "searchLevel": "Higher Search Level",
+      "distance": "Longer distance"
+    },
+    "levelHint": {
+      "searchLevel": "The species' Search Level, shown in the DexNav (up to 999).",
+      "distance": "The bonus stops growing at 5,000 light-years. Ringed wormholes appear from 1,000, three rings from 2,500."
+    },
     "research": "Research level",
     "researchOptions": {
       "none": "Below 10",
@@ -90,32 +111,64 @@
       "30": "30–59",
       "60": "60+"
     },
+    "battled": "Number Battled",
+    "battledOptions": {
+      "1": "1–49",
+      "50": "50–99",
+      "100": "100–199",
+      "200": "200–299",
+      "300": "300–499",
+      "500": "500+"
+    },
+    "rings": "Wormhole rings",
+    "ringsOptions": {
+      "0": "None",
+      "1": "1",
+      "2": "2",
+      "3": "3"
+    },
     "gen": "Generation {n}",
-    "source": "Odds from the games' known mechanics (Bulbapedia, Serebii)."
+    "source": "Odds from the games' code and datamines, checked against Bulbapedia and Serebii."
   },
   "methods": {
     "wild": "Random encounters",
+    "eggs": "Eggs",
     "breeding": "Breeding with a shiny parent",
     "masuda": "Masuda method",
+    "pokeRadar": "Poké Radar",
+    "friendSafari": "Friend Safari",
     "chainFishing": "Chain fishing",
     "horde": "Horde encounters",
+    "dexNav": "DexNav",
     "sos": "SOS chaining",
+    "wormhole": "Ultra Wormholes",
     "catchCombo": "Catch combo",
+    "brilliant": "Brilliant Pokémon",
     "dynamax": "Dynamax Adventures",
+    "underground": "Grand Underground",
     "outbreak": "Mass outbreak",
-    "massiveOutbreak": "Massive mass outbreak"
+    "massiveOutbreak": "Massive mass outbreak",
+    "hyperspace": "Hyperspace Lumiose"
   },
   "methodHints": {
-    "wild": "Wild Pokémon, soft resets and eggs at the game's base rate.",
-    "breeding": "An egg from a shiny parent.",
+    "wild": "Wild Pokémon and soft resets at the game's base rate.",
+    "eggs": "Eggs from parents from games in the same language.",
+    "breeding": "An egg that inherits a shiny parent's DVs (from a Ditto, or from the parent of the other gender).",
     "masuda": "Eggs from parents from games in two different languages.",
+    "pokeRadar": "The chance for each shaking patch that continues your chain.",
+    "friendSafari": "Every Pokémon in the Friend Safari gets extra checks.",
     "chainFishing": "Each Pokémon hooked in a row adds to the odds, up to 20.",
     "horde": "Five Pokémon at once, each with its own chance: count by 5.",
+    "dexNav": "Hidden Pokémon found with the DexNav, by Search Level and chain.",
     "sos": "Each ally called in a row adds to the odds.",
+    "wormhole": "The Pokémon at the end of an Ultra Warp Ride: count one per trip.",
     "catchCombo": "Catching the same Pokémon in a row adds to the odds.",
+    "brilliant": "Count only Pokémon with a glowing aura. The more of the species you've battled, the better.",
     "dynamax": "A flat chance for each Pokémon you choose to keep.",
+    "underground": "Pokémon in the Hideaways, with or without the Diglett bonus.",
     "outbreak": "Pokémon in a mass outbreak.",
-    "massiveOutbreak": "Outbreaks inside a massive mass outbreak."
+    "massiveOutbreak": "Outbreaks inside a massive mass outbreak.",
+    "hyperspace": "Wild Pokémon in Hyperspace, with a donut's Sparkling Power."
   },
   "games": {
     "gsc": "Gold, Silver & Crystal",

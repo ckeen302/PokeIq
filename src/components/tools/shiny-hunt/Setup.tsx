@@ -6,7 +6,7 @@ import type { Translator } from "@/i18n/catalog";
 import { useLocale } from "@/i18n/navigation";
 import { formatNumber } from "@/i18n/format";
 import counter from "@/messages/shiny-counter";
-import { GAMES_NEWEST_FIRST, chainCap, charmApplies, getGame, getMethod, shinyChance, type ChoiceId, type GameId, type MethodId } from "@/lib/shiny-hunt/odds";
+import { GAMES_NEWEST_FIRST, NO_BONUS, chainCap, charmApplies, getGame, getMethod, hasChain, shinyChance, type ChoiceId, type GameId, type MethodId } from "@/lib/shiny-hunt/odds";
 import { oneIn } from "@/lib/shiny-hunt/math";
 import { setOdds, type Hunt } from "@/lib/shiny-hunt/store";
 import { cn } from "@/lib/utils";
@@ -50,7 +50,7 @@ export function Setup({ hunt, onChange }: { hunt: Hunt; onChange(h: Hunt): void 
         <div role="radiogroup" aria-labelledby="sh-method-label" className="grid gap-1.5">
           {game.methods.map((m) => {
             const on = m.id === hunt.method;
-            const p = shinyChance(hunt.game, m.id, on ? hunt : { charm: hunt.charm, lure: false, chain: 0, choices: {} });
+            const p = shinyChance(hunt.game, m.id, on ? hunt : { ...NO_BONUS, charm: hunt.charm });
             return (
               <button
                 key={m.id}
@@ -81,7 +81,7 @@ export function Setup({ hunt, onChange }: { hunt: Hunt; onChange(h: Hunt): void 
       {(charmApplies(method) || method.lure) && (
         <div className="grid gap-1.5">
           {charmApplies(method) && <Switch on={hunt.charm} onChange={(v) => set({ charm: v })} label={t("setup.charm")} icon testId="sh-charm" />}
-          {method.lure && <Switch on={hunt.lure} onChange={(v) => set({ lure: v })} label={t("setup.lure")} testId="sh-lure" />}
+          {method.lure && <Switch on={hunt.lure} onChange={(v) => set({ lure: v })} label={t(method.lureKind === "diglett" ? "setup.diglett" : "setup.lure")} testId="sh-lure" />}
         </div>
       )}
 
@@ -99,25 +99,47 @@ export function Setup({ hunt, onChange }: { hunt: Hunt; onChange(h: Hunt): void 
         </div>
       ))}
 
-      {method.chain && (
+      {method.level && (
         <div className="space-y-2">
-          <p className="text-[13px] font-semibold uppercase tracking-wider text-muted-foreground">{t(`setup.chain.${method.id as "chainFishing" | "sos" | "catchCombo"}`)}</p>
+          <p className="text-[13px] font-semibold uppercase tracking-wider text-muted-foreground" id="sh-level-label">{t(`setup.level.${method.level.id}`)}</p>
+          <Stepper
+            value={hunt.level ?? 0}
+            min={0}
+            max={method.level.max}
+            step={method.level.step}
+            onChange={(v) => set({ level: v })}
+            downLabel={t(`setup.levelDown.${method.level.id}`)}
+            upLabel={t(`setup.levelUp.${method.level.id}`)}
+            label={t(`setup.level.${method.level.id}`)}
+            testId="sh-level"
+          />
+          <p className="text-[13px] text-muted-foreground">{t(`setup.levelHint.${method.level.id}`)}</p>
+        </div>
+      )}
+
+      {hasChain(method) && (
+        <div className="space-y-2">
+          <p className="text-[13px] font-semibold uppercase tracking-wider text-muted-foreground">{t(`setup.chain.${method.id as ChainMethod}`)}</p>
           <div className="flex items-center gap-2">
-            <Stepper value={hunt.chain} min={0} max={9999} onChange={(v) => set({ chain: v })} downLabel={t("setup.chainDown")} upLabel={t("setup.chainUp")} testId="sh-chain" />
+            <Stepper value={hunt.chain} min={0} max={method.chainMax ?? 9999} onChange={(v) => set({ chain: v })} downLabel={t("setup.chainDown")} upLabel={t("setup.chainUp")} label={t(`setup.chain.${method.id as ChainMethod}`)} testId="sh-chain" />
             <button type="button" onClick={() => set({ chain: 0 })} disabled={!hunt.chain} className="inline-flex h-11 items-center gap-1.5 rounded-full px-3 text-[14px] font-semibold text-muted-foreground transition-colors hover:bg-foreground/[0.06] hover:text-foreground disabled:opacity-40">
               <RotateCcw className="h-4 w-4" aria-hidden /> {t("setup.chainReset")}
             </button>
           </div>
-          <p className="text-[13px] text-muted-foreground">{t("setup.chainHint", { n: cap })}</p>
+          <p className="text-[13px] text-muted-foreground">{method.id === "dexNav" ? t("setup.chainHintDexNav") : method.chainMax ? t("setup.chainHintWrap", { n: cap, max: method.chainMax }) : t("setup.chainHint", { n: cap })}</p>
         </div>
       )}
     </div>
   );
 }
 
+type ChainMethod = "chainFishing" | "sos" | "catchCombo" | "pokeRadar" | "dexNav";
+
 function choiceLabel(t: Translator<typeof counter.en>, id: ChoiceId, option: string): string {
   if (id === "research") return t(`setup.researchOptions.${option as "none" | "lv10" | "perfect"}`);
   if (id === "sparkling") return t(`setup.sparklingOptions.${option as "0" | "1" | "2" | "3"}`);
+  if (id === "battled") return t(`setup.battledOptions.${option as "1" | "50" | "100" | "200" | "300" | "500"}`);
+  if (id === "rings") return t(`setup.ringsOptions.${option as "0" | "1" | "2" | "3"}`);
   return t(`setup.clearedOptions.${option as "0" | "30" | "60"}`);
 }
 
@@ -141,12 +163,12 @@ export function Switch({ on, onChange, label, icon, testId }: { on: boolean; onC
 }
 
 /** − value + (the value types in too). */
-export function Stepper({ value, min, max, onChange, downLabel, upLabel, label, testId }: { value: number; min: number; max: number; onChange(v: number): void; downLabel: string; upLabel: string; label?: string; testId?: string }) {
+export function Stepper({ value, min, max, step = 1, onChange, downLabel, upLabel, label, testId }: { value: number; min: number; max: number; step?: number; onChange(v: number): void; downLabel: string; upLabel: string; label?: string; testId?: string }) {
   const locale = useLocale();
   const clamp = (v: number) => Math.min(max, Math.max(min, Math.round(v)));
   return (
     <div className="inline-flex h-11 items-center rounded-full bg-foreground/[0.06] p-1" data-testid={testId}>
-      <button type="button" className="sh-side flex h-9 w-9 items-center justify-center rounded-full text-foreground/80 transition-colors hover:bg-foreground/[0.08] disabled:opacity-35" onClick={() => onChange(clamp(value - 1))} disabled={value <= min} aria-label={downLabel} title={downLabel} data-testid={testId && `${testId}-down`}>
+      <button type="button" className="sh-side flex h-9 w-9 items-center justify-center rounded-full text-foreground/80 transition-colors hover:bg-foreground/[0.08] disabled:opacity-35" onClick={() => onChange(clamp(value - step))} disabled={value <= min} aria-label={downLabel} title={downLabel} data-testid={testId && `${testId}-down`}>
         <Minus className="h-4 w-4" aria-hidden />
       </button>
       <input
@@ -159,10 +181,10 @@ export function Stepper({ value, min, max, onChange, downLabel, upLabel, label, 
           if (Number.isFinite(n)) onChange(clamp(n));
         }}
         onFocus={(e) => e.currentTarget.select()}
-        className="sh-num h-9 w-14 bg-transparent text-center text-[16px] font-semibold outline-none"
+        className="sh-num h-9 w-16 bg-transparent text-center text-[16px] font-semibold outline-none"
         data-testid={testId && `${testId}-value`}
       />
-      <button type="button" className="sh-side flex h-9 w-9 items-center justify-center rounded-full text-foreground/80 transition-colors hover:bg-foreground/[0.08] disabled:opacity-35" onClick={() => onChange(clamp(value + 1))} disabled={value >= max} aria-label={upLabel} title={upLabel} data-testid={testId && `${testId}-up`}>
+      <button type="button" className="sh-side flex h-9 w-9 items-center justify-center rounded-full text-foreground/80 transition-colors hover:bg-foreground/[0.08] disabled:opacity-35" onClick={() => onChange(clamp(value + step))} disabled={value >= max} aria-label={upLabel} title={upLabel} data-testid={testId && `${testId}-up`}>
         <Plus className="h-4 w-4" aria-hidden />
       </button>
     </div>

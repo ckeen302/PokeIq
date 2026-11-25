@@ -62,15 +62,36 @@
     "method": "Methode",
     "charm": "Schillerpin",
     "lure": "Lockmittel aktiv",
+    "diglett": "Digda-Bonus aktiv",
     "chain": {
       "chainFishing": "Angelkette",
       "sos": "SOS-Kette",
-      "catchCombo": "Fangkombo"
+      "catchCombo": "Fangkombo",
+      "pokeRadar": "Radar-Kette",
+      "dexNav": "Bisherige Navi-Kette"
     },
     "chainHint": "Der Bonus wächst ab {n} nicht mehr.",
+    "chainHintDexNav": "Jedes 5. Pokémon einer Kette bekommt zusätzliche Prüfungen, das 50. und 100. noch mehr. Die Odds gelten für das nächste.",
+    "chainHintWrap": "Der Bonus wächst ab {n} nicht mehr. Der Zähler im Spiel beginnt nach {max} von vorn.",
     "chainDown": "Kürzere Kette",
     "chainUp": "Längere Kette",
     "chainReset": "Zurücksetzen",
+    "level": {
+      "searchLevel": "Suchlevel",
+      "distance": "Entfernung (Lichtjahre)"
+    },
+    "levelDown": {
+      "searchLevel": "Suchlevel senken",
+      "distance": "Kürzere Entfernung"
+    },
+    "levelUp": {
+      "searchLevel": "Suchlevel erhöhen",
+      "distance": "Längere Entfernung"
+    },
+    "levelHint": {
+      "searchLevel": "Das Suchlevel der Art, wie es das Pokédex-Navi zeigt (bis 999).",
+      "distance": "Der Bonus wächst ab 5.000 Lichtjahren nicht mehr. Pforten mit Ringen gibt es ab 1.000, mit drei Ringen ab 2.500."
+    },
     "research": "Forschungslevel",
     "researchOptions": {
       "none": "Unter 10",
@@ -90,32 +111,64 @@
       "30": "30–59",
       "60": "60+"
     },
+    "battled": "Anzahl besiegt",
+    "battledOptions": {
+      "1": "1–49",
+      "50": "50–99",
+      "100": "100–199",
+      "200": "200–299",
+      "300": "300–499",
+      "500": "500+"
+    },
+    "rings": "Ringe der Ultrapforte",
+    "ringsOptions": {
+      "0": "Keine",
+      "1": "1",
+      "2": "2",
+      "3": "3"
+    },
     "gen": "Generation {n}",
-    "source": "Odds nach den bekannten Spielmechaniken (Bulbapedia, Serebii)."
+    "source": "Odds aus dem Code der Spiele und ihren Analysen, geprüft mit Bulbapedia und Serebii."
   },
   "methods": {
     "wild": "Normale Begegnungen",
+    "eggs": "Eier",
     "breeding": "Zucht mit schillerndem Elternteil",
     "masuda": "Masuda-Methode",
+    "pokeRadar": "Pokéradar",
+    "friendSafari": "Kontaktsafari",
     "chainFishing": "Kettenangeln",
     "horde": "Horden",
+    "dexNav": "Pokédex-Navi",
     "sos": "SOS-Ketten",
+    "wormhole": "Ultrapforten",
     "catchCombo": "Fangkombo",
+    "brilliant": "Pokémon mit Aura",
     "dynamax": "Dyna-Tour",
+    "underground": "Untergrundhöhlen",
     "outbreak": "Massenausbruch",
-    "massiveOutbreak": "Massiver Massenausbruch"
+    "massiveOutbreak": "Massiver Massenausbruch",
+    "hyperspace": "Dimensions-Illumina"
   },
   "methodHints": {
-    "wild": "Wilde Pokémon, Soft-Resets und Eier zur Grundrate des Spiels.",
-    "breeding": "Ein Ei von einem schillernden Elternteil.",
+    "wild": "Wilde Pokémon und Soft-Resets zur Grundrate des Spiels.",
+    "eggs": "Eier von Eltern aus Spielen in derselben Sprache.",
+    "breeding": "Ein Ei, das die DVs eines schillernden Elternteils erbt (von Ditto oder vom Elternteil des anderen Geschlechts).",
     "masuda": "Eier von Eltern aus Spielen in zwei verschiedenen Sprachen.",
+    "pokeRadar": "Die Chance für jedes wackelnde Grasbüschel, das deine Kette fortsetzt.",
+    "friendSafari": "Jedes Pokémon in der Kontaktsafari bekommt zusätzliche Prüfungen.",
     "chainFishing": "Jedes Pokémon, das du nacheinander angelst, erhöht die Chance, bis 20.",
     "horde": "Fünf Pokémon auf einmal, jedes mit eigener Chance: in Fünferschritten zählen.",
+    "dexNav": "Versteckte Pokémon, die du mit dem Pokédex-Navi findest, nach Suchlevel und Kette.",
     "sos": "Jeder nacheinander gerufene Verbündete erhöht die Chance.",
+    "wormhole": "Das Pokémon am Ende eines Ultra-Warps: eins pro Reise zählen.",
     "catchCombo": "Dasselbe Pokémon nacheinander zu fangen erhöht die Chance.",
+    "brilliant": "Zähle nur Pokémon mit leuchtender Aura. Je mehr dieser Art du besiegt hast, desto besser.",
     "dynamax": "Eine feste Chance für jedes Pokémon, das du behältst.",
+    "underground": "Pokémon in den Pokémon-Unterschlüpfen, mit oder ohne Digda-Bonus.",
     "outbreak": "Pokémon aus einem Massenausbruch.",
-    "massiveOutbreak": "Ausbrüche innerhalb eines massiven Massenausbruchs."
+    "massiveOutbreak": "Ausbrüche innerhalb eines massiven Massenausbruchs.",
+    "hyperspace": "Wilde Pokémon in Dimensions-Illumina, mit der Schillerkraft eines Donuts."
   },
   "games": {
     "gsc": "Gold, Silber & Kristall",

@@ -62,15 +62,36 @@
     "method": "Método",
     "charm": "Amuleto Iris",
     "lure": "Atrayente activo",
+    "diglett": "Bonificación de Diglett activa",
     "chain": {
       "chainFishing": "Cadena de pesca",
       "sos": "Cadena de auxilio",
-      "catchCombo": "Combo de capturas"
+      "catchCombo": "Combo de capturas",
+      "pokeRadar": "Cadena del Pokéradar",
+      "dexNav": "Cadena del DexNav hasta ahora"
     },
     "chainHint": "La bonificación deja de crecer en {n}.",
+    "chainHintDexNav": "Cada 5.º Pokémon de una cadena tiene comprobaciones extra, y el 50.º y el 100.º aún más. La probabilidad es la del siguiente.",
+    "chainHintWrap": "La bonificación deja de crecer en {n}. El contador del juego vuelve a empezar después de {max}.",
     "chainDown": "Cadena más corta",
     "chainUp": "Cadena más larga",
     "chainReset": "Reiniciar",
+    "level": {
+      "searchLevel": "Nivel de búsqueda",
+      "distance": "Distancia (años luz)"
+    },
+    "levelDown": {
+      "searchLevel": "Bajar el nivel de búsqueda",
+      "distance": "Menos distancia"
+    },
+    "levelUp": {
+      "searchLevel": "Subir el nivel de búsqueda",
+      "distance": "Más distancia"
+    },
+    "levelHint": {
+      "searchLevel": "El nivel de búsqueda de la especie, que muestra el DexNav (hasta 999).",
+      "distance": "La bonificación deja de crecer a 5000 años luz. Los ultraumbrales con anillos aparecen desde 1000, y los de tres anillos desde 2500."
+    },
     "research": "Nivel de investigación",
     "researchOptions": {
       "none": "Menos de 10",
@@ -90,32 +111,64 @@
       "30": "30–59",
       "60": "60+"
     },
+    "battled": "Número derrotados",
+    "battledOptions": {
+      "1": "1–49",
+      "50": "50–99",
+      "100": "100–199",
+      "200": "200–299",
+      "300": "300–499",
+      "500": "500+"
+    },
+    "rings": "Anillos del ultraumbral",
+    "ringsOptions": {
+      "0": "Ninguno",
+      "1": "1",
+      "2": "2",
+      "3": "3"
+    },
     "gen": "Generación {n}",
-    "source": "Probabilidades según las mecánicas conocidas de los juegos (Bulbapedia, Serebii)."
+    "source": "Probabilidades según el código de los juegos y sus análisis, comprobadas con Bulbapedia y Serebii."
   },
   "methods": {
     "wild": "Encuentros normales",
+    "eggs": "Huevos",
     "breeding": "Crianza con un progenitor shiny",
     "masuda": "Método Masuda",
+    "pokeRadar": "Pokéradar",
+    "friendSafari": "Safari Amistad",
     "chainFishing": "Pesca en cadena",
     "horde": "Hordas",
+    "dexNav": "DexNav",
     "sos": "Cadena de auxilio",
+    "wormhole": "Ultraumbrales",
     "catchCombo": "Combo de capturas",
+    "brilliant": "Pokémon aurales",
     "dynamax": "Expediciones Dinamax",
+    "underground": "Gran Subsuelo",
     "outbreak": "Aparición masiva",
-    "massiveOutbreak": "Aparición masiva múltiple"
+    "massiveOutbreak": "Aparición masiva múltiple",
+    "hyperspace": "Luminalia Dimensional"
   },
   "methodHints": {
-    "wild": "Pokémon salvajes, reinicios y huevos con la probabilidad base del juego.",
-    "breeding": "Un huevo de un progenitor shiny.",
+    "wild": "Pokémon salvajes y reinicios con la probabilidad base del juego.",
+    "eggs": "Huevos de progenitores de juegos en el mismo idioma.",
+    "breeding": "Un huevo que hereda los DV de un progenitor shiny (de un Ditto, o del progenitor del otro sexo).",
     "masuda": "Huevos de progenitores de juegos en dos idiomas distintos.",
+    "pokeRadar": "La probabilidad de cada mata que se agita y continúa tu cadena.",
+    "friendSafari": "Cada Pokémon del Safari Amistad tiene comprobaciones extra.",
     "chainFishing": "Cada Pokémon pescado seguido mejora la probabilidad, hasta 20.",
     "horde": "Cinco Pokémon a la vez, cada uno con su propia probabilidad: cuenta de 5 en 5.",
+    "dexNav": "Pokémon ocultos hallados con el DexNav, según el nivel de búsqueda y la cadena.",
     "sos": "Cada aliado llamado seguido mejora la probabilidad.",
+    "wormhole": "El Pokémon al final de un Ultraviaje dimensional: cuenta uno por viaje.",
     "catchCombo": "Capturar el mismo Pokémon seguido mejora la probabilidad.",
+    "brilliant": "Cuenta solo los Pokémon con aura brillante. Cuantos más hayas derrotado de esa especie, mejor.",
     "dynamax": "Una probabilidad fija por cada Pokémon que decidas quedarte.",
+    "underground": "Pokémon de las Guaridas, con o sin la bonificación de Diglett.",
     "outbreak": "Pokémon de una aparición masiva.",
-    "massiveOutbreak": "Apariciones dentro de una aparición masiva múltiple."
+    "massiveOutbreak": "Apariciones dentro de una aparición masiva múltiple.",
+    "hyperspace": "Pokémon salvajes en la dimensión, con el Poder Brillo de un dónut."
   },
   "games": {
     "gsc": "Oro, Plata y Cristal",

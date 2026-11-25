@@ -2,7 +2,7 @@
   "title": "Shiny Hunt Counter",
   "subtitle": "Count every encounter, see your real odds, and keep a trophy case of every shiny you find.",
   "metaTitle": "Shiny Hunt Counter: count encounters with real shiny odds",
-  "metaDescription": "A free shiny hunting counter for every main Pokémon game: pick your target, game and method (Masuda, chain fishing, SOS, outbreaks, Sparkling Power, Shiny Charm) and see your real odds, your chance so far and encounters per hour. Phases, a trophy case and share cards.",
+  "metaDescription": "A free shiny hunting counter for every main Pokémon game: pick your target, game and method (Masuda, Poké Radar, DexNav, chain fishing, SOS, outbreaks, Sparkling Power, Shiny Charm) and see your real odds, your chance so far and encounters per hour. Phases, a trophy case and share cards.",
   "metaSharedFound": "I found a shiny {pokemon} after {n} encounters",
   "metaSharedHunting": "Hunting a shiny {pokemon}: {n} encounters so far",
   "metaSharedDescription": "Counted with the Shiny Hunt Counter on PokéIQ. Start your own hunt, free.",
@@ -37,7 +37,7 @@
     "s1t": "Pick your target",
     "s1": "Search any Pokémon by name or number. Its shiny colours show right away, so you know what to look for.",
     "s2t": "Choose the game and method",
-    "s2": "Every main game from Gold and Silver to Legends: Z-A, with the methods that change the odds: the Shiny Charm, the Masuda method, chain fishing, SOS chains, catch combos, outbreaks and Sparkling Power.",
+    "s2": "Every main game from Gold and Silver to Legends: Z-A, with the methods that change the odds: the Shiny Charm, the Masuda method, the Poké Radar, the Friend Safari, chain fishing, the DexNav, SOS chains, Ultra Wormholes, catch combos, Brilliant Pokémon, outbreaks and Sparkling Power.",
     "s3t": "Count every encounter",
     "s3": "Tap the big button, or press Space or Enter. Count by 5 for hordes, undo a slip, or type the count in. The timer starts with your first count and works out your encounters per hour.",
     "s4t": "Celebrate and share",
@@ -46,5 +46,5 @@
     "odds": "Each encounter is checked for a shiny one or more times. The base chance is 1 in 8,192 in Generations 2 to 5 and 1 in 4,096 from X and Y on, and the Shiny Charm and the other methods add more checks. Your chance by now is 1 − (1 − p)ⁿ: after exactly the odds it is about 63%, and it never reaches 100%. Every encounter is a fresh chance, so being past the odds doesn't make the next one likelier.",
     "privacy": "Your hunts are saved in this browser, on this device. Nothing is uploaded, and a share link carries only the hunt you share."
   },
-  "credit": "Pictures: Pokémon HOME renders and sprites from PokéAPI. Odds from Bulbapedia and Serebii. Pokémon is © Nintendo, Game Freak and Creatures."
+  "credit": "Pictures: Pokémon HOME renders and sprites from PokéAPI. Odds from the games' decompilations and datamines, checked against Bulbapedia and Serebii. Pokémon is © Nintendo, Game Freak and Creatures."
 }

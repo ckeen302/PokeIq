@@ -117,7 +117,8 @@ export function sanitizeHunt(raw: unknown, now = Date.now()): Hunt | null {
     method,
     charm: o.charm === true,
     lure: o.lure === true,
-    chain: int(o.chain, 0, 9999, 0),
+    chain: int(o.chain, 0, m.chainMax ?? 9999, 0),
+    level: int(o.level, 0, m.level?.max ?? 0, 0),
     choices,
     count,
     step: int(o.step, 1, STEP_MAX, m.step ?? 1),
@@ -191,6 +192,7 @@ export function createHunt(species: number, game: GameId, now = Date.now(), from
     charm: from?.charm ?? false,
     lure: false,
     chain: 0,
+    level: 0,
     choices: {},
     count: 0,
     step: m.step ?? 1,
@@ -269,13 +271,16 @@ export function setStep(h: Hunt, step: number): Hunt {
 }
 
 /** Changes game, method or bonuses; the method falls back to the game's first, the step to the new method's. */
-export function setOdds(h: Hunt, patch: Partial<Pick<Hunt, "game" | "method" | "charm" | "lure" | "chain" | "choices">>, now = Date.now()): Hunt {
+export function setOdds(h: Hunt, patch: Partial<Pick<Hunt, "game" | "method" | "charm" | "lure" | "chain" | "level" | "choices">>, now = Date.now()): Hunt {
   const game = patch.game ?? h.game;
   const method = fixMethod(game, patch.method ?? h.method);
   const methodChanged = method !== h.method || game !== h.game;
   const m = getMethod(game, method)!;
   const choices = patch.choices ?? (methodChanged ? {} : h.choices);
-  const next = { ...h, ...patch, game, method, choices, chain: Math.max(0, Math.min(9999, Math.round(patch.chain ?? (methodChanged ? 0 : h.chain)))), updatedAt: now };
+  const clamp = (v: number, max: number) => Math.max(0, Math.min(max, Math.round(Number.isFinite(v) ? v : 0)));
+  const chain = clamp(patch.chain ?? (methodChanged ? 0 : h.chain), m.chainMax ?? 9999);
+  const level = clamp(patch.level ?? (methodChanged ? 0 : (h.level ?? 0)), m.level?.max ?? 0);
+  const next = { ...h, ...patch, game, method, choices, chain, level, updatedAt: now };
   if (methodChanged && (m.step ?? 1) !== (getMethod(h.game, h.method)?.step ?? 1)) next.step = m.step ?? 1;
   return next;
 }

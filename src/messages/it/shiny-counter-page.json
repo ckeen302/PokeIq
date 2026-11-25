@@ -2,7 +2,7 @@
   "title": "Contatore caccia shiny",
   "subtitle": "Conta ogni incontro, guarda la tua vera probabilità e metti in bacheca ogni shiny che trovi.",
   "metaTitle": "Contatore caccia shiny: conta gli incontri con la vera probabilità",
-  "metaDescription": "Un contatore gratuito per la caccia agli shiny in tutti i giochi Pokémon principali: scegli obiettivo, gioco e metodo (Masuda, pesca a catena, catene SOS, comparse massicce, Potere Brillio, Cromamuleto) e guarda la tua vera probabilità, quella accumulata finora e gli incontri all’ora. Fasi, bacheca e immagini da condividere.",
+  "metaDescription": "Un contatore gratuito per la caccia agli shiny in tutti i giochi Pokémon principali: scegli obiettivo, gioco e metodo (Masuda, Poké Radar, NaviDex, pesca a catena, catene SOS, comparse massicce, Potere Brillio, Cromamuleto) e guarda la tua vera probabilità, quella accumulata finora e gli incontri all’ora. Fasi, bacheca e immagini da condividere.",
   "metaSharedFound": "Ho trovato un {pokemon} cromatico dopo {n} incontri",
   "metaSharedHunting": "A caccia di un {pokemon} cromatico: {n} incontri finora",
   "metaSharedDescription": "Contato con il Contatore caccia shiny di PokéIQ. Inizia la tua caccia, gratis.",
@@ -37,7 +37,7 @@
     "s1t": "Scegli il tuo obiettivo",
     "s1": "Cerca qualsiasi Pokémon per nome o numero. I suoi colori cromatici compaiono subito, così sai cosa cercare.",
     "s2t": "Scegli il gioco e il metodo",
-    "s2": "Tutti i giochi principali, da Oro e Argento a Leggende: Z-A, con i metodi che cambiano la probabilità: il Cromamuleto, il metodo Masuda, la pesca a catena, le catene SOS, le combo di catture, le comparse massicce e il Potere Brillio.",
+    "s2": "Tutti i giochi principali, da Oro e Argento a Leggende: Z-A, con i metodi che cambiano la probabilità: il Cromamuleto, il metodo Masuda, il Poké Radar, il Safari Amici, la pesca a catena, il NaviDex, le catene SOS, gli ultravarchi, le combo di catture, i Pokémon con l’aura, le comparse massicce e il Potere Brillio.",
     "s3t": "Conta ogni incontro",
     "s3": "Tocca il pulsante grande, o premi Spazio o Invio. Conta di 5 in 5 per le orde, annulla un errore o scrivi il conteggio. Il timer parte con il primo conteggio e calcola i tuoi incontri all’ora.",
     "s4t": "Festeggia e condividi",
@@ -46,5 +46,5 @@
     "odds": "A ogni incontro il gioco controlla una o più volte se esce uno shiny. La probabilità base è 1 su 8.192 nelle generazioni dalla 2 alla 5 e 1 su 4.096 da X e Y in poi, e il Cromamuleto e gli altri metodi aggiungono controlli. La tua probabilità finora è 1 − (1 − p)ⁿ: esattamente alla probabilità è circa il 63%, e non arriva mai al 100%. Ogni incontro è una nuova possibilità, quindi superare la probabilità non rende più probabile il prossimo.",
     "privacy": "Le tue cacce sono salvate in questo browser, su questo dispositivo. Non viene caricato niente, e un link condiviso contiene solo la caccia che condividi."
   },
-  "credit": "Immagini: render di Pokémon HOME e sprite di PokéAPI. Probabilità da Bulbapedia e Serebii. Pokémon è © Nintendo, Game Freak e Creatures."
+  "credit": "Immagini: render di Pokémon HOME e sprite di PokéAPI. Probabilità ricavate dal codice e dalle analisi dei giochi, verificate con Bulbapedia e Serebii. Pokémon è © Nintendo, Game Freak e Creatures."
 }

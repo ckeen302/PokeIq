@@ -62,15 +62,36 @@
     "method": "Méthode",
     "charm": "Charme Chroma",
     "lure": "Parfum actif",
+    "diglett": "Bonus de Taupiqueur actif",
     "chain": {
       "chainFishing": "Chaîne de pêche",
       "sos": "Chaîne d’appels à l’aide",
-      "catchCombo": "Combo de captures"
+      "catchCombo": "Combo de captures",
+      "pokeRadar": "Chaîne du Poké Radar",
+      "dexNav": "Chaîne du Navi-Dex jusqu’ici"
     },
     "chainHint": "Le bonus cesse d’augmenter à {n}.",
+    "chainHintDexNav": "Un Pokémon sur 5 dans une chaîne a des tirages en plus, le 50ᵉ et le 100ᵉ encore plus. La chance affichée est celle du suivant.",
+    "chainHintWrap": "Le bonus cesse d’augmenter à {n}. Le compteur du jeu repart de zéro après {max}.",
     "chainDown": "Chaîne plus courte",
     "chainUp": "Chaîne plus longue",
     "chainReset": "Remettre à zéro",
+    "level": {
+      "searchLevel": "Niveau de recherche",
+      "distance": "Distance (années-lumière)"
+    },
+    "levelDown": {
+      "searchLevel": "Baisser le niveau de recherche",
+      "distance": "Distance plus courte"
+    },
+    "levelUp": {
+      "searchLevel": "Monter le niveau de recherche",
+      "distance": "Distance plus longue"
+    },
+    "levelHint": {
+      "searchLevel": "Le niveau de recherche de l’espèce, affiché par le Navi-Dex (jusqu’à 999).",
+      "distance": "Le bonus cesse d’augmenter à 5 000 années-lumière. Les brèches à anneaux apparaissent dès 1 000, celles à trois anneaux dès 2 500."
+    },
     "research": "Niveau de recherche",
     "researchOptions": {
       "none": "Moins de 10",
@@ -90,32 +111,64 @@
       "30": "30–59",
       "60": "60+"
     },
+    "battled": "Nombre de vaincus",
+    "battledOptions": {
+      "1": "1–49",
+      "50": "50–99",
+      "100": "100–199",
+      "200": "200–299",
+      "300": "300–499",
+      "500": "500+"
+    },
+    "rings": "Anneaux de la brèche",
+    "ringsOptions": {
+      "0": "Aucun",
+      "1": "1",
+      "2": "2",
+      "3": "3"
+    },
     "gen": "Génération {n}",
-    "source": "Probabilités issues des mécaniques connues des jeux (Bulbapedia, Serebii)."
+    "source": "Probabilités tirées du code des jeux et de leurs analyses, vérifiées avec Bulbapedia et Serebii."
   },
   "methods": {
     "wild": "Rencontres classiques",
+    "eggs": "Œufs",
     "breeding": "Œuf d’un parent chromatique",
     "masuda": "Méthode Masuda",
+    "pokeRadar": "Poké Radar",
+    "friendSafari": "Safari des Amis",
     "chainFishing": "Pêche à la chaîne",
     "horde": "Hordes",
+    "dexNav": "Navi-Dex",
     "sos": "Appels à l’aide en chaîne",
+    "wormhole": "Ultra-Brèches",
     "catchCombo": "Combo de captures",
+    "brilliant": "Pokémon à aura",
     "dynamax": "Expéditions Dynamax",
+    "underground": "Grands Souterrains",
     "outbreak": "Apparition massive",
-    "massiveOutbreak": "Apparition massive étendue"
+    "massiveOutbreak": "Apparition massive étendue",
+    "hyperspace": "Extra Illumis"
   },
   "methodHints": {
-    "wild": "Pokémon sauvages, resets et œufs, au taux de base du jeu.",
-    "breeding": "Un œuf d’un parent chromatique.",
+    "wild": "Pokémon sauvages et resets, au taux de base du jeu.",
+    "eggs": "Des œufs de parents venant de jeux de la même langue.",
+    "breeding": "Un œuf qui hérite des DV d’un parent chromatique (d’un Métamorph, ou du parent de l’autre sexe).",
     "masuda": "Des œufs de parents venant de jeux de deux langues différentes.",
+    "pokeRadar": "La chance de chaque touffe qui bouge et continue votre chaîne.",
+    "friendSafari": "Chaque Pokémon du Safari des Amis a des tirages en plus.",
     "chainFishing": "Chaque Pokémon pêché à la suite améliore la chance, jusqu’à 20.",
     "horde": "Cinq Pokémon à la fois, chacun avec sa propre chance : comptez par 5.",
+    "dexNav": "Les Pokémon cachés trouvés avec le Navi-Dex, selon le niveau de recherche et la chaîne.",
     "sos": "Chaque allié appelé à la suite améliore la chance.",
+    "wormhole": "Le Pokémon au bout d’une Ultra-Exploration : comptez un par voyage.",
     "catchCombo": "Capturer le même Pokémon à la suite améliore la chance.",
+    "brilliant": "Ne comptez que les Pokémon entourés d’une aura. Plus vous en avez vaincu de l’espèce, mieux c’est.",
     "dynamax": "Une chance fixe pour chaque Pokémon que vous gardez.",
+    "underground": "Les Pokémon des Cachettes, avec ou sans le bonus de Taupiqueur.",
     "outbreak": "Les Pokémon d’une apparition massive.",
-    "massiveOutbreak": "Les apparitions au sein d’une apparition massive étendue."
+    "massiveOutbreak": "Les apparitions au sein d’une apparition massive étendue.",
+    "hyperspace": "Les Pokémon sauvages d’Extra Illumis, avec le Pouvoir Brillance d’un donut."
   },
   "games": {
     "gsc": "Or, Argent et Cristal",
