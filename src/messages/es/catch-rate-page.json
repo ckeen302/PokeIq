@@ -1,0 +1,28 @@
+{
+  "title": "Calculadora de captura",
+  "subtitle": "Tus probabilidades de capturar cualquier Pokémon con cada Poké Ball, desde Rubí y Zafiro hasta Escarlata y Púrpura. Elige el nivel, los PS y el estado, y descubre qué Poké Ball lanzar.",
+  "metaTitle": "Calculadora de captura Pokémon: qué Poké Ball lanzar",
+  "metaDescription": "Calcula tu probabilidad de capturar cualquier Pokémon con todas las Poké Balls a la vez, ordenadas: PS restantes, estado, nivel, turno, hora del día y más, en todos los juegos desde Rubí y Zafiro hasta Escarlata y Púrpura. Usa las fórmulas de captura reales. Gratis.",
+  "metaSharedTitle": "Capturar a {name}: {pct} con una {ball}",
+  "metaSharedDescription": "Las probabilidades de capturar a {name} con cada Poké Ball, ordenadas, en la calculadora de captura de PokéIQ. Cambia los PS, el estado o el juego y mira qué lanzar.",
+  "ogAlt": "Probabilidades de captura de un Pokémon en PokéIQ",
+  "credit": "Fórmulas de los artículos sobre el ratio de captura y las Poké Balls de Bulbapedia. Ratios de captura de PokéAPI.",
+  "explain": {
+    "title": "Cómo funciona la captura",
+    "intro": "Cada especie tiene un ratio de captura de 3 a 255: 3 para las más difíciles, como Mewtwo, y 255 para las más fáciles, como Caterpie. En cada lanzamiento, ese número, los PS restantes, el problema de estado y la Poké Ball se convierten en una sola cifra, el ratio de captura modificado a. Desde la generación 5:",
+    "legend": "MaxHP y HP son los PS máximos y actuales del Pokémon salvaje, Rate el ratio de captura de su especie, Ball el multiplicador de la Poké Ball y Status el bonus por estado.",
+    "hpTitle": "PS",
+    "hp": "Con los PS llenos, la parte de los PS vale un tercio; con 1 PS, casi uno. Dejar a un Pokémon con 1 PS con Falsotortazo casi triplica tus probabilidades, y con los PS en rojo es casi igual de bueno.",
+    "statusTitle": "Estado",
+    "status": "El sueño y la congelación multiplican a por 2,5 (por 2 antes de la generación 5); la parálisis, el envenenamiento y las quemaduras, por 1,5. Dormir al Pokémon es lo mejor, y la Ensueño Ball funciona mejor con un Pokémon dormido.",
+    "shakeTitle": "Las sacudidas",
+    "shake": "Si a es 255 o más, el Pokémon queda capturado. Si no, el juego calcula un valor de sacudida b y hace comprobaciones: cada una se supera si un número al azar del 0 al 65535 es menor que b. La Poké Ball se sacude una vez por cada comprobación superada, y el Pokémon solo queda capturado si se superan todas. Desde la generación 6 hay cuatro comprobaciones:",
+    "shakeGens": "La generación 5 hacía tres comprobaciones con b = 65536 ÷ (255 ÷ a)^(1/4). Las generaciones 3 y 4 hacían cuatro con b = 1048560 ÷ √(√(16711680 ÷ a)), lo que da una probabilidad de aproximadamente a ÷ 255.",
+    "levelTitle": "Niveles bajos",
+    "level": "Espada y Escudo facilitan la captura de los Pokémon salvajes de nivel inferior a 20, multiplicando a por (30 − nivel) ÷ 10. Escarlata y Púrpura hacen lo mismo por debajo del nivel 13, por (36 − 2 × nivel) ÷ 10.",
+    "ballsTitle": "Las Poké Balls",
+    "balls": "Una Super Ball multiplica a por 1,5 y una Ultra Ball por 2. Las Poké Balls especiales rinden mucho más en la situación adecuada, y el multiplicador de cada una ha cambiado con las generaciones: la calculadora usa el valor correcto del juego que elijas y muestra por qué cada una es buena o mala en este momento.",
+    "leftTitle": "Lo que no incluye",
+    "left": "Las capturas críticas (un lanzamiento poco frecuente que solo necesita una comprobación), los bonus de la generación 5, como la hierba alta oscura, y la penalización de Espada y Escudo y de Escarlata y Púrpura a un Pokémon de nivel superior al que permiten tus medallas, así que las probabilidades reales pueden ser algo mayores o menores. Los juegos redondean cada paso y esta calculadora no, por lo que puede variar en una fracción de punto. Los PS máximos suponen unos IV medios. Leyendas Pokémon: Arceus y Let's Go usan otros sistemas de captura y no se incluyen."
+  }
+}

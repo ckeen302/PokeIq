@@ -1,0 +1,28 @@
+{
+  "title": "Calcolatore di cattura",
+  "subtitle": "Le tue probabilità di catturare qualsiasi Pokémon con ogni Poké Ball, da Rubino e Zaffiro a Scarlatto e Violetto. Imposta livello, PS e problema di stato e scopri quale Ball lanciare.",
+  "metaTitle": "Calcolatore di cattura Pokémon: quale Poké Ball lanciare",
+  "metaDescription": "Calcola la probabilità di catturare qualsiasi Pokémon con tutte le Poké Ball insieme, in classifica: PS rimasti, stato, livello, turno, ora del giorno e altro, in ogni gioco da Rubino e Zaffiro a Scarlatto e Violetto. Con le vere formule di cattura. Gratis.",
+  "metaSharedTitle": "Catturare {name}: {pct} con una {ball}",
+  "metaSharedDescription": "Le probabilità di catturare {name} con ogni Poké Ball, in classifica, dal calcolatore di cattura di PokéIQ. Cambia i PS, lo stato o il gioco e scopri cosa lanciare.",
+  "ogAlt": "Probabilità di cattura di un Pokémon su PokéIQ",
+  "credit": "Formule dagli articoli di Bulbapedia sul tasso di cattura e sulle Poké Ball. Tassi di cattura da PokéAPI.",
+  "explain": {
+    "title": "Come funziona il tasso di cattura",
+    "intro": "Ogni specie ha un tasso di cattura da 3 a 255: 3 per le più difficili, come Mewtwo, 255 per le più facili, come Caterpie. A ogni lancio, quel numero, i PS rimasti, il problema di stato e la Ball diventano un solo valore, il tasso di cattura modificato a. Dalla generazione 5:",
+    "legend": "MaxHP e HP sono i PS massimi e attuali del Pokémon selvatico, Rate il tasso di cattura della sua specie, Ball il moltiplicatore della Ball e Status il bonus di stato.",
+    "hpTitle": "PS",
+    "hp": "A PS pieni la parte dei PS vale un terzo; a 1 PS quasi uno. Portare un Pokémon a 1 PS con Falsofinale quasi triplica le probabilità, e i PS in rosso sono quasi altrettanto buoni.",
+    "statusTitle": "Stato",
+    "status": "Il sonno e il congelamento moltiplicano a per 2,5 (per 2 prima della generazione 5); paralisi, avvelenamento e scottatura per 1,5. Il sonno è lo stato migliore da infliggere, e la Dream Ball funziona meglio su un Pokémon addormentato.",
+    "shakeTitle": "Le scosse",
+    "shake": "Se a è 255 o più, il Pokémon è catturato. Altrimenti il gioco calcola un valore di scossa b e fa delle prove di scossa: ognuna riesce se un numero casuale da 0 a 65535 è minore di b. La Ball si scuote una volta per ogni prova riuscita, e il Pokémon è catturato solo se riescono tutte. Dalla generazione 6 le prove sono quattro:",
+    "shakeGens": "La generazione 5 faceva tre prove con b = 65536 ÷ (255 ÷ a)^(1/4). Le generazioni 3 e 4 ne facevano quattro con b = 1048560 ÷ √(√(16711680 ÷ a)), che dà una probabilità di circa a ÷ 255.",
+    "levelTitle": "Livelli bassi",
+    "level": "Spada e Scudo rendono più facile catturare un Pokémon selvatico sotto il livello 20, moltiplicando a per (30 − livello) ÷ 10. Scarlatto e Violetto fanno lo stesso sotto il livello 13, per (36 − 2 × livello) ÷ 10.",
+    "ballsTitle": "Le Ball",
+    "balls": "Una Mega Ball moltiplica a per 1,5 e una Ultra Ball per 2. Le Ball speciali rendono molto di più nella situazione giusta, e il moltiplicatore di ognuna è cambiato con le generazioni: il calcolatore usa il valore giusto per il gioco scelto e mostra perché ogni Ball è forte o debole in questo momento.",
+    "leftTitle": "Cosa non include",
+    "left": "Le catture critiche (un lancio raro che richiede una sola prova), i bonus della generazione 5 come l'erba alta scura, e la penalità di Spada e Scudo e di Scarlatto e Violetto per un Pokémon di livello superiore a quello consentito dalle tue medaglie, quindi le probabilità reali possono essere un po' più alte o più basse. I giochi arrotondano ogni passaggio, questo calcolatore no, quindi può differire di una frazione di punto percentuale. I PS massimi presuppongono IV nella media. Leggende Pokémon: Arceus e Let's Go usano altri sistemi di cattura e non sono inclusi."
+  }
+}

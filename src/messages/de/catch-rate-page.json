@@ -1,0 +1,28 @@
+{
+  "title": "Fangraten-Rechner",
+  "subtitle": "Deine Chancen, jedes Pokémon mit jedem Pokéball zu fangen, von Rubin und Saphir bis Karmesin und Purpur. Stell Level, KP und Status ein und sieh, welchen Ball du werfen solltest.",
+  "metaTitle": "Pokémon-Fangraten-Rechner: welchen Ball werfen",
+  "metaDescription": "Berechne deine Chance, jedes Pokémon zu fangen, mit allen Pokébällen auf einmal und nach Rang sortiert: verbleibende KP, Status, Level, Runde, Tageszeit und mehr, in jedem Spiel von Rubin und Saphir bis Karmesin und Purpur. Mit den echten Fangformeln. Kostenlos.",
+  "metaSharedTitle": "{name} fangen: {pct} mit einem {ball}",
+  "metaSharedDescription": "Die Chancen, {name} mit jedem Pokéball zu fangen, nach Rang sortiert, aus dem Fangraten-Rechner auf PokéIQ. Ändere KP, Status oder Spiel und sieh, was du werfen solltest.",
+  "ogAlt": "Fangchancen für ein Pokémon auf PokéIQ",
+  "credit": "Formeln aus den Bulbapedia-Artikeln zur Fangrate und zu den Pokébällen. Fangraten von PokéAPI.",
+  "explain": {
+    "title": "So funktioniert die Fangrate",
+    "intro": "Jede Art hat eine Fangrate von 3 bis 255: 3 für die schwierigsten wie Mewtu, 255 für die leichtesten wie Raupy. Bei jedem Wurf werden diese Zahl, die verbleibenden KP, das Statusproblem und der Ball zu einem Wert verrechnet, der veränderten Fangrate a. Ab Generation 5:",
+    "legend": "MaxHP und HP sind die maximalen und aktuellen KP des wilden Pokémon, Rate die Fangrate seiner Art, Ball der Multiplikator des Balls und Status der Statusbonus.",
+    "hpTitle": "KP",
+    "hp": "Bei vollen KP ergibt der KP-Teil ein Drittel, bei 1 KP fast eins. Wer ein Pokémon mit Trugschlag auf 1 KP bringt, verdreifacht seine Chancen fast, und rote KP sind beinahe genauso gut.",
+    "statusTitle": "Status",
+    "status": "Schlaf und Einfrieren multiplizieren a mit 2,5 (vor Generation 5 mit 2), Paralyse, Vergiftung und Verbrennung mit 1,5. Schlaf ist der beste Status, und der Traumball wirkt am besten bei einem schlafenden Pokémon.",
+    "shakeTitle": "Das Wackeln",
+    "shake": "Ist a 255 oder mehr, ist das Pokémon gefangen. Sonst berechnet das Spiel einen Wackelwert b und macht Wackelproben: Jede gelingt, wenn eine Zufallszahl von 0 bis 65535 kleiner als b ist. Der Ball wackelt einmal für jede gelungene Probe, und das Pokémon ist nur gefangen, wenn alle gelingen. Ab Generation 6 gibt es vier Proben:",
+    "shakeGens": "Generation 5 machte drei Proben mit b = 65536 ÷ (255 ÷ a)^(1/4). Generation 3 und 4 machten vier mit b = 1048560 ÷ √(√(16711680 ÷ a)), was eine Chance von etwa a ÷ 255 ergibt.",
+    "levelTitle": "Niedrige Level",
+    "level": "In Schwert und Schild sind wilde Pokémon unter Level 20 leichter zu fangen: a wird mit (30 − Level) ÷ 10 multipliziert. Karmesin und Purpur machen das unter Level 13, mit (36 − 2 × Level) ÷ 10.",
+    "ballsTitle": "Die Bälle",
+    "balls": "Ein Superball multipliziert a mit 1,5 und ein Hyperball mit 2. Spezialbälle leisten in der richtigen Lage viel mehr, und ihre Multiplikatoren haben sich über die Generationen geändert: Der Rechner nimmt den richtigen Wert für das gewählte Spiel und zeigt, warum jeder Ball gerade stark oder schwach ist.",
+    "leftTitle": "Was nicht berücksichtigt wird",
+    "left": "Kritische Fänge (ein seltener Wurf, der nur eine Wackelprobe braucht), die Boni der 5. Generation wie dunkles hohes Gras und die Abzüge in Schwert und Schild sowie Karmesin und Purpur für ein Pokémon über dem Level, das deine Orden erlauben. Echte Chancen können also etwas höher oder niedriger sein. Die Spiele runden jeden Schritt, dieser Rechner nicht, daher kann er um Bruchteile eines Prozents abweichen. Die maximalen KP gehen von durchschnittlichen DVs aus. Pokémon-Legenden: Arceus und Let's Go nutzen andere Fangsysteme und sind nicht enthalten."
+  }
+}

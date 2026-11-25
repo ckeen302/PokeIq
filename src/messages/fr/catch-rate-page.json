@@ -1,0 +1,28 @@
+{
+  "title": "Calculateur de capture",
+  "subtitle": "Vos chances de capturer n'importe quel Pokémon avec chaque Ball, de Rubis et Saphir à Écarlate et Violet. Réglez le niveau, les PV et l'altération d'état, et voyez quelle Ball lancer.",
+  "metaTitle": "Calculateur de capture Pokémon : quelle Ball lancer",
+  "metaDescription": "Calculez vos chances de capturer n'importe quel Pokémon avec toutes les Balls à la fois, classées : PV restants, altération d'état, niveau, tour, moment de la journée et plus, dans tous les jeux de Rubis et Saphir à Écarlate et Violet. Avec les vraies formules de capture. Gratuit.",
+  "metaSharedTitle": "Capturer {name} : {pct} avec une {ball}",
+  "metaSharedDescription": "Les chances de capturer {name} avec chaque Ball, classées, avec le calculateur de capture de PokéIQ. Changez les PV, l'altération d'état ou le jeu pour voir quoi lancer.",
+  "ogAlt": "Chances de capture d'un Pokémon sur PokéIQ",
+  "credit": "Formules tirées des articles de Bulbapedia sur le taux de capture et les Poké Balls. Taux de capture issus de PokéAPI.",
+  "explain": {
+    "title": "Comment marche le taux de capture",
+    "intro": "Chaque espèce a un taux de capture de 3 à 255 : 3 pour les plus difficiles, comme Mewtwo, 255 pour les plus faciles, comme Chenipan. À chaque lancer, ce nombre, les PV restants, l'altération d'état et la Ball donnent un seul chiffre, le taux de capture modifié a. Depuis la génération 5 :",
+    "legend": "MaxHP et HP sont les PV maximum et actuels du Pokémon sauvage, Rate le taux de capture de son espèce, Ball le multiplicateur de la Ball et Status le bonus d'altération d'état.",
+    "hpTitle": "PV",
+    "hp": "Avec tous ses PV, la partie PV vaut un tiers ; à 1 PV, presque un. Faire descendre un Pokémon à 1 PV avec Faux-Chage triple presque vos chances, et des PV dans le rouge font presque aussi bien.",
+    "statusTitle": "Altération d'état",
+    "status": "Le sommeil et le gel multiplient a par 2,5 (par 2 avant la génération 5) ; la paralysie, le poison et la brûlure par 1,5. Le sommeil est la meilleure altération à infliger, et la Rêve Ball marche le mieux sur un Pokémon endormi.",
+    "shakeTitle": "Les secousses",
+    "shake": "Si a vaut 255 ou plus, le Pokémon est capturé. Sinon, le jeu calcule une valeur de secousse b et fait des tests de secousse : chacun réussit si un nombre aléatoire de 0 à 65535 est inférieur à b. La Ball bouge une fois par test réussi, et le Pokémon n'est capturé que si tous réussissent. Depuis la génération 6, il y a quatre tests :",
+    "shakeGens": "La génération 5 faisait trois tests avec b = 65536 ÷ (255 ÷ a)^(1/4). Les générations 3 et 4 en faisaient quatre avec b = 1048560 ÷ √(√(16711680 ÷ a)), ce qui donne une chance d'environ a ÷ 255.",
+    "levelTitle": "Bas niveaux",
+    "level": "Épée et Bouclier rendent un Pokémon sauvage de niveau inférieur à 20 plus facile à capturer, en multipliant a par (30 − niveau) ÷ 10. Écarlate et Violet font de même sous le niveau 13, par (36 − 2 × niveau) ÷ 10.",
+    "ballsTitle": "Les Balls",
+    "balls": "Une Super Ball multiplie a par 1,5 et une Hyper Ball par 2. Les Balls spéciales font bien mieux dans la bonne situation, et le multiplicateur de chacune a changé au fil des générations : le calculateur prend la bonne valeur pour le jeu choisi et montre pourquoi chaque Ball est forte ou faible en ce moment.",
+    "leftTitle": "Ce qui n'est pas pris en compte",
+    "left": "Les captures critiques (un lancer rare qui n'a besoin que d'un test), les bonus de la génération 5 comme les hautes herbes sombres, et la pénalité d'Épée et Bouclier et d'Écarlate et Violet pour un Pokémon d'un niveau supérieur à celui que vos badges permettent : les vraies chances peuvent donc être un peu plus hautes ou plus basses. Les jeux arrondissent chaque étape, ce que ce calculateur ne fait pas : il peut donc différer d'une fraction de pour cent. Les PV maximum supposent des IV moyens. Légendes Pokémon : Arceus et Let's Go utilisent d'autres systèmes de capture et ne sont pas couverts."
+  }
+}
