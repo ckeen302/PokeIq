@@ -135,7 +135,8 @@ function LabCard({ experience: e, flip, priority }: { experience: LabExperience;
                 sizes={CARD_IMAGE_SIZES}
                 loading={priority ? "eager" : undefined}
                 fetchPriority={priority ? "high" : undefined}
-                className="lab-kb object-cover"
+                // The Professor's Lab's picture is a screenshot with text to its edges: shown whole, never cropped or zoomed.
+                className={e.id === "pokedex" ? "bg-[#070b14] object-contain" : "lab-kb object-cover"}
               />
             </picture>
           ) : e.id === "race" ? (
