@@ -43,6 +43,7 @@ export const MOBILE_ROUTES = [
   "/tools/shiny-maker",
   "/tools/pokeball-maker",
   "/tools/favorite-pokemon-picker",
+  "/tools/shiny-hunt-counter",
   "/tools/tier-list",
   "/tools/tier-list/starters",
   "/privacy",
