@@ -128,7 +128,10 @@
       "3": "3"
     },
     "gen": "Generación {n}",
-    "source": "Probabilidades según el código de los juegos y sus análisis, comprobadas con Bulbapedia y Serebii."
+    "source": "Probabilidades según el código de los juegos y sus análisis, comprobadas con Bulbapedia y Serebii.",
+    "done": "Listo",
+    "yourOdds": "Tus probabilidades",
+    "bonuses": "Bonificaciones"
   },
   "methods": {
     "wild": "Encuentros normales",

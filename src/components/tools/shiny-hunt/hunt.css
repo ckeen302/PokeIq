@@ -1,60 +1,120 @@
-/* The Shiny Hunt Counter (loaded only on its page). Colours come from the site's tokens, so light and dark both follow the theme. */
+/*
+ * The Shiny Hunt Counter (loaded only on its page). The page follows the site's theme; the stage the shiny stands on
+ * is a lit display, dark in either theme (like the site's other screens), coloured by the shiny itself (--sa, its main
+ * colour) and its type (--sb).
+ */
 
+/* ── The stage ─────────────────────────────────────────────────────────────── */
 .sh-stage {
+  --sa: #f6c94a;
+  --sb: #f6c94a;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  color: #fff;
   background:
-    radial-gradient(60% 55% at 50% 30%, hsl(var(--warning) / 0.13), transparent 70%),
-    radial-gradient(50% 50% at 85% 100%, hsl(var(--primary) / 0.08), transparent 70%),
-    hsl(var(--card));
-  box-shadow: inset 0 1px 0 hsl(var(--foreground) / 0.04), 0 30px 80px -50px hsl(var(--shade) / 0.9);
-}
-.sh-panel {
-  background: hsl(var(--card));
-  box-shadow: inset 0 1px 0 hsl(var(--foreground) / 0.03);
-}
-
-/* The count button: the brand pink with a soft top light; presses down a little. */
-.sh-count {
-  background: linear-gradient(180deg, hsl(var(--primary) / 0.92), hsl(var(--primary)));
-  color: hsl(var(--primary-foreground));
+    radial-gradient(75% 55% at 50% -8%, color-mix(in srgb, var(--sa) 55%, transparent), transparent 72%),
+    radial-gradient(60% 45% at 50% 108%, color-mix(in srgb, var(--sb) 40%, transparent), transparent 70%),
+    radial-gradient(40% 40% at 8% 60%, color-mix(in srgb, var(--sb) 16%, transparent), transparent 70%),
+    radial-gradient(40% 40% at 92% 40%, color-mix(in srgb, var(--sa) 14%, transparent), transparent 70%),
+    linear-gradient(180deg, #17122f 0%, #0d0a1d 62%, #090714 100%);
   box-shadow:
-    inset 0 1px 0 hsl(0 0% 100% / 0.28),
-    inset 0 -3px 0 hsl(var(--primary-shadow) / 0.55),
-    0 14px 30px -14px hsl(var(--primary) / 0.75);
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
-  -webkit-user-select: none;
-  transition: transform 90ms ease, filter 120ms ease, box-shadow 120ms ease;
+    inset 0 1px 0 rgb(255 255 255 / 0.10),
+    inset 0 0 0 1px rgb(255 255 255 / 0.06),
+    0 30px 70px -40px color-mix(in srgb, var(--sa) 70%, #000);
 }
-.sh-count:hover { filter: brightness(1.06); }
-.sh-count:active, .sh-count[data-pressed="1"] {
-  transform: translateY(2px) scale(0.985);
-  box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.2), inset 0 -1px 0 hsl(var(--primary-shadow) / 0.5), 0 8px 18px -12px hsl(var(--primary) / 0.7);
-}
-.sh-side {
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-/* One ring per tap, spreading out from the button. */
-.sh-ripple {
+/* Faint star dust over the whole stage. */
+.sh-stage::before {
+  content: "";
   position: absolute;
   inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  box-shadow: 0 0 0 0 hsl(var(--primary) / 0.45);
-  animation: sh-ripple 520ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  z-index: -1;
+  opacity: 0.55;
+  background-image:
+    radial-gradient(1px 1px at 12% 22%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 28% 68%, #fff 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 44% 14%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 63% 80%, #fff 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 78% 26%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 90% 62%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 6% 86%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 54% 44%, #fff 50%, transparent 51%);
+  mask-image: linear-gradient(180deg, #000 0%, transparent 85%);
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, transparent 85%);
 }
-@keyframes sh-ripple {
-  to { box-shadow: 0 0 0 18px hsl(var(--primary) / 0); }
+/* The spotlight falling on the shiny. */
+.sh-beam {
+  position: absolute;
+  left: 50%;
+  top: -10%;
+  width: 70%;
+  height: 95%;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--sa) 30%, rgb(255 255 255 / 0.25)), transparent 85%);
+  clip-path: polygon(38% 0, 62% 0, 100% 100%, 0 100%);
+  filter: blur(18px);
+  opacity: 0.55;
+  pointer-events: none;
+  z-index: -1;
+}
+/* The shiny's glow. */
+.sh-glow {
+  position: absolute;
+  border-radius: 9999px;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--sa) 60%, #fff 10%), color-mix(in srgb, var(--sa) 18%, transparent) 55%, transparent);
+  filter: blur(6px);
+  pointer-events: none;
+  animation: sh-breathe 4.5s ease-in-out infinite;
+}
+@keyframes sh-breathe {
+  0%, 100% { opacity: 0.75; transform: scale(0.97); }
+  50% { opacity: 1; transform: scale(1.03); }
+}
+/* The battle platform the shiny stands on. */
+.sh-platform {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  aspect-ratio: 3.4 / 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(closest-side, color-mix(in srgb, var(--sb) 85%, #fff 15%), color-mix(in srgb, var(--sb) 55%, #0b0918) 58%, color-mix(in srgb, var(--sb) 30%, #0b0918) 100%);
+  box-shadow:
+    inset 0 2px 0 rgb(255 255 255 / 0.28),
+    inset 0 -8px 18px rgb(0 0 0 / 0.45),
+    0 0 40px color-mix(in srgb, var(--sb) 45%, transparent),
+    0 18px 30px -10px rgb(0 0 0 / 0.8);
+  pointer-events: none;
+}
+.sh-platform::after {
+  content: "";
+  position: absolute;
+  inset: 16% 14%;
+  border-radius: 50%;
+  border: 1.5px solid rgb(255 255 255 / 0.22);
+}
+/* Motes of light drifting up. */
+.sh-mote {
+  position: absolute;
+  border-radius: 9999px;
+  background: #fff;
+  box-shadow: 0 0 6px 1px color-mix(in srgb, var(--sa) 70%, #fff);
+  opacity: 0;
+  pointer-events: none;
+  animation: sh-mote 7s linear infinite;
+}
+@keyframes sh-mote {
+  0% { opacity: 0; transform: translateY(0) scale(0.6); }
+  15% { opacity: 0.9; }
+  80% { opacity: 0.5; }
+  100% { opacity: 0; transform: translateY(-160px) scale(1); }
 }
 
 /* Twinkling four-point stars around the shiny. */
 .sh-star {
   position: absolute;
-  color: hsl(var(--warning));
+  color: #ffe08a;
+  filter: drop-shadow(0 0 6px rgb(255 224 138 / 0.8));
   animation: sh-twinkle 2.8s ease-in-out infinite;
   transform-origin: center;
   pointer-events: none;
@@ -68,25 +128,204 @@
 }
 @keyframes sh-float {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+  50% { transform: translateY(-8px); }
+}
+.sh-shadow {
+  animation: sh-shadow 5s ease-in-out infinite;
+}
+@keyframes sh-shadow {
+  0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.7; }
+  50% { transform: translateX(-50%) scale(0.88); opacity: 0.5; }
 }
 
-/* The celebration: slow light rays behind the shiny. */
+/* ── Game buttons ──────────────────────────────────────────────────────────── */
+/* The count button: a chunky, lit key with a lip it presses down onto. */
+.sh-count {
+  --lip: 7px;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  color: #fff;
+  background: linear-gradient(180deg, #ff6f9f 0%, #f1417c 48%, #db2a66 100%);
+  box-shadow:
+    inset 0 2px 0 rgb(255 255 255 / 0.45),
+    inset 0 -3px 0 rgb(120 10 50 / 0.35),
+    0 var(--lip) 0 #9c1847,
+    0 calc(var(--lip) + 12px) 28px -10px rgb(241 65 124 / 0.75);
+  text-shadow: 0 2px 0 rgb(120 10 50 / 0.45);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+  transform: translateY(0);
+  transition: transform 70ms ease, box-shadow 70ms ease, filter 120ms ease;
+}
+/* The gloss on its top half. */
+.sh-count::before {
+  content: "";
+  position: absolute;
+  inset: 3px 6px 52% 6px;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.38), rgb(255 255 255 / 0.04));
+  z-index: -1;
+  pointer-events: none;
+}
+/* A shine that sweeps across now and then. */
+.sh-count::after {
+  content: "";
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  width: 34%;
+  left: -50%;
+  background: linear-gradient(100deg, transparent, rgb(255 255 255 / 0.45), transparent);
+  transform: skewX(-18deg);
+  animation: sh-sheen 5.5s ease-in-out infinite 1.2s;
+  pointer-events: none;
+}
+@keyframes sh-sheen {
+  0%, 72% { left: -50%; }
+  100% { left: 130%; }
+}
+.sh-count:hover { filter: brightness(1.06) saturate(1.05); }
+.sh-count:active,
+.sh-count[data-pressed="1"] {
+  transform: translateY(calc(var(--lip) - 1px));
+  box-shadow:
+    inset 0 2px 0 rgb(255 255 255 / 0.3),
+    inset 0 -2px 0 rgb(120 10 50 / 0.3),
+    0 1px 0 #9c1847,
+    0 6px 14px -8px rgb(241 65 124 / 0.7);
+}
+.sh-count:focus-visible { outline: 3px solid hsl(var(--ring)); outline-offset: 4px; }
+
+/* The side keys (− and undo): the same build, in the page's own colours. */
+.sh-side {
+  --lip: 5px;
+  background: linear-gradient(180deg, hsl(var(--card)), hsl(var(--secondary)));
+  box-shadow:
+    inset 0 1px 0 hsl(var(--foreground) / 0.08),
+    inset 0 0 0 1px hsl(var(--foreground) / 0.08),
+    0 var(--lip) 0 hsl(var(--secondary-shadow)),
+    0 calc(var(--lip) + 8px) 18px -10px hsl(var(--shade) / 0.6);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: transform 70ms ease, box-shadow 70ms ease;
+}
+.sh-side:active:not(:disabled) {
+  transform: translateY(calc(var(--lip) - 1px));
+  box-shadow: inset 0 1px 0 hsl(var(--foreground) / 0.08), inset 0 0 0 1px hsl(var(--foreground) / 0.08), 0 1px 0 hsl(var(--secondary-shadow));
+}
+.sh-tap {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* "Found it!": gold, with the same lip. */
+.sh-gold {
+  --lip: 4px;
+  position: relative;
+  overflow: hidden;
+  color: #3a2200;
+  background: linear-gradient(180deg, #ffe27a 0%, #ffc93c 50%, #f5a516 100%);
+  box-shadow:
+    inset 0 2px 0 rgb(255 255 255 / 0.6),
+    0 var(--lip) 0 #b76d05,
+    0 calc(var(--lip) + 10px) 24px -8px rgb(255 190 40 / 0.6);
+  transition: transform 70ms ease, box-shadow 70ms ease, filter 120ms ease;
+}
+.sh-gold:hover { filter: brightness(1.05); }
+.sh-gold:active {
+  transform: translateY(calc(var(--lip) - 1px));
+  box-shadow: inset 0 2px 0 rgb(255 255 255 / 0.5), 0 1px 0 #b76d05;
+}
+
+/* One ring per tap, spreading out from the button. */
+.sh-ripple {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: 0 0 0 0 rgb(255 255 255 / 0.5);
+  animation: sh-ripple 520ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+@keyframes sh-ripple {
+  to { box-shadow: 0 0 0 22px rgb(255 255 255 / 0); }
+}
+/* "+1" rising from the count. */
+.sh-plus {
+  position: absolute;
+  pointer-events: none;
+  animation: sh-plus 700ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+@keyframes sh-plus {
+  0% { opacity: 0; transform: translateY(10px) scale(0.7); }
+  20% { opacity: 1; transform: translateY(0) scale(1.05); }
+  100% { opacity: 0; transform: translateY(-44px) scale(1); }
+}
+/* The stage answers each count with a soft pulse of light. */
+.sh-pulse {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(45% 45% at 50% 52%, color-mix(in srgb, var(--sa) 40%, transparent), transparent 70%);
+  animation: sh-pulse 520ms ease-out forwards;
+}
+@keyframes sh-pulse {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* ── Trophy cards: a holo foil edge ───────────────────────────────────────── */
+.sh-foil {
+  position: relative;
+  padding: 2px;
+  border-radius: 24px;
+  background: conic-gradient(from var(--sh-angle, 0deg), #ffe27a, #ff8fc0, #9fd0ff, #b7ffcf, #ffe27a, #ffb36b, #d7a6ff, #ffe27a);
+  box-shadow: 0 18px 40px -22px rgb(0 0 0 / 0.6);
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+.sh-foil:hover { transform: translateY(-4px) rotate(-0.6deg); box-shadow: 0 26px 50px -22px rgb(0 0 0 / 0.7); }
+.sh-holo {
+  background: linear-gradient(115deg, transparent 30%, rgb(255 255 255 / 0.12) 45%, rgb(255 255 255 / 0.02) 55%, transparent 70%);
+  background-size: 250% 100%;
+  animation: sh-holo 6s ease-in-out infinite;
+}
+@keyframes sh-holo {
+  0%, 100% { background-position: 100% 0; }
+  50% { background-position: 0 0; }
+}
+
+/* ── The celebration ───────────────────────────────────────────────────────── */
+.sh-cel-bg {
+  background:
+    radial-gradient(70% 55% at 50% 28%, color-mix(in srgb, var(--sa) 30%, transparent), transparent 70%),
+    radial-gradient(60% 40% at 50% 100%, color-mix(in srgb, var(--sb) 24%, transparent), transparent 70%),
+    linear-gradient(180deg, rgb(16 12 34 / 0.97), rgb(7 6 16 / 0.98));
+}
+.sh-cel-glow {
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--sa) 55%, #fff 10%), color-mix(in srgb, var(--sa) 14%, transparent) 60%, transparent);
+}
 .sh-rays {
-  background: repeating-conic-gradient(from 0deg, hsl(42 98% 62% / 0.16) 0deg 8deg, transparent 8deg 22deg);
-  mask-image: radial-gradient(closest-side, #000 25%, transparent 100%);
-  -webkit-mask-image: radial-gradient(closest-side, #000 25%, transparent 100%);
+  background: repeating-conic-gradient(from 0deg, color-mix(in srgb, var(--sa, #f6c94a) 32%, transparent) 0deg 7deg, transparent 7deg 20deg);
+  mask-image: radial-gradient(closest-side, #000 20%, transparent 100%);
+  -webkit-mask-image: radial-gradient(closest-side, #000 20%, transparent 100%);
   animation: sh-spin 40s linear infinite;
 }
 @keyframes sh-spin {
   to { transform: rotate(1turn); }
 }
 .sh-pop {
-  animation: sh-pop 700ms cubic-bezier(0.2, 1.4, 0.3, 1) both;
+  animation: sh-pop 800ms cubic-bezier(0.2, 1.4, 0.3, 1) both;
 }
 @keyframes sh-pop {
-  from { opacity: 0; transform: scale(0.4) rotate(-8deg); }
-  to { opacity: 1; transform: none; }
+  from { opacity: 0; transform: scale(0.3) rotate(-8deg); filter: brightness(3); }
+  60% { filter: brightness(1.4); }
+  to { opacity: 1; transform: none; filter: none; }
 }
 .sh-rise {
   animation: sh-rise 500ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
@@ -99,8 +338,15 @@
   animation: sh-flash 900ms ease-out both;
 }
 @keyframes sh-flash {
-  0% { opacity: 0.85; }
+  0% { opacity: 0.9; }
   100% { opacity: 0; }
+}
+.sh-open {
+  animation: sh-open 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes sh-open {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: none; }
 }
 
 .sh-noscroll { scrollbar-width: none; }
@@ -110,15 +356,17 @@
 
 /* Phones: the count dock sits over the tab bar, and the page ends clear of it. */
 .sh-dock {
-  background: hsl(var(--background) / 0.82);
+  background: linear-gradient(180deg, hsl(var(--background) / 0.55), hsl(var(--background) / 0.92) 40%);
   backdrop-filter: blur(16px) saturate(1.2);
   -webkit-backdrop-filter: blur(16px) saturate(1.2);
   border-top: 1px solid hsl(var(--foreground) / 0.08);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sh-count, .sh-count:active { transition: none; transform: none; }
-  .sh-ripple, .sh-flash { display: none; }
-  .sh-star { animation: none; opacity: 0.8; transform: scale(0.8); }
-  .sh-float, .sh-rays, .sh-pop, .sh-rise { animation: none; }
+  .sh-count, .sh-count:active, .sh-side, .sh-side:active, .sh-gold, .sh-gold:active { transition: none; }
+  .sh-count::after { animation: none; display: none; }
+  .sh-ripple, .sh-flash, .sh-plus, .sh-pulse, .sh-mote { display: none; }
+  .sh-star { animation: none; opacity: 0.85; transform: scale(0.8); }
+  .sh-float, .sh-shadow, .sh-glow, .sh-rays, .sh-pop, .sh-rise, .sh-holo, .sh-open { animation: none; }
+  .sh-foil, .sh-foil:hover { transition: none; transform: none; }
 }

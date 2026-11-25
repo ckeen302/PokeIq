@@ -128,7 +128,10 @@
       "3": "3"
     },
     "gen": "Generation {n}",
-    "source": "Odds from the games' code and datamines, checked against Bulbapedia and Serebii."
+    "source": "Odds from the games' code and datamines, checked against Bulbapedia and Serebii.",
+    "done": "Done",
+    "yourOdds": "Your odds",
+    "bonuses": "Bonuses"
   },
   "methods": {
     "wild": "Random encounters",

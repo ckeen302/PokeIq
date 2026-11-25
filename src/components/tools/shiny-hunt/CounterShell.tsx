@@ -10,17 +10,13 @@ import { HuntLocalContext, type HuntLocal } from "./names";
 function Skeleton() {
   return (
     <div className="mt-6 animate-pulse motion-reduce:animate-none max-sm:mt-4" data-testid="shiny-counter-skeleton" aria-hidden>
-      <div className="mb-5 flex items-center justify-between">
-        <div className="flex gap-1">
-          <span className="h-10 w-24 rounded-full bg-foreground/[0.08]" />
-          <span className="h-10 w-20 rounded-full bg-foreground/[0.04]" />
-          <span className="h-10 w-28 rounded-full bg-foreground/[0.04]" />
-        </div>
-        <span className="h-11 w-11 rounded-full bg-foreground/[0.04]" />
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3 max-sm:mb-4">
+        <span className="h-12 w-[380px] max-w-full rounded-full bg-foreground/[0.06]" />
+        <span className="h-12 w-[420px] max-w-full rounded-full bg-foreground/[0.04]" />
       </div>
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_380px]">
-        <div className="h-[600px] rounded-[28px] border border-foreground/[0.07] bg-card/60 max-sm:h-[520px]" />
-        <div className="h-[600px] rounded-[24px] border border-foreground/[0.07] bg-card/60 max-lg:hidden" />
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1.06fr)_minmax(0,1fr)]">
+        <div className="h-[580px] rounded-[30px] bg-[#0d0a1d]/80 max-sm:h-[340px]" />
+        <div className="h-[580px] rounded-[30px] border border-foreground/[0.07] bg-card/60 max-lg:h-[260px]" />
       </div>
     </div>
   );

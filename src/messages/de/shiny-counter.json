@@ -128,7 +128,10 @@
       "3": "3"
     },
     "gen": "Generation {n}",
-    "source": "Odds aus dem Code der Spiele und ihren Analysen, geprüft mit Bulbapedia und Serebii."
+    "source": "Odds aus dem Code der Spiele und ihren Analysen, geprüft mit Bulbapedia und Serebii.",
+    "done": "Fertig",
+    "yourOdds": "Deine Chance",
+    "bonuses": "Boni"
   },
   "methods": {
     "wild": "Normale Begegnungen",

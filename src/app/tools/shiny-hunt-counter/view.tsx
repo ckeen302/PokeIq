@@ -1,4 +1,4 @@
-/* eslint-disable @next/next/no-img-element -- a shared hunt's one shiny picture, from PokéAPI's sprites */
+/* eslint-disable @next/next/no-img-element -- a shared hunt's one shiny picture, the official artwork */
 import type { Metadata } from "next";
 import { jsonLd, pageMetadata } from "@/lib/seo";
 import { getLocale, getT, serverT } from "@/i18n/server";
@@ -11,7 +11,7 @@ import { toolJsonLd } from "@/lib/tier-list/seo";
 import { speciesNameIn } from "@/lib/shiny-maker/local";
 import { huntLocal } from "@/lib/shiny-hunt/local";
 import { getPokemon } from "@/lib/pokemon/pokedex";
-import { homeRenderUrl } from "@/lib/pokemon/art";
+import { artUrl } from "@/lib/pokemon/art";
 import { decodeHunt, foundDate, type SharedHunt } from "@/lib/shiny-hunt/share";
 import { shinyChance } from "@/lib/shiny-hunt/odds";
 import { clock, oneIn } from "@/lib/shiny-hunt/math";
@@ -97,7 +97,7 @@ function SharedCard({ h }: { h: SharedHunt }) {
   return (
     <section className="relative mt-6 overflow-hidden rounded-[28px] border border-[hsl(var(--warning)/0.35)] bg-[radial-gradient(60%_80%_at_20%_40%,hsl(var(--warning)/0.16),transparent_70%),hsl(var(--card))] p-5 sm:p-7" data-testid="sh-shared">
       <div className="flex items-center gap-5 max-sm:flex-col max-sm:items-start">
-        <img src={homeRenderUrl(h.species, true)} alt={c("counter.shinyAlt", { name: pokemon })} width={160} height={160} className="h-40 w-40 shrink-0 object-contain drop-shadow-[0_14px_18px_hsl(var(--shade)/0.35)] max-sm:h-32 max-sm:w-32" />
+        <img src={artUrl(h.species, 400, true)} alt={c("counter.shinyAlt", { name: pokemon })} width={160} height={160} className="h-40 w-40 shrink-0 object-contain drop-shadow-[0_14px_18px_hsl(var(--shade)/0.35)] max-sm:h-32 max-sm:w-32" />
         <div className="min-w-0 flex-1">
           <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-[hsl(var(--warning))]">{h.found ? t("shared.found") : t("shared.hunting")}</p>
           <h2 className="mt-1 font-display text-[30px] font-bold leading-tight tracking-tight sm:text-[36px]">{h.found ? t("shared.headlineFound", { pokemon }) : t("shared.headlineHunting", { pokemon })}</h2>
@@ -141,7 +141,7 @@ export function ShinyCounterView({ raw }: { raw: string | undefined }) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ld }} />
       <header className="space-y-2 pt-2 max-sm:pt-0">
         <h1 className="font-display text-5xl font-bold tracking-tight max-sm:text-[34px] max-sm:leading-tight">{t("title")}</h1>
-        <p className="max-w-2xl text-[17px] text-muted-foreground max-sm:text-[15px]">{t("subtitle")}</p>
+        <p className="max-w-4xl text-[17px] text-muted-foreground max-sm:hidden">{t("subtitle")}</p>
       </header>
       {shared && <SharedCard h={shared} />}
       {!shared && raw && <p className="mt-6 rounded-2xl bg-foreground/[0.05] px-4 py-3 text-[14px] text-muted-foreground">{t("shared.broken")}</p>}

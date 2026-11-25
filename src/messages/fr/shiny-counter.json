@@ -128,7 +128,10 @@
       "3": "3"
     },
     "gen": "Génération {n}",
-    "source": "Probabilités tirées du code des jeux et de leurs analyses, vérifiées avec Bulbapedia et Serebii."
+    "source": "Probabilités tirées du code des jeux et de leurs analyses, vérifiées avec Bulbapedia et Serebii.",
+    "done": "Terminé",
+    "yourOdds": "Vos chances",
+    "bonuses": "Bonus"
   },
   "methods": {
     "wild": "Rencontres classiques",

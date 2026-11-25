@@ -28,6 +28,8 @@ export interface Names {
   ready: boolean;
   list: NameEntry[];
   name(id: number): string;
+  /** The species' primary type (for its stage's colours), once the list loads. */
+  type(id: number): string | null;
 }
 
 export function useNames(): Names {
@@ -49,6 +51,7 @@ export function useNames(): Names {
       return { id, name, key: normalizeName(name), alt: local ? (local.alt[id] ?? "").split(" ").filter(Boolean) : [] };
     });
     const byId = new Map(entries.map((e) => [e.id, e.name]));
-    return { ready: list !== null, list: entries, name: (id: number) => byId.get(id) ?? local?.names[id] ?? `#${id}` };
+    const types = new Map((list ?? []).map(([id, , type]) => [id, type]));
+    return { ready: list !== null, list: entries, name: (id: number) => byId.get(id) ?? local?.names[id] ?? `#${id}`, type: (id: number) => types.get(id) ?? null };
   }, [list, local]);
 }

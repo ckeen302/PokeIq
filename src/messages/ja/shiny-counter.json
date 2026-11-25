@@ -128,7 +128,10 @@
       "3": "3"
     },
     "gen": "第{n}世代",
-    "source": "確率はゲームのプログラムと解析にもとづき、Bulbapedia と Serebii で確認した数値です。"
+    "source": "確率はゲームのプログラムと解析にもとづき、Bulbapedia と Serebii で確認した数値です。",
+    "done": "完了",
+    "yourOdds": "今の確率",
+    "bonuses": "ボーナス"
   },
   "methods": {
     "wild": "通常エンカウント",
