@@ -2,11 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { LayoutGroup, motion, useReducedMotion } from "framer-motion";
-import { ArrowDown, Check, Crown, Minus, Plus, RotateCcw, Share2, Sparkles } from "lucide-react";
+import { ArrowDown, Check, Crown, Minus, Plus, RotateCcw, Share2, Sparkles, Zap } from "lucide-react";
 import { useT } from "@/i18n/client";
 import msgs from "@/messages/catch-rate";
-import { ballsIn, GAMES, lowLevelBonus, STATUSES, type BallId, type GameId, type Status } from "@/lib/catch-rate/formula";
-import { DEFAULT_INPUTS, encodeInputs, MAX_LEVEL, MAX_TURN, type Inputs } from "@/lib/catch-rate/link";
+import { badgePenalty, ballsIn, blockedIn, GAMES, hasPower, lowLevelBonus, STATUSES, SWSH_CAP, type BallId, type GameId, type Status } from "@/lib/catch-rate/formula";
+import { DEFAULT_INPUTS, encodeInputs, MAX_DEX, MAX_LEVEL, MAX_TURN, type Inputs } from "@/lib/catch-rate/link";
 import { rank, type BallResult, type Ranking } from "@/lib/catch-rate/rank";
 import { cn } from "@/lib/utils";
 import { BallArt } from "./BallArt";
@@ -145,12 +145,12 @@ function Chip({ on, onClick, children, testId, label, className }: { on: boolean
   );
 }
 
-function Stepper({ value, min, max, onChange, label, down, up, testId }: { value: number; min: number; max: number; onChange(v: number): void; label: string; down: string; up: string; testId: string }) {
+function Stepper({ value, min, max, onChange, label, down, up, testId, wide, step = 1 }: { value: number; min: number; max: number; onChange(v: number): void; label: string; down: string; up: string; testId: string; wide?: boolean; step?: number }) {
   const clamp = (v: number) => Math.min(max, Math.max(min, v));
   const btn = "flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-foreground/[0.06] text-foreground transition-colors hover:bg-foreground/[0.1] disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
   return (
     <div className="flex items-center gap-1.5">
-      <button type="button" className={btn} onClick={() => onChange(clamp(value - 1))} disabled={value <= min} aria-label={down} data-testid={`${testId}-down`}>
+      <button type="button" className={btn} onClick={() => onChange(clamp(value - step))} disabled={value <= min} aria-label={down} data-testid={`${testId}-down`}>
         <Minus className="h-4 w-4" aria-hidden />
       </button>
       <input
@@ -164,10 +164,10 @@ function Stepper({ value, min, max, onChange, label, down, up, testId }: { value
           const v = Number(e.target.value);
           if (Number.isFinite(v) && e.target.value !== "") onChange(clamp(Math.round(v)));
         }}
-        className="h-10 w-14 rounded-xl bg-transparent text-center font-display text-[20px] font-semibold tabular-nums outline-none [appearance:textfield] focus:bg-foreground/[0.05] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+        className={cn("h-10 rounded-xl bg-transparent text-center", wide ? "w-[72px]" : "w-14", "font-display text-[20px] font-semibold tabular-nums outline-none [appearance:textfield] focus:bg-foreground/[0.05] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none")}
         data-testid={testId}
       />
-      <button type="button" className={btn} onClick={() => onChange(clamp(value + 1))} disabled={value >= max} aria-label={up} data-testid={`${testId}-up`}>
+      <button type="button" className={btn} onClick={() => onChange(clamp(value + step))} disabled={value >= max} aria-label={up} data-testid={`${testId}-up`}>
         <Plus className="h-4 w-4" aria-hidden />
       </button>
     </div>
@@ -187,11 +187,13 @@ function Toggle({ on, onChange, label, balls, testId }: { on: boolean; onChange(
       )}
       data-testid={testId}
     >
-      <span className="flex shrink-0 -space-x-2" aria-hidden>
-        {balls.map((b) => (
-          <BallArt key={b} id={b} size={22} />
-        ))}
-      </span>
+      {balls.length > 0 && (
+        <span className="flex shrink-0 -space-x-2" aria-hidden>
+          {balls.map((b) => (
+            <BallArt key={b} id={b} size={22} />
+          ))}
+        </span>
+      )}
       <span className="min-w-0 flex-1 leading-snug">{label}</span>
       <span className={cn("relative h-6 w-10 shrink-0 rounded-full transition-colors", on ? "bg-primary" : "bg-foreground/[0.15]")} aria-hidden>
         <span className={cn("absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-[left] duration-150", on ? "left-[18px]" : "left-0.5")} />
@@ -212,15 +214,20 @@ function InputsPanel({ r, inputs, set, names, newer, t }: { r: Ranking; inputs: 
     [t("hp.red"), hpOf(0.15), "red"],
     [t("hp.one"), 1, "one"],
   ];
+  const g = r.game.gen;
+  // Fishing is its own switch where a Lure Ball needs it (it counts for the Dive Ball too); Scarlet & Violet's Lure Ball goes by water like the Dive Ball.
+  const fishing = have.has("lure") && g <= 8;
+  const waterLabel = g === 3 ? t("situation.waterOld") : g === 9 ? t("situation.waterSv") : fishing ? t("situation.waterNoFish") : t("situation.water");
   const situational = [
     have.has("dusk") && <Toggle key="dark" on={inputs.dark} onChange={(v) => set({ dark: v })} label={t("situation.dark")} balls={["dusk"]} testId="cr-dark" />,
-    <Toggle key="water" on={inputs.water} onChange={(v) => set({ water: v })} label={r.game.gen === 3 ? t("situation.waterOld") : t("situation.water")} balls={["dive"]} testId="cr-water" />,
+    <Toggle key="water" on={inputs.water} onChange={(v) => set({ water: v })} label={waterLabel} balls={g === 9 && have.has("lure") ? ["dive", "lure"] : ["dive"]} testId="cr-water" />,
+    fishing && <Toggle key="fishing" on={inputs.fishing} onChange={(v) => set({ fishing: v })} label={t("situation.fishing")} balls={["lure", "dive"]} testId="cr-fishing" />,
     <Toggle key="caught" on={inputs.caught} onChange={(v) => set({ caught: v })} label={t("situation.caught")} balls={["repeat"]} testId="cr-caught" />,
     have.has("love") && <Toggle key="love" on={inputs.loveMatch} onChange={(v) => set({ loveMatch: v })} label={t("situation.loveMatch")} balls={["love"]} testId="cr-love" />,
   ];
   return (
     <section className="space-y-6 rounded-[28px] border border-foreground/[0.08] bg-card p-6 shadow-[0_20px_60px_-40px_hsl(var(--shade)/0.6)] max-sm:rounded-[22px] max-sm:p-4 lg:sticky lg:top-20" aria-label={t("pokemon.label")} data-testid="cr-inputs">
-      <PokemonPicker species={r.species} names={names} onPick={(id) => set({ id })} newer={newer} />
+      <PokemonPicker species={r.species} rate={r.target.rate} names={names} onPick={(id) => set({ id })} newer={newer} />
 
       <Field label={t("game.label")} id="cr-game" aside={<span className="text-[12px] text-muted-foreground">{t("game.gen", { n: r.game.gen })}</span>}>
         <div className="flex flex-wrap gap-1.5">
@@ -295,10 +302,10 @@ function InputsPanel({ r, inputs, set, names, newer, t }: { r: Ranking; inputs: 
             </span>
             <Stepper value={inputs.turn} min={1} max={MAX_TURN} onChange={(turn) => set({ turn })} label={t("situation.turn")} down={t("situation.turnDown")} up={t("situation.turnUp")} testId="cr-turn" />
           </div>
-          {have.has("level") && (
+          {(have.has("level") || (g === 8 && inputs.badges < 8)) && (
             <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 rounded-2xl border border-foreground/[0.08] px-3 py-1.5">
               <span className="flex items-center gap-3 text-[14px] font-medium">
-                <BallArt id="level" size={22} />
+                {have.has("level") && <BallArt id="level" size={22} />}
                 {t("situation.yourLevel")}
               </span>
               <Stepper value={inputs.yourLevel} min={1} max={MAX_LEVEL} onChange={(yourLevel) => set({ yourLevel })} label={t("situation.yourLevel")} down={t("level.down")} up={t("level.up")} testId="cr-you" />
@@ -307,7 +314,64 @@ function InputsPanel({ r, inputs, set, names, newer, t }: { r: Ranking; inputs: 
           {situational}
         </div>
       </Field>
+
+      {g >= 5 && <TrainerField r={r} inputs={inputs} set={set} t={t} />}
     </section>
+  );
+}
+
+/** You: the species you've caught (critical captures), and from game to game the Catching Charm, badges, a capture power, dark grass and a back strike. */
+function TrainerField({ r, inputs, set, t }: { r: Ranking; inputs: Inputs; set(p: Partial<Inputs>): void; t: T }) {
+  const g = r.game.gen;
+  const f = new Intl.NumberFormat(t.locale, { maximumFractionDigits: 2 });
+  const penalty = badgePenalty(r.game, r.target, inputs);
+  const row = "flex flex-wrap items-center justify-between gap-x-3 gap-y-2 rounded-2xl border border-foreground/[0.08] px-3 py-1.5";
+  const powerName = g === 5 ? t("trainer.powerBw") : g === 6 ? t("trainer.powerXy") : t("trainer.powerSv");
+  return (
+    <Field
+      label={t("trainer.label")}
+      id="cr-trainer"
+      aside={penalty < 1 ? <span className="rounded-full bg-destructive/15 px-2 py-0.5 text-[11.5px] font-semibold text-destructive" data-testid="cr-penalty">{t(g === 8 ? "trainer.swshPenalty" : "trainer.badgePenalty", { n: f.format(penalty) })}</span> : null}
+    >
+      <p className="-mt-1 text-[13px] text-muted-foreground">{t("trainer.hint")}</p>
+      <div className="grid gap-2">
+        <div className={row}>
+          <span className="min-w-0 flex-1 text-[14px] font-medium leading-snug">
+            {t("trainer.dex")}
+            <span className="block text-[12px] font-normal text-muted-foreground">{t("trainer.dexHint")}</span>
+          </span>
+          <Stepper value={inputs.dex} min={0} max={MAX_DEX} onChange={(dex) => set({ dex })} label={t("trainer.dex")} down={t("trainer.dexDown")} up={t("trainer.dexUp")} testId="cr-dex" wide step={10} />
+        </div>
+        {g >= 8 && (
+          <div className={row}>
+            <span className="text-[14px] font-medium">{t("trainer.badges")}</span>
+            <Stepper value={inputs.badges} min={0} max={8} onChange={(badges) => set({ badges })} label={t("trainer.badges")} down={t("trainer.badgesDown")} up={t("trainer.badgesUp")} testId="cr-badges" />
+          </div>
+        )}
+        {hasPower(g) && (
+          <div className="space-y-2 rounded-2xl border border-foreground/[0.08] px-3 py-2.5">
+            <p className="text-[14px] font-medium" id="cr-power-label">
+              {powerName}
+            </p>
+            <div role="radiogroup" aria-labelledby="cr-power-label" className="grid grid-cols-4 gap-1.5">
+              {[0, 1, 2, 3].map((p) => (
+                <Chip key={p} on={inputs.power === p} onClick={() => set({ power: p })} testId={`cr-power-${p}`} className="justify-center px-2">
+                  {p === 0 ? t("trainer.powerNone") : t("trainer.powerLv", { n: p })}
+                </Chip>
+              ))}
+            </div>
+          </div>
+        )}
+        {g >= 8 && <Toggle on={inputs.charm} onChange={(v) => set({ charm: v })} label={t("trainer.charm")} balls={[]} testId="cr-charm" />}
+        {g === 9 && <Toggle on={inputs.offGuard} onChange={(v) => set({ offGuard: v })} label={t("trainer.offGuard")} balls={[]} testId="cr-off-guard" />}
+        {g === 5 && <Toggle on={inputs.darkGrass} onChange={(v) => set({ darkGrass: v })} label={t("trainer.darkGrass")} balls={[]} testId="cr-dark-grass" />}
+      </div>
+      {blockedIn(r.game, r.target, inputs) && (
+        <p className="rounded-2xl border border-destructive/30 bg-destructive/[0.08] px-3.5 py-2.5 text-[13.5px] font-medium leading-snug text-destructive" role="status" data-testid="cr-blocked">
+          {t("trainer.blocked", { badges: inputs.badges, max: SWSH_CAP[inputs.badges] })}
+        </p>
+      )}
+    </Field>
   );
 }
 
@@ -340,6 +404,8 @@ function why(b: BallResult, r: Ranking, t: T, i: Pick<Inputs, "turn" | "yourLeve
     }
     case "beast":
       return r.target.ultraBeast ? t("why.beastOn") : t("why.beastOff");
+    case "lure":
+      return g === 9 ? (fx.active ? t("why.lureOnSv") : t("why.lureOffSv")) : fx.active ? t("why.lureOn") : t("why.lureOff");
     default:
       return td(`why.${b.ball}${fx.active ? "On" : "Off"}`);
   }
@@ -420,6 +486,12 @@ function Hero({ r, inputs, t, ballNames, species, throwing, throwResult, onShare
               </dd>
             </div>
           </dl>
+          {best.first.crit > 0 && best.chance < 1 && (
+            <p className="mt-3 flex items-center gap-2 px-1 text-[13px] text-muted-foreground" data-testid="cr-crit" data-crit={best.first.crit}>
+              <Zap className="h-3.5 w-3.5 shrink-0 text-[hsl(var(--warning))]" aria-hidden />
+              {t("results.crit", { pct: pct(best.first.crit, locale) })}
+            </p>
+          )}
           {r.budget && (
             <div className="mt-3 flex items-center gap-3 rounded-2xl border border-[hsl(var(--success)/0.3)] bg-[hsl(var(--success)/0.07)] px-3.5 py-2.5" data-testid="cr-budget" data-ball={r.budget.ball}>
               <BallArt id={r.budget.ball} size={28} />
@@ -526,7 +598,7 @@ function Ranked({ r, inputs, t, ballNames, n, setN, throwing, onPick }: { r: Ran
           <button type="button" onClick={() => onPick("master")} aria-pressed={throwing === "master"} className={cn("flex w-full items-center gap-3 rounded-2xl px-1 py-1 text-left transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", throwing === "master" && "text-foreground")} data-testid="cr-master">
             <BallArt id="master" size={26} />
             <span className="min-w-0 flex-1">{t("results.master")}</span>
-            <span className="font-display text-[15px] font-semibold tabular-nums text-foreground">{pct(1, locale)}</span>
+            <span className="font-display text-[15px] font-semibold tabular-nums text-foreground">{pct(r.master.chance, locale)}</span>
           </button>
         )}
         <p className="flex items-center gap-3 px-1">

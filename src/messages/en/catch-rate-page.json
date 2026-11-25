@@ -6,23 +6,27 @@
   "metaSharedTitle": "Catching {name}: {pct} with a {ball}",
   "metaSharedDescription": "The odds of catching {name} with every Poké Ball, ranked, from the Catch Rate Calculator on PokéIQ. Change the HP, the status or the game and see what to throw.",
   "ogAlt": "Catch odds for a Pokémon on PokéIQ",
-  "credit": "Formulas from Bulbapedia's catch rate and Poké Ball articles. Catch rates from PokéAPI.",
+  "credit": "Formulas for Generations 3 and 4 from the games' decompiled code (the pret projects for Ruby, Emerald, FireRed, Platinum and HeartGold); from Generation 5 on, from Dragonfly Cave's capture research, checked against Bulbapedia and Serebii. Catch rates from PokéAPI and Bulbapedia.",
   "explain": {
     "title": "How catch rate works",
     "intro": "Every species has a catch rate from 3 to 255: 3 for the hardest, such as Mewtwo, 255 for the easiest, such as Caterpie. Each throw turns that number, the HP left, the status condition and the ball into one figure, the modified catch rate a. From Generation 5 on:",
-    "legend": "MaxHP and HP are the wild Pokémon's maximum and current HP, Rate its species' catch rate, Ball the ball's multiplier and Status the status bonus.",
+    "legend": "MaxHP and HP are the wild Pokémon's maximum and current HP, Rate its species' catch rate, Ball the ball's multiplier, Status the status bonus and Bonus everything else the game counts in: low levels, badges and capture powers. Generations 3 and 4 have no Bonus and round down at every step; from Generation 5 the games count in 4096ths, and the calculator rounds each step just as they do.",
     "hpTitle": "HP",
     "hp": "At full HP the HP part works out to a third; at 1 HP it is almost one. Knocking a Pokémon down to 1 HP with False Swipe nearly triples your odds, and red HP is nearly as good.",
     "statusTitle": "Status",
     "status": "Sleep and freeze multiply a by 2.5 (by 2 before Generation 5); paralysis, poison and burn by 1.5. Sleep is the best status to inflict, and the Dream Ball works best on a sleeping Pokémon.",
+    "levelTitle": "Levels and badges",
+    "level": "Sword & Shield make a wild Pokémon under level 20 easier to catch, multiplying a by (30 − level) ÷ 10. Until you have the eighth badge, though, a Pokémon of a higher level than yours is ×0.1, and above the level your badges allow you can't throw a ball at all. Scarlet & Violet's bonus works under level 13, by (36 − 2 × level) ÷ 10, and a Pokémon too high a level to obey you is ×0.8 for each badge you're short.",
     "shakeTitle": "The shakes",
     "shake": "If a is 255 or more, the Pokémon is caught. Otherwise the game works out a shake value b and makes shake checks: each passes if a random number from 0 to 65535 is below b. The ball wobbles once for each check that passes, and the Pokémon is caught only if every check passes. From Generation 6 there are four checks:",
     "shakeGens": "Generation 5 made three checks with b = 65536 ÷ (255 ÷ a)^(1/4). Generations 3 and 4 made four with b = 1048560 ÷ √(√(16711680 ÷ a)), which works out to a chance of about a ÷ 255.",
-    "levelTitle": "Low levels",
-    "level": "Sword & Shield make a wild Pokémon under level 20 easier to catch, multiplying a by (30 − level) ÷ 10. Scarlet & Violet do the same under level 13, by (36 − 2 × level) ÷ 10.",
+    "critTitle": "Critical captures",
+    "crit": "From Generation 5, a throw can be a critical capture: the ball shakes in mid-air, wobbles once, and a single shake check decides it. The chance is ⌊a × P ÷ 6⌋ out of 256, where P goes by the species you've caught: 0 up to 30, then 0.5, 1, 1.5, 2 and 2.5 above 150, 300, 450 and 600. The Catching Charm in Sword & Shield and Scarlet & Violet doubles it. Enter how many you've caught and the calculator counts critical captures in.",
     "ballsTitle": "The balls",
-    "balls": "A Great Ball multiplies a by 1.5 and an Ultra Ball by 2. Special balls do far more in the right situation, and each one's multiplier changed over the generations: the calculator uses the right value for the game you pick, and shows why each ball is strong or weak right now.",
+    "balls": "A Great Ball multiplies a by 1.5 and an Ultra Ball by 2. Special balls do far more in the right situation, and each one's multiplier changed over the generations: the calculator uses the right value for the game you pick, and shows why each ball is strong or weak right now. From Generation 7, every ball but the Beast Ball is ×0.1 on an Ultra Beast. A few species' catch rates changed between games too, and the calculator uses each game's.",
+    "powerTitle": "Capture powers",
+    "power": "Some games add a multiplier of their own: Entralink's Capture Power in Black & White (×1.1, ×1.2 or ×1.3), the Capture O-Power in X & Y and Omega Ruby & Alpha Sapphire (×1.5, ×2 or ×2.5), and the Catching Power from a sandwich in Scarlet & Violet (×1.1, ×1.25 or ×2), doubled when you catch the Pokémon off guard. In Black & White, dark grass works the other way: until you've caught more than 600 species, a is cut to between 0.3 and 0.9 of itself.",
     "leftTitle": "What it leaves out",
-    "left": "Critical captures (a rare throw that needs only one shake check), Generation 5 bonuses such as dark grass, and the penalty in Sword & Shield and Scarlet & Violet for a Pokémon above the level your badges allow, so real odds can be a little higher or lower. The games round each step, which this calculator doesn't, so it can differ by a fraction of a percent. Max HP assumes average IVs. Legends: Arceus and Let's Go use different catch systems and aren't covered."
+    "left": "Let's Go, Pikachu! & Let's Go, Eevee! and Legends: Arceus catch by different formulas, with catch rates and inputs of their own (Combat Power, throws, berries, research rank, how the Pokémon behaves), and the sources disagree on key values: Bulbapedia gives Legends: Arceus's Poké Ball ×0.75 where Serebii gives ×1, and they write Let's Go's formula differently. Ultra Sun & Ultra Moon's Roto Catch is left out for the same reason: Bulbapedia says ×2, Dragonfly Cave ×2.5. From Generation 6 the games still carry Black & White's dark grass penalty, but nobody has found what switches it on, so it counts as off. Max HP is worked out with IVs of 15 (a wild Pokémon's are random), so the HP shown can be a few points off; the share of HP left is what you set."
   }
 }

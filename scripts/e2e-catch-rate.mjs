@@ -1,9 +1,9 @@
 /**
  * The Catch Rate Calculator, end to end in the browser: the page (title, H1, explainer and structured data in the
  * server's HTML), picking a Pokémon by search and keyboard, the inputs (game, level, the draggable HP bar, status,
- * the situation), the ranked results (every ball, best first, the best and the budget pick), a throw, the URL
- * round-trip (a reload and a shared link open the same encounter with its own title and preview card), and the phone
- * layout (no sideways scroll at 390 px). Each part records a failure instead of stopping the rest. Screenshots
+ * the situation; your Pokédex, badges and capture powers), the ranked results (every ball, best first, the best and
+ * the budget pick), a throw, the URL round-trip (a reload and a shared link open the same encounter with its own
+ * title and preview card), and the phone layout (no sideways scroll at 390 px). Each part records a failure instead of stopping the rest. Screenshots
  * (desktop 1440 × 900 and phone 390 × 844, dark and light) go to OUT.
  *
  *   node scripts/e2e-catch-rate.mjs [baseUrl] [outDir]        (PW_CHROMIUM=/path/to/chromium to pick a browser)
@@ -172,6 +172,47 @@ export async function runCatchRate({ browser, BASE, OUT, errors, step }) {
     assert(own.ok, "the tool's own card");
     fs.writeFileSync(`${OUT}/og.png`, Buffer.from(await own.arrayBuffer()));
     await p2.close();
+  });
+
+  await step("catch rate: your Pokédex, badges and powers (critical captures, Sword & Shield's level cap, Scarlet & Violet's badge penalty)", async () => {
+    const p = await context.newPage();
+    watch(p, consoleErrors);
+    await p.goto(`${BASE}${PATH}?p=130&l=46&hp=300`, { waitUntil: "domcontentloaded" });
+    await ready(p);
+    await hydrated(p);
+    const start = (await best(p)).chance;
+    assert(!(await p.getByTestId("cr-crit").isVisible()), "a critical capture chance with nothing caught");
+    // More than 600 species caught: critical captures count in, and the odds rise.
+    await p.getByTestId("cr-dex").fill("650");
+    await p.getByTestId("cr-crit").waitFor({ timeout: 5000 });
+    const withCrit = (await best(p)).chance;
+    assert(withCrit > start, `critical captures didn't help: ${start} → ${withCrit}`);
+    // Two badges in Scarlet & Violet: a level 46 Gyarados is three badges short of obeying, ×0.8³.
+    await p.getByTestId("cr-badges").fill("2");
+    await p.getByTestId("cr-penalty").waitFor({ timeout: 5000 });
+    assert((await p.getByTestId("cr-penalty").textContent()).includes("0.51"), `badge penalty: ${await p.getByTestId("cr-penalty").textContent()}`);
+    assert((await best(p)).chance < withCrit, "the badge penalty didn't lower the odds");
+    // A sandwich's Catching Power Lv. 3 raises them again.
+    const penalised = (await best(p)).chance;
+    await p.getByTestId("cr-power-3").click();
+    await p.waitForFunction((s) => Number(document.querySelector('[data-testid="cr-best-chance"]').getAttribute("data-chance")) > s, penalised);
+    // Sword & Shield with two badges: nothing above level 30 can be caught.
+    await p.getByTestId("cr-game-swsh").click();
+    await p.getByTestId("cr-blocked").waitFor({ timeout: 5000 });
+    assert((await best(p)).chance === 0, "a ball thrown above the level cap");
+    assert((await p.getByTestId("cr-master").textContent()).includes("0"), "the Master Ball above the level cap");
+    await p.getByTestId("cr-badges").fill("8");
+    await p.waitForFunction(() => !document.querySelector('[data-testid="cr-blocked"]'));
+    // HeartGold & SoulSilver: a fishing switch for the Lure Ball, and the Moon Ball in the list.
+    await p.getByTestId("cr-game-hgss").click();
+    assert(await p.getByTestId("cr-fishing").isVisible(), "no fishing switch in HG/SS");
+    const balls = (await rows(p)).map((r) => r.ball);
+    assert(balls.includes("moon") && balls.includes("lure"), `HG/SS balls: ${balls}`);
+    assert(!(await p.getByTestId("cr-dex").isVisible()), "a Pokédex count in Gen 4");
+    await p.waitForFunction(() => new URLSearchParams(location.search).get("g") === "hgss", null, { timeout: 5000 });
+    const q2 = new URL(p.url()).searchParams;
+    assert(q2.get("dex") === "650" && q2.get("pow") === "3" && q2.get("b") === null, `query: ${q2}`);
+    await p.close();
   });
 
   await step("catch rate: reduced motion shows the outcome at once", async () => {

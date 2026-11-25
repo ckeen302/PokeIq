@@ -1,4 +1,4 @@
-import { ballsIn, gameOf, maxHpOf, series, type BallId, type Game, type Series, type Target } from "./formula";
+import { ballsIn, gameOf, maxHpOf, rateIn, series, type BallId, type Game, type GameId, type Series, type Target } from "./formula";
 import type { Inputs } from "./link";
 import { speciesById, type CatchSpecies } from "./species";
 
@@ -28,18 +28,18 @@ export interface Ranking {
 
 /** Everyday balls in price order, cheapest first (sold in every Poké Mart). */
 const EVERYDAY: BallId[] = ["poke", "great", "ultra"];
-const ORDER: BallId[] = ["poke", "great", "ultra", "quick", "dusk", "timer", "net", "nest", "repeat", "dive", "level", "love", "fast", "heavy", "dream", "beast"];
+const ORDER: BallId[] = ["poke", "great", "ultra", "quick", "dusk", "timer", "net", "nest", "repeat", "dive", "level", "love", "fast", "heavy", "moon", "lure", "dream", "beast"];
 
-export function targetOf(species: CatchSpecies, i: Pick<Inputs, "level" | "hp" | "status">): Target {
+export function targetOf(species: CatchSpecies, i: Pick<Inputs, "level" | "hp" | "status">, game: GameId = "sv"): Target {
   const maxHp = maxHpOf(species.baseHp, i.level);
   const hp = Math.max(1, Math.min(maxHp, Math.round((i.hp / 1000) * maxHp)));
-  return { rate: species.rate, baseHp: species.baseHp, baseSpeed: species.baseSpeed, weight: species.weight, types: species.types, ultraBeast: species.ultraBeast, level: i.level, hp, maxHp, status: i.status };
+  return { id: species.id, rate: rateIn(species.id, species.rate, game), baseHp: species.baseHp, baseSpeed: species.baseSpeed, weight: species.weight, types: species.types, ultraBeast: species.ultraBeast, level: i.level, hp, maxHp, status: i.status };
 }
 
 export function rank(i: Inputs): Ranking {
   const species = speciesById(i.id) ?? speciesById(25)!;
   const game = gameOf(i.game);
-  const target = targetOf(species, i);
+  const target = targetOf(species, i, game.id);
   const all = ballsIn(game).map((ball): BallResult => {
     const s = series(ball, game, target, i);
     return { ...s, ball, chance: s.first.chance };

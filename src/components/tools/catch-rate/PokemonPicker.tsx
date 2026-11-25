@@ -30,7 +30,7 @@ export function rateBand(rate: number): "easy" | "medium" | "hard" | "legendary"
 }
 
 /** The wild Pokémon: its picture, name, types and catch rate, and a search to change it (a combobox). */
-export function PokemonPicker({ species, names, onPick, newer }: { species: CatchSpecies; names: Names; onPick(id: number): void; newer: number | null }) {
+export function PokemonPicker({ species, rate, names, onPick, newer }: { species: CatchSpecies; rate: number; names: Names; onPick(id: number): void; newer: number | null }) {
   const t = useT(msgs);
   const reduce = useReducedMotion();
   const [open, setOpen] = useState(false);
@@ -75,7 +75,7 @@ export function PokemonPicker({ species, names, onPick, newer }: { species: Catc
     setOpen(false);
     setQ("");
   };
-  const band = rateBand(species.rate);
+  const band = rateBand(rate);
   const accent = typeColor(species.types[0]);
 
   return (
@@ -121,7 +121,7 @@ export function PokemonPicker({ species, names, onPick, newer }: { species: Catc
         <span className="flex shrink-0 flex-col items-end text-right">
           <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground max-sm:text-[10px]">{t("pokemon.catchRate")}</span>
           <span className="font-display text-[30px] font-bold leading-none tabular-nums" data-testid="cr-species-rate">
-            {species.rate}
+            {rate}
           </span>
           <span className={cn("mt-1 text-[11px] font-semibold", band === "easy" ? "text-[hsl(var(--success))]" : band === "medium" ? "text-[hsl(var(--warning))]" : "text-primary")}>{t(`pokemon.${band}`)}</span>
         </span>

@@ -9,7 +9,7 @@ import { Ball } from "@/lib/og/pokeball-maker";
 import { ballPreset } from "@/lib/pokeball-maker/presets";
 import { typeColor } from "@/lib/pokemon/type-colors";
 import { pct } from "@/components/tools/catch-rate/format";
-import type { Inputs } from "@/lib/catch-rate/link";
+import { DEFAULT_INPUTS, type Inputs } from "@/lib/catch-rate/link";
 import { rank } from "@/lib/catch-rate/rank";
 import maker from "@/messages/en/pokeball-maker.json";
 import calc from "@/messages/en/catch-rate.json";
@@ -33,7 +33,7 @@ async function picture(id: number, size: number): Promise<string | null> {
 }
 
 export async function catchRateCard(i: Inputs | null) {
-  const r = rank(i ?? { id: 25, game: "sv", level: 30, hp: 120, status: "sleep", turn: 1, dark: false, water: false, caught: false, yourLevel: 50, loveMatch: false });
+  const r = rank(i ?? { ...DEFAULT_INPUTS, id: 25, game: "sv", level: 30, hp: 120, status: "sleep" });
   const art = await picture(r.species.id, 300);
   const accent = i ? typeColor(r.species.types[0]) : C.yellow;
   const ballName = (maker.balls as Record<string, string>)[r.best.ball] ?? "Poké Ball";

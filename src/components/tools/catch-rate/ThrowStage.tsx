@@ -10,7 +10,7 @@ import { boardArtUrl } from "@/lib/pokemon/art";
 import { simulate, type BallId, type Throw } from "@/lib/catch-rate/formula";
 import { BallArt } from "./BallArt";
 
-type Result = { shakes: number; caught: boolean };
+type Result = { shakes: number; caught: boolean; critical: boolean };
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /**
@@ -70,6 +70,11 @@ export function ThrowStage({ ball, ballName, th, speciesId, speciesName }: { bal
         animate("[data-a=mon]", { scale: 0.05, opacity: 0, y: 30 }, { duration: 0.34, ease: "easeIn" }),
       ]);
       if (!alive()) return;
+      // A critical capture: the ball shudders in mid-air before it drops (then wobbles once).
+      if (r.critical) {
+        await animate("[data-a=ball]", { rotate: [-720, -738, -702, -732, -708, -720], x: [0, -3, 3, -2, 2, 0] }, { duration: 0.55, ease: "easeInOut" });
+        if (!alive()) return;
+      }
       // It drops and bounces.
       await animate("[data-a=ball]", { y: [-lift, 0, -12, 0], rotate: [-720, -720, -720, -720] }, { duration: 0.55, times: [0, 0.55, 0.78, 1], ease: "easeOut" });
       await animate("[data-a=ball]", { rotate: 0 }, { duration: 0 });
@@ -99,7 +104,8 @@ export function ThrowStage({ ball, ballName, th, speciesId, speciesName }: { bal
 
   // With reduced motion the picture shows the outcome as a still: the ball with stars, or the Pokémon free.
   const still = reduce && result;
-  const message = result ? (result.caught ? t("throw.caught", { name: speciesName }) : `${t("throw.broke")} ${t("throw.shakes", { n: result.shakes })}`) : "";
+  const outcome = result ? (result.caught ? t("throw.caught", { name: speciesName }) : `${t("throw.broke")} ${t("throw.shakes", { n: result.shakes })}`) : "";
+  const message = result?.critical ? `${t("throw.critical")} ${outcome}` : outcome;
 
   return (
     <div className="flex h-full flex-col">

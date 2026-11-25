@@ -69,6 +69,7 @@ function Explainer() {
     ["statusTitle", "status"],
     ["levelTitle", "level"],
     ["ballsTitle", "balls"],
+    ["powerTitle", "power"],
   ] as const;
   return (
     <section className="mx-auto mt-16 max-w-5xl max-sm:mt-12" aria-labelledby="cr-how" data-testid="cr-explainer">
@@ -78,12 +79,15 @@ function Explainer() {
       <div className="mt-5 grid gap-x-10 gap-y-8 lg:grid-cols-2">
         <div>
           <p className="text-[15px] leading-relaxed text-muted-foreground">{t("explain.intro")}</p>
-          <Formula>{"a = (3 × MaxHP − 2 × HP) × Rate × Ball\n    ÷ (3 × MaxHP) × Status"}</Formula>
+          <Formula>{"a = (3 × MaxHP − 2 × HP) × Rate × Ball\n    ÷ (3 × MaxHP) × Status × Bonus"}</Formula>
           <p className="mt-3 text-[13.5px] leading-relaxed text-muted-foreground">{t("explain.legend")}</p>
           <h3 className="mt-7 text-[16px] font-semibold">{t("explain.shakeTitle")}</h3>
           <p className="mt-1.5 text-[15px] leading-relaxed text-muted-foreground">{t("explain.shake")}</p>
           <Formula>{"b = 65536 ÷ (255 ÷ a)^(3/16)\nP(catch) = (b ÷ 65536)⁴ ≈ (a ÷ 255)^(3/4)"}</Formula>
           <p className="mt-3 text-[13.5px] leading-relaxed text-muted-foreground">{t("explain.shakeGens")}</p>
+          <h3 className="mt-7 text-[16px] font-semibold">{t("explain.critTitle")}</h3>
+          <p className="mt-1.5 text-[15px] leading-relaxed text-muted-foreground">{t("explain.crit")}</p>
+          <Formula>{"P(catch) = c × (b ÷ 65536) + (1 − c) × (b ÷ 65536)⁴\nc = ⌊a × P × Charm ÷ 6⌋ ÷ 256"}</Formula>
         </div>
         <div className="space-y-6">
           {parts.map(([title, body]) => (
@@ -112,7 +116,7 @@ export function CatchRateView({ query }: { query: Query | null }) {
       name: t("title"),
       path: PATH,
       description: t("metaDescription"),
-      features: ["Catch chance for every Poké Ball", "Ranked results", "Expected throws", "Generation 3 to 9 formulas", "HP, status, level and turn", "Throw preview", "Share links"],
+      features: ["Catch chance for every Poké Ball", "Ranked results", "Expected throws", "Generation 3 to 9 formulas", "HP, status, level and turn", "Critical captures", "Badges and capture powers", "Throw preview", "Share links"],
       crumbs: { tools: serverT(tools)("hub.title"), maker: t("title") },
       ...(locale !== "en" && { locale }),
     })
