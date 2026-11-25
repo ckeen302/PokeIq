@@ -20,7 +20,8 @@ function instrument() {
   window.__cryEls = [];
   const play = HTMLMediaElement.prototype.play;
   HTMLMediaElement.prototype.play = function () {
-    const rec = { src: this.src || this.currentSrc, el: window.__cryEls.indexOf(this), at: performance.now() };
+    // dataset.cry: the cry's URL when the element plays the downloaded copy (a blob: URL) instead.
+    const rec = { src: this.dataset?.cry ? new URL(this.dataset.cry, location.href).href : this.src || this.currentSrc, mem: (this.src || "").startsWith("blob:"), el: window.__cryEls.indexOf(this), at: performance.now() };
     if (rec.el < 0) rec.el = window.__cryEls.push(this) - 1;
     window.__plays.push(rec);
     const p = play.call(this);
@@ -33,7 +34,7 @@ function instrument() {
 }
 
 const realPlays = (page) =>
-  page.evaluate(() => window.__plays.filter((r) => !r.src.startsWith("data:")).map(({ src, el, ok, err }) => ({ src, el, ok, err })));
+  page.evaluate(() => window.__plays.filter((r) => !r.src.startsWith("data:")).map(({ src, mem, el, ok, err }) => ({ src, mem, el, ok, err })));
 
 /** Wait for a play() of a cry (not the silent unlock) after `after` earlier ones to go through. */
 async function waitForPlay(page, after, timeout = 15_000) {
@@ -130,6 +131,7 @@ export async function runCry({ browser, BASE, OUT, errors, step }) {
     q1 = await waitForPlay(page, 0);
     if (!q1?.ok) throw new Error(`question 1's cry was refused (${q1?.err})`);
     if (!/\/api\/media\//.test(q1.src)) throw new Error(`question 1 played ${q1.src}, not its cry`);
+    if (!q1.mem) throw new Error("question 1's cry played from the network, not the downloaded copy");
     await page.waitForFunction(() => document.querySelector('[data-testid="cry-player"]')?.dataset.state === "playing", null, { timeout: 5_000 }).catch(() => {});
     await page.waitForTimeout(250);
     const a = await audioState(page);
@@ -227,6 +229,9 @@ export async function runCry({ browser, BASE, OUT, errors, step }) {
     };
   });
   await safari.addInitScript(instrument);
+  // Safari asks for media in byte ranges and won't play a cry the CDN sends whole instead; an <audio>
+  // element fetching the cry itself stands for that here (the downloaded copy is what plays).
+  await safari.route(/\/api\/media\//, (route) => (route.request().resourceType() === "media" ? route.abort() : route.continue()));
   const phone = await safari.newPage();
   phone.on("pageerror", (err) => fail(`PAGEERROR (no Ogg) ${err.message}`));
   await part("no Ogg Vorbis: question 1 plays the WAV", async () => {
@@ -234,6 +239,7 @@ export async function runCry({ browser, BASE, OUT, errors, step }) {
     const first = await waitForPlay(phone, 0);
     if (!first?.ok) throw new Error(`refused (${first?.err})`);
     if (!/[?&]format=wav\b/.test(first.src)) throw new Error(`played ${first.src}, not the WAV`);
+    if (!first.mem) throw new Error("the WAV played from the network, not the downloaded copy");
     await phone.waitForTimeout(300);
     const a = await audioState(phone);
     if (!a || a.error) throw new Error(`the WAV didn't play (${JSON.stringify(a)})`);
