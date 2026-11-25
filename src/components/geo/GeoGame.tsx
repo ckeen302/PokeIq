@@ -21,6 +21,7 @@ import { GeoMap, LINE_DRAW_MS, WORLD_MAP as WORLD_MAP_SRC, WORLD_THUMB, mapAspec
 import { useAccount } from "@/lib/account";
 import { avatarSrc } from "@/lib/avatar";
 import { GlobePreview } from "@/components/globe/GlobePreview";
+import { latOf, lonOf } from "@/lib/globe/geo";
 import { GeoHowToLoader, HowToHelpButton } from "./GeoHowToButton";
 import { HubSection } from "./HubParts";
 import { GeoYou } from "./GeoYou";
@@ -306,6 +307,17 @@ function keepFinished(saved: SavedGame, kept: Kept) {
   }
 }
 /** A finished Daily's or Weekly's score as saved here (undefined while it's still being played). */
+/** A finished game's places as rough points on the globe ([longitude, latitude], to the nearest 3°): the answers' pins, carried from the game's map to the world's. */
+function spotsOf(saved: SavedGame, map: GeoRegionInfo | undefined, world: GeoRegionInfo | undefined): [number, number][] | undefined {
+  if (!map || !world) return undefined;
+  const [x0, y0, x1, y1] = map.map.box;
+  const [, , W, H] = world.map.box;
+  const rough = (v: number) => Math.round(v / 3) * 3;
+  return saved.played.map((p) => {
+    const [px, py] = p.graded.answer.pin;
+    return [rough(lonOf(x0 + px * (x1 - x0), W)), rough(latOf(y0 + py * (y1 - y0), W, H))];
+  });
+}
 const savedScore = (saved: SavedGame | undefined) => (saved?.phase === "done" ? saved.played.reduce((sum, p) => sum + p.graded.score, 0) : undefined);
 /** The ms a round's clock shows: stopped (`left`), else counted from its start. */
 const clockLeft = (clock: RoundClock, timerMs: number, now = Date.now()) => (clock.left !== undefined ? clock.left : Math.max(0, clock.at + timerMs - now));
@@ -1185,6 +1197,8 @@ function GeoGameInner({
     const dailyPlayed = dailyDone !== undefined || (!!today && refused.daily === today && !dailySave);
     const dailyResume = !dailyPlayed && dailySave ? dailySave : null;
     const dailyMap = today ? byId(geoDailyRegion(today, playable(byId(WORLD_REGION)))) : undefined;
+    // Played (and saved here): roughly where today's places were, for the globe's pins. Never before it's played.
+    const dailySpots = dailyPlayed && dailySave?.phase === "done" ? spotsOf(dailySave, byId(dailySave.game.region), byId(WORLD_REGION)) : undefined;
     const bestGame = progress?.best[`geo:${boardOf({ region, kind: "game", filter, rounds: playRounds, difficulty: chosenMode })}`];
     const bestStreak = progress?.best[`geo:${boardOf({ region, kind: "streak", filter, difficulty: chosenMode })}`];
     const challengeMap = challenge ? byId(challenge.region) : undefined;
@@ -1216,6 +1230,8 @@ function GeoGameInner({
             dailyMap: dailyMap ? names.map(dailyMap) : null,
             dailyArt: tileImage(dailyMap?.map.src ?? WORLD_MAP_SRC),
             dailyPlayed,
+            dailySpots,
+            covered,
             dailyScore: dailyDone,
             dailyResume: !!dailyResume,
             // Today's Daily, part played: picked up where it was left, its clock where it stopped.
@@ -1224,6 +1240,7 @@ function GeoGameInner({
             dailyWarm: warmProps({ kind: "game", daily: today || "today" }),
             weeklyNum: week ? geoWeeklyNumber(week) : null,
             weeklyMap: weeklyMap ? names.map(weeklyMap) : null,
+            weeklyRegion: weeklyMap && !weeklyMap.theme ? weeklyMap.name : null,
             // A region's week shows that region's map; a themed week (Gyms, Towns, Routes) keeps its own screenshot.
             weeklyArt: weeklyMap ? (weeklyMap.theme ? (weeklyMap.preview ?? tileImage(weeklyMap.map.src)) : tileImage(weeklyMap.map.src)) : null,
             weeklyPlayed,
