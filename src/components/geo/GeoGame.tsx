@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import Link from "@/components/ui/Link";
 import dynamic from "next/dynamic";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { Check, Clock, Flame, Globe2, Loader2, Shapes, MapPin as MapPinIcon, Swords, Trophy, Users, X, Map as MapIcon } from "lucide-react";
+import { Check, Clock, Flame, Globe2, Loader2, Shapes, MapPin as MapPinIcon, Swords, X, Map as MapIcon } from "lucide-react";
 import { GEO_FILTER_MIN_PLACES, GEO_MAX_ROUND_SCORE, GEO_ROUNDS, WORLD_REGION, isGeoRounds, type GeoRounds, geoBoardKey, geoDailyRegion, geoMapRank, type GeoChallenge, type GeoGuessResponse, type GeoKind, type GeoRegionInfo, type GeoRoundPublic, type GeoStartResponse } from "@/lib/geo-types";
 import { dailyNumber } from "@/lib/daily";
 import { useToday } from "@/lib/use-today";
@@ -22,7 +22,7 @@ import { useAccount } from "@/lib/account";
 import { avatarSrc } from "@/lib/avatar";
 import { GlobePreview } from "@/components/globe/GlobePreview";
 import { GeoHowToLoader, HowToHelpButton } from "./GeoHowToButton";
-import { HubSection, HubTile, TileFlag } from "./HubParts";
+import { HubSection } from "./HubParts";
 import { GeoYou } from "./GeoYou";
 import { HubTop } from "./HubTop";
 import { geoDailyStreak } from "@/lib/progress";
@@ -1369,50 +1369,8 @@ function GeoGameInner({
           </Card>
         )}
 
-        {/* ---- Multiplayer ---- */}
-        <HubSection id="multiplayer" eyebrow={t("hub.multi.eyebrow")} title={t("hub.multi.title")}>
-          <div className="grid gap-4 sm:grid-cols-3">
-            <HubTile
-              testId="geo-duels-card"
-              tone="screen"
-              icon={<Swords className="h-5 w-5" />}
-              label={t("hub.multi.duelsLabel", { map: names.map(region) })}
-              title={t("hub.multi.duels")}
-              blurb={t("hub.multi.duelsBlurb")}
-              action={
-                <Button variant="outline" className="w-full" onClick={() => openDuels("casual")} data-testid="geo-open-duels">
-                  <Swords className="h-4 w-4" aria-hidden />{` ${t("hub.multi.openDuels")}`}
-                </Button>
-              }
-            />
-            <HubTile
-              testId="geo-ranked-tile"
-              tone="warning"
-              icon={<Trophy className="h-5 w-5" />}
-              label={t("hub.multi.rankedLabel")}
-              title={t("hub.multi.ranked")}
-              blurb={t("hub.multi.rankedBlurb")}
-              action={
-                <Button variant="outline" className="w-full" onClick={() => openDuels("ranked")} data-testid="geo-open-ranked">
-                  <Trophy className="h-4 w-4" aria-hidden />{` ${t("hub.multi.openRanked")}`}
-                </Button>
-              }
-            />
-            <HubTile
-              testId="geo-party-card"
-              tone="primary"
-              icon={<Users className="h-5 w-5" />}
-              label={t("hub.multi.partyLabel")}
-              title={t("hub.multi.party")}
-              badge={<TileFlag tone="success">{t("hub.multi.new")}</TileFlag>}
-              blurb={t("hub.multi.partyBlurb")}
-              action={
-                <Button variant="outline" className="w-full" onClick={openParty} data-testid="geo-open-party">
-                  <Users className="h-4 w-4" aria-hidden />{` ${t("hub.multi.openParty")}`}
-                </Button>
-              }
-            />
-          </div>
+        {/* ---- Multiplayer: the panels the landing's Duels, Ranked and Party cards open (their own cards are up top) ---- */}
+        <section id="multiplayer" className="scroll-mt-24 space-y-4" data-testid="geo-hub-multiplayer">
           <div id="duels" className="scroll-mt-24">
             {/* Duels play an era when the map has enough of it (hand-picked games are practice), else every game. Its code loads as it nears the screen. */}
             <WhenNear minHeight={420} eager={duelQueue === "ranked"}>
@@ -1431,7 +1389,7 @@ function GeoGameInner({
               <PartyCard region={shownRegion} />
             </div>
           )}
-        </HubSection>
+        </section>
 
         {/* ---- Explore: the globe and the atlas (maps are picked in the solo setup) ---- */}
         <HubSection id="maps" eyebrow={t("hub.explore.eyebrow")} title={t("hub.explore.title")}>

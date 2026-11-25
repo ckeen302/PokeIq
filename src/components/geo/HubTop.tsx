@@ -5,9 +5,10 @@ import Link from "@/components/ui/Link";
 import { CalendarRange, Check, ChevronRight, Compass, Crosshair, Flame, MapPin, Pencil, Play, Swords, Trophy, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAccount } from "@/lib/account";
-import { artUrl, boardArtUrl } from "@/lib/pokemon/art";
+import { boardArtUrl } from "@/lib/pokemon/art";
 import { useGeoNames } from "@/lib/geo-i18n-client";
 import { Avatar3D } from "@/components/trainer3d/Avatar3D";
+import { TRAINER_PRESETS, presetTrainer } from "@/lib/trainer/presets";
 import { BallIcon } from "@/components/duel/TierBadge";
 import { NextDailyCountdown } from "@/components/NextDailyCountdown";
 import { useT } from "@/i18n/client";
@@ -22,6 +23,9 @@ import streakArt from "@/assets/guessr/region-streak.webp";
 import worldBody from "@/assets/guessr/hub-world.webp";
 import worldAir from "@/assets/guessr/hub-world-air.webp";
 import huntMap from "@/assets/guessr/kanto.webp";
+
+/** Who stands on the globe until a player makes their own 3D trainer (and for visitors): the creator's first look. */
+const STAND_IN = presetTrainer(TRAINER_PRESETS[0]);
 
 /**
  * The top of the PokéGuessr hub, after GeoGuessr's home screen: space, the Pokémon world rising from the bottom and
@@ -212,20 +216,18 @@ function WorldRise({ className }: { className?: string }) {
           />
         </div>
       </div>
-      {a?.trainer ? (
-        <div className="absolute -translate-x-1/2" style={{ left: "var(--gx)", top: "calc(var(--gt) - var(--ah) * 0.9)", width: "calc(var(--ah) * 0.8)", height: "var(--ah)" }}>
-          <span className="gh-shadow absolute inset-x-[18%] bottom-[7%] h-[6%] rounded-[50%] bg-[#05040f]/60 blur-[5px]" aria-hidden />
-          <div className="gh-drop absolute inset-0" data-testid="geo-home-trainer">
-            <Avatar3D config={a.trainer} pose="idle" facing="front" label={tc("trainerOf", { name: account.user!.username })} />
-          </div>
+      {/* Their own 3D trainer, else a stand-in, the creator's first look (until everyone can make one). */}
+      <div className="absolute -translate-x-1/2" style={{ left: "var(--gx)", top: "calc(var(--gt) - var(--ah) * 0.9)", width: "calc(var(--ah) * 0.8)", height: "var(--ah)" }}>
+        <span className="gh-shadow absolute inset-x-[18%] bottom-[7%] h-[6%] rounded-[50%] bg-[#05040f]/60 blur-[5px]" aria-hidden />
+        <div className="gh-drop absolute inset-0" data-testid="geo-home-trainer">
+          <Avatar3D
+            config={a?.trainer ?? STAND_IN}
+            pose="idle"
+            facing="front"
+            label={a?.trainer ? tc("trainerOf", { name: account.user!.username }) : TRAINER_PRESETS[0].name}
+          />
         </div>
-      ) : a ? (
-        <div className="absolute -translate-x-1/2" style={{ left: "var(--gx)", top: "calc(var(--gt) - var(--ah) * 0.9)", width: "var(--ah)", height: "var(--ah)" }} data-testid="geo-home-pokemon">
-          <span className="gh-shadow absolute inset-x-[22%] bottom-[8%] h-[6%] rounded-[50%] bg-[#05040f]/60 blur-[5px]" aria-hidden />
-          {/* eslint-disable-next-line @next/next/no-img-element -- the avatar's art, cached by the art route */}
-          <img src={artUrl(a.pokemonId, 400, a.shiny)} alt="" className="gh-drop relative h-full w-full object-contain object-bottom drop-shadow-[0_6px_10px_rgb(0_0_0/0.5)]" />
-        </div>
-      ) : null}
+      </div>
       {a && (
         <Link
           href="/trainer/avatar"

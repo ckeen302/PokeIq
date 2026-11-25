@@ -711,7 +711,7 @@ async function weekly(width, height) {
   await page.goto(`${BASE}/pokeguessr`, { waitUntil: "networkidle" });
   await closeHowTo(page);
   for (const id of ["multiplayer", "maps", "you"]) await page.getByTestId(`geo-hub-${id}`).waitFor();
-  for (const id of ["geo-solo-card", "geo-daily-card", "geo-weekly-card", "region-streak-card", "geo-duels-card", "geo-ranked-tile", "geo-party-card", "globe-card", "geo-history-link"]) {
+  for (const id of ["geo-solo-card", "geo-daily-card", "geo-weekly-card", "region-streak-card", "geo-home-duels", "geo-home-ranked", "geo-home-party", "globe-card", "geo-history-link"]) {
     if ((await page.getByTestId(id).count()) !== 1) errors.push(`the hub has no ${id}`);
   }
   if ((await page.getByTestId("geo-history-link").getAttribute("href")) !== "/pokeguessr/history") errors.push("the duel history link doesn't go to /pokeguessr/history");
@@ -727,7 +727,7 @@ async function weekly(width, height) {
   await page.getByRole("radio", { name: "Johto" }).first().click();
   await page.getByRole("radio", { name: "Johto", checked: true }).waitFor();
   // The Ranked tile opens the duel panel on the ranked queue.
-  await page.getByTestId("geo-open-ranked").click();
+  await page.getByTestId("geo-home-ranked").click();
   await page.getByTestId("geo-ranked-card").waitFor();
   await page.getByTestId("geo-duel-queue-casual").click();
   const label = await page.getByTestId("geo-weekly-card").innerText();
@@ -920,10 +920,8 @@ async function royale(width, height) {
   step(`party: Battle Royale at ${tag}`);
   await red.goto(`${BASE}/pokeguessr?region=kanto`, { waitUntil: "networkidle" });
   await closeHowTo(red);
-  const card = red.getByTestId("geo-party-card");
-  await card.waitFor();
-  if (await card.getAttribute("aria-disabled")) errors.push("the hub's Party card is still disabled");
-  await red.getByTestId("geo-open-party").click();
+  await red.getByTestId("geo-home-party").waitFor();
+  await red.getByTestId("geo-home-party").click();
   await red.getByTestId("geo-party-new").waitFor();
   await red.waitForTimeout(800);
   await red.screenshot({ path: `${OUT}/party-hub-${tag}.png` });
@@ -1023,7 +1021,7 @@ async function teamDuel(width, height) {
   step(`party: team duel 2v2 at ${tag}`);
   await red.goto(`${BASE}/pokeguessr?region=kanto`, { waitUntil: "networkidle" });
   await closeHowTo(red);
-  await red.getByTestId("geo-open-duels").click();
+  await red.getByTestId("geo-home-duels").click();
   await red.getByTestId("geo-duel-mode-team").click();
   await red.getByLabel("Your trainer name").first().fill("Red");
   await red.getByRole("button", { name: /Create duel/ }).click();
