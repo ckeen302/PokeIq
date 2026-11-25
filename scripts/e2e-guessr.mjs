@@ -734,7 +734,7 @@ async function weekly(width, height) {
   await page.getByTestId("geo-ranked-card").waitFor();
   await page.getByTestId("geo-duel-queue-casual").click();
   const label = await page.getByTestId("geo-weekly-card").innerText();
-  if (!/Weekly #\d+/i.test(label)) errors.push(`the weekly card has no number: ${label}`);
+  if (!/Weekly Challenge/i.test(label) || /Weekly #\d+/i.test(label)) errors.push(`the weekly card should just say Weekly Challenge: ${label}`);
   await page.getByTestId("geo-weekly-play").click();
   await shotLoaded(page);
   if (!/Weekly #\d+/i.test(await page.getByTestId(phone ? "geo-round-mode" : "geo-notch").innerText())) errors.push("the weekly game's round header doesn't say Weekly");
