@@ -751,10 +751,15 @@ function GeoGameInner({
     setPartyOpen(true);
     window.setTimeout(() => scrollTo("party"), 50);
   }
-  /** The Duels and Ranked tiles: the duel panel, on that queue. */
+  /** The Duels and Ranked cards (or /pokeguessr#duels, #ranked): open the duel panel on that queue, hidden until then. */
+  const [duelsOpen, setDuelsOpen] = useState(false);
+  useEffect(() => {
+    if (/^#(duels|ranked)$/.test(window.location.hash)) setDuelsOpen(true);
+  }, []);
   function openDuels(queue: DuelQueue) {
     setDuelQueue(queue);
-    scrollTo("duels");
+    setDuelsOpen(true);
+    window.setTimeout(() => scrollTo("duels"), 50);
   }
 
   useEffect(() => onEnding(phase === "results"), [phase, onEnding]);
@@ -1371,7 +1376,7 @@ function GeoGameInner({
 
         {/* ---- Multiplayer: the panels the landing's Duels, Ranked and Party cards open (their own cards are up top) ---- */}
         <section id="multiplayer" className="scroll-mt-24 space-y-4" data-testid="geo-hub-multiplayer">
-          <div id="duels" className="scroll-mt-24">
+          {duelsOpen && <div id="duels" className="scroll-mt-24">
             {/* Duels play an era when the map has enough of it (hand-picked games are practice), else every game. Its code loads as it nears the screen. */}
             <WhenNear minHeight={420} eager={duelQueue === "ranked"}>
             <DuelCard
@@ -1382,7 +1387,7 @@ function GeoGameInner({
               onQueue={setDuelQueue}
             />
             </WhenNear>
-          </div>
+          </div>}
           {partyOpen && (
             <div id="party" className="scroll-mt-24 space-y-3">
               <h3 className="font-display text-xl font-bold uppercase">{t("hub.multi.party")}</h3>
