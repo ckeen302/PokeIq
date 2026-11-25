@@ -89,7 +89,11 @@
     "fishing": "Lo he sacado pescando",
     "caught": "Esta especie ya figura como capturada en mi Pokédex",
     "yourLevel": "Nivel de mi Pokémon",
-    "loveMatch": "Mi Pokémon es de la misma especie y del sexo contrario"
+    "loveMatch": "Mi Pokémon es de la misma especie y del sexo contrario",
+    "night": "De noche",
+    "cave": "En una cueva",
+    "done": "Listo",
+    "battle": "El combate"
   },
   "trainer": {
     "label": "Tú",
@@ -132,7 +136,8 @@
     "rowLabel": "{ball}: {pct} por lanzamiento, {within} en {n, plural, one {# lanzamiento} other {# lanzamientos}}",
     "master": "La Master Ball captura siempre. Guárdala para cuando nada más sirva.",
     "plain": "Las Honor Ball, Lujo Ball, Sana Ball y Amigo Ball capturan exactamente igual que una Poké Ball.",
-    "live": "La mejor: {ball}, {pct} por lanzamiento."
+    "live": "La mejor: {ball}, {pct} por lanzamiento.",
+    "inHand": "En la mano"
   },
   "why": {
     "great": "Mejor que una Poké Ball",
@@ -180,7 +185,8 @@
     "shakes": "{n, plural, =0 {La Poké Ball ni se ha movido.} one {La Poké Ball se ha sacudido # vez.} other {La Poké Ball se ha sacudido # veces.}}",
     "pick": "Elige cualquier Poké Ball de la lista para lanzarla",
     "tally": "{caught} capturas en {thrown, plural, one {# lanzamiento} other {# lanzamientos}}",
-    "with": "{ball}, {pct} por lanzamiento"
+    "with": "{ball}, {pct} por lanzamiento",
+    "appeared": "¡Un {name} salvaje apareció!"
   },
   "share": {
     "button": "Compartir",
@@ -188,7 +194,6 @@
     "failed": "No se ha podido copiar el enlace",
     "reset": "Empezar de nuevo"
   },
-  "jump": "Ver la mejor Poké Ball",
   "typeNames": {
     "normal": "Normal",
     "fire": "Fuego",

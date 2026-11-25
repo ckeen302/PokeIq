@@ -89,7 +89,11 @@
     "fishing": "L'ho pescato",
     "caught": "Questa specie è già registrata come catturata nel mio Pokédex",
     "yourLevel": "Livello del mio Pokémon",
-    "loveMatch": "Il mio Pokémon è della stessa specie, di sesso opposto"
+    "loveMatch": "Il mio Pokémon è della stessa specie, di sesso opposto",
+    "night": "Di notte",
+    "cave": "In una grotta",
+    "done": "Fatto",
+    "battle": "La lotta"
   },
   "trainer": {
     "label": "Tu",
@@ -132,7 +136,8 @@
     "rowLabel": "{ball}: {pct} per lancio, {within} in {n, plural, one {# lancio} other {# lanci}}",
     "master": "La Master Ball cattura sempre. Tienila per quando nient'altro funziona.",
     "plain": "Premier Ball, Chic Ball, Cura Ball e Friend Ball catturano esattamente come una Poké Ball.",
-    "live": "Ball migliore: {ball}, {pct} per lancio."
+    "live": "Ball migliore: {ball}, {pct} per lancio.",
+    "inHand": "In mano"
   },
   "why": {
     "great": "Meglio di una Poké Ball",
@@ -180,7 +185,8 @@
     "shakes": "{n, plural, =0 {La Ball non si è nemmeno mossa.} one {La Ball si è scossa # volta.} other {La Ball si è scossa # volte.}}",
     "pick": "Scegli una Ball dalla lista per lanciarla",
     "tally": "{caught} catture in {thrown, plural, one {# lancio} other {# lanci}}",
-    "with": "{ball}, {pct} per lancio"
+    "with": "{ball}, {pct} per lancio",
+    "appeared": "Appare un {name} selvatico!"
   },
   "share": {
     "button": "Condividi",
@@ -188,7 +194,6 @@
     "failed": "Impossibile copiare il link",
     "reset": "Ricomincia"
   },
-  "jump": "Vedi la Ball migliore",
   "typeNames": {
     "normal": "Normale",
     "fire": "Fuoco",

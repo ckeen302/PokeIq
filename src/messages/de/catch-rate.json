@@ -89,7 +89,11 @@
     "fishing": "Ich habe es geangelt",
     "caught": "Diese Art ist in meinem Pokédex schon als gefangen eingetragen",
     "yourLevel": "Level meines Pokémon",
-    "loveMatch": "Mein Pokémon ist dieselbe Art, anderes Geschlecht"
+    "loveMatch": "Mein Pokémon ist dieselbe Art, anderes Geschlecht",
+    "night": "Nachts",
+    "cave": "In einer Höhle",
+    "done": "Fertig",
+    "battle": "Der Kampf"
   },
   "trainer": {
     "label": "Du",
@@ -132,7 +136,8 @@
     "rowLabel": "{ball}: {pct} pro Wurf, {within} in {n, plural, one {# Wurf} other {# Würfen}}",
     "master": "Der Meisterball fängt immer. Heb ihn für den Fall auf, dass nichts anderes hilft.",
     "plain": "Premierball, Luxusball, Heilball und Freundesball fangen genau wie ein Pokéball.",
-    "live": "Bester Ball: {ball}, {pct} pro Wurf."
+    "live": "Bester Ball: {ball}, {pct} pro Wurf.",
+    "inHand": "In der Hand"
   },
   "why": {
     "great": "Besser als ein Pokéball",
@@ -180,7 +185,8 @@
     "shakes": "{n, plural, =0 {Der Ball hat nicht einmal gewackelt.} one {Der Ball hat einmal gewackelt.} other {Der Ball hat # Mal gewackelt.}}",
     "pick": "Wähle einen Ball aus der Liste, um ihn zu werfen",
     "tally": "{caught} gefangen in {thrown, plural, one {# Wurf} other {# Würfen}}",
-    "with": "{ball}, {pct} pro Wurf"
+    "with": "{ball}, {pct} pro Wurf",
+    "appeared": "Ein wildes {name} erscheint!"
   },
   "share": {
     "button": "Teilen",
@@ -188,7 +194,6 @@
     "failed": "Link konnte nicht kopiert werden",
     "reset": "Neu anfangen"
   },
-  "jump": "Besten Ball ansehen",
   "typeNames": {
     "normal": "Normal",
     "fire": "Feuer",

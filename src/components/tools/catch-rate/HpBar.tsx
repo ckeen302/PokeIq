@@ -39,49 +39,43 @@ export function HpBar({ hp, max, onChange, locale }: { hp: number; max: number; 
   };
 
   return (
-    <div>
-      <div className="flex items-center gap-2 rounded-[14px] bg-[#2a2c3a] p-1.5 pl-2 shadow-[inset_0_1px_0_rgb(255_255_255/0.08)]">
-        <span className="rounded-md bg-[#f5b70a] px-1.5 py-0.5 font-display text-[12px] font-bold leading-none tracking-wide text-[#3a2a00]" aria-hidden>
-          HP
-        </span>
+    <div className="flex items-center gap-1.5 rounded-full bg-[#2b2a3d] py-[3px] pl-[5px] pr-[4px] shadow-[inset_0_1px_0_rgb(255_255_255/0.12),0_1px_0_rgb(255_255_255/0.6)]">
+      <span className="rounded-full bg-gradient-to-b from-[#ffd34d] to-[#f0a800] px-1.5 py-px font-display text-[10.5px] font-bold italic leading-none tracking-wide text-[#3a2600]" aria-hidden>
+        HP
+      </span>
+      <div
+        ref={track}
+        role="slider"
+        tabIndex={0}
+        aria-label={t("hp.label")}
+        aria-valuemin={1}
+        aria-valuemax={max}
+        aria-valuenow={hp}
+        aria-valuetext={t("hp.valueText", { hp, max, pct: pctText })}
+        onKeyDown={key}
+        onPointerDown={(e) => {
+          e.currentTarget.setPointerCapture?.(e.pointerId);
+          e.currentTarget.focus({ preventScroll: true });
+          fromX(e.clientX);
+        }}
+        onPointerMove={(e) => {
+          if (e.currentTarget.hasPointerCapture?.(e.pointerId)) fromX(e.clientX);
+        }}
+        className="group relative h-4 flex-1 cursor-ew-resize touch-none rounded-full bg-[#101019] outline-none ring-offset-1 ring-offset-[#2b2a3d] before:absolute before:-inset-y-3 before:inset-x-0 before:content-[''] focus-visible:ring-2 focus-visible:ring-[#8b7cff]"
+        data-testid="cr-hp"
+        data-hp={hp}
+      >
         <div
-          ref={track}
-          role="slider"
-          tabIndex={0}
-          aria-label={t("hp.label")}
-          aria-valuemin={1}
-          aria-valuemax={max}
-          aria-valuenow={hp}
-          aria-valuetext={t("hp.valueText", { hp, max, pct: pctText })}
-          onKeyDown={key}
-          onPointerDown={(e) => {
-            e.currentTarget.setPointerCapture?.(e.pointerId);
-            e.currentTarget.focus({ preventScroll: true });
-            fromX(e.clientX);
-          }}
-          onPointerMove={(e) => {
-            if (e.currentTarget.hasPointerCapture?.(e.pointerId)) fromX(e.clientX);
-          }}
-          className="relative h-7 flex-1 cursor-ew-resize touch-none rounded-full bg-[#0d0e15] p-[3px] outline-none ring-offset-2 ring-offset-[#2a2c3a] focus-visible:ring-2 focus-visible:ring-white/80"
-          data-testid="cr-hp"
-          data-hp={hp}
-        >
-          <div
-            className="h-full rounded-full transition-[width] duration-150 ease-out motion-reduce:transition-none"
-            style={{ width: `${Math.max(f * 100, 1.5)}%`, background: FILL[colour] }}
-            data-colour={colour}
-          />
-          {/* The thumb: a white notch at the bar's end, easy to grab on a phone. */}
-          <span className="pointer-events-none absolute top-1/2 h-9 w-9 -translate-x-1/2 -translate-y-1/2 rounded-full" style={{ left: `calc(3px + (100% - 6px) * ${f})` }} aria-hidden>
-            <span className="absolute left-1/2 top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[#0d0e15] bg-white shadow-[0_2px_6px_rgb(0_0_0/0.5)]" />
-          </span>
-        </div>
-      </div>
-      <div className="mt-2 flex items-baseline justify-between px-1">
-        <span className="text-[12px] text-muted-foreground">{t("hp.hint")}</span>
-        <span className="font-display text-[18px] font-semibold tabular-nums" data-testid="cr-hp-value">
-          {t("hp.value", { hp, max })}
-        </span>
+          className="absolute inset-y-[2px] left-[2px] rounded-full transition-[width] duration-150 ease-out motion-reduce:transition-none"
+          style={{ width: `calc((100% - 4px) * ${Math.max(f, 0.015)})`, background: FILL[colour] }}
+          data-colour={colour}
+        />
+        {/* The thumb: a notch at the bar's end, easy to grab on a phone. */}
+        <span
+          className="pointer-events-none absolute top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-[#2b2a3d] bg-white shadow-[0_2px_6px_rgb(0_0_0/0.45)] transition-transform group-active:scale-110"
+          style={{ left: `calc(2px + (100% - 4px) * ${f})` }}
+          aria-hidden
+        />
       </div>
     </div>
   );

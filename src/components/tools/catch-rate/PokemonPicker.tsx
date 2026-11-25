@@ -7,7 +7,6 @@ import { ChevronDown, Search } from "lucide-react";
 import { useT } from "@/i18n/client";
 import msgs from "@/messages/catch-rate";
 import { boardArtUrl } from "@/lib/pokemon/art";
-import { typeColor } from "@/lib/pokemon/type-colors";
 import { foldLetters, NOT_LETTER } from "@/lib/names/fold";
 import { SPECIES, type CatchSpecies } from "@/lib/catch-rate/species";
 import { cn } from "@/lib/utils";
@@ -29,8 +28,8 @@ export function rateBand(rate: number): "easy" | "medium" | "hard" | "legendary"
   return rate >= 150 ? "easy" : rate >= 75 ? "medium" : rate >= 25 ? "hard" : "legendary";
 }
 
-/** The wild Pokémon: its picture, name, types and catch rate, and a search to change it (a combobox). */
-export function PokemonPicker({ species, rate, names, onPick, newer }: { species: CatchSpecies; rate: number; names: Names; onPick(id: number): void; newer: number | null }) {
+/** The wild Pokémon's name in the battle HUD, and a search to change it (a combobox). */
+export function PokemonPicker({ species, names, onPick }: { species: CatchSpecies; names: Names; onPick(id: number): void }) {
   const t = useT(msgs);
   const reduce = useReducedMotion();
   const [open, setOpen] = useState(false);
@@ -75,63 +74,22 @@ export function PokemonPicker({ species, rate, names, onPick, newer }: { species
     setOpen(false);
     setQ("");
   };
-  const band = rateBand(rate);
-  const accent = typeColor(species.types[0]);
-
   return (
-    <div ref={root} className="relative" data-testid="cr-picker">
+    <div ref={root} className="relative min-w-0" data-testid="cr-picker">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
         aria-haspopup="listbox"
         aria-label={`${t("pokemon.change")}: ${nameOf(species, names)}`}
-        className="group relative flex w-full items-center gap-4 overflow-hidden max-sm:gap-3 rounded-[22px] border border-foreground/[0.08] bg-foreground/[0.03] p-3 pr-4 text-left transition-colors hover:border-foreground/[0.16] hover:bg-foreground/[0.05] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="group -ml-1.5 flex min-w-0 max-w-full items-center gap-1 rounded-xl px-1.5 py-0.5 text-left transition-colors hover:bg-black/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8b7cff]"
         data-testid="cr-picker-button"
       >
-        <span className="relative flex h-[84px] w-[84px] shrink-0 items-center justify-center rounded-[18px] max-sm:h-[68px] max-sm:w-[68px]" style={{ background: `radial-gradient(circle at 50% 55%, ${accent}55, ${accent}10 70%)` }}>
-          <AnimatePresence mode="popLayout" initial={false}>
-            <motion.img
-              key={species.id}
-              src={boardArtUrl(species.id)}
-              alt=""
-              width={76}
-              height={76}
-              className="h-[76px] w-[76px] object-contain drop-shadow-[0_6px_10px_rgb(0_0_0/0.25)] max-sm:h-[62px] max-sm:w-[62px]"
-              initial={reduce ? false : { scale: 0.6, opacity: 0, y: 8 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={reduce ? { opacity: 0 } : { scale: 0.6, opacity: 0 }}
-              transition={{ type: "spring", stiffness: 420, damping: 26 }}
-            />
-          </AnimatePresence>
+        <span className="truncate font-display text-[22px] font-bold uppercase italic leading-tight tracking-wide max-sm:text-[19px]" data-testid="cr-species-name">
+          {nameOf(species, names)}
         </span>
-        <span className="min-w-0 flex-1">
-          <span className="block text-[12px] font-semibold uppercase tracking-wider text-muted-foreground">{t("pokemon.number", { n: String(species.id).padStart(4, "0") })}</span>
-          <span className="mt-0.5 block truncate font-display text-[22px] font-semibold leading-tight tracking-tight max-sm:text-[20px]" data-testid="cr-species-name">
-            {nameOf(species, names)}
-          </span>
-          <span className="mt-1.5 flex flex-wrap gap-1">
-            {species.types.map((ty) => (
-              <span key={ty} className="rounded-full px-2 py-0.5 text-[11px] max-sm:px-1.5 max-sm:text-[10px] font-bold uppercase tracking-wide text-white [text-shadow:0_1px_1px_rgb(0_0_0/0.35)]" style={{ background: typeColor(ty) }}>
-                {t(`typeNames.${ty}` as "typeNames.normal")}
-              </span>
-            ))}
-          </span>
-        </span>
-        <span className="flex shrink-0 flex-col items-end text-right">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground max-sm:text-[10px]">{t("pokemon.catchRate")}</span>
-          <span className="font-display text-[30px] font-bold leading-none tabular-nums" data-testid="cr-species-rate">
-            {rate}
-          </span>
-          <span className={cn("mt-1 text-[11px] font-semibold", band === "easy" ? "text-[hsl(var(--success))]" : band === "medium" ? "text-[hsl(var(--warning))]" : "text-primary")}>{t(`pokemon.${band}`)}</span>
-        </span>
-        <ChevronDown className={cn("absolute right-2 top-2 h-4 w-4 text-muted-foreground transition-transform", open && "rotate-180")} aria-hidden />
+        <ChevronDown className={cn("h-4 w-4 shrink-0 opacity-60 transition-transform group-hover:opacity-100", open && "rotate-180")} aria-hidden />
       </button>
-      {newer && (
-        <p className="mt-2 px-1 text-[12.5px] text-[hsl(var(--warning))]" data-testid="cr-newer">
-          {t("pokemon.newer", { gen: newer })}
-        </p>
-      )}
       <AnimatePresence>
         {open && (
           <motion.div
@@ -139,7 +97,7 @@ export function PokemonPicker({ species, rate, names, onPick, newer }: { species
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={reduce ? { opacity: 0 } : { opacity: 0, y: -6, scale: 0.98 }}
             transition={{ duration: 0.16 }}
-            className="absolute left-0 right-0 top-full z-30 mt-2 origin-top overflow-hidden rounded-[22px] border border-foreground/[0.1] bg-card shadow-[0_24px_60px_-20px_hsl(var(--shade)/0.6)]"
+            className="absolute left-[-10px] top-full z-40 mt-2 w-[min(380px,calc(100vw-40px))] origin-top text-foreground overflow-hidden rounded-[22px] border border-foreground/[0.1] bg-card shadow-[0_24px_60px_-20px_hsl(var(--shade)/0.6)]"
           >
             <label className="relative block border-b border-foreground/[0.07] p-2">
               <Search className="pointer-events-none absolute left-5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden />

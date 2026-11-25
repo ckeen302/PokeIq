@@ -89,7 +89,11 @@
     "fishing": "I hooked it fishing",
     "caught": "This species is already in my Pokédex as caught",
     "yourLevel": "My Pokémon's level",
-    "loveMatch": "My Pokémon is the same species, opposite gender"
+    "loveMatch": "My Pokémon is the same species, opposite gender",
+    "night": "Night",
+    "cave": "In a cave",
+    "done": "Done",
+    "battle": "The battle"
   },
   "trainer": {
     "label": "You",
@@ -132,7 +136,8 @@
     "rowLabel": "{ball}: {pct} per throw, {within} within {n, plural, one {# throw} other {# throws}}",
     "master": "The Master Ball always catches. Save it for when nothing else will do.",
     "plain": "Premier, Luxury, Heal and Friend Balls catch exactly like a Poké Ball.",
-    "live": "Best ball: {ball}, {pct} per throw."
+    "live": "Best ball: {ball}, {pct} per throw.",
+    "inHand": "In hand"
   },
   "why": {
     "great": "Better than a Poké Ball",
@@ -180,7 +185,8 @@
     "shakes": "{n, plural, =0 {It didn't even shake.} one {The ball shook once.} other {The ball shook # times.}}",
     "pick": "Pick any ball in the list to throw it",
     "tally": "{caught} caught in {thrown, plural, one {# throw} other {# throws}}",
-    "with": "{ball}, {pct} per throw"
+    "with": "{ball}, {pct} per throw",
+    "appeared": "A wild {name} appeared!"
   },
   "share": {
     "button": "Share",
@@ -188,7 +194,6 @@
     "failed": "Couldn't copy the link",
     "reset": "Start over"
   },
-  "jump": "See the best ball",
   "typeNames": {
     "normal": "Normal",
     "fire": "Fire",

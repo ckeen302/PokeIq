@@ -1,10 +1,12 @@
 /**
  * The Catch Rate Calculator, end to end in the browser: the page (title, H1, explainer and structured data in the
  * server's HTML), picking a Pokémon by search and keyboard, the inputs (game, level, the draggable HP bar, status,
- * the situation; your Pokédex, badges and capture powers), the ranked results (every ball, best first, the best and
- * the budget pick), a throw, the URL round-trip (a reload and a shared link open the same encounter with its own
- * title and preview card), and the phone layout (no sideways scroll at 390 px). Each part records a failure instead of stopping the rest. Screenshots
- * (desktop 1440 × 900 and phone 390 × 844, dark and light) go to OUT.
+ * the situation sheet; your Pokédex, badges and capture powers), the bag (every ball, best first, the best and the
+ * budget pick), a throw (the Throw button, and a ball tapped in the bag), the battle scene's backdrop following the
+ * situation, the URL round-trip (a reload and a shared link open the same encounter with its own title and preview
+ * card), and the phone layout (no sideways scroll at 390 px). Each part records a failure instead of stopping the rest.
+ * Screenshots (desktop 1440 × 900 and phone 390 × 844, dark and light: the scene, the bag, mid-throw and the
+ * situation sheet) go to OUT as v2-*.png.
  *
  *   node scripts/e2e-catch-rate.mjs [baseUrl] [outDir]        (PW_CHROMIUM=/path/to/chromium to pick a browser)
  */
@@ -35,6 +37,15 @@ const ready = (page) => page.getByTestId("catch-rate-app").waitFor({ timeout: 60
 const hydrated = (page) => page.waitForFunction(() => !!document.querySelector('[data-testid="cr-picker-button"]') && Object.keys(document.querySelector('[data-testid="cr-picker-button"]')).some((k) => k.startsWith("__reactProps")), null, { timeout: 60_000 });
 const rows = (page) => page.$$eval('[data-testid="cr-row"]', (els) => els.map((e) => ({ ball: e.getAttribute("data-ball"), chance: Number(e.getAttribute("data-chance")) })));
 const best = async (page) => ({ ball: await page.getByTestId("cr-best-name").getAttribute("data-ball"), chance: Number(await page.getByTestId("cr-best-chance").getAttribute("data-chance")) });
+const place = (page) => page.locator('[data-testid="cr-stage"] [data-place]').last().getAttribute("data-place");
+const openSituation = async (page) => {
+  if (!(await page.getByTestId("cr-situation").isVisible().catch(() => false))) await page.getByTestId("cr-situation-open").click();
+  await page.getByTestId("cr-situation").waitFor({ timeout: 5000 });
+};
+const closeSituation = async (page) => {
+  await page.getByTestId("cr-situation-done").click();
+  await page.getByTestId("cr-situation").waitFor({ state: "detached", timeout: 5000 });
+};
 const noSideScroll = (page) => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
 
 function assert(cond, msg) {
@@ -119,7 +130,9 @@ export async function runCatchRate({ browser, BASE, OUT, errors, step }) {
     await page.getByTestId("cr-level").fill("40");
     await page.getByTestId("cr-level-up").click();
     assert((await page.getByTestId("cr-level").inputValue()) === "41", "level stepper");
-    // Turn 2: the Quick Ball drops to ×1.
+    // The situation sheet. Turn 2: the Quick Ball drops to ×1.
+    assert((await place(page)) === "day", `backdrop at the start: ${await place(page)}`);
+    await openSituation(page);
     await page.getByTestId("cr-turn-up").click();
     const quick = await page.locator('[data-testid="cr-row"][data-ball="quick"]').textContent();
     assert(quick.includes("×1"), `Quick Ball on turn 2: ${quick}`);
@@ -127,6 +140,18 @@ export async function runCatchRate({ browser, BASE, OUT, errors, step }) {
     await page.getByTestId("cr-dark").click();
     const dusk = await page.locator('[data-testid="cr-row"][data-ball="dusk"]').textContent();
     assert(dusk.includes("×3"), `Dusk Ball at night: ${dusk}`);
+    await page.waitForFunction(() => [...document.querySelectorAll('[data-testid="cr-stage"] [data-place]')].pop()?.getAttribute("data-place") === "night");
+    // A cave is dark too (the same Dusk Ball), with its own backdrop; then back to night.
+    await page.getByTestId("cr-cave").click();
+    assert((await page.getByTestId("cr-cave").getAttribute("aria-checked")) === "true" && (await page.getByTestId("cr-dark").getAttribute("aria-checked")) === "false", "cave and night are one or the other");
+    await page.waitForFunction(() => [...document.querySelectorAll('[data-testid="cr-stage"] [data-place]')].pop()?.getAttribute("data-place") === "cave");
+    assert((await page.locator('[data-testid="cr-row"][data-ball="dusk"]').textContent()).includes("×3"), "Dusk Ball in a cave");
+    await page.getByTestId("cr-dark").click();
+    // Water: the sea.
+    await page.getByTestId("cr-water").click();
+    await page.waitForFunction(() => [...document.querySelectorAll('[data-testid="cr-stage"] [data-place]')].pop()?.getAttribute("data-place") === "seaNight");
+    await page.getByTestId("cr-water").click();
+    await closeSituation(page);
     // An older game: no Beast, Dream or Apricorn balls in Diamond & Pearl, and its Dusk Ball is ×3.5.
     await page.getByTestId("cr-game-dppt").click();
     const balls = (await rows(page)).map((r) => r.ball);
@@ -142,9 +167,12 @@ export async function runCatchRate({ browser, BASE, OUT, errors, step }) {
     await page.getByTestId("cr-throw").click();
     await page.waitForFunction(() => document.querySelector('[data-testid="cr-throw-result"]')?.hasAttribute("data-caught"), null, { timeout: 15_000 });
     assert(await page.getByTestId("cr-tally").isVisible(), "no tally");
-    // Throwing another ball from the list.
+    // Tapping another ball in the bag puts it in hand and throws it.
     await page.locator('[data-testid="cr-row"][data-ball="ultra"] button').click();
     assert((await page.locator('[data-testid="cr-row"][data-ball="ultra"] button').getAttribute("aria-pressed")) === "true", "picking a ball to throw");
+    await page.waitForFunction(() => document.querySelector('[data-testid="cr-throw"]')?.disabled, null, { timeout: 3000 });
+    await page.waitForFunction(() => document.querySelector('[data-testid="cr-throw-result"]')?.hasAttribute("data-caught"), null, { timeout: 15_000 });
+    assert((await page.getByTestId("cr-hand-name").textContent()).includes("Ultra"), "the Ultra Ball isn't in hand");
   });
 
   await step("catch rate: the URL keeps the inputs (reload, shared link title and card)", async () => {
@@ -183,6 +211,7 @@ export async function runCatchRate({ browser, BASE, OUT, errors, step }) {
     const start = (await best(p)).chance;
     assert(!(await p.getByTestId("cr-crit").isVisible()), "a critical capture chance with nothing caught");
     // More than 600 species caught: critical captures count in, and the odds rise.
+    await openSituation(p);
     await p.getByTestId("cr-dex").fill("650");
     await p.getByTestId("cr-crit").waitFor({ timeout: 5000 });
     const withCrit = (await best(p)).chance;
@@ -228,14 +257,35 @@ export async function runCatchRate({ browser, BASE, OUT, errors, step }) {
   });
 
   for (const theme of ["dark", "light"]) {
-    await step(`catch rate: desktop screenshot (${theme})`, async () => {
+    await step(`catch rate: desktop screenshots (${theme}): the scene, the bag, mid-throw, the situation`, async () => {
       const c = await newContext(browser, BASE, { theme });
       const p = await c.newPage();
+      watch(p, consoleErrors);
       await p.goto(`${BASE}${PATH}?p=130&l=40&hp=350&dark=1`, { waitUntil: "networkidle" });
       await ready(p);
-      await p.waitForTimeout(600);
-      await p.screenshot({ path: `${OUT}/desktop-${theme}.png` });
-      await p.screenshot({ path: `${OUT}/desktop-${theme}-full.png`, fullPage: true });
+      await hydrated(p);
+      await p.waitForTimeout(800);
+      assert(await noSideScroll(p), "sideways scroll at 1440");
+      await p.screenshot({ path: `${OUT}/v2-desktop-${theme}.png` });
+      await p.screenshot({ path: `${OUT}/v2-desktop-${theme}-full.png`, fullPage: true });
+      // The bag, scrolled: the scene stays in view beside it.
+      await p.mouse.wheel(0, 640);
+      await p.waitForTimeout(500);
+      assert(await p.getByTestId("cr-stage").isVisible(), "the scene scrolled away from the bag");
+      await p.screenshot({ path: `${OUT}/v2-desktop-${theme}-bag.png` });
+      await p.mouse.wheel(0, -2000);
+      await p.waitForTimeout(400);
+      await p.locator('[data-testid="cr-row"][data-ball="net"] button').click();
+      await p.waitForTimeout(640);
+      await p.screenshot({ path: `${OUT}/v2-desktop-${theme}-throw.png` });
+      await p.waitForTimeout(1500);
+      await p.screenshot({ path: `${OUT}/v2-desktop-${theme}-throw-shake.png` });
+      await p.waitForFunction(() => document.querySelector('[data-testid="cr-throw-result"]')?.hasAttribute("data-caught"), null, { timeout: 15_000 });
+      await p.waitForTimeout(300);
+      await p.screenshot({ path: `${OUT}/v2-desktop-${theme}-result.png` });
+      await openSituation(p);
+      await p.waitForTimeout(500);
+      await p.screenshot({ path: `${OUT}/v2-desktop-${theme}-situation.png` });
       await c.close();
     });
     await step(`catch rate: phone (${theme}): no sideways scroll at 390, screenshots`, async () => {
@@ -245,19 +295,35 @@ export async function runCatchRate({ browser, BASE, OUT, errors, step }) {
       await p.goto(`${BASE}${PATH}?p=130&l=40&hp=350&dark=1`, { waitUntil: "networkidle" });
       await ready(p);
       await hydrated(p);
-      await p.waitForTimeout(600);
+      await p.waitForTimeout(800);
       assert(await noSideScroll(p), "sideways scroll at 390");
-      await p.screenshot({ path: `${OUT}/phone-${theme}.png` });
-      await p.screenshot({ path: `${OUT}/phone-${theme}-full.png`, fullPage: true });
-      await p.getByTestId("cr-results").scrollIntoViewIfNeeded();
+      await p.screenshot({ path: `${OUT}/v2-phone-${theme}.png` });
+      await p.screenshot({ path: `${OUT}/v2-phone-${theme}-full.png`, fullPage: true });
+      await p.getByTestId("cr-bag").scrollIntoViewIfNeeded();
+      await p.evaluate(() => window.scrollBy(0, -12));
       await p.waitForTimeout(400);
-      await p.screenshot({ path: `${OUT}/phone-${theme}-results.png` });
-      await p.getByTestId("cr-picker-button").scrollIntoViewIfNeeded();
+      await p.screenshot({ path: `${OUT}/v2-phone-${theme}-bag.png` });
+      // A ball tapped far down the bag: the scene comes back into view and the throw plays there.
+      await p.locator('[data-testid="cr-row"][data-ball="dusk"] button').tap();
+      await p.waitForTimeout(1150);
+      assert((await p.getByTestId("cr-stage").boundingBox()).y > -40, "the scene didn't come back into view");
+      await p.screenshot({ path: `${OUT}/v2-phone-${theme}-throw.png` });
+      await p.waitForFunction(() => document.querySelector('[data-testid="cr-throw-result"]')?.hasAttribute("data-caught"), null, { timeout: 15_000 });
+      await p.waitForTimeout(300);
+      await p.screenshot({ path: `${OUT}/v2-phone-${theme}-result.png` });
+      await p.getByTestId("cr-situation-open").tap();
+      await p.getByTestId("cr-situation").waitFor();
+      await p.waitForTimeout(500);
+      assert(await noSideScroll(p), "sideways scroll with the situation open");
+      await p.screenshot({ path: `${OUT}/v2-phone-${theme}-situation.png` });
+      await p.getByTestId("cr-situation-done").tap();
+      await p.getByTestId("cr-situation").waitFor({ state: "detached" });
+      await p.evaluate(() => window.scrollTo(0, 0));
       await p.getByTestId("cr-picker-button").tap();
       await p.getByTestId("cr-search").fill("pi");
       await p.waitForTimeout(300);
       assert(await noSideScroll(p), "sideways scroll with the picker open");
-      if (theme === "dark") await p.screenshot({ path: `${OUT}/phone-picker.png` });
+      await p.screenshot({ path: `${OUT}/v2-phone-${theme}-picker.png` });
       await p.getByTestId("cr-option-25").tap();
       assert(await noSideScroll(p), "sideways scroll after picking");
       await c.close();
