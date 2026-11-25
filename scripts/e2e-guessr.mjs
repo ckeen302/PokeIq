@@ -58,7 +58,8 @@ function step(name) {
 const HOWTO = '[data-testid="howto-sheet"]';
 async function closeHowTo(p) {
   const sheet = p.locator(HOWTO).first();
-  if (await sheet.waitFor({ state: "visible", timeout: 2500 }).then(() => true, () => false)) {
+  // The hub's 3D trainer starts in software WebGL here and holds the main thread for a while: the first visit's how-to can open late.
+  if (await sheet.waitFor({ state: "visible", timeout: 9000 }).then(() => true, () => false)) {
     await p.getByTestId("howto-never").click();
     await sheet.waitFor({ state: "hidden" });
   }
@@ -68,7 +69,9 @@ async function closeHowTo(p) {
 async function openGeoSetup(p) {
   for (let i = 0; i < 5; i++) {
     if (await p.getByTestId("geo-solo").isVisible().catch(() => false)) return;
-    await p.getByTestId("geo-solo-setup").click();
+    // The first visit's how-to can open late (the page's 3D trainer is still loading): out of the way first.
+    if (await p.locator(HOWTO).first().isVisible().catch(() => false)) await closeHowTo(p);
+    await p.getByTestId("geo-solo-setup").click({ timeout: 10_000 }).catch(() => undefined);
     if (await p.getByTestId("geo-solo").waitFor({ timeout: 3_000 }).then(() => true, () => false)) return;
   }
   throw new Error("Set up a game didn't open the solo setup");
