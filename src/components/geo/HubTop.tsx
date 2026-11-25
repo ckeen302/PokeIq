@@ -2,7 +2,7 @@
 
 import Image, { type StaticImageData } from "next/image";
 import Link from "@/components/ui/Link";
-import { CalendarRange, Check, ChevronRight, Compass, Crosshair, Flame, MapPin, Pencil, Play, Swords, Trophy, Users } from "lucide-react";
+import { CalendarRange, Check, Compass, Crosshair, Flame, MapPin, Pencil, Play, Swords, Trophy, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAccount } from "@/lib/account";
 import { boardArtUrl } from "@/lib/pokemon/art";
@@ -23,6 +23,9 @@ import streakArt from "@/assets/guessr/region-streak.webp";
 import worldBody from "@/assets/guessr/hub-world.webp";
 import worldAir from "@/assets/guessr/hub-world-air.webp";
 import huntMap from "@/assets/guessr/kanto.webp";
+import duelArt from "@/assets/guessr/johto.webp";
+import rankedArt from "@/assets/guessr/sinnoh.webp";
+import partyArt from "@/assets/guessr/kalos.webp";
 
 /** Who stands on the globe until a player makes their own 3D trainer (and for visitors): the creator's first look. */
 const STAND_IN = presetTrainer(TRAINER_PRESETS[0]);
@@ -345,7 +348,6 @@ function ModeTile({
   icon,
   label,
   title,
-  status,
   onClick,
   href,
   testId,
@@ -357,7 +359,6 @@ function ModeTile({
   icon: React.ReactNode;
   label: string;
   title: string;
-  status?: React.ReactNode;
   onClick?: () => void;
   href?: string;
   testId?: string;
@@ -383,7 +384,6 @@ function ModeTile({
       <span className="relative mt-auto block min-w-0 p-2.5 pt-0">
         <span className={cn(LABEL, "block truncate text-[9px] md:text-[10px]")}>{label}</span>
         <span className={cn(TITLE, "mt-1 block text-[clamp(0.85rem,2.2vh,1.05rem)] leading-[1.05]")}>{title}</span>
-        <span className="mt-1 block h-3 truncate font-display text-[10px] font-semibold italic leading-none text-[#ffd23c] md:text-[11px]">{status}</span>
       </span>
     </>
   );
@@ -399,37 +399,6 @@ function ModeTile({
   );
 }
 
-/**
- * A head-to-head mode: on a phone a tile like the single-player ones; wider, a card with its mark, its name and what
- * it is.
- */
-function VersusCard({ icon, title, label, blurb, onClick, testId }: { icon: React.ReactNode; title: string; label: string; blurb: string; onClick(): void; testId: string }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "gh-lift group relative flex h-full w-full flex-col justify-end overflow-hidden rounded-xl bg-gradient-to-br from-[#262056] to-[#2f2773] p-2.5 text-left ring-2 ring-[#8b7cff]/35 shadow-[0_8px_22px_rgb(0_0_0/0.45)] hover:ring-[#a99cff]/80",
-        "md:flex-row md:items-center md:justify-start md:gap-3 md:p-3",
-      )}
-      data-testid={testId}
-    >
-      <span
-        className="absolute left-2 top-2 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-[#120f24]/75 ring-1 ring-white/15 transition-transform duration-300 group-hover:scale-105 [&>svg]:h-4 [&>svg]:w-4 md:static md:h-[clamp(2.75rem,7vh,3.5rem)] md:w-[clamp(2.75rem,7vh,3.5rem)] md:rounded-lg md:[&>svg]:h-7 md:[&>svg]:w-7"
-        aria-hidden
-      >
-        {icon}
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className={cn(LABEL, "block truncate text-[9px] md:text-[10px]")}>{label}</span>
-        <span className={cn(TITLE, "mt-1 block text-[clamp(0.85rem,2.2vh,1.05rem)] md:text-[clamp(1rem,2.6vh,1.2rem)]")}>{title}</span>
-        <span className="mt-1 line-clamp-2 block text-[11.5px] leading-snug text-white/65 [text-wrap:pretty] max-md:hidden">{blurb}</span>
-        <span className="mt-1 block h-3 md:hidden" aria-hidden />
-      </span>
-      <ChevronRight className="h-5 w-5 shrink-0 text-white/50 transition-transform group-hover:translate-x-0.5 group-hover:text-white max-md:hidden" aria-hidden />
-    </button>
-  );
-}
 
 /** Where each single-player tile sits in the wide layout's grid (a 2 × 2 under the Daily). */
 const TILE_AT = ["md:col-start-1 md:row-start-4", "md:col-start-2 md:row-start-4", "md:col-start-1 md:row-start-5", "md:col-start-2 md:row-start-5"];
@@ -439,7 +408,6 @@ const SLOT = "h-[7.25rem] w-[8.75rem] shrink-0 snap-start md:h-[clamp(6rem,14vh,
 export function HubTop({ d }: { d: HubTopData }) {
   const t = useT(geoSolo);
   const h = useT(huntNs);
-  const fmt = (n: number) => formatNumber(n, t.locale);
   const delay = (i: number) => ({ animationDelay: `${0.15 + i * 0.08}s` });
 
   const tiles = [
@@ -449,7 +417,6 @@ export function HubTop({ d }: { d: HubTopData }) {
         icon={<MapPin className="text-[#a99cff]" />}
         label={t("hub.solo.label", { map: d.classicMap })}
         title={t("hub.solo.title")}
-        status={d.classicBest ? t("hub.best", { score: fmt(d.classicBest) }) : undefined}
         onClick={d.onClassic}
         button={{ "aria-expanded": d.soloOpen, "aria-controls": "solo" }}
         testId="geo-solo-setup"
@@ -461,7 +428,6 @@ export function HubTop({ d }: { d: HubTopData }) {
         icon={<CalendarRange className="text-[#9be15d]" />}
         label={`${d.weeklyNum ? t("hub.weekly.numbered", { n: d.weeklyNum }) : t("hub.weekly.word")}${d.weeklyMap ? ` · ${d.weeklyMap}` : ""}`}
         title={t("hub.weekly.title")}
-        status={d.weeklyPlayed ? (d.weeklyScore !== undefined ? t("hub.weekly.scored", { score: fmt(d.weeklyScore) }) : t("hub.played")) : d.weeklyLeft ? t("hub.weekly.endsIn", { left: d.weeklyLeft }) : undefined}
         // Played: the tile shows its result (when it's saved here); else it starts this week's, or picks it up.
         onClick={d.weeklyPlayed ? d.onWeeklyResult : d.onWeekly}
         disabled={d.weeklyPlayed ? !d.onWeeklyResult : !d.weeklyReady || d.loading}
@@ -475,24 +441,23 @@ export function HubTop({ d }: { d: HubTopData }) {
         icon={<Flame className="text-[#ff9a1f]" />}
         label={t("hub.play.eyebrow")}
         title={t("regionStreak.label")}
-        status={d.regionStreakBest ? t("regionStreak.best", { n: d.regionStreakBest }) : undefined}
         href="/pokeguessr/streak"
         testId="region-streak-link"
       />
     </div>,
     // Pokémon Hunt: a Pokémon on a map (Hunt's question: where would you catch it?).
     <div key="hunt">
-      <ModeTile art={huntMap} icon={<Crosshair className="text-primary" />} label={h("tile.label")} title={h("tile.title")} status={h("tile.blurb")} href="/pokeguessr/hunt" testId="hunt-hub-entry">
+      <ModeTile art={huntMap} icon={<Crosshair className="text-primary" />} label={h("tile.label")} title={h("tile.title")} href="/pokeguessr/hunt" testId="hunt-hub-entry">
         {/* eslint-disable-next-line @next/next/no-img-element -- static board art */}
         <img src={boardArtUrl(143)} alt="" aria-hidden className="absolute -right-[4%] -top-[3%] h-[60%] w-auto object-contain drop-shadow-[0_6px_10px_rgb(0_0_0/0.55)] transition-transform duration-500 group-hover:-translate-y-1 group-hover:scale-105" />
       </ModeTile>
     </div>,
   ];
   const versus = [
-    { icon: <Swords className="text-[#a99cff]" />, title: t("hub.multi.duels"), label: t("hub.multi.duelsLabel", { map: d.classicMap }), blurb: t("hub.multi.duelsBlurb"), onClick: d.onDuels, testId: "geo-home-duels" },
-    { icon: <BallIcon tier="ultra" />, title: t("hub.multi.ranked"), label: t("hub.multi.rankedLabel"), blurb: t("hub.multi.rankedBlurb"), onClick: d.onRanked, testId: "geo-home-ranked" },
+    { icon: <Swords className="text-[#a99cff]" />, title: t("hub.multi.duels"), label: t("hub.multi.duelsLabel", { map: d.classicMap }), art: duelArt, onClick: d.onDuels, testId: "geo-home-duels" },
+    { icon: <BallIcon tier="ultra" />, title: t("hub.multi.ranked"), label: t("hub.multi.rankedLabel"), art: rankedArt, onClick: d.onRanked, testId: "geo-home-ranked" },
     // The party's label without its size ("Friends · up to 16"): the blurb says who it's for.
-    { icon: <Users className="text-[#ff8fb3]" />, title: t("hub.multi.party"), label: t("hub.multi.partyLabel").split(/ · |・/)[0], blurb: t("hub.multi.partyBlurb"), onClick: d.onParty, testId: "geo-home-party" },
+    { icon: <Users className="text-[#ff8fb3]" />, title: t("hub.multi.party"), label: t("hub.multi.partyLabel").split(/ · |・/)[0], art: partyArt, onClick: d.onParty, testId: "geo-home-party" },
   ];
 
   return (
@@ -531,11 +496,13 @@ export function HubTop({ d }: { d: HubTopData }) {
             <p className={cn(LABEL, "gh-in-e px-0.5 max-md:hidden")} style={delay(1)}>
               {t("hub.multi.title")}
             </p>
-            {versus.map((v, i) => (
-              <div key={v.testId} className={cn("gh-in-e", SLOT)} style={delay(2 + i)}>
-                <VersusCard {...v} />
-              </div>
-            ))}
+            <div className="contents md:grid md:grid-cols-2 md:gap-[var(--gap)]">
+              {versus.map((v, i) => (
+                <div key={v.testId} className={cn("gh-in-e [&>button]:h-full", SLOT, i === 2 && "md:col-span-2")} style={delay(2 + i)}>
+                  <ModeTile art={v.art} icon={v.icon} label={v.label} title={v.title} onClick={v.onClick} testId={v.testId} />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

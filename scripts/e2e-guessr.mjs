@@ -713,7 +713,7 @@ async function weekly(width, height) {
   });
   await page.goto(`${BASE}/pokeguessr`, { waitUntil: "networkidle" });
   await closeHowTo(page);
-  for (const id of ["multiplayer", "maps", "you"]) await page.getByTestId(`geo-hub-${id}`).waitFor();
+  for (const id of ["maps", "you"]) await page.getByTestId(`geo-hub-${id}`).waitFor();
   for (const id of ["geo-solo-card", "geo-daily-card", "geo-weekly-card", "region-streak-card", "geo-home-duels", "geo-home-ranked", "geo-home-party", "globe-card", "geo-history-link"]) {
     if ((await page.getByTestId(id).count()) !== 1) errors.push(`the hub has no ${id}`);
   }
@@ -771,7 +771,7 @@ async function duel(width, height, { turbo }) {
   const red = await newPage({ width, height });
   const blue = await newPage({ width, height });
   step(`duel at ${tag}${turbo ? " (Turbo)" : ""}`);
-  await red.goto(`${BASE}/pokeguessr?region=kanto`, { waitUntil: "networkidle" });
+  await red.goto(`${BASE}/pokeguessr?region=kanto#duels`, { waitUntil: "networkidle" });
   await closeHowTo(red);
   if (turbo) {
     await red.getByTestId("geo-duel-turbo").click();
@@ -1471,7 +1471,7 @@ async function music(width, height) {
   // Blue without WebGL (as party guests): the end screen's 3D trainers, drawn in software here, would hold up its timers.
   const blue = await newPage({ width, height }, { noWebGL: true });
   await watchAudio(blue.context());
-  await red.goto(`${BASE}/pokeguessr?region=kanto`, { waitUntil: "networkidle" });
+  await red.goto(`${BASE}/pokeguessr?region=kanto#duels`, { waitUntil: "networkidle" });
   await closeHowTo(red);
   for (let i = 0; i < 4; i++) {
     const name = red.getByLabel("Your trainer name").first();

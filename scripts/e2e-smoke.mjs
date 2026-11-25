@@ -1258,7 +1258,7 @@ const shotLoaded = (p) =>
     null,
     { timeout: 30_000 }
   );
-await gotoSettled(red, `${BASE}/pokeguessr?region=kanto`);
+await gotoSettled(red, `${BASE}/pokeguessr?region=kanto#duels`);
 await closeHowTo(red);
 await red.getByLabel("Your trainer name").fill("Red");
 await clickUntilUrl(red, red.getByRole("button", { name: /Create duel/ }), /\/pokeguessr\/duel\/[a-z2-9]{8}$/);
@@ -1321,7 +1321,7 @@ await blue.getByText("Victory!").waitFor();
 await blue.screenshot({ path: `${OUT}/duel-forfeit.png` });
 
 step("pokéguessr duel: 3-round points race to the end, rematch keeps the settings");
-await gotoSettled(red, `${BASE}/pokeguessr?region=kanto`);
+await gotoSettled(red, `${BASE}/pokeguessr?region=kanto#duels`);
 await closeHowTo(red);
 await red.getByTestId("geo-duel-mode-race").click();
 await red.getByTestId("geo-duel-rounds-3").click();
@@ -1918,7 +1918,7 @@ await findOpponent("/pokedle", (p) => p.getByLabel("Guess a Pokémon").waitFor()
 step("matchmaking: pokéconnections");
 await findOpponent("/pokeconnections", (p) => p.getByTestId("conn-tile").first().waitFor({ timeout: 15_000 }));
 step("matchmaking: pokéguessr world");
-await findOpponent("/pokeguessr", shotLoaded);
+await findOpponent("/pokeguessr#duels", shotLoaded);
 
 // Ranked PokéGuessr: two new trainers (1,000 Elo each) queue ranked and are paired at once into one rated duel on the
 // world map, with division badges in the HUD. Blue forfeits: the duel is counted and Red's result shows the division
@@ -1926,7 +1926,7 @@ await findOpponent("/pokeguessr", shotLoaded);
 step("ranked pokéguessr: two trainers matched by Elo, counted after a forfeit");
 /** Opens /pokeguessr on the ranked queue as `name`, ready to queue. */
 async function rankedPanel(p, name) {
-  await gotoSettled(p, `${BASE}/pokeguessr`);
+  await gotoSettled(p, `${BASE}/pokeguessr#ranked`);
   await closeHowTo(p);
   await p.getByTestId("geo-duel-queue-ranked").click();
   await p.getByTestId("geo-ranked-card").waitFor();
