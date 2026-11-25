@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import Link from "@/components/ui/Link";
 import dynamic from "next/dynamic";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { CalendarRange, Check, ChevronDown, Clock, Compass, Flame, Globe2, Loader2, Shapes, SlidersHorizontal, MapPin as MapPinIcon, Swords, Trophy, Users, X, Map as MapIcon } from "lucide-react";
+import { Check, Clock, Flame, Globe2, Loader2, Shapes, MapPin as MapPinIcon, Swords, Trophy, Users, X, Map as MapIcon } from "lucide-react";
 import { GEO_FILTER_MIN_PLACES, GEO_MAX_ROUND_SCORE, GEO_ROUNDS, WORLD_REGION, isGeoRounds, type GeoRounds, geoBoardKey, geoDailyRegion, geoMapRank, type GeoChallenge, type GeoGuessResponse, type GeoKind, type GeoRegionInfo, type GeoRoundPublic, type GeoStartResponse } from "@/lib/geo-types";
 import { dailyNumber } from "@/lib/daily";
 import { useToday } from "@/lib/use-today";
@@ -18,15 +18,16 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { mapReady } from "@/components/atlas/atlas-engine";
 import { GeoMap, LINE_DRAW_MS, WORLD_MAP as WORLD_MAP_SRC, WORLD_THUMB, mapAspect, type MapPin } from "./GeoMap";
-import { RegionStreakCard } from "./RegionStreakCard";
-import { HuntHubBanner } from "@/components/hunt/HuntHub";
 import { useAccount } from "@/lib/account";
 import { avatarSrc } from "@/lib/avatar";
 import { GlobePreview } from "@/components/globe/GlobePreview";
 import { GeoHowToLoader, HowToHelpButton } from "./GeoHowToButton";
 import { HubSection, HubTile, TileFlag } from "./HubParts";
-import { NextDailyCountdown } from "@/components/NextDailyCountdown";
 import { GeoYou } from "./GeoYou";
+import { HubTop } from "./HubTop";
+import { geoDailyStreak } from "@/lib/progress";
+import { previousDate } from "@/lib/daily";
+import { GEO_REGION_STREAK_KEY } from "@/lib/geo-streak-types";
 import { AchievementToasts, useGeoProgress, type MyGeoProgress } from "./GeoAchievements";
 import { achievementCloser } from "@/lib/geo-achievements";
 import type { DuelQueue } from "./DuelCard";
@@ -1178,17 +1179,51 @@ function GeoGameInner({
     const weeklyLeftText = weeklyLeft ? t(`hub.weekly.${weeklyLeft.unit}`, { d: weeklyLeft.d, h: weeklyLeft.h, m: weeklyLeft.m }) : null;
     // The duel and party cards name the map as it stands: in the page's language.
     const shownRegion = t.locale === "en" ? region : { ...region, name: names.map(region) };
+    // The Daily's last seven days, oldest first, for the streak on its card.
+    const dailyDays: { date: string; played: boolean; today: boolean }[] = [];
+    for (let i = 0, d = today; d && i < 7; i++, d = previousDate(d)) dailyDays.unshift({ date: d, played: progress?.best[`geo-daily:${d}`] !== undefined, today: d === today });
     return (
       // Under a game the hub stays where it is (nothing moves when a game starts or ends), out of reach.
       <div className="mx-auto max-w-6xl space-y-12" aria-hidden={covered || undefined} inert={covered} data-testid="geo-hub">
-        <div className="relative space-y-3 text-center">
-          <HowToHelpButton className="absolute right-0 top-0" />
-          <p className="hud-label max-md:hidden text-screen">{t("hub.fieldSurvey", { map: names.map(region) })}</p>
-          <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-6xl">
-            Poké<span className="text-primary">Guessr</span>
-          </h1>
-          <p className="mx-auto max-w-xl text-muted-foreground">{t("hub.tagline")}</p>
-        </div>
+        <HubTop
+          d={{
+            dailyNum: today ? `#${dailyNumber(today)}` : null,
+            dailyMap: dailyMap ? names.map(dailyMap) : null,
+            dailyArt: tileImage(dailyMap?.map.src ?? WORLD_MAP_SRC),
+            dailyPlayed,
+            dailyScore: dailyDone,
+            dailyResume: !!dailyResume,
+            // Today's Daily, part played: picked up where it was left, its clock where it stopped.
+            onDaily: () => today && (dailyResume ? void resume(dailyResume) : void start({ kind: "game", daily: today })),
+            onDailyResult: dailySave ? () => resume(dailySave) : undefined,
+            dailyWarm: warmProps({ kind: "game", daily: today || "today" }),
+            weeklyNum: week ? geoWeeklyNumber(week) : null,
+            weeklyMap: weeklyMap ? names.map(weeklyMap) : null,
+            // A region's week shows that region's map; a themed week (Gyms, Towns, Routes) keeps its own screenshot.
+            weeklyArt: weeklyMap ? (weeklyMap.theme ? (weeklyMap.preview ?? tileImage(weeklyMap.map.src)) : tileImage(weeklyMap.map.src)) : null,
+            weeklyPlayed,
+            weeklyScore: weeklyDone,
+            weeklyLeft: weeklyLeftText,
+            weeklyResume: !!weeklyResume,
+            weeklyReady: !!week && !!weeklyMap,
+            // This week's, part played: picked up where it was left, its clock where it stopped.
+            onWeekly: () => (weeklyResume ? void resume(weeklyResume) : void start({ kind: "game", weekly: true })),
+            onWeeklyResult: weeklySave ? () => resume(weeklySave) : undefined,
+            onWeeklyWarm: () => prefetch({ kind: "game", weekly: true }),
+            classicMap: names.map(region),
+            classicArt: region.preview ?? tileImage(region.map.src),
+            classicBest: bestGame,
+            soloOpen,
+            onClassic: toSolo,
+            regionStreakBest: progress?.best[`geo:${GEO_REGION_STREAK_KEY}`] ?? 0,
+            onDuels: () => openDuels("casual"),
+            onRanked: () => openDuels("ranked"),
+            onParty: openParty,
+            loading,
+            streak: progress && today ? geoDailyStreak(progress, today) : 0,
+            days: dailyDays,
+          }}
+        />
 
         {error && (
           <p role="alert" className="text-center text-sm text-destructive">
@@ -1228,122 +1263,43 @@ function GeoGameInner({
           </Card>
         )}
 
-        {/* ---- Play ---- */}
-        <HubSection id="play" eyebrow={t("hub.play.eyebrow")} title={t("hub.play.title")}>
-          {/* Pokémon Hunt's way in. */}
-          <HuntHubBanner href="/pokeguessr/hunt" className="mb-4" />
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <HubTile
-              testId="geo-solo-card"
-              tone="screen"
-              image={region.preview ?? tileImage(region.map.src)}
-              icon={<MapPinIcon className="h-5 w-5" />}
-              label={t("hub.solo.label", { map: names.map(region) })}
-              title={t("hub.solo.title")}
-              blurb={t("hub.solo.blurb")}
-              stat={bestGame ? t("hub.best", { score: fmt(bestGame) }) : null}
-              action={
-                <Button variant="outline" className="w-full" onClick={toSolo} aria-expanded={soloOpen} aria-controls="solo" data-testid="geo-solo-setup">
-                  <SlidersHorizontal className="h-4 w-4" aria-hidden />{` ${t("hub.solo.setup")}`}
-                  <ChevronDown className={cn("h-4 w-4 transition-transform", soloOpen && "rotate-180")} aria-hidden />
-                </Button>
-              }
-            />
-            <HubTile
-              testId="geo-daily-card"
-              className="max-sm:order-first"
-              priority
-              tone="warning"
-              image={tileImage(dailyMap?.map.src ?? WORLD_MAP_SRC)}
-              icon={<Compass className="h-5 w-5" />}
-              label={`${t("hub.daily.label", { num: today ? `#${dailyNumber(today)}` : "" })}${dailyMap ? ` · ${names.map(dailyMap)}` : ""}`}
-              title={t("hub.daily.title")}
-              badge={dailyPlayed ? <TileFlag tone="success">{t("hub.played")}</TileFlag> : undefined}
-              blurb={dailyDone !== undefined ? t("hub.daily.scored", { score: fmt(dailyDone) }) : dailyPlayed ? t("hub.daily.started") : t("hub.daily.blurb")}
-              action={
-                dailyPlayed ? (
-                  <div className="space-y-2" data-testid="geo-daily-played">
-                    {dailySave && (
-                      <Button variant="outline" className="w-full" onClick={() => resume(dailySave)} data-testid="geo-daily-result">
-                        <Trophy className="h-4 w-4" aria-hidden />{` ${t("hub.result")}`}
-                      </Button>
-                    )}
-                    <NextDailyCountdown label={g("results.nextDaily")} />
-                  </div>
-                ) : (
-                  <Button
-                    className="w-full"
-                    disabled={!today || loading}
-                    // Today's Daily, part played: picked up where it was left, its clock where it stopped.
-                    onClick={() => today && (dailyResume ? void resume(dailyResume) : void start({ kind: "game", daily: today }))}
-                    {...warmProps({ kind: "game", daily: today || "today" })}
-                    data-testid="geo-daily-play"
-                  >
-                    {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Compass className="h-4 w-4" aria-hidden />}
-                    {dailyResume ? t("hub.daily.resume", { num: `#${dailyNumber(today!)}` }) : t("hub.daily.play")}
-                  </Button>
-                )
-              }
-            />
-            <HubTile
-              testId="geo-weekly-card"
-              tone="success"
-              // A region's week shows that region's map (Classic shows a screenshot, Daily the world map);
-              // a themed week (Gyms, Towns, Routes) is played on the world map, so it keeps its own screenshot.
-              image={weeklyMap ? (weeklyMap.theme ? (weeklyMap.preview ?? tileImage(weeklyMap.map.src)) : tileImage(weeklyMap.map.src)) : null}
-              icon={<CalendarRange className="h-5 w-5" />}
-              label={week ? `${t("hub.weekly.numbered", { n: geoWeeklyNumber(week) })}${weeklyMap ? ` · ${names.map(weeklyMap)}` : ""}` : t("hub.weekly.word")}
-              title={t("hub.weekly.title")}
-              badge={
-                weeklyPlayed ? (
-                  <TileFlag tone="success">{t("hub.played")}</TileFlag>
-                ) : weeklyLeftText ? (
-                  <TileFlag>{t("hub.weekly.endsIn", { left: weeklyLeftText })}</TileFlag>
-                ) : undefined
-              }
-              blurb={weeklyDone !== undefined ? t("hub.weekly.scored", { score: fmt(weeklyDone) }) : weeklyPlayed ? t("hub.weekly.started") : t("hub.weekly.blurb")}
-              action={
-                weeklyPlayed ? (
-                  <div className="space-y-2" data-testid="geo-weekly-played">
-                    {weeklySave && (
-                      <Button variant="outline" className="w-full" onClick={() => resume(weeklySave)} data-testid="geo-weekly-result">
-                        <Trophy className="h-4 w-4" aria-hidden />{` ${t("hub.result")}`}
-                      </Button>
-                    )}
-                    {weeklyLeftText && <p className="text-center text-sm text-muted-foreground">{t("hub.weekly.next", { left: weeklyLeftText })}</p>}
-                  </div>
-                ) : (
-                  <Button
-                    variant="success"
-                    className="w-full"
-                    disabled={!week || !weeklyMap || loading}
-                    // This week's, part played: picked up where it was left, its clock where it stopped.
-                    onClick={() => (weeklyResume ? void resume(weeklyResume) : void start({ kind: "game", weekly: true }))}
-                    onPointerEnter={() => prefetch({ kind: "game", weekly: true })}
-                    data-testid="geo-weekly-play"
-                  >
-                    {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <CalendarRange className="h-4 w-4" aria-hidden />}
-                    {weeklyResume && week ? t("hub.weekly.resume", { n: geoWeeklyNumber(week) }) : t("hub.weekly.play")}
-                  </Button>
-                )
-              }
-            />
-            <RegionStreakCard />
-          </div>
+        {/* ---- The solo game's setup (Classic, above, opens it) ---- */}
+        {soloOpen && (
+          <Card id="solo" className="scroll-mt-24" data-testid="geo-solo">
+            <CardContent className="space-y-4 p-5 sm:p-6">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h3 className="font-display text-xl font-bold uppercase">{t("hub.solo.heading")}</h3>
+                <Link href="/atlas" className="tap flex items-center gap-1.5 rounded-md border px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground">
+                  <MapIcon className="h-4 w-4" aria-hidden />{` ${t("hub.atlas")}`}
+                </Link>
+              </div>
 
-          {soloOpen && (
-            <Card id="solo" className="scroll-mt-24" data-testid="geo-solo">
-              <CardContent className="space-y-4 p-5 sm:p-6">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <h3 className="font-display text-xl font-bold uppercase">{t("hub.solo.heading")}</h3>
-                  <Link href="/atlas" className="tap flex items-center gap-1.5 rounded-md border px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground">
-                    <MapIcon className="h-4 w-4" aria-hidden />{` ${t("hub.atlas")}`}
-                  </Link>
+              {maps.length > 1 && (
+                <div className="flex flex-wrap gap-1.5 max-md:-mx-5 max-md:flex-nowrap max-md:overflow-x-auto max-md:px-5 max-md:pb-1 max-md:[scrollbar-width:none] max-md:[&>*]:shrink-0" role="radiogroup" aria-label={t("hub.solo.map")}>
+                  {maps.map((r) => (
+                    <button
+                      key={r.id}
+                      type="button"
+                      role="radio"
+                      aria-checked={r.id === region.id}
+                      onClick={() => chooseRegion(r.id)}
+                      className={cn(
+                        "flex items-center gap-1.5 rounded-md border px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider transition-colors",
+                        r.id === region.id ? "border-screen bg-screen/15 text-foreground" : "bg-card text-muted-foreground hover:border-screen/50 hover:text-foreground"
+                      )}
+                    >
+                      {r.id === WORLD_REGION && <Globe2 className="h-3.5 w-3.5" aria-hidden />}
+                      {names.map(r)}
+                    </button>
+                  ))}
                 </div>
+              )}
 
-                {maps.length > 1 && (
-                  <div className="flex flex-wrap gap-1.5 max-md:-mx-5 max-md:flex-nowrap max-md:overflow-x-auto max-md:px-5 max-md:pb-1 max-md:[scrollbar-width:none] max-md:[&>*]:shrink-0" role="radiogroup" aria-label={t("hub.solo.map")}>
-                    {maps.map((r) => (
+              {themed.length > 0 && (
+                <div className="space-y-1.5">
+                  <p className="hud-label">{t("hub.solo.themed")}</p>
+                  <div className="flex flex-wrap gap-1.5 max-md:-mx-5 max-md:flex-nowrap max-md:overflow-x-auto max-md:px-5 max-md:pb-1 max-md:[scrollbar-width:none] max-md:[&>*]:shrink-0" role="radiogroup" aria-label={t("hub.solo.themedMap")}>
+                    {themed.map((r) => (
                       <button
                         key={r.id}
                         type="button"
@@ -1355,87 +1311,63 @@ function GeoGameInner({
                           r.id === region.id ? "border-screen bg-screen/15 text-foreground" : "bg-card text-muted-foreground hover:border-screen/50 hover:text-foreground"
                         )}
                       >
-                        {r.id === WORLD_REGION && <Globe2 className="h-3.5 w-3.5" aria-hidden />}
+                        <Shapes className="h-3.5 w-3.5" aria-hidden />
                         {names.map(r)}
                       </button>
                     ))}
                   </div>
-                )}
-
-                {themed.length > 0 && (
-                  <div className="space-y-1.5">
-                    <p className="hud-label">{t("hub.solo.themed")}</p>
-                    <div className="flex flex-wrap gap-1.5 max-md:-mx-5 max-md:flex-nowrap max-md:overflow-x-auto max-md:px-5 max-md:pb-1 max-md:[scrollbar-width:none] max-md:[&>*]:shrink-0" role="radiogroup" aria-label={t("hub.solo.themedMap")}>
-                      {themed.map((r) => (
-                        <button
-                          key={r.id}
-                          type="button"
-                          role="radio"
-                          aria-checked={r.id === region.id}
-                          onClick={() => chooseRegion(r.id)}
-                          className={cn(
-                            "flex items-center gap-1.5 rounded-md border px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider transition-colors",
-                            r.id === region.id ? "border-screen bg-screen/15 text-foreground" : "bg-card text-muted-foreground hover:border-screen/50 hover:text-foreground"
-                          )}
-                        >
-                          <Shapes className="h-3.5 w-3.5" aria-hidden />
-                          {names.map(r)}
-                        </button>
-                      ))}
-                    </div>
-                    {theme && (
-                      <p className="text-sm text-muted-foreground" data-testid="geo-theme-blurb">
-                        {t.locale === "en" ? theme.blurb : gn(`themes.${theme.id}.blurb`)} {t("hub.solo.themeMore")}
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                <GameFilter region={region} filter={filter} onChange={chooseFilter} />
-
-                <GeoSettingsButton value={settings} onChange={chooseSettings} />
-
-                {(filter.families.length > 0 || filter.era) && (
-                  <p className="text-sm text-muted-foreground">
-                    {filter.families.length ? t("hub.solo.picked") : t("hub.solo.eraBoards", { era: names.era(filter.era!) })}
-                  </p>
-                )}
-
-                <div className="grid gap-4 sm:grid-cols-[auto_1fr] sm:gap-x-8 lg:grid-cols-[auto_auto_1fr]">
-                  <RoundsPicker value={playRounds} onChange={setRounds} max={places} label={t("hub.solo.rounds")} />
-                  <TimerPicker value={settings.timer} onChange={(timer) => chooseSettings({ ...settings, timer })} />
-                  <div className="sm:col-span-2 lg:col-span-1">
-                    <DifficultyPicker value={difficulty} onChange={setDifficulty} />
-                  </div>
+                  {theme && (
+                    <p className="text-sm text-muted-foreground" data-testid="geo-theme-blurb">
+                      {t.locale === "en" ? theme.blurb : gn(`themes.${theme.id}.blurb`)} {t("hub.solo.themeMore")}
+                    </p>
+                  )}
                 </div>
+              )}
 
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <ModeCard
-                    preview={region.preview ?? tileImage(region.map.src)}
-                    icon={<MapPinIcon className="h-5 w-5" aria-hidden />}
-                    title={t("hub.mode.game", { n: playRounds })}
-                    blurb={isWorld ? t("hub.mode.gameWorld", { n: playRounds, max: fmt(maxTotal(playRounds)) }) : t("hub.mode.gameBlurb", { n: playRounds, max: fmt(maxTotal(playRounds)) })}
-                    stat={bestGame ? t("hub.best", { score: fmt(bestGame) }) : null}
-                    disabled={loading || !filterOk}
-                    onClick={() => void start({ kind: "game" })}
-                    warm={warmProps({ kind: "game" })}
-                  />
-                  <ModeCard
-                    preview={tileImage(region.map.src)}
-                    whole
-                    icon={<Flame className="h-5 w-5" aria-hidden />}
-                    title={t("hub.mode.streak")}
-                    blurb={isWorld ? t("hub.mode.streakWorld") : t("hub.mode.streakBlurb")}
-                    stat={bestStreak ? t("hub.bestRow", { n: bestStreak }) : null}
-                    disabled={loading || !filterOk}
-                    onClick={() => void start({ kind: "streak" })}
-                    warm={warmProps({ kind: "streak" })}
-                  />
+              <GameFilter region={region} filter={filter} onChange={chooseFilter} />
+
+              <GeoSettingsButton value={settings} onChange={chooseSettings} />
+
+              {(filter.families.length > 0 || filter.era) && (
+                <p className="text-sm text-muted-foreground">
+                  {filter.families.length ? t("hub.solo.picked") : t("hub.solo.eraBoards", { era: names.era(filter.era!) })}
+                </p>
+              )}
+
+              <div className="grid gap-4 sm:grid-cols-[auto_1fr] sm:gap-x-8 lg:grid-cols-[auto_auto_1fr]">
+                <RoundsPicker value={playRounds} onChange={setRounds} max={places} label={t("hub.solo.rounds")} />
+                <TimerPicker value={settings.timer} onChange={(timer) => chooseSettings({ ...settings, timer })} />
+                <div className="sm:col-span-2 lg:col-span-1">
+                  <DifficultyPicker value={difficulty} onChange={setDifficulty} />
                 </div>
-              </CardContent>
-            </Card>
-          )}
-        </HubSection>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <ModeCard
+                  preview={region.preview ?? tileImage(region.map.src)}
+                  icon={<MapPinIcon className="h-5 w-5" aria-hidden />}
+                  title={t("hub.mode.game", { n: playRounds })}
+                  blurb={isWorld ? t("hub.mode.gameWorld", { n: playRounds, max: fmt(maxTotal(playRounds)) }) : t("hub.mode.gameBlurb", { n: playRounds, max: fmt(maxTotal(playRounds)) })}
+                  stat={bestGame ? t("hub.best", { score: fmt(bestGame) }) : null}
+                  disabled={loading || !filterOk}
+                  onClick={() => void start({ kind: "game" })}
+                  warm={warmProps({ kind: "game" })}
+                />
+                <ModeCard
+                  preview={tileImage(region.map.src)}
+                  whole
+                  icon={<Flame className="h-5 w-5" aria-hidden />}
+                  title={t("hub.mode.streak")}
+                  blurb={isWorld ? t("hub.mode.streakWorld") : t("hub.mode.streakBlurb")}
+                  stat={bestStreak ? t("hub.bestRow", { n: bestStreak }) : null}
+                  disabled={loading || !filterOk}
+                  onClick={() => void start({ kind: "streak" })}
+                  warm={warmProps({ kind: "streak" })}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* ---- Multiplayer ---- */}
         <HubSection id="multiplayer" eyebrow={t("hub.multi.eyebrow")} title={t("hub.multi.title")}>

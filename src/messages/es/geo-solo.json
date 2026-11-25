@@ -55,6 +55,7 @@
       "blurb": "Los lugares de hoy, iguales para todos.",
       "play": "Jugar la de hoy",
       "resume": "Retomar Diaria {num}",
+      "streak": "{n, plural, one {Racha de {n} día} other {Racha de {n} días}}",
       "started": "Ya empezaste la Diaria de hoy en este navegador o en tu cuenta. Es una partida al día."
     },
     "weekly": {
