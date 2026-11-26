@@ -320,7 +320,7 @@ function Hud({ r, inputs, set, names, newer, t }: { r: Ranking; inputs: Inputs; 
             </b>
             <span className={cn("ml-1 font-semibold", band === "easy" ? "text-[#0f8a52]" : band === "medium" ? "text-[#a86a00]" : "text-[#d01e56]")}>· {t(`pokemon.${band}`)}</span>
           </span>
-          {low > 1 && <span className="rounded-full bg-[#0f8a52]/[0.12] px-1.5 py-px text-[10.5px] font-bold text-[#0f8a52]">{t("level.lowBonus", { n: new Intl.NumberFormat(t.locale, { maximumFractionDigits: 1 }).format(low) })}</span>}
+          {low > 1 && <span className="rounded-full bg-[#0f8a52]/[0.12] px-1.5 py-px text-[11px] font-bold text-[#0f8a52]">{t("level.lowBonus", { n: new Intl.NumberFormat(t.locale, { maximumFractionDigits: 1 }).format(low) })}</span>}
         </div>
         <div className="mt-2.5">
           <HpBar hp={r.target.hp} max={r.target.maxHp} onChange={(hp) => set({ hp: toPermille(hp) })} locale={t.locale} />

@@ -281,7 +281,10 @@ export function BattleScene({ place, darkGrass, speciesId, speciesName, status, 
           )}
         </div>
         <div className="mt-2.5 flex items-center gap-3 max-sm:gap-2.5">
-          <BallArt id={ball} size={40} />
+          {/* On a phone the Throw button's ball is the one in hand; the room goes to the odds. */}
+          <span className="shrink-0 max-sm:hidden">
+            <BallArt id={ball} size={40} />
+          </span>
           <div className="min-w-0 flex-1">
             <p className="truncate text-[13px] font-semibold text-white/75" data-testid="cr-hand-name">
               {ballName}

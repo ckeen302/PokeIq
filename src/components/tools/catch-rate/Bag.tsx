@@ -82,7 +82,7 @@ function Bar({ p, top }: { p: number; top: number }) {
 
 function InHand({ t }: { t: T }) {
   return (
-    <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-wide text-primary-foreground">
+    <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-primary-foreground">
       <Hand className="h-3 w-3" aria-hidden />
       {t("results.inHand")}
     </span>
@@ -243,7 +243,7 @@ export function Bag({ r, inputs, ballNames, n, setN, throwing, onPick }: { r: Ra
                         <span className="truncate text-[15px] font-semibold">{ballNames[b.ball]}</span>
                         <MulTag b={b} locale={locale} />
                         {isBudget && (
-                          <span className="inline-flex shrink-0 items-center gap-1 rounded-md bg-[hsl(var(--success)/0.14)] px-1.5 py-px text-[10.5px] font-bold uppercase tracking-wide text-[hsl(var(--success))] max-[400px]:hidden">
+                          <span className="inline-flex shrink-0 items-center gap-1 rounded-md bg-[hsl(var(--success)/0.14)] px-1.5 py-px text-[11px] font-bold uppercase tracking-wide text-[hsl(var(--success))] max-[400px]:hidden">
                             <Sparkles className="h-3 w-3" aria-hidden />
                             {t("results.budget")}
                           </span>
