@@ -55,6 +55,7 @@
       "blurb": "Die Orte von heute, für alle gleich.",
       "play": "Heutiges spielen",
       "resume": "Tagesspiel {num} fortsetzen",
+      "streak": "{n}-Tage-Serie",
       "started": "Du hast das heutige Tagesspiel schon in diesem Browser oder mit deinem Konto begonnen. Es gibt ein Spiel pro Tag."
     },
     "weekly": {

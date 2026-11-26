@@ -1,10 +1,18 @@
 /**
- * Pokémon Hunt (/pokeguessr/hunt), end to end against a running build: the
- * hub's card, then Classic on a desktop (several pins: place, move, remove;
- * the reveal's spots, regions found and Pokédex link; the results), Region
- * mode, and the Daily Hunt on a phone (the map card, the share grid). Checks
- * that no answer reaches the browser before a round is graded. A screenshot
- * of each screen goes to the output folder.
+ * Pokémon Hunt, end to end against a running build. The way in is PokéGuessr's landing: its Pokémon Hunt
+ * tile opens the hunt's setup in place (as Classic's tile opens its own), and Play starts a hunt there.
+ *
+ *  - Desktop: the tile opens the setup (aria-expanded); a Normal hunt on the world map with a hint taken
+ *    (its cost on the button, its answer in its place, the cost off the round), one pin a round, the
+ *    reveal (every spot, the pin's distance, the Pokédex link), the end screen (#367's: the score, the
+ *    breakdown map with each round's pin and spots); then Easy on Galar's map, and Hard (no hints,
+ *    world only).
+ *  - Phone: /pokeguessr#hunt opens the setup; the Daily Hunt, its share card and its board (local
+ *    accounts keep it in memory); the same Daily for a second player.
+ *  - /pokeguessr/hunt still shows the setup (old and shared links).
+ *
+ * Checks that no answer reaches the browser before a round is graded. A screenshot of each screen goes
+ * to the output folder.
  *
  *   node scripts/e2e-hunt.mjs [baseUrl] [outDir]     (or from e2e-smoke.mjs; E2E_ONLY=hunt runs just this)
  */
@@ -13,11 +21,13 @@ import { chromium } from "playwright";
 import { fileURLToPath } from "url";
 import { guessMapReady, spotIn } from "./e2e-geo-map.mjs";
 
-/** Spots to drop pins on, as fractions of the map (spread out, so pins land apart). */
+/** Spots to drop the pin on, as fractions of the map, one per round. */
 const SPOTS = [
   [0.62, 0.42],
   [0.3, 0.38],
   [0.5, 0.7],
+  [0.7, 0.6],
+  [0.45, 0.3],
 ];
 
 async function open(browser, viewport, phone) {
@@ -25,6 +35,8 @@ async function open(browser, viewport, phone) {
   await context.addInitScript(() => {
     sessionStorage.setItem("pokeiq-splash", "1");
     localStorage.setItem("pokeiq-muted", "1");
+    // PokéGuessr's how-to opens by itself on a first visit, late enough to land on a click: seen already.
+    localStorage.setItem("pokeiq:guessr-prefs:v1", JSON.stringify({ seenHowToDemo: true }));
   });
   const page = await context.newPage();
   page.setDefaultTimeout(30_000);
@@ -35,19 +47,20 @@ async function open(browser, viewport, phone) {
 function watchApi(page, fail) {
   page.on("response", async (res) => {
     const url = res.url();
-    if (!/\/api\/geo\/hunt(\/guess)?$/.test(url) || res.request().method() !== "POST") return;
+    if (!/\/api\/geo\/hunt(\/guess|\/hint)?$/.test(url) || res.request().method() !== "POST") return;
     const body = await res.json().catch(() => null);
     if (!body || body.error) return;
+    if (url.endsWith("/hint")) {
+      if ("spots" in body || "reveal" in body || "places" in body) fail("a hint carries answers");
+      return;
+    }
     const round = url.endsWith("/guess") ? body.next : body.round;
     if (!round) return;
     const keys = Object.keys(round).sort().join(",");
-    if (keys !== "art,dex,id,index,name,pins,regions") fail(`a round carries more than the Pokémon: ${keys}`);
+    if (keys !== "art,dex,hints,id,index,name") fail(`a round carries more than the Pokémon: ${keys}`);
     if (!url.endsWith("/guess") && ("spots" in body || "places" in body || "reveal" in body)) fail("the start response carries answers");
   });
 }
-
-/** The copy of a part that's on screen (some are drawn twice: one for phones, one for wider screens). */
-const shown = (page, id) => page.locator(`[data-testid="${id}"]:visible`).first();
 
 /** PokéGuessr's how-to opens by itself on a first visit: "Don't show again", as e2e-guessr does. */
 async function closeHowTo(page) {
@@ -58,96 +71,110 @@ async function closeHowTo(page) {
   }
 }
 
+/** Drops the pin. The desktop dock grows when the pointer reaches it, so it's hovered first and measured once it's settled; a tap that missed (the dock still moving) is tried again. */
 async function tapMap(page, fx, fy) {
-  const { map, area } = await guessMapReady(page);
-  await map.click({ position: spotIn(area, fx, fy) });
+  for (let i = 0; i < 3; i++) {
+    await page.locator("[role=application]").hover().catch(() => {});
+    const { map, area } = await guessMapReady(page);
+    await map.click({ position: spotIn(area, fx, fy) });
+    if (await page.getByTestId("geo-guess").isEnabled()) return;
+    await page.waitForTimeout(400);
+  }
 }
 
-/** Pins down: the tray's placed chips (a one-pin round has no chips: the Guess button turns on instead). */
-const pinCount = async (page) => {
-  const chips = await page.locator('[data-testid^="hunt-pin-chip-"]').count();
-  if (chips) return page.locator('[data-testid^="hunt-pin-chip-"][data-placed]').count();
-  return (await page.getByTestId("geo-guess").isEnabled()) ? 1 : 0;
-};
-const pinMax = async (page) => Math.max(1, await page.locator('[data-testid^="hunt-pin-chip-"]').count());
+const num = (s) => Number(String(s).replace(/[^\d]/g, "")) || 0;
 
-/** Plays one round: drops the round's pins (on a phone, through the map card), checks the counter, hunts, checks the reveal. */
-async function playRound(page, { phone, fail, label, shot, edit = false }) {
+/** Plays one round: maybe a hint, the pin (on a phone, through the map card), Guess, then checks the reveal. */
+async function playRound(page, { phone, fail, label, shot, hint, spot, noHints }) {
   await page.getByTestId("hunt-card").waitFor();
   const name = (await page.getByTestId("hunt-name").innerText()).trim();
-  if (phone) await page.getByTestId("geo-map-pill").click();
-  const max = await pinMax(page);
-  for (let i = 0; i < max; i++) await tapMap(page, ...SPOTS[i % SPOTS.length]);
-  if ((await pinCount(page)) !== max) fail(`${label}: ${max} taps placed ${await pinCount(page)} pins`);
-  const edited = edit && max > 1;
-  if (edited) {
-    // A tap past the round's pins moves the nearest one (never a pin too many).
-    await tapMap(page, 0.55, 0.45);
-    if ((await pinCount(page)) !== max) fail(`${label}: a tap with every pin down changed the count`);
-    // Remove a pin, then put it back.
-    await page.getByTestId("hunt-pin-remove-1").click();
-    if ((await pinCount(page)) !== max - 1) fail(`${label}: removing a pin didn't drop the count`);
-    await tapMap(page, ...SPOTS[0]);
-    // Pick a pin up and move it: the count stays.
-    await page.getByTestId(`hunt-pin-chip-${max}`).click();
-    await tapMap(page, 0.45, 0.55);
-    if ((await pinCount(page)) !== max) fail(`${label}: after remove and move there are ${await pinCount(page)} of ${max} pins`);
+  if (!name) fail(`${label}: the card shows no name`);
+  if (!/\?|？/.test(await page.getByTestId("hunt-question").innerText())) fail(`${label}: the card doesn't ask where`);
+  const hints = await page.locator("[data-testid=hunt-hints] button").count();
+  if (noHints && hints) fail(`${label}: Hard offers hints`);
+  if (!noHints && hints !== 3) fail(`${label}: the round offers ${hints} hints, not three`);
+  let cost = 0;
+  if (hint) {
+    const button = page.getByTestId(`hunt-hint-${hint}`);
+    cost = num(await button.innerText());
+    if (!cost) fail(`${label}: the ${hint} hint's button shows no cost`);
+    await button.click();
+    await page.locator(`[data-testid=hunt-hint-${hint}][data-taken]`).waitFor();
+    if (!(await page.getByTestId(`hunt-hint-${hint}-value`).innerText()).trim()) fail(`${label}: the ${hint} hint shows nothing`);
   }
-  if (shot) await page.screenshot({ path: shot.replace(".png", "-pins.png") });
+  if (shot) await page.screenshot({ path: shot.replace(".png", "-round.png") });
+  if (phone) await page.getByTestId("geo-map-pill").click();
+  await tapMap(page, ...spot);
+  if (!(await page.getByTestId("geo-guess").isEnabled())) fail(`${label}: a tap didn't drop the pin`);
   // The page never names a place before the reveal.
   const text = await page.getByTestId("geo-shell").innerText();
   if (/Route \d+|City\b|Town\b|Cave\b/.test(text)) fail(`${label}: the round names a place before the reveal`);
   await page.getByTestId("geo-guess").click();
   await page.getByTestId("hunt-reveal").waitFor();
-  // Skip the pop-in, so the whole answer is on screen.
   await page.getByTestId("hunt-skip").click().catch(() => {});
-  const spots = await page.getByTestId("hunt-spot").count();
-  if (!spots) fail(`${label}: the reveal lists no spots for ${name}`);
-  const found = await shown(page, "hunt-found-line").innerText();
-  if (!found.trim()) fail(`${label}: the reveal says "${found}"`);
-  const dex = await shown(page, "hunt-dex-link").getAttribute("href");
+  if (!(await page.getByTestId("hunt-spot").count())) fail(`${label}: the reveal lists no spots for ${name}`);
+  if ((await page.locator("[data-testid=hunt-spot][data-nearest]").count()) !== 1) fail(`${label}: the reveal doesn't mark the pin's nearest spot`);
+  if (!(await page.getByTestId("geo-reveal-line").count())) fail(`${label}: no line from the pin to its nearest spot`);
+  if (!(await page.getByTestId("hunt-found-line").innerText()).trim()) fail(`${label}: the reveal says nothing about the pin`);
+  const dex = await page.getByTestId("hunt-dex-link").getAttribute("href");
   if (!/\/pokemon\/[a-z0-9-]+#encounters$/.test(dex ?? "")) fail(`${label}: the Pokédex link is ${dex}`);
+  if (hint) {
+    const line = page.getByTestId("hunt-hint-cost");
+    if (!(await line.count()) || num(await line.innerText()) !== cost) fail(`${label}: the reveal doesn't take the hint's ${cost} off`);
+  }
   if (shot) {
     await page.waitForTimeout(1600);
     await page.screenshot({ path: shot });
   }
-  await shown(page, "hunt-next").click();
-  return edited;
+  await page.getByTestId("hunt-next").click();
 }
 
 async function playGame(page, opts) {
-  // Pin editing (move, remove, pick up) runs on the first round that takes more than one pin.
-  let edit = !!opts.edit;
-  for (let r = 0; r < 5; r++) {
-    if (await playRound(page, { ...opts, label: `${opts.label} round ${r + 1}`, edit, shot: r === 0 ? opts.shot : undefined })) edit = false;
-  }
-  if (edit) opts.fail(`${opts.label}: no round took more than one pin, so pin editing went untested`);
-  // The end screen (PokéGuessr's, GeoGuessr's): the total over the dimmed map, the bar, BREAKDOWN and NEXT; no side panel.
+  for (let r = 0; r < 5; r++) await playRound(page, { ...opts, label: `${opts.label} round ${r + 1}`, spot: SPOTS[r], hint: r === 0 ? opts.hint : undefined, shot: r === 0 ? opts.shot : undefined });
+  // The end screen (#367's, as Classic's): the total over the dimmed map, the bar, BREAKDOWN and NEXT.
   await page.getByTestId("hunt-results").waitFor();
   await page.waitForTimeout(1800);
   const total = await page.getByTestId("hunt-results").getByTestId("geo-results-total").innerText();
   if (!/\d/.test(total)) fail(opts, `the results say "${total}"`);
-  if (await page.getByTestId("hunt-results-panel").count()) fail(opts, "the results still have a side panel");
   if (!(await page.getByTestId("geo-end-bar").isVisible())) fail(opts, "the end screen has no score bar");
   for (const id of ["hunt-again", "geo-breakdown-toggle"]) if (!(await page.getByTestId(id).isVisible())) fail(opts, `the end screen has no ${id}`);
-  // BREAKDOWN: a round's spots and lines on the map, the tracker with every round; another round picked there shows it.
+  // BREAKDOWN: every round's pin and numbered flag on the whole map; a round picked in the tracker brings in its other spots.
   await page.getByTestId("geo-breakdown-toggle").click();
   await page.getByTestId("geo-end-tracker").waitFor();
   if ((await page.locator("[data-testid^=geo-end-round-]").count()) !== 5) fail(opts, "the breakdown's tracker doesn't hold the five rounds");
-  const before = await page.getByTestId("hunt-results-focus").innerText();
-  const other = (await page.getByTestId("geo-end-round-1").getAttribute("aria-pressed")) === "true" ? 2 : 1;
-  await page.getByTestId(`geo-end-round-${other}`).click();
-  if ((await page.getByTestId("hunt-results-focus").innerText()) === before) fail(opts, "picking another round in the tracker didn't show it");
-  if (!(await page.getByTestId("hunt-reveal-layer").count())) fail(opts, "the breakdown's map shows no spots");
+  if ((await page.getByTestId("geo-flag-number").count()) !== 5) fail(opts, "the breakdown's map doesn't show every round's flag");
+  if (opts.shotBreakdown) await page.waitForTimeout(1200), await page.screenshot({ path: opts.shotBreakdown });
+  await page.getByTestId("geo-end-round-1").click();
+  await page.getByTestId("hunt-results-focus").waitFor();
+  await page.getByTestId("geo-end-round-2").click();
+  await page.waitForTimeout(400);
+  if (!(await page.getByTestId("hunt-results-focus").innerText()).trim()) fail(opts, "picking a round in the tracker didn't show it");
   await page.getByTestId("geo-breakdown-toggle").click();
   await page.waitForTimeout(500);
 }
 const fail = (opts, msg) => opts.fail(`${opts.label}: ${msg}`);
 
+/** The landing's Pokémon Hunt tile opens the setup in place, and closes it again. */
+async function openSetup(page, f) {
+  const tile = page.getByTestId("hunt-hub-entry");
+  await tile.waitFor();
+  if ((await tile.getAttribute("aria-expanded")) !== "false") f("the Pokémon Hunt tile doesn't say it's closed");
+  if ((await tile.getAttribute("aria-controls")) !== "hunt") f("the Pokémon Hunt tile doesn't name the setup it opens");
+  if (await tile.getAttribute("href")) f("the Pokémon Hunt tile is still a link to another page");
+  await tile.click();
+  await page.getByTestId("hunt-setup").waitFor();
+  if ((await tile.getAttribute("aria-expanded")) !== "true") f("the open tile doesn't say it's open");
+  if (!page.url().includes("/pokeguessr") || page.url().includes("/pokeguessr/hunt")) f(`the tile left the landing (${page.url()})`);
+}
+
+async function pick(page, group, attr, value) {
+  await page.locator(`[data-testid=${group}] [${attr}="${value}"]`).click();
+}
+
 export async function runHunt({ browser, BASE, OUT, errors, step }) {
   const fails = (prefix) => (msg) => errors.push(`hunt ${prefix}: ${msg}`);
 
-  step("pokémon hunt: hub card, Classic on a desktop (several pins, move, remove), the reveal and results");
+  step("pokémon hunt: the landing's tile opens the setup in place; a Normal hunt with a hint, the reveal and the end screen");
   {
     const f = fails("desktop");
     const { context, page } = await open(browser, { width: 1440, height: 900 }, false);
@@ -155,27 +182,29 @@ export async function runHunt({ browser, BASE, OUT, errors, step }) {
     watchApi(page, f);
     try {
       await page.goto(`${BASE}/pokeguessr`, { waitUntil: "load" });
-      await page.getByTestId("hunt-hub-entry").waitFor();
       await closeHowTo(page);
-      await page.getByTestId("hunt-hub-entry").scrollIntoViewIfNeeded();
-      await page.screenshot({ path: `${OUT}/hunt-hub-entry.png` });
-      await page.getByTestId("hunt-hub-entry").click();
-      await page.getByTestId("hunt-hub").waitFor();
-      await page.screenshot({ path: `${OUT}/hunt-hub.png`, fullPage: true });
-      await page.getByTestId("hunt-play-classic").click();
-      await playGame(page, { phone: false, fail: f, label: "classic", edit: true, shot: `${OUT}/hunt-reveal-desktop.png` });
-      await page.screenshot({ path: `${OUT}/hunt-results-desktop.png`, fullPage: true });
+      await openSetup(page, f);
+      await page.screenshot({ path: `${OUT}/hunt-setup.png` });
+      await pick(page, "hunt-map-picker", "data-map", "world");
+      await pick(page, "hunt-difficulty", "data-difficulty", "normal");
+      await page.getByTestId("hunt-play").click();
+      await playGame(page, { phone: false, fail: f, label: "normal", hint: "place", shot: `${OUT}/hunt-reveal-desktop.png`, shotBreakdown: `${OUT}/hunt-breakdown-desktop.png` });
+      await page.screenshot({ path: `${OUT}/hunt-results-desktop.png` });
 
-      step("pokémon hunt: Region mode (one pin a round, on the region's map)");
-      await page.getByTestId("hunt-again").click();
-      await page.getByTestId("hunt-card").waitFor();
-      // Back to the hunt's hub for Region mode.
-      await page.goto(`${BASE}/pokeguessr/hunt`, { waitUntil: "load" });
-      await page.getByTestId("hunt-region-picker").getByRole("radio", { name: "Galar" }).click();
-      await page.getByTestId("hunt-play-region").click();
-      await page.getByTestId("hunt-card").waitFor();
-      if ((await pinMax(page)) !== 1) f("region mode takes more than one pin");
-      await playGame(page, { phone: false, fail: f, label: "region", shot: `${OUT}/hunt-reveal-region.png` });
+      step("pokémon hunt: Easy on Galar's map, then Hard (world only, no hints)");
+      await page.getByTestId("geo-exit").click();
+      await page.getByTestId("hunt-setup").waitFor();
+      await pick(page, "hunt-map-picker", "data-map", "galar");
+      await pick(page, "hunt-difficulty", "data-difficulty", "easy");
+      await page.getByTestId("hunt-play").click();
+      await playGame(page, { phone: false, fail: f, label: "easy galar", shot: `${OUT}/hunt-reveal-region.png` });
+      await page.getByTestId("geo-exit").click();
+      await page.getByTestId("hunt-setup").waitFor();
+      await pick(page, "hunt-difficulty", "data-difficulty", "hard");
+      if (!(await page.locator("[data-testid=hunt-map-picker] [data-map=galar]").isDisabled())) f("Hard still lets a region be picked");
+      await page.getByTestId("hunt-play").click();
+      await playRound(page, { phone: false, fail: f, label: "hard", spot: SPOTS[0], noHints: true });
+      if (!/World|Welt|Monde|Mundo|世界/i.test(await page.getByTestId("geo-shell").innerText())) f("Hard isn't on the world map");
     } catch (e) {
       f(e.message);
       await page.screenshot({ path: `${OUT}/hunt-desktop-failure.png` }).catch(() => {});
@@ -184,29 +213,36 @@ export async function runHunt({ browser, BASE, OUT, errors, step }) {
     }
   }
 
-  step("pokémon hunt: the Daily Hunt on a phone (the map card, the share grid)");
+  step("pokémon hunt: the Daily Hunt on a phone from /pokeguessr#hunt (share card, today's board), the same for everyone");
   {
     const f = fails("phone");
     const { context, page } = await open(browser, { width: 390, height: 844 }, true);
     page.on("pageerror", (e) => f(`page error: ${e.message}`));
     watchApi(page, f);
     try {
-      await page.goto(`${BASE}/pokeguessr/hunt`, { waitUntil: "load" });
-      await page.getByTestId("hunt-hub").waitFor();
-      await page.screenshot({ path: `${OUT}/hunt-hub-phone.png`, fullPage: true });
+      await page.goto(`${BASE}/pokeguessr#hunt`, { waitUntil: "load" });
+      await closeHowTo(page);
+      await page.getByTestId("hunt-setup").waitFor();
+      await page.screenshot({ path: `${OUT}/hunt-setup-phone.png` });
       await page.getByTestId("hunt-play-daily").click();
-      await page.getByTestId("hunt-card").waitFor();
-      await page.screenshot({ path: `${OUT}/hunt-round-phone.png` });
-      await playGame(page, { phone: true, fail: f, label: "daily", shot: `${OUT}/hunt-reveal-phone.png` });
+      await playGame(page, { phone: true, fail: f, label: "daily", hint: "type", shot: `${OUT}/hunt-reveal-phone.png` });
       if (!(await page.getByTestId("hunt-share-button").isVisible())) f("the Daily's results have no share button");
-      if ((await page.getByTestId("hunt-share").getByTestId("geo-share-squares").locator(":scope > span").count()) !== 5) f("the share card's squares don't have a row per round");
+      if ((await page.getByTestId("hunt-share").getByTestId("geo-share-squares").locator(":scope > span > span").count()) !== 5) f("the share card doesn't have a square per round");
       if (!/Pokémon Hunt #\d+/.test((await page.getByTestId("hunt-share").getAttribute("data-share")) ?? "")) f("the Daily's share text has no title");
-      await page.screenshot({ path: `${OUT}/hunt-results-phone.png`, fullPage: true });
+      // Today's board (in memory with local accounts): save a name, and it's there.
+      const board = page.getByTestId("hunt-end-board");
+      if (await board.count()) {
+        await page.getByTestId("hunt-board-name").fill("Hunt Tester");
+        await page.getByTestId("hunt-board-save").click();
+        await page.locator("[data-testid=hunt-board-row]", { hasText: "Hunt Tester" }).first().waitFor();
+      } else if (process.env.E2E_HUNT_BOARD === "1") f("the Daily's end screen has no board");
+      await page.screenshot({ path: `${OUT}/hunt-results-phone.png` });
       // The same Daily for everyone: a second player gets the same first Pokémon.
       const other = await open(browser, { width: 390, height: 844 }, true);
       try {
         const first = async (p) => {
           await p.goto(`${BASE}/pokeguessr/hunt`, { waitUntil: "load" });
+          await p.getByTestId("hunt-setup").waitFor();
           await p.getByTestId("hunt-play-daily").click();
           return (await p.getByTestId("hunt-name").innerText()).trim();
         };
@@ -229,7 +265,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const BASE = process.argv[2] ?? "http://localhost:3000";
   const OUT = process.argv[3] ?? "e2e-screenshots";
   fs.mkdirSync(OUT, { recursive: true });
-  const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
+  const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH, args: ["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"] } : {});
   const errors = [];
   await runHunt({ browser, BASE, OUT, errors, step: (s) => console.log(`• ${s}`) });
   await browser.close();

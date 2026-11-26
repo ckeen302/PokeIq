@@ -4,7 +4,7 @@
  *   npx tsx scripts/hunt/build.ts
  *
  * Reads src/data/encounters/*.json, src/data/geo.json, src/data/about-forms.json,
- * src/data/pokedex.json, scripts/hunt/evidence/forms.json and scripts/hunt/evidence/dens.json. Writes
+ * src/data/pokedex.json, src/data/pokedex-details.json (types), scripts/hunt/evidence/forms.json and scripts/hunt/evidence/dens.json. Writes
  * src/data/hunt/answers.json (the table) and src/data/hunt/review.json (everything left
  * out as uncertain, with the reason, and the real places the map is missing).
  */
@@ -16,7 +16,11 @@ const ROOT = process.cwd();
 const read = <T>(p: string): T => JSON.parse(fs.readFileSync(path.join(ROOT, p), "utf8")) as T;
 
 export function loadInputs(): Inputs {
-  const pokedex = read<{ id: number; slug: string; name: string }[]>("src/data/pokedex.json");
+  const pokedex = read<{ id: number; slug: string; name: string; gen: number; types: string[]; legendary: boolean; mythical: boolean }[]>("src/data/pokedex.json").map(({ id, slug, name, gen, types, legendary, mythical }) => ({ id, slug, name, gen, types, legendary, mythical }));
+  // Each form's types, by its art id (Alolan Meowth is dark).
+  const details = read<Record<string, { forms?: { id: number; types?: string[] }[] }>>("src/data/pokedex-details.json");
+  const formTypes: Record<string, Record<string, string[]>> = {};
+  for (const [dex, d] of Object.entries(details)) for (const f of d.forms ?? []) if (f.types?.length) (formTypes[dex] ??= {})[String(f.id)] = f.types;
   const encounters = new Map<number, { g: number; rows: EncRow[] }[]>();
   for (const p of pokedex) {
     const f = path.join(ROOT, "src/data/encounters", `${p.id}.json`);
@@ -25,6 +29,7 @@ export function loadInputs(): Inputs {
   return {
     geo: read("src/data/geo.json"),
     pokedex,
+    formTypes,
     aboutForms: read("src/data/about-forms.json"),
     encounters,
     evidence: read("scripts/hunt/evidence/forms.json"),

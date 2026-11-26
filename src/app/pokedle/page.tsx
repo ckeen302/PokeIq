@@ -28,7 +28,7 @@ export default function PokedlePage() {
     <div className="space-y-10">
       <ClientMessages namespaces={[board, game, duelShared, share, howto, countdown]}>
         <PokedleWithCommunity names={names} labels={dleLabels(locale)} />
-        <div id="duel" className="scroll-mt-24 space-y-4">
+        <div id="duel" className="mx-auto max-w-3xl scroll-mt-24 space-y-4">
           <PokedleDuelCard />
         </div>
       </ClientMessages>

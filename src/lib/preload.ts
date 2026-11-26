@@ -60,11 +60,38 @@ export function preloadImage(url: string, opts: { priority?: "high" } = {}): Pro
 }
 
 /**
- * A cry, downloaded into the HTTP cache in the format this browser plays (so
- * the <audio> element starts it at once). A plain fetch rather than an audio
- * element: iOS doesn't load media for an element that hasn't been tapped, so
- * waiting for its "canplaythrough" would hold every question's clock for the
- * whole cap.
+ * The cries downloaded so far, as in-memory object URLs, by the URL they were
+ * fetched from. The cry's <audio> element plays these rather than the network
+ * URL: Safari asks for an audio file a few bytes at a time (Range requests)
+ * and refuses to play one whose server answers with the whole file, which is
+ * what the CDN in front of /api/media does. An object URL is already in
+ * memory, so every browser plays it at once. Only the last few are kept (the
+ * question on screen and the next one's), each revoked as it drops out.
+ */
+const cryBlobs = new Map<string, string>();
+const MAX_CRY_BLOBS = 6;
+
+/** The downloaded cry for this (playable) URL as an object URL, or null if it isn't downloaded yet. */
+export function preloadedCry(src: string): string | null {
+  return cryBlobs.get(src) ?? null;
+}
+
+function keepCry(src: string, blob: Blob): void {
+  if (cryBlobs.has(src) || typeof URL.createObjectURL !== "function") return;
+  cryBlobs.set(src, URL.createObjectURL(blob));
+  if (cryBlobs.size > MAX_CRY_BLOBS) {
+    const [oldest, objectUrl] = cryBlobs.entries().next().value!;
+    cryBlobs.delete(oldest);
+    URL.revokeObjectURL(objectUrl);
+  }
+}
+
+/**
+ * A cry, downloaded in the format this browser plays and kept in memory (see
+ * preloadedCry), so the <audio> element starts it at once. A plain fetch
+ * rather than an audio element: iOS doesn't load media for an element that
+ * hasn't been tapped, so waiting for its "canplaythrough" would hold every
+ * question's clock for the whole cap.
  */
 export function preloadAudio(url: string): Promise<void> {
   if (typeof window === "undefined" || !url) return Promise.resolve();
@@ -75,10 +102,10 @@ export function preloadAudio(url: string): Promise<void> {
   const p = fetch(src)
     .then((res) => {
       if (!res.ok) throw new Error(`cry ${res.status}`);
-      return res.arrayBuffer();
+      return res.blob();
     })
     .then(
-      () => undefined,
+      (blob) => keepCry(src, blob),
       () => {
         cache.delete(key); // allow a later retry; the player shows its own retry state
       }

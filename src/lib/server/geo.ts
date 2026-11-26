@@ -1,4 +1,5 @@
 import "server-only";
+import { geoCurveScore } from "@/lib/geo-curve";
 import { geoShotUrl, geoStorageUrl } from "@/lib/geo-storage";
 import data from "@/data/geo.json";
 import themeTags from "@/data/geo-themes.json";
@@ -27,7 +28,6 @@ import { decryptJson, deriveSeed, encryptJson, hmac, randomId, signToken, verify
 import {
   GEO_FILTER_MIN_PLACES,
   GEO_KINDS,
-  GEO_FALLOFF,
   GEO_MAX_ROUND_SCORE,
   GEO_ROUNDS,
   geoDailyRegion,
@@ -115,8 +115,7 @@ const STATE_TTL_MS = 3 * 60 * 60 * 1000;
  * lingers on a result is never marked late; it still bounds a round.
  */
 export const GEO_TIMER_GRACE_MS = 3 * 60_000;
-/** GeoGuessr's curve: 5000 · e^(−10 · d / D), with D the map diagonal. */
-const FALLOFF = GEO_FALLOFF;
+/** GeoGuessr's curve, 5000 · e^(−10 · d / D) with D the map diagonal, is lib/geo-curve's geoCurveScore. */
 /** Streak mode on a region's map: a pin this close to the place keeps the streak alive. */
 const STREAK_RADIUS = 0.035;
 /** Within half a town-map square of the place is spot on. */
@@ -716,7 +715,7 @@ export function measureGuess(spec: Pick<GeoSpec, "region">, round: PlannedRound,
   const diagonal = Math.hypot(width, height);
   const px = nearestPx(region, location, x, y);
   const perfect = px <= region.perfectPx;
-  const areaScore = perfect ? GEO_MAX_ROUND_SCORE : Math.round(GEO_MAX_ROUND_SCORE * Math.exp((-FALLOFF * px) / diagonal));
+  const areaScore = geoCurveScore(px, diagonal, region.perfectPx);
   // Themed maps share the world map, so a pin's region is read from every place on it, not just the theme's.
   const hit = isWorldwide(region.id) ? regionAt(regionOf(WORLD_REGION)!, x, y) === groupOf(location.region) : px / diagonal <= STREAK_RADIUS;
   // For the behaviour flags: how close to the place itself (its pin or its area's edge) the guess was, in map pixels.

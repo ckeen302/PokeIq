@@ -11,8 +11,7 @@
 // ---------------------------------------------------------------------------
 
 /**
- * The regions a Hunt counts. One pin per region, at most HUNT_MAX_PINS.
- * The map's own sub-areas fold into these the way PokéGuessr folds them:
+ * The regions a Hunt counts. The map's own sub-areas fold into these the way PokéGuessr folds them:
  * Sevii Islands → kanto, Isle of Armor and Crown Tundra → galar,
  * Blueberry Academy → unova. Kitakami is its own region (it has no region
  * map of its own, so it only comes up on the world map).
@@ -43,6 +42,19 @@ export const HUNT_REGION_OF_GEO: Record<string, HuntRegionId> = {
 export const HUNT_MAP_REGIONS = ["kanto", "johto", "hoenn", "sinnoh", "unova", "kalos", "alola", "galar", "paldea"] as const satisfies readonly HuntRegionId[];
 export type HuntMapRegionId = (typeof HUNT_MAP_REGIONS)[number];
 export const isHuntMapRegion = (v: unknown): v is HuntMapRegionId => HUNT_MAP_REGIONS.includes(v as HuntMapRegionId);
+
+/**
+ * The scoring curve's length scale for a spot in each region (world pixels): the diagonal of that
+ * region's own map (geo.json `world.crops`), so a pin is scored as PokéGuessr scores one on that map.
+ * A region with no map of its own (Kitakami) takes the mean of the others.
+ */
+export function huntScales(crops: Record<string, { box: [number, number, number, number] }>): Record<HuntRegionId, number> {
+  const out = {} as Record<HuntRegionId, number>;
+  const known = HUNT_MAP_REGIONS.filter((r) => crops[r]).map((r) => [r, Math.hypot(crops[r].box[2] - crops[r].box[0], crops[r].box[3] - crops[r].box[1])] as const);
+  const mean = known.reduce((s, [, d]) => s + d, 0) / Math.max(1, known.length);
+  for (const r of HUNT_REGIONS) out[r] = known.find(([k]) => k === r)?.[1] ?? mean;
+  return out;
+}
 
 // ---------------------------------------------------------------------------
 // The answer table: src/data/hunt/answers.json (owned by "hunt data")
@@ -80,6 +92,10 @@ export interface HuntEntry {
   form: string | null;
   /** English name with the form, as the round card shows it ("Alolan Meowth", "Meowth"). */
   name: string;
+  /** Its types, this form's ("dark" for Alolan Meowth): the type hint. */
+  types: string[];
+  /** The region of the games it was introduced in (a regional form's, that region), when it lives there: Easy deals these. */
+  home?: HuntRegionId;
   /** The art: a PokéAPI Pokémon id for /api/art/<id> (the species' number for the base form, 10000+ for other forms). */
   art: number;
   /** The Pokédex page: /pokemon/<slug>#encounters. */
@@ -89,15 +105,15 @@ export interface HuntEntry {
   /** Every real spot (all on the map: rule 4). */
   places: HuntPlace[];
   /**
-   * Measured difficulty, 0 (easy) – 1 (hard), on the world map with the pins it gets:
-   * 1 − the share of the map's land where the pins would score well.
+   * Measured difficulty, 0 (easy) – 1 (hard), on the world map with one pin:
+   * 1 − the share of the map's land where a pin would score well against its nearest spot.
    */
   difficulty: number;
   /** Per region map: the same measure on that region's own map with one pin (only for regions it's found in). */
   regionDifficulty: Partial<Record<HuntMapRegionId, number>>;
-  /** A famous, memorable spot (Snorlax on Route 12, Lapras in Union Cave, Mewtwo in Cerulean Cave). */
+  /** A famous Pokémon at a spot people know (Pikachu in Viridian Forest, Clefairy on Mt. Moon): Easy deals these. */
   famous?: boolean;
-  /** Found nearly everywhere: never dealt in world mode (Classic, Daily), still fine in a region it's rare in. */
+  /** Found nearly everywhere (no real "where"): never dealt on the world map, still fine in a region it's rare in. */
   everywhere?: boolean;
   /** The reveal's one-line fact (English), taken from the data, never invented. Optional: the game writes one from the places when absent. */
   fact?: string;
@@ -120,17 +136,51 @@ export type HuntMode = (typeof HUNT_MODES)[number];
 export const isHuntMode = (v: unknown): v is HuntMode => HUNT_MODES.includes(v as HuntMode);
 
 export const HUNT_ROUNDS = 5;
-export const HUNT_MAX_PINS = 3;
 export const HUNT_MAX_ROUND_SCORE = 5000;
 /** Every round is timed: PokéGuessr's 1:30. */
 export const HUNT_TIMER_S = 90;
 /** The first Daily Hunt (its number counts from here). */
 export const HUNT_DAILY_FROM = "2026-11-23";
-/** The Daily's leaderboard needs a table (see docs/hunt/spec.md): off until one exists. */
-export const HUNT_DAILY_LEADERBOARD = false;
 
-/** Pins a round takes: one per region it's found in, at most three, on the world map; one on a region's map. */
-export const huntPinsFor = (regions: number, mode: HuntMode): number => (mode === "region" ? 1 : Math.max(1, Math.min(HUNT_MAX_PINS, regions)));
+/**
+ * How hard a free hunt is. Easy: famous Pokémon, each in its home region. Normal: the usual mix.
+ * Hard: any Pokémon that can be dealt, on the world map, with no hints. The Daily is always Normal.
+ */
+export const HUNT_DIFFICULTIES = ["easy", "normal", "hard"] as const;
+export type HuntDifficulty = (typeof HUNT_DIFFICULTIES)[number];
+export const isHuntDifficulty = (v: unknown): v is HuntDifficulty => HUNT_DIFFICULTIES.includes(v as HuntDifficulty);
+
+/**
+ * The hints a round offers, in the order the card shows them, and what each costs: taken off the
+ * round's points by the server (never below zero). Hard offers none.
+ */
+export const HUNT_HINTS = ["type", "place", "games"] as const;
+export type HuntHintKind = (typeof HUNT_HINTS)[number];
+export const isHuntHint = (v: unknown): v is HuntHintKind => HUNT_HINTS.includes(v as HuntHintKind);
+export const HUNT_HINT_COSTS: Record<HuntHintKind, number> = { type: 500, place: 750, games: 1000 };
+/** A round's points after its hints: what the pin earned, less every hint taken, never below zero. */
+export const huntAfterHints = (points: number, hints: readonly HuntHintKind[]): number => Math.max(0, points - hints.reduce((s, h) => s + HUNT_HINT_COSTS[h], 0));
+
+/** What kind of place a spot is, as the place hint names it. */
+export type HuntPlaceKind = "grass" | "cave" | "water" | "open";
+export const HUNT_PLACE_KINDS = ["grass", "cave", "water", "open"] as const satisfies readonly HuntPlaceKind[];
+/** A method label's kind of place (scripts/hunt/rules.ts COUNTED_LABELS; "Wild", a wild spot with no method named, has none). */
+export const HUNT_LABEL_KIND: Record<string, HuntPlaceKind> = {
+  Grass: "grass",
+  Cave: "cave",
+  Surf: "water",
+  "Old Rod": "water",
+  "Good Rod": "water",
+  "Super Rod": "water",
+  Fishing: "water",
+  Overworld: "open",
+};
+
+/** A hint as the server reveals it. */
+export type HuntHint =
+  | { kind: "type"; /** The type keys ("dark"), and their names in the page's language. */ types: string[]; names: string[] }
+  | { kind: "place"; kinds: HuntPlaceKind[] }
+  | { kind: "games"; /** Each game it's found in on this map, as the reveal labels games ("Diamond / Pearl"). */ games: string[] };
 
 /** A game as the client asks for it. */
 export interface HuntSpec {
@@ -139,6 +189,10 @@ export interface HuntSpec {
   region?: HuntMapRegionId;
   /** Daily: the date (YYYY-MM-DD, UTC), set by the server. */
   daily?: string;
+  /** Free hunts: Easy or Hard (Normal when left out). */
+  difficulty?: Exclude<HuntDifficulty, "normal">;
+  /** A Daily played again on this device: never ranked. */
+  practice?: "repeat-daily";
 }
 
 // ---------------------------------------------------------------------------
@@ -154,15 +208,14 @@ export interface HuntRoundPublic {
   name: string;
   /** The art URL for this exact form. */
   art: string;
-  /** How many regions it's found in (world maps), or 1 on a region's map. */
-  regions: number;
-  /** How many pins this round takes. */
-  pins: number;
+  /** The hints this round offers (none on Hard). */
+  hints: HuntHintKind[];
 }
 
 export interface HuntStartRequest {
   mode: HuntMode;
   region?: HuntMapRegionId;
+  difficulty?: HuntDifficulty;
   /** Daily: the player's local date (YYYY-MM-DD), like every daily on the site (the server allows a day either side of UTC). */
   date?: string;
   /** Entry ids the player saw lately, most recent first (free play deals fresh ones first). */
@@ -179,6 +232,9 @@ export interface HuntStartResponse {
   /** Seconds per round. */
   timer: number;
   daily?: { date: string; number: number };
+  difficulty: HuntDifficulty;
+  /** A Daily played again on this device: it can't go on the board. */
+  practice?: boolean;
   round: HuntRoundPublic;
 }
 
@@ -190,6 +246,7 @@ export interface HuntPin {
 
 export interface HuntGuessRequest {
   token: string;
+  /** The pin: one (none when the clock ran out first). */
   pins: HuntPin[];
   /** The clock ran out (pins down by then still count). */
   timeout?: boolean;
@@ -208,30 +265,34 @@ export interface HuntSpot {
   methods: { games: string; method: string }[];
 }
 
-/** How one pin did: the region it was matched to, its nearest spot there, its points. */
+/** How the pin did: its nearest real spot, the distance to that spot's area, its points. */
 export interface HuntPinResult {
   pin: HuntPin;
-  /** Null: more pins than regions on the map (cannot happen: the client is held to `pins`), or the pin was off the map. */
+  /** The nearest spot's region (null: no pin, or off the map). */
   region: HuntRegionId | null;
-  /** Index into HuntReveal.spots of the nearest spot in that region. */
+  /** Index into HuntReveal.spots of the nearest spot. */
   spot: number | null;
-  /** Map pixels to that spot's area (0 inside it). */
+  /** Map pixels to that spot's area (0 inside it; −1 for no pin). */
   distancePx: number;
+  /** The same in town-map squares, as PokéGuessr says it (0 when spot on). */
+  squares: number;
+  /** What the pin earned, before hints. */
   score: number;
-  /** The pin landed in that region. */
+  /** The pin landed in that spot's region. */
   found: boolean;
 }
 
 export interface HuntReveal {
   id: string;
   name: string;
-  /** Every real spot, grouped by region in HUNT_REGIONS order (the reveal pops them region by region). */
+  /** Every real spot on the map played, grouped by region in HUNT_REGIONS order. */
   spots: HuntSpot[];
   regions: HuntRegionId[];
+  /** The pin (empty when time ran out with none down). */
   pins: HuntPinResult[];
-  /** Regions found, out of the pins the round took: "You found 2 of 3 regions". */
-  found: number;
-  of: number;
+  /** The hints taken this round, and what they cost in all (taken off the pin's points, which stop at zero). */
+  hints: HuntHintKind[];
+  hintCost: number;
   fact: string;
   /** The Pokédex's "where to find" section: /pokemon/<slug>#encounters. */
   dex: string;
@@ -242,8 +303,8 @@ export interface HuntResultRound {
   name: string;
   art: string;
   score: number;
-  found: number;
-  of: number;
+  /** Hints taken that round. */
+  hints: number;
 }
 
 export interface HuntResult {
@@ -252,6 +313,26 @@ export interface HuntResult {
   score: number;
   max: number;
   rounds: HuntResultRound[];
+  durationMs: number;
+  /** The Daily's signed result, for its leaderboard (a Daily played again carries none). */
+  resultToken?: string;
+}
+
+/** The Daily's result as the server signs it for its leaderboard. */
+export interface HuntDailyResult {
+  sid: string;
+  date: string;
+  score: number;
+  rounds: number[];
+  durationMs: number;
+  finishedAt: number;
+}
+
+/** A row of the Daily Hunt's board. */
+export interface HuntBoardRow {
+  rank: number;
+  name: string;
+  score: number;
   durationMs: number;
 }
 

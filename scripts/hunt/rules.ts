@@ -34,40 +34,51 @@ export const VERSION_REGIONS: Record<string, string[]> = {
 export const ZA_PLACE = { region: "Kalos", name: "Lumiose City" } as const;
 
 /**
- * Methods: the reveal's label for each counted method, `null` for a method left out
- * by rule 1 (not a spot on the map, or not a way of meeting it in the wild).
+ * Methods: the reveal's label for each counted method, `null` for a method left out.
  * A method that isn't in this table makes the row uncertain (the Pokémon is left out).
+ *
+ * Only normal wild encounters count (Hunt v2, the owner's rules): walking in grass and tall
+ * grass, caves, surfing, fishing with a rod, and the visible Pokémon that wander the overworld.
+ * Everything a player has to know a trick, an item, a device or an event for is left out:
+ * Poké Radar, DexNav, Hidden Grottoes, berry trees, Headbutt, Rock Smash, honey trees,
+ * hordes, SOS calls, the shaking grass, dust clouds and rippling water of Unova, ambushes,
+ * swarms, Max Raids, every one-off scripted or fixed encounter (Static, Interact, Poké Flute,
+ * Devon Scope, Squirt Bottle, Wailmer Pail), gifts, eggs, trades and the rest.
  */
 export const METHODS: Record<string, string | null> = {
-  // Walking in grass, caves and the like.
-  Grass: "Grass", "Tall grass": "Grass", "Grass (random)": "Grass", "Dark grass": "Grass", "Rustling grass": "Grass",
+  // Walking in grass (every game's kinds of tall grass: Unova's dark grass, Kalos's flowers and rough terrain, Galar's swamp).
+  Grass: "Grass", "Tall grass": "Grass", "Grass (random)": "Grass", "Dark grass": "Grass",
   "Yellow Flowers": "Grass", "Yellow flowers": "Grass", "Purple Flowers": "Grass", "Purple flowers": "Grass",
   "Red Flowers": "Grass", "Red flowers": "Grass", "Rough terrain": "Grass", Swamp: "Grass",
-  "Grass - Rare Spawns": "Grass", DexNav: "Grass", PokeRadar: "Poké Radar",
-  Cave: "Cave", "Dust cloud": "Cave",
-  // Water.
-  Surf: "Surf", "Rippling water": "Surf", Water: "Surf", "Surf Details": "Surf", "Surf - Blocks Details": "Surf",
-  "Water - Rare Spawns": "Surf", Dive: "Dive",
+  /** Let's Go's rarer spawns: still Pokémon you see in the grass and walk into. */
+  "Grass - Rare Spawns": "Grass",
+  // Caves.
+  Cave: "Cave",
+  // Water: surfing, and fishing with a rod.
+  Surf: "Surf", Water: "Surf", "Surf Details": "Surf", "Surf - Blocks Details": "Surf", "Water - Rare Spawns": "Surf",
   "Old Rod": "Old Rod", "Good Rod": "Good Rod", "Super Rod": "Super Rod",
+  /** Unova's fishing spots, Alola's bubbling fishing spots, Feebas's tiles: a rod cast where the game lets you fish. */
   Fishing: "Fishing", "Fishing spot": "Fishing", "Bubbling spot": "Fishing", "Feebas tile": "Fishing",
-  // Trees and rocks.
-  Headbutt: "Headbutt", "Headbutt (low)": "Headbutt", "Headbutt (high)": "Headbutt",
-  "Berry Tree": "Berry tree", "Berry tree": "Berry tree", "Berry pile": "Berry tree", "Shaking tree": "Shaking tree",
-  "Rock Smash": "Rock Smash",
-  "Honey tree": "Honey tree", "Honey Tree": "Honey tree", "Honey Tree - Rare": "Honey tree", "Honey Tree - Very Rare": "Honey tree",
-  Horde: "Horde", "SOS call": "SOS call", "SOS (bubbling spot)": "SOS call",
-  // Pokémon you see in the world.
+  // Pokémon you see wandering the world (Let's Go, Sword / Shield, Scarlet / Violet, Legends: Z-A).
   Wild: "Overworld", Overworld: "Overworld", "In the Sky": "Overworld", "In the Sky - Rare Spawns": "Overworld", Flying: "Overworld",
-  "Ground ambush": "Overworld", "Sky ambush": "Overworld", "Ceiling ambush": "Overworld", "Trash can ambush": "Overworld",
-  "Rustling bush ambush": "Overworld", "Bridge shadow": "Overworld", "Special encounter": "Overworld",
-  Wandering: "Wandering", "Wandering Surf": "Wandering",
-  "Hidden Grotto": "Hidden Grotto",
-  // One-off encounters at a fixed spot.
-  Static: "Fixed encounter", Interact: "Fixed encounter", "Interact At Night": "Fixed encounter",
-  "Poké Flute": "Fixed encounter", "Devon Scope": "Fixed encounter", "Squirt Bottle": "Fixed encounter", "Wailmer Pail": "Fixed encounter",
+  Wandering: "Overworld", "Wandering Surf": "Overworld",
+
+  // ---- Left out: needs a device, an item, a trick or an event ----
+  PokeRadar: null, DexNav: null, "Hidden Grotto": null,
+  "Rustling grass": null, "Dust cloud": null, "Rippling water": null, Dive: null,
+  Headbutt: null, "Headbutt (low)": null, "Headbutt (high)": null,
+  "Berry Tree": null, "Berry tree": null, "Berry pile": null, "Shaking tree": null,
+  "Rock Smash": null,
+  "Honey tree": null, "Honey Tree": null, "Honey Tree - Rare": null, "Honey Tree - Very Rare": null,
+  Horde: null, "SOS call": null, "SOS (bubbling spot)": null,
+  "Ground ambush": null, "Sky ambush": null, "Ceiling ambush": null, "Trash can ambush": null,
+  "Rustling bush ambush": null, "Bridge shadow": null, "Special encounter": null,
+  // One-off scripted or fixed encounters.
+  Static: null, Interact: null, "Interact At Night": null,
+  "Poké Flute": null, "Devon Scope": null, "Squirt Bottle": null, "Wailmer Pail": null,
   // Galar's dens.
-  "Max Raid": "Max Raid",
-  // Left out (rule 1).
+  "Max Raid": null,
+  // Not a spot on the map, or not met in the wild.
   Gift: null, "Gift (Egg)": null, Trade: null, Curry: null, "Tera Raid": null, Hyperspace: null, Underground: null,
   "Massive mass outbreak": null, Roaming: null, "Roaming (water)": null,
   /** Swarms and mass outbreaks: a random, short-lived event, not a standing spot (rows with a "Swarm" note are left out too). */
@@ -79,10 +90,29 @@ export const METHODS: Record<string, string | null> = {
   "Colosseum bonus disc jpn": null, "Colosseum bonus disc us": null, "Pokemon channel pal": null, "Pokemon ranger": null,
 };
 
-/** The label for a place added because Bulbapedia and Serebii both list it, when neither names the method. */
-export const AGREED_LABEL = "Wild";
+/** A place Bulbapedia and Serebii both list as a wild spot without naming the method (see AGREED_NEEDS_WILD). */
+export const AGREED_LABEL_WILD = "Wild";
 
-/** Max Raid dens only count in Sword and Shield (Galar's dens). */
+/** The labels a counted method can carry: the reveal's and the place hint's vocabulary. */
+export const COUNTED_LABELS = ["Grass", "Cave", "Surf", "Old Rod", "Good Rod", "Super Rod", "Fishing", "Overworld", AGREED_LABEL_WILD] as const;
+
+/**
+ * A method label one of the two sources gave a place both list (scripts/hunt/make-agreed.ts), as
+ * the build counts it: a counted label, or null when the source's label is one the rules leave out.
+ */
+export const AGREED_LABELS: Record<string, string | null> = {
+  Grass: "Grass", Cave: "Cave", Surf: "Surf", "Old Rod": "Old Rod", "Good Rod": "Good Rod", "Super Rod": "Super Rod", Fishing: "Fishing",
+  Overworld: "Overworld", Wandering: "Overworld",
+};
+
+/**
+ * A place Bulbapedia and Serebii both list that the data lacks, when neither names the method, is
+ * added only for a species already met in the wild in that game (so it's a wild spot the data
+ * missed, not a gift or a one-off), under the label of its own wild rows there.
+ */
+export const AGREED_NEEDS_WILD = true;
+
+/** Max Raid dens only ever happen in Sword and Shield; they're left out now, but a den row in another game is still a data error. */
 export const MAX_RAID_VERSIONS = new Set(["sword", "shield"]);
 
 /**
