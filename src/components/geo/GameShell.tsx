@@ -454,6 +454,31 @@ export function MapDock({
   );
 }
 
+/**
+ * A round result's bottom bar (solo, the Daily, the Weekly, Region Streak), its three columns from md up: the verdict, as wide
+ * as its one-line text up to a cap; Next, as wide as its one-line label; the place takes what's left, and its long parts
+ * (the name, the game tag) truncate there. Stacked on a phone.
+ */
+export const RESULT_BAR_GRID =
+  "mx-auto grid max-w-6xl items-center gap-3 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 sm:gap-6 sm:px-6 md:grid-cols-[minmax(0,auto)_minmax(0,1fr)_auto] md:gap-4 lg:gap-6";
+/** The result bar's verdict column. */
+export const RESULT_BAR_VERDICT = "min-w-0 text-center md:max-w-[21rem] md:text-left lg:max-w-[24rem]";
+
+/** The result bar's Next: its label on one line in every language, with the Space hint on a computer. */
+export function ResultNextButton({ onClick, testId, hint, children }: { onClick: () => void; testId: string; hint: string; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      data-testid={testId}
+      className="flex min-h-12 w-full max-w-xs items-center justify-center gap-2 whitespace-nowrap rounded-md bg-[#4cbb17] px-6 py-1.5 font-display text-base leading-tight font-bold uppercase tracking-wider text-white shadow-lg transition-[background-color,transform] hover:bg-[#58d01c] active:scale-[0.98] md:w-auto md:max-w-none md:px-5 lg:px-6"
+    >
+      {children} ▶
+      <kbd aria-hidden className="ml-1 hidden rounded border border-white/40 px-1.5 text-[10px] font-normal normal-case sm:inline [@media(pointer:coarse)]:!hidden">{hint}</kbd>
+    </button>
+  );
+}
+
 /** A round icon button in the phone's bottom bar. */
 export const BAR_BTN =
   "flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#4a3f9e] text-white shadow-[inset_0_-3px_0_rgba(0,0,0,0.25)] ring-1 ring-white/15 transition-[background-color,transform] active:scale-95 [-webkit-tap-highlight-color:transparent] hover:bg-[#5a4fb8]";

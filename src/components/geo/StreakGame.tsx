@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { GeoMap, LINE_DRAW_MS } from "./GeoMap";
-import { ConfirmExit, ExitButton, FullscreenButton, GameShell, GuessButton, Notch } from "./GameShell";
+import { ConfirmExit, ExitButton, FullscreenButton, GameShell, GuessButton, Notch, RESULT_BAR_GRID, RESULT_BAR_VERDICT, ResultNextButton } from "./GameShell";
 import { ShotCarousel, shotFit } from "./ShotCarousel";
 import { LearnCard } from "./LearnCard";
 import { ReportShot } from "./ReportShot";
@@ -378,45 +378,41 @@ function StreakReveal({ world, current, streak, notch, onNext, onExit, t, names 
   const { graded } = current;
   const reduced = useReducedMotion();
   const rise = (delay: number) => ({ initial: reduced ? false : { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.35, delay: reduced ? 0 : delay, ease: [0.2, 0.8, 0.2, 1] as const } });
+  const said = graded.correct
+    ? t("reveal.its", { region: names.region(String(graded.region)) })
+    : t("reveal.picked", { picked: graded.picked ? names.region(graded.picked) : t("reveal.nothing"), region: names.region(String(graded.region ?? graded.answer.region)) });
   return (
-    <div className="relative h-full" data-testid="streak-reveal">
-      <div className="absolute inset-x-0 top-0 bottom-[8.5rem] md:bottom-[6.75rem]">
+    <div className="relative flex h-full flex-col md:block" data-testid="streak-reveal">
+      {/* As a solo round's result: on a phone the map takes what the bottom bar leaves, so the camera frames the answer in view. */}
+      <div className="relative min-h-0 flex-1 md:absolute md:inset-x-0 md:top-0 md:bottom-[6.75rem]">
         <GeoMap region={world} revealed={[{ guess: null, answer: graded.answer }]} fit={{ delay: LINE_DRAW_MS / 2, duration: FIT_MS }} fill controls={false} />
       </div>
       <div className="geo-safe-tl absolute left-3 top-3 z-20">
         <ExitButton onClick={onExit} label={t("back")} />
       </div>
       {notch}
-      <motion.div {...rise(0.15)} className="absolute inset-x-0 bottom-0 z-20 border-t-4 border-[#a99cff] bg-[#1e1a3f]/95 text-white shadow-[0_-12px_40px_rgba(0,0,0,0.5)] backdrop-blur">
-        <div className="mx-auto grid max-w-6xl items-center gap-3 px-4 py-3 sm:gap-6 sm:px-6 md:grid-cols-[1fr_auto_1fr]">
-          <div className="min-w-0 text-center md:text-left">
-            <p className={cn("hud-label", graded.correct ? "!text-[#9be15d]" : "!text-[#ff5a5a]")} data-testid="streak-verdict">
+      <motion.div {...rise(0.15)} className="relative z-20 shrink-0 border-t-4 border-[#a99cff] bg-[#1e1a3f]/95 text-white shadow-[0_-12px_40px_rgba(0,0,0,0.5)] backdrop-blur md:absolute md:inset-x-0 md:bottom-0">
+        <div className={RESULT_BAR_GRID}>
+          <div className={RESULT_BAR_VERDICT}>
+            <p className={cn("hud-label truncate", graded.correct ? "!text-[#9be15d]" : "!text-[#ff5a5a]")} data-testid="streak-verdict" title={graded.correct ? t("reveal.right") : t("reveal.wrong")}>
               {graded.correct ? t("reveal.right") : t("reveal.wrong")}
             </p>
-            <p className="flex items-center justify-center gap-2 font-display text-4xl font-bold italic md:justify-start md:text-3xl lg:text-4xl">
-              {graded.correct ? <Check className="h-8 w-8 text-[#9be15d]" aria-hidden /> : <X className="h-8 w-8 text-[#ff5a5a]" aria-hidden />}
-              {graded.correct ? t("reveal.inARow", { n: streak }) : t("reveal.final", { n: streak })}
+            <p className="flex items-center justify-center gap-2 whitespace-nowrap font-display text-4xl font-bold italic md:justify-start md:text-2xl lg:text-4xl">
+              {graded.correct ? <Check className="h-8 w-8 shrink-0 text-[#9be15d] md:h-6 md:w-6 lg:h-8 lg:w-8" aria-hidden /> : <X className="h-8 w-8 shrink-0 text-[#ff5a5a] md:h-6 md:w-6 lg:h-8 lg:w-8" aria-hidden />}
+              <span className="min-w-0 truncate">{graded.correct ? t("reveal.inARow", { n: streak }) : t("reveal.final", { n: streak })}</span>
             </p>
-            <p className="text-sm text-white/70">
-              {graded.correct
-                ? t("reveal.its", { region: names.region(String(graded.region)) })
-                : t("reveal.picked", { picked: graded.picked ? names.region(graded.picked) : t("reveal.nothing"), region: names.region(String(graded.region ?? graded.answer.region)) })}
+            <p className="truncate text-sm text-white/70" title={said}>
+              {said}
             </p>
           </div>
           <motion.div {...rise(reduced ? 0 : 0.5)} className="flex min-w-0 justify-center">
             <LearnCard answer={graded.answer} shot={current.shot} map={world} />
           </motion.div>
           <div className="flex flex-col items-center gap-1.5 md:items-end">
-            <button
-              type="button"
-              onClick={onNext}
-              data-testid="streak-next"
-              className="flex min-h-12 w-full max-w-xs items-center justify-center gap-2 rounded-md bg-[#4cbb17] px-6 py-1.5 font-display text-base leading-tight font-bold uppercase tracking-wider text-white shadow-lg transition-[background-color,transform] hover:bg-[#58d01c] active:scale-[0.98]"
-            >
-              {graded.done ? t("reveal.results") : t("reveal.next")} ▶
-              <kbd aria-hidden className="ml-1 hidden rounded border border-white/40 px-1.5 text-[10px] font-normal normal-case sm:inline [@media(pointer:coarse)]:!hidden">{t("reveal.space")}</kbd>
-            </button>
-            <div className="text-white/60 [&_button]:text-white/60 [&_button:hover]:text-white">
+            <ResultNextButton onClick={onNext} testId="streak-next" hint={t("reveal.space")}>
+              {graded.done ? t("reveal.results") : t("reveal.next")}
+            </ResultNextButton>
+            <div className="whitespace-nowrap text-white/60 [&_button]:text-white/60 [&_button:hover]:text-white">
               <ReportShot key={current.shot} shot={current.shot} mode="solo" />
             </div>
           </div>
