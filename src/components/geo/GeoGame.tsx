@@ -1214,7 +1214,6 @@ function GeoGameInner({
           d={{
             dailyNum: today ? `#${dailyNumber(today)}` : null,
             dailyMap: dailyMap ? names.map(dailyMap) : null,
-            dailyArt: tileImage(dailyMap?.map.src ?? WORLD_MAP_SRC),
             dailyPlayed,
             dailyScore: dailyDone,
             dailyResume: !!dailyResume,
@@ -1225,7 +1224,6 @@ function GeoGameInner({
             weeklyNum: week ? geoWeeklyNumber(week) : null,
             weeklyMap: weeklyMap ? names.map(weeklyMap) : null,
             // A region's week shows that region's map; a themed week (Gyms, Towns, Routes) keeps its own screenshot.
-            weeklyArt: weeklyMap ? (weeklyMap.theme ? (weeklyMap.preview ?? tileImage(weeklyMap.map.src)) : tileImage(weeklyMap.map.src)) : null,
             weeklyPlayed,
             weeklyScore: weeklyDone,
             weeklyLeft: weeklyLeftText,
@@ -1236,7 +1234,6 @@ function GeoGameInner({
             onWeeklyResult: weeklySave ? () => resume(weeklySave) : undefined,
             onWeeklyWarm: () => prefetch({ kind: "game", weekly: true }),
             classicMap: names.map(region),
-            classicArt: region.preview ?? tileImage(region.map.src),
             classicBest: bestGame,
             soloOpen,
             onClassic: toSolo,

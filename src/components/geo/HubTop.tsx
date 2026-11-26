@@ -2,14 +2,12 @@
 
 import Image, { type StaticImageData } from "next/image";
 import Link from "@/components/ui/Link";
-import { CalendarRange, Check, Compass, Crosshair, Flame, MapPin, Pencil, Play, Swords, Trophy, Users } from "lucide-react";
+import { Check, Compass, Flame, Pencil, Play, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAccount } from "@/lib/account";
-import { boardArtUrl } from "@/lib/pokemon/art";
 import { useGeoNames } from "@/lib/geo-i18n-client";
 import { Avatar3D } from "@/components/trainer3d/Avatar3D";
 import { TRAINER_PRESETS, presetTrainer } from "@/lib/trainer/presets";
-import { BallIcon } from "@/components/duel/TierBadge";
 import { NextDailyCountdown } from "@/components/NextDailyCountdown";
 import { useT } from "@/i18n/client";
 import { formatNumber } from "@/i18n/format";
@@ -19,10 +17,17 @@ import huntNs from "@/messages/hunt";
 import avatarNs from "@/messages/avatar";
 import creatorNs from "@/messages/trainer-creator";
 import { HowToHelpButton } from "./GeoHowToButton";
-import streakArt from "@/assets/guessr/region-streak.webp";
 import worldBody from "@/assets/guessr/hub-world.webp";
 import worldAir from "@/assets/guessr/hub-world-air.webp";
-import huntMap from "@/assets/guessr/kanto.webp";
+// Every mode's emblem, one family: modelled and lit in three.js for PokéIQ, rendered to stills.
+import dailyEmblem from "@/assets/guessr/emblems/daily.webp";
+import classicEmblem from "@/assets/guessr/emblems/classic.webp";
+import weeklyEmblem from "@/assets/guessr/emblems/weekly.webp";
+import streakEmblem from "@/assets/guessr/emblems/streak.webp";
+import huntEmblem from "@/assets/guessr/emblems/hunt.webp";
+import duelsEmblem from "@/assets/guessr/emblems/duels.webp";
+import rankedEmblem from "@/assets/guessr/emblems/ranked.webp";
+import partyEmblem from "@/assets/guessr/emblems/party.webp";
 
 /** Who stands on the globe until a player makes their own 3D trainer (and for visitors): the creator's first look. */
 const STAND_IN = presetTrainer(TRAINER_PRESETS[0]);
@@ -41,7 +46,6 @@ export interface HubTopData {
   /** "#40", once the page knows today's date. */
   dailyNum: string | null;
   dailyMap: string | null;
-  dailyArt: string;
   dailyPlayed: boolean;
   dailyScore?: number;
   dailyResume: boolean;
@@ -51,7 +55,6 @@ export interface HubTopData {
   dailyWarm?: Warm;
   weeklyNum: number | null;
   weeklyMap: string | null;
-  weeklyArt: string | null;
   weeklyPlayed: boolean;
   weeklyScore?: number;
   weeklyLeft: string | null;
@@ -62,7 +65,6 @@ export interface HubTopData {
   onWeeklyResult?: () => void;
   onWeeklyWarm?: () => void;
   classicMap: string;
-  classicArt: string;
   classicBest?: number;
   soloOpen: boolean;
   onClassic(): void;
@@ -79,7 +81,15 @@ export interface HubTopData {
   days: { date: string; played: boolean; today: boolean }[];
 }
 
-const CARD = "rounded-xl bg-gradient-to-r from-[#2d2766]/95 via-[#33297a]/95 to-[#3e3196]/95 ring-2 ring-[#8b7cff]/40 shadow-[0_8px_24px_rgb(0_0_0/0.45)] backdrop-blur";
+/**
+ * Every card's face, the Daily's and each mode's alike: a thick slab of purple, lit along its top edge and with a darker
+ * lip along its bottom, a faint dot grain over it.
+ */
+const FACE =
+  "bg-[radial-gradient(rgb(255_255_255/0.07)_1px,transparent_1.5px),linear-gradient(180deg,#5444bd_0%,#4334a0_55%,#3a2c8c_100%)] [background-size:9px_9px,100%_100%] shadow-[inset_0_2px_0_rgb(255_255_255/0.22),inset_0_-5px_0_rgb(18_10_60/0.45),0_10px_24px_rgb(0_0_0/0.5)] ring-1 ring-[#2a1f6e]";
+const CARD = cn("rounded-2xl", FACE);
+/** A section's name as a tab on top of its first card. */
+const TAB = "inline-flex items-center rounded-t-xl bg-[#4a3bb0] px-3.5 pb-1 pt-1.5 font-display text-[11px] font-bold uppercase italic leading-none tracking-[0.08em] text-[#d9d2ff] shadow-[inset_0_2px_0_rgb(255_255_255/0.2)] ring-1 ring-[#2a1f6e] md:text-xs";
 const LABEL = "font-display text-[10px] font-bold uppercase italic leading-none tracking-[0.12em] text-[#c8bfff] md:text-[11px]";
 const TITLE = "font-display font-bold uppercase italic leading-none tracking-wide text-white [text-shadow:0_2px_0_#120f24]";
 const GREEN =
@@ -287,17 +297,16 @@ function DailyCard({ d }: { d: HubTopData }) {
   const g = useT(geoNs);
   const fmt = (n: number) => formatNumber(n, t.locale);
   return (
-    <div className={cn(CARD, "relative overflow-hidden p-3 md:p-3.5")} data-testid="geo-daily-card">
-      {/* The Daily's own map, faint behind the card. */}
-      {/* eslint-disable-next-line @next/next/no-img-element -- the Daily tile's picture */}
-      <img src={d.dailyArt} alt="" className="pointer-events-none absolute inset-y-0 right-0 h-full w-2/3 object-cover opacity-30 [mask-image:linear-gradient(to_right,transparent,black_60%)]" />
+    <div className={cn(CARD, "relative p-3 md:p-3.5")} data-testid="geo-daily-card">
+      {/* The Daily's emblem, top right like every mode's. */}
+      <Image src={dailyEmblem} alt="" aria-hidden sizes="96px" className="pointer-events-none absolute -top-7 right-1 h-[clamp(5rem,12.5vh,6.75rem)] w-auto rotate-[6deg] drop-shadow-[0_10px_10px_rgb(10_5_40/0.55)]" />
       <div className="relative">
         <p className={cn(LABEL, "flex items-center gap-1.5 text-[#ffd23c]")}>
           <Compass className="h-3.5 w-3.5" aria-hidden />
           {t("hub.daily.label", { num: d.dailyNum ?? "" })}
           {d.dailyMap && <span className="text-[#c8bfff]">· {d.dailyMap}</span>}
         </p>
-        <h2 className={cn(TITLE, "mt-1.5 text-[clamp(1.15rem,3.4vh,1.5rem)]")}>{t("hub.daily.title")}</h2>
+        <h2 className={cn(TITLE, "mt-1.5 text-[clamp(1.2rem,3.4vh,1.55rem)] normal-case tracking-normal [:lang(en)_&]:capitalize")}>{t("hub.daily.title")}</h2>
         <div className="mt-2.5 flex flex-wrap items-end justify-between gap-3 max-md:flex-nowrap">
           <StreakDays days={d.days} />
           {d.streak > 0 && (
@@ -342,64 +351,46 @@ function DailyCard({ d }: { d: HubTopData }) {
   );
 }
 
-/** A mode as a tile: its picture, its name over it, where you stand in it. */
+/** A mode as a card: its name top left, its emblem big on the right, bursting out of the card's top edge. */
 function ModeTile({
-  art,
-  icon,
-  label,
+  emblem,
   title,
+  sub,
   onClick,
   href,
   testId,
   disabled,
   button,
-  hero,
-  children,
 }: {
-  art?: string | StaticImageData | null;
-  /** A mode drawn as its own emblem: a glowing backdrop in the mode's colours and its icon, big (in place of a picture and the corner chip). */
-  hero?: { icon: React.ReactNode; glow: string; tint: string };
-  icon: React.ReactNode;
-  label?: string;
+  emblem: StaticImageData;
   title: string;
+  /** Where the player stands in it (time left, a best), under the name. */
+  sub?: string | null;
   onClick?: () => void;
   href?: string;
   testId?: string;
   disabled?: boolean;
   button?: React.ButtonHTMLAttributes<HTMLButtonElement>;
-  children?: React.ReactNode;
 }) {
-  const pic = "object-cover opacity-75 transition-[opacity,transform] duration-500 group-hover:scale-105 group-hover:opacity-90";
   const body = (
     <>
-      {art &&
-        (typeof art === "object" ? (
-          <Image src={art} alt="" fill sizes="200px" className={pic} />
-        ) : (
-          // eslint-disable-next-line @next/next/no-img-element -- the hub's own tile pictures
-          <img src={art} alt="" className={cn("absolute inset-0 h-full w-full", pic)} />
-        ))}
-      {hero && (
-        <span className="absolute inset-0 overflow-hidden" aria-hidden style={{ background: `radial-gradient(120% 95% at 78% 18%, ${hero.tint} 0%, #2d2766 58%, #1b1640 100%)` }}>
-          <span className="absolute right-[6%] top-[8%] aspect-square h-[78%] rounded-full blur-2xl transition-opacity duration-500 group-hover:opacity-100" style={{ background: hero.glow, opacity: 0.7 }} />
-          <span className="absolute right-[10%] top-[12%] flex aspect-square h-[62%] items-center justify-center transition-transform duration-500 ease-out [&>svg]:h-full [&>svg]:w-full [&>svg]:drop-shadow-[0_6px_14px_rgb(0_0_0/0.5)] group-hover:-translate-y-1 group-hover:rotate-[-6deg] group-hover:scale-110 motion-reduce:transition-none">
-            {hero.icon}
-          </span>
-        </span>
-      )}
-      <span className={cn("absolute inset-0 bg-gradient-to-t", hero ? "from-[#1b1640]/90 via-transparent to-transparent" : "from-[#1b1640] via-[#1b1640]/75 to-[#1b1640]/5")} aria-hidden />
-      {children}
-      {!hero && <span className="absolute left-2 top-2 flex h-7 w-7 items-center justify-center rounded-md bg-[#120f24]/75 ring-1 ring-white/15 backdrop-blur [&>svg]:h-4 [&>svg]:w-4" aria-hidden>
-        {icon}
-      </span>}
-      <span className="relative mt-auto block min-w-0 p-2.5 pt-0">
-        {label && <span className={cn(LABEL, "mb-1 block truncate text-[9px] md:text-[10px]")}>{label}</span>}
-        {/* The name's size follows the tile's width too, so its longest word ("Challenge") always fits whole. */}
-        <span className={cn(TITLE, "block text-[min(clamp(0.85rem,2.2vh,1.05rem),12.5cqw)] leading-[1.05]")}>{title}</span>
+      <Image
+        src={emblem}
+        alt=""
+        aria-hidden
+        sizes="128px"
+        className="pointer-events-none absolute -top-[22%] right-[3%] h-[118%] w-auto drop-shadow-[0_10px_10px_rgb(10_5_40/0.55)] transition-transform duration-300 ease-out group-hover:-translate-y-1.5 group-hover:rotate-[-4deg] group-hover:scale-105 motion-reduce:transition-none"
+      />
+      <span className="relative block min-w-0 max-w-[62%] px-3.5 pt-3">
+        <span className="block font-display text-[clamp(1.05rem,2.6vh,1.35rem)] font-bold italic leading-[1.05] text-white [text-shadow:0_2px_0_rgb(18_10_60/0.6)] [:lang(en)_&]:capitalize">{title}</span>
+        {sub && <span className="mt-1 block truncate text-[13px] font-semibold text-[#c9c0ff]">{sub}</span>}
       </span>
     </>
   );
-  const cls = "gh-lift group relative flex h-full [container-type:inline-size] w-full flex-col overflow-hidden rounded-xl bg-[#2d2766] text-left ring-2 ring-[#8b7cff]/35 shadow-[0_8px_22px_rgb(0_0_0/0.45)] hover:ring-[#a99cff]/80 disabled:cursor-default disabled:hover:ring-[#8b7cff]/35";
+  const cls = cn(
+    CARD,
+    "group relative flex h-full w-full flex-col text-left transition-[transform,filter] duration-200 hover:-translate-y-0.5 hover:brightness-110 active:translate-y-0 disabled:cursor-default disabled:opacity-70 disabled:hover:translate-y-0 disabled:hover:brightness-100",
+  );
   return href ? (
     <Link href={href} className={cls} data-testid={testId}>
       {body}
@@ -411,11 +402,8 @@ function ModeTile({
   );
 }
 
-
-/** Where each single-player tile sits in the wide layout's grid (a 2 × 2 under the Daily). */
-const TILE_AT = ["md:col-start-1 md:row-start-4", "md:col-start-2 md:row-start-4", "md:col-start-1 md:row-start-5", "md:col-start-2 md:row-start-5"];
-/** A mode's slot: a card in the phone's row along the bottom, a cell of its column wider. */
-const SLOT = "h-[7.25rem] w-[8.75rem] shrink-0 snap-start md:h-[clamp(6rem,14vh,7.75rem)] md:w-auto";
+/** A mode's slot: a card in the phone's row along the bottom (room above it for the emblem), a row of its column wider. */
+const SLOT = "h-[5.25rem] w-[12.5rem] shrink-0 snap-start md:h-[clamp(4.1rem,9.2vh,5.4rem)] md:w-auto";
 
 export function HubTop({ d }: { d: HubTopData }) {
   const t = useT(geoSolo);
@@ -425,8 +413,7 @@ export function HubTop({ d }: { d: HubTopData }) {
   const tiles = [
     <div key="classic" data-testid="geo-solo-card">
       <ModeTile
-        art={d.classicArt}
-        icon={<MapPin className="text-[#a99cff]" />}
+        emblem={classicEmblem}
         title={t("hub.solo.title")}
         onClick={d.onClassic}
         button={{ "aria-expanded": d.soloOpen, "aria-controls": "solo" }}
@@ -435,9 +422,9 @@ export function HubTop({ d }: { d: HubTopData }) {
     </div>,
     <div key="weekly" data-testid="geo-weekly-card">
       <ModeTile
-        art={d.weeklyArt}
-        icon={<CalendarRange className="text-[#9be15d]" />}
+        emblem={weeklyEmblem}
         title={t("hub.weekly.title")}
+        sub={d.weeklyLeft ? t("hub.weekly.endsIn", { left: d.weeklyLeft }) : null}
         // Played: the tile shows its result (when it's saved here); else it starts this week's, or picks it up.
         onClick={d.weeklyPlayed ? d.onWeeklyResult : d.onWeekly}
         disabled={d.weeklyPlayed ? !d.onWeeklyResult : !d.weeklyReady || d.loading}
@@ -447,26 +434,20 @@ export function HubTop({ d }: { d: HubTopData }) {
     </div>,
     <div key="streak" data-testid="region-streak-card">
       <ModeTile
-        art={streakArt}
-        icon={<Flame className="text-[#ff9a1f]" />}
+        emblem={streakEmblem}
         title={t("regionStreak.label")}
         href="/pokeguessr/streak"
         testId="region-streak-link"
       />
     </div>,
-    // Pokémon Hunt: a Pokémon on a map (Hunt's question: where would you catch it?).
     <div key="hunt">
-      <ModeTile art={huntMap} icon={<Crosshair className="text-primary" />} title={h("tile.title")} onClick={d.onHunt} button={{ "aria-expanded": d.huntOpen, "aria-controls": "hunt" }} testId="hunt-hub-entry">
-        {/* eslint-disable-next-line @next/next/no-img-element -- static board art */}
-        <img src={boardArtUrl(143)} alt="" aria-hidden className="absolute -right-[4%] -top-[3%] h-[60%] w-auto object-contain drop-shadow-[0_6px_10px_rgb(0_0_0/0.55)] transition-transform duration-500 group-hover:-translate-y-1 group-hover:scale-105" />
-      </ModeTile>
+      <ModeTile emblem={huntEmblem} title={h("tile.title")} onClick={d.onHunt} button={{ "aria-expanded": d.huntOpen, "aria-controls": "hunt" }} testId="hunt-hub-entry" />
     </div>,
   ];
   const versus = [
-    // Each mode as its emblem: crossed swords, the Master Ball, a party.
-    { icon: <Swords />, hero: { icon: <Swords className="text-white" strokeWidth={1.8} />, glow: "#ff3d64", tint: "#b8264f" }, title: t("hub.multi.duels"), onClick: d.onDuels, testId: "geo-home-duels" },
-    { icon: <BallIcon tier="master" />, hero: { icon: <BallIcon tier="master" />, glow: "#b45cff", tint: "#7a35c8" }, title: t("hub.multi.ranked"), onClick: d.onRanked, testId: "geo-home-ranked" },
-    { icon: <Users />, hero: { icon: <Users className="text-white" strokeWidth={1.8} />, glow: "#ffb13d", tint: "#b8741c" }, title: t("hub.multi.party"), onClick: d.onParty, testId: "geo-home-party" },
+    { emblem: duelsEmblem, title: t("hub.multi.duels"), onClick: d.onDuels, testId: "geo-home-duels" },
+    { emblem: rankedEmblem, title: t("hub.multi.ranked"), onClick: d.onRanked, testId: "geo-home-ranked" },
+    { emblem: partyEmblem, title: t("hub.multi.party"), onClick: d.onParty, testId: "geo-home-party" },
   ];
 
   return (
@@ -475,43 +456,43 @@ export function HubTop({ d }: { d: HubTopData }) {
       <HowToHelpButton className="gh-fade absolute right-2 top-2 z-10 text-white max-md:scale-90 md:right-5 md:top-4" />
 
       {/*
-        Phone: a column (the title, the Daily, then every other mode in a row along the bottom). Wider: a grid, the
-        Daily and the single-player 2 × 2 down the left, the world in the middle, multiplayer down the right; the
-        bottom row's wrapper steps aside (display: contents) so its cards are the grid's own.
+        Phone: a column (the title, the Daily, then every other mode in a row along the bottom). Wider: the Daily and
+        the single-player cards stacked down the left, the world in the middle, the multiplayer cards down the right;
+        the bottom row's wrappers step aside (display: contents) so the same cards serve both.
       */}
       <div
         className={cn(
-          "relative z-[1] flex h-full flex-col px-4 pt-3 [--cw:clamp(15.5rem,21vw,18.5rem)] [--gap:clamp(0.4rem,1.2vh,0.65rem)]",
-          "md:grid md:grid-cols-[calc((var(--cw)-var(--gap))/2)_calc((var(--cw)-var(--gap))/2)_1fr_var(--cw)] md:grid-rows-[1fr_auto_auto_auto_auto_1fr] md:gap-[var(--gap)]",
+          "relative z-[1] flex h-full flex-col px-4 pt-3 [--cw:clamp(15.5rem,21vw,19rem)] [--gap:clamp(0.55rem,1.6vh,0.85rem)]",
+          "md:grid md:grid-cols-[var(--cw)_1fr_var(--cw)] md:grid-rows-[1fr_auto_auto_1fr] md:gap-x-6",
           "md:px-[max(1rem,calc(50vw-42rem))] md:pb-[clamp(1rem,4vh,2.5rem)] md:pt-[clamp(0.75rem,3vh,2rem)]",
         )}
       >
         <div className="md:absolute md:left-1/2 md:top-[clamp(0.75rem,3vh,2rem)] md:-translate-x-1/2">
           <Title />
         </div>
-        <div className="gh-in-s mt-3 md:col-span-2 md:col-start-1 md:row-start-2 md:mt-0" style={delay(1)}>
+        <div className="gh-in-s mt-3 md:col-start-1 md:row-start-2 md:mb-[calc(var(--gap)*1.6)] md:mt-0" style={delay(1)}>
           <DailyCard d={d} />
         </div>
-        <p className={cn(LABEL, "gh-in-s mt-1 px-0.5 max-md:hidden md:col-span-2 md:col-start-1 md:row-start-3")} style={delay(2)}>
-          {t("hub.play.eyebrow")}
-        </p>
-        <div className="-mx-4 mb-4 mt-auto flex snap-x gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] md:contents">
-          {tiles.map((tile, i) => (
-            <div key={i} className={cn("gh-in-s [&>div]:h-full", SLOT, TILE_AT[i])} style={delay(3 + i)}>
-              {tile}
-            </div>
-          ))}
-          <div className="contents md:col-start-4 md:row-[1/-1] md:flex md:flex-col md:justify-center md:gap-[var(--gap)]">
-            <p className={cn(LABEL, "gh-in-e px-0.5 max-md:hidden")} style={delay(1)}>
+        <div className="-mx-4 mb-4 mt-auto flex snap-x gap-3 overflow-x-auto px-4 pb-1 pt-6 [scrollbar-width:none] md:contents">
+          <div className="contents md:col-start-1 md:row-start-3 md:flex md:flex-col md:gap-[var(--gap)]">
+            <span className={cn(TAB, "gh-in-s -mb-[var(--gap)] self-start max-md:hidden md:ml-3")} style={delay(2)}>
+              {t("hub.play.eyebrow")}
+            </span>
+            {tiles.map((tile, i) => (
+              <div key={i} className={cn("gh-in-s [&>div]:h-full", SLOT)} style={delay(3 + i)}>
+                {tile}
+              </div>
+            ))}
+          </div>
+          <div className="contents md:col-start-3 md:row-[2/4] md:flex md:flex-col md:justify-center md:gap-[var(--gap)]">
+            <span className={cn(TAB, "gh-in-e -mb-[var(--gap)] self-start max-md:hidden md:ml-3")} style={delay(1)}>
               {t("hub.multi.title")}
-            </p>
-            <div className="contents md:grid md:grid-cols-2 md:gap-[var(--gap)]">
-              {versus.map((v, i) => (
-                <div key={v.testId} className={cn("gh-in-e [&>button]:h-full", SLOT, i === 2 && "md:col-span-2")} style={delay(2 + i)}>
-                  <ModeTile hero={v.hero} icon={v.icon} title={v.title} onClick={v.onClick} testId={v.testId} />
-                </div>
-              ))}
-            </div>
+            </span>
+            {versus.map((v, i) => (
+              <div key={v.testId} className={cn("gh-in-e [&>button]:h-full", SLOT)} style={delay(2 + i)}>
+                <ModeTile emblem={v.emblem} title={v.title} onClick={v.onClick} testId={v.testId} />
+              </div>
+            ))}
           </div>
         </div>
       </div>
