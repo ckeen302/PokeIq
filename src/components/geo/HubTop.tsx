@@ -542,7 +542,7 @@ function Backdrop({ pattern, pulse }: { pattern: Pattern; pulse?: boolean }) {
       {pk && pattern === "party" && <PartyTrio pk={pk} />}
       {pk === "sil" && pattern === "hunt" && (
         <span
-          className="absolute -bottom-[3%] right-[31%] aspect-[607/640] h-[100%] bg-white/[0.16] [.light_&]:bg-[#5a46d0]/[0.2]"
+          className="absolute -bottom-[3%] right-[31%] aspect-[596/640] h-[100%] bg-white/[0.16] [.light_&]:bg-[#5a46d0]/[0.2]"
           style={{ maskImage: `url(${huntDetective.src})`, WebkitMaskImage: `url(${huntDetective.src})`, maskSize: "contain", WebkitMaskSize: "contain", maskRepeat: "no-repeat", WebkitMaskRepeat: "no-repeat", maskPosition: "center bottom", WebkitMaskPosition: "center bottom" }}
         />
       )}
