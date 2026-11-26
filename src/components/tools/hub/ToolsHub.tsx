@@ -33,8 +33,8 @@ function ToolCard({ tool, open, priority }: { tool: HubTool; open: string; prior
         />
       </div>
       <span className="absolute inset-x-0 bottom-0 -z-10 h-3/5 bg-gradient-to-t from-[hsl(252_50%_5%/0.95)] to-transparent sm:hidden lg:block lg:h-[78%] lg:via-[hsl(252_50%_5%/0.7)] lg:via-40%" aria-hidden />
-      <div className="absolute inset-x-0 bottom-0 p-3.5 sm:inset-y-0 sm:right-auto sm:flex sm:w-[48%] sm:flex-col sm:justify-end sm:p-5 lg:top-auto lg:w-full lg:p-6">
-        <h2 className="font-display text-[19px] font-bold uppercase italic leading-[0.92] tracking-tight text-white [text-shadow:0_4px_18px_rgb(0_0_0/0.6)] [overflow-wrap:anywhere] sm:text-[min(26px,6.6cqw)] lg:text-[30px] xl:text-[32px]">
+      <div className="absolute inset-x-0 bottom-0 p-3.5 sm:inset-y-0 sm:right-auto sm:flex sm:w-[52%] sm:flex-col sm:justify-end sm:p-5 lg:top-auto lg:w-full lg:p-6">
+        <h2 className="font-display text-[19px] font-bold uppercase italic leading-[0.92] tracking-tight text-white [text-shadow:0_4px_18px_rgb(0_0_0/0.6)] [overflow-wrap:anywhere] sm:text-[min(26px,6cqw)] lg:text-[30px] xl:text-[32px]">
           {tool.title}
         </h2>
         <p className="pt-2 text-[15px] leading-snug text-white/75 max-lg:hidden lg:line-clamp-2">{tool.subtitle}</p>
