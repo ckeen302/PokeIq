@@ -174,6 +174,8 @@ export const NAMESPACES = [
   "rooms-page",
   "share",
   "share-page",
+  "shiny-counter",
+  "shiny-counter-page",
   "site",
   "sizes-3d",
   "sizes-lines",
