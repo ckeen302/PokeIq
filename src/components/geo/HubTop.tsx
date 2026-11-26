@@ -182,19 +182,25 @@ function Space({ children }: { children: React.ReactNode }) {
     <section
       className={cn(
         // Full width under the header (the page's own padding pulled back), down to the tab bar on a phone.
-        "relative mx-[calc(50%-50vw)] -mt-8 overflow-hidden bg-[#09081a] text-white max-md:-mt-6",
-        "h-[calc(100svh-7rem-env(safe-area-inset-bottom))] min-h-[36rem] lg:h-[calc(100svh-4rem)]",
+        "relative mx-[calc(50%-50vw)] -mt-8 overflow-hidden bg-[#09081a] text-white max-md:-mt-6 [.light_&]:bg-[#e3ddff]",
+        // A phone's landing runs as long as it needs (nothing laid over the trainer); wider, it fills the screen.
+        "md:h-[calc(100svh-7rem-env(safe-area-inset-bottom))] md:min-h-[36rem] lg:h-[calc(100svh-4rem)]",
       )}
       data-testid="geo-home"
     >
       <style>{MOTION}</style>
-      {/* Two layers of the starfield, drifting at different speeds (a slow parallax), and a few stars that twinkle. */}
+      {/* Light mode: still space, but bright: a pale lavender void lit by nebulae, the sun flaring in from the upper left, ink-dark stars. */}
+      <div className="pointer-events-none absolute inset-0 hidden [.light_&]:block" aria-hidden>
+        <div className="absolute inset-0 bg-[radial-gradient(55%_50%_at_12%_4%,rgb(255_247_224/0.95)_0%,rgb(255_226_240/0.5)_26%,transparent_55%),radial-gradient(45%_40%_at_88%_30%,rgb(196_224_255/0.75)_0%,transparent_70%),radial-gradient(50%_45%_at_22%_78%,rgb(255_205_236/0.55)_0%,transparent_70%),radial-gradient(70%_60%_at_60%_100%,rgb(186_172_255/0.6)_0%,transparent_75%),linear-gradient(180deg,#e6e0ff_0%,#d9d1ff_55%,#ece8ff_100%)]" />
+        <div className="absolute inset-0 opacity-70 [background-image:radial-gradient(circle,rgb(76_60_170/0.55)_0_1px,transparent_1.6px),radial-gradient(circle,rgb(76_60_170/0.35)_0_0.8px,transparent_1.3px)] [background-position:0_0,37px_53px] [background-size:113px_97px,71px_83px]" />
+      </div>
+      {/* Two layers of the starfield, drifting at different speeds (a slow parallax), and a few stars that twinkle (at night only). */}
       {/* Each layer is a tile wider than the screen, slid along by a transform (moving a background repaints the whole screen every frame). */}
-      <div className="gh-stars pointer-events-none absolute inset-y-0 left-0 w-[calc(100%+1200px)] opacity-90 [--dx:-1200px] [background-image:url(/geo/hub-stars.svg)] [background-size:1200px_800px]" aria-hidden />
-      <div className="gh-stars pointer-events-none absolute inset-y-0 left-0 w-[calc(100%+900px)] opacity-90 [--dx:-900px] [background-image:url(/geo/hub-stars.svg)] [background-position:300px_200px] [background-size:900px_600px]" aria-hidden />
+      <div className="gh-stars pointer-events-none absolute inset-y-0 left-0 w-[calc(100%+1200px)] opacity-90 [.light_&]:hidden [--dx:-1200px] [background-image:url(/geo/hub-stars.svg)] [background-size:1200px_800px]" aria-hidden />
+      <div className="gh-stars pointer-events-none absolute inset-y-0 left-0 w-[calc(100%+900px)] opacity-90 [.light_&]:hidden [--dx:-900px] [background-image:url(/geo/hub-stars.svg)] [background-position:300px_200px] [background-size:900px_600px]" aria-hidden />
       <div className="pointer-events-none absolute inset-0" aria-hidden>
         {TWINKLES.map((s, i) => (
-          <span key={i} className="gh-twinkle absolute rounded-full bg-white" style={{ left: `${s.l}%`, top: `${s.t}%`, width: s.s, height: s.s, animationDelay: `${s.d}s`, animationDuration: `${s.p}s` }} />
+          <span key={i} className="gh-twinkle absolute rounded-full bg-white [.light_&]:bg-[#4c3caa]" style={{ left: `${s.l}%`, top: `${s.t}%`, width: s.s, height: s.s, animationDelay: `${s.d}s`, animationDuration: `${s.p}s` }} />
         ))}
       </div>
       {children}
@@ -302,14 +308,14 @@ function WorldRise({ className, focus, spots, cheer, covered, hopRef }: { classN
             />
             {/* The light stays where it is while the world turns: lit up and to the left, night falling to the lower right. */}
             <div
-              className="absolute inset-0"
+              className="absolute inset-0 [.light_&]:opacity-40"
               style={{
                 background: "radial-gradient(circle at 32% 22%, rgb(255 255 255 / .10), transparent 42%), radial-gradient(circle at 34% 26%, transparent 48%, rgb(8 10 40 / .30) 78%, rgb(6 6 24 / .62) 100%)",
               }}
             />
             {/* Evening: a soft edge, warm where the sun sets, on the right (still: a moving layer this size cost frames). */}
             <div
-              className="absolute left-[-80%] top-[-80%] h-[260%] w-[260%] [transform:translate(-16%,2%)]"
+              className="absolute left-[-80%] top-[-80%] h-[260%] w-[260%] [transform:translate(-16%,2%)] [.light_&]:hidden"
               style={{ background: "radial-gradient(circle at 50% 50%, transparent 0 29%, rgb(255 160 90 / .14) 31%, rgb(40 20 80 / .34) 33.5%, rgb(8 8 34 / .58) 37.5%, rgb(6 6 28 / .64) 100%)" }}
               data-testid="geo-home-night"
             />
@@ -349,7 +355,8 @@ function WorldRise({ className, focus, spots, cheer, covered, hopRef }: { classN
               </span>
             ))}
             {WORLD_LABELS.map(([n, x, y]) => (
-              <span key={n} className="absolute" style={{ left: `${x}%`, top: `${y}%` }}>
+              // On a phone the world is wider than the screen: its names would poke in at the edges, so they're left off.
+              <span key={n} className="absolute max-md:hidden" style={{ left: `${x}%`, top: `${y}%` }}>
                 <span className="gh-unspin block">
                   <span
                     className={cn(
@@ -372,7 +379,7 @@ function WorldRise({ className, focus, spots, cheer, covered, hopRef }: { classN
       </div>
       {/* Their own 3D trainer, else a stand-in, the creator's first look (until everyone can make one). */}
       <div className="pointer-events-auto absolute -translate-x-1/2" style={{ left: "var(--gx)", top: "calc(var(--gt) - var(--ah) * 0.9)", width: "calc(var(--ah) * 0.8)", height: "var(--ah)" }} {...mood.events}>
-        <span className="gh-shadow absolute inset-x-[18%] bottom-[7%] h-[6%] rounded-[50%] bg-[#05040f]/60 blur-[5px]" aria-hidden />
+        <span className="gh-shadow absolute inset-x-[18%] bottom-[7%] h-[6%] rounded-[50%] bg-[#05040f]/60 blur-[5px] [.light_&]:bg-[#2a1f6e]/20" aria-hidden />
         <div className="gh-drop absolute inset-0" data-testid="geo-home-trainer">
           <div ref={hopRef} className="absolute inset-0 origin-bottom">
             <Avatar3D
@@ -405,10 +412,10 @@ function Title() {
   const t = useT(geoSolo);
   return (
     <div className="gh-in-d text-center">
-      <h1 className={cn(TITLE, "text-[2.1rem] tracking-tight [text-shadow:0_3px_0_#120f24,0_6px_18px_rgb(0_0_0/0.6)] md:text-[clamp(1.9rem,5.6vh,3.25rem)]")}>
+      <h1 className={cn(TITLE, "text-[2.1rem] tracking-tight [text-shadow:0_3px_0_#120f24,0_6px_18px_rgb(0_0_0/0.6)] md:text-[clamp(1.9rem,5.6vh,3.25rem)] [.light_&]:text-[#1d1552] [.light_&]:[text-shadow:0_3px_0_rgb(255_255_255/0.85),0_8px_24px_rgb(120_100_255/0.35)]")}>
         Poké<span className="text-primary">Guessr</span>
       </h1>
-      <p className="mt-1.5 text-[clamp(0.8rem,2.2vh,1rem)] text-white/70 max-md:hidden">{t("hub.tagline")}</p>
+      <p className="mt-1.5 text-[clamp(0.8rem,2.2vh,1rem)] text-white/70 max-md:hidden [.light_&]:font-medium [.light_&]:text-[#2a1f6e]/80">{t("hub.tagline")}</p>
     </div>
   );
 }
@@ -418,12 +425,12 @@ function StreakDays({ days }: { days: HubTopData["days"] }) {
   const t = useT(geoSolo);
   const fmt = new Intl.DateTimeFormat(t.locale, { weekday: "narrow", timeZone: "UTC" });
   return (
-    <ol className="flex gap-1" aria-hidden>
+    <ol className="flex gap-1 md:gap-[3px]" aria-hidden>
       {days.map((d) => (
         <li key={d.date} className="flex flex-col items-center gap-1">
           <span
             className={cn(
-              "flex h-6 w-6 items-center justify-center rounded-md md:h-[1.6rem] md:w-[1.6rem]",
+              "flex h-6 w-6 items-center justify-center rounded-md md:h-[clamp(1.2rem,1.4vw,1.6rem)] md:w-[clamp(1.2rem,1.4vw,1.6rem)]",
               d.played ? "bg-gradient-to-b from-[#ffd23c] to-[#ff9a1f] text-[#3a2200] shadow-[inset_0_-2px_0_rgb(0_0_0/0.18)]" : d.today ? "bg-[#120f24]/70 ring-2 ring-[#ffd23c]/80" : "bg-[#120f24]/60 ring-1 ring-white/10",
             )}
           >
@@ -442,15 +449,16 @@ function DailyCard({ d, onPlay }: { d: HubTopData; onPlay(): void }) {
   const fmt = (n: number) => formatNumber(n, t.locale);
   return (
     <div className={cn(CARD, "relative p-3 md:p-3.5")} data-testid="geo-daily-card">
+      <Backdrop pattern="daily" />
       {/* The Daily's emblem, top right like every mode's. */}
-      <Image src={dailyEmblem} alt="" aria-hidden sizes="96px" className="pointer-events-none absolute -top-7 right-1 h-[clamp(5rem,12.5vh,6.75rem)] w-auto rotate-[6deg] md:-right-3 md:-top-10 md:h-[clamp(3.75rem,8.5vh,4.75rem)] drop-shadow-[0_10px_10px_rgb(10_5_40/0.55)]" />
+      <Image src={dailyEmblem} alt="" aria-hidden sizes="96px" className="pointer-events-none absolute -top-6 right-1 h-[4.5rem] w-auto rotate-[6deg] md:-right-3 md:-top-9 md:h-[clamp(3rem,3.6vw,4.75rem)] drop-shadow-[0_10px_10px_rgb(10_5_40/0.55)]" />
       <div className="relative">
-        <p className={cn(LABEL, "flex items-center gap-1.5 text-[#ffd23c] md:pr-14")}>
+        <p className={cn(LABEL, "flex items-center gap-1.5 whitespace-nowrap text-[#ffd23c] md:pr-10 md:text-[clamp(9px,0.7vw,11px)]")}>
           <Compass className="h-3.5 w-3.5" aria-hidden />
           {t("hub.daily.label", { num: d.dailyNum ?? "" })}
           {d.dailyMap && <span className="text-[#c8bfff]">· {d.dailyMap}</span>}
         </p>
-        <h2 className={cn(TITLE, "mt-1.5 text-[clamp(1.2rem,3.4vh,1.55rem)] normal-case tracking-normal [:lang(en)_&]:capitalize")}>{t("hub.daily.title")}</h2>
+        <h2 className={cn(TITLE, "mt-1.5 text-[clamp(1.2rem,3.4vh,1.55rem)] normal-case tracking-normal md:text-[clamp(1rem,1.2vw,1.55rem)] [:lang(en)_&]:capitalize")}>{t("hub.daily.title")}</h2>
         <div className="mt-2.5 flex flex-wrap items-end justify-between gap-3 max-md:flex-nowrap">
           <StreakDays days={d.days} />
           {d.streak > 0 && (
@@ -463,8 +471,8 @@ function DailyCard({ d, onPlay }: { d: HubTopData; onPlay(): void }) {
         <div className="mt-3">
           {d.dailyPlayed ? (
             <div className="space-y-1.5 rounded-lg bg-[#120f24]/60 px-3 py-2" data-testid="geo-daily-played">
-              <div className="flex items-center justify-between gap-2">
-                <p className="font-display text-sm font-bold italic text-[#ffd23c]">{d.dailyScore !== undefined ? t("hub.daily.scored", { score: fmt(d.dailyScore) }) : t("hub.played")}</p>
+              <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5">
+                <p className="whitespace-nowrap font-display text-sm font-bold italic text-[#ffd23c]">{d.dailyScore !== undefined ? t("hub.daily.scored", { score: fmt(d.dailyScore) }) : t("hub.played")}</p>
                 {d.onDailyResult && (
                   <button type="button" onClick={d.onDailyResult} className="flex shrink-0 items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 font-display text-[11px] font-bold uppercase italic tracking-wide text-white ring-1 ring-white/20 transition-colors hover:bg-white/20" data-testid="geo-daily-result">
                     <Trophy className="h-3.5 w-3.5" aria-hidden />
@@ -472,14 +480,14 @@ function DailyCard({ d, onPlay }: { d: HubTopData; onPlay(): void }) {
                   </button>
                 )}
               </div>
-              <div className="[&>div]:justify-start [&>div]:text-white/75">
+              <div className="[&>div]:justify-start [&>div]:text-white/75 [&_span]:text-white">
                 <NextDailyCountdown label={g("results.nextDaily")} />
               </div>
             </div>
           ) : (
             <button
               type="button"
-              className={cn(GREEN, "h-10 w-full text-base md:h-[clamp(2.4rem,6vh,2.9rem)] md:text-[clamp(0.95rem,2.6vh,1.15rem)]")}
+              className={cn(GREEN, "h-10 w-full text-base md:h-[clamp(2.1rem,2.5vw,2.9rem)] md:text-[clamp(0.8rem,0.95vw,1.15rem)]")}
               disabled={d.loading || !d.dailyNum}
               onClick={() => {
                 onPlay();
@@ -498,9 +506,57 @@ function DailyCard({ d, onPlay }: { d: HubTopData; onPlay(): void }) {
   );
 }
 
+const svgUrl = (svg: string) => `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+const LINE = "fill='none' stroke='white' stroke-opacity='.09' stroke-width='1.2'";
+/**
+ * Each card's faint backdrop, after GeoGuessr's: line art in white at a few percent, what the mode is about
+ * (a calendar's grid, a globe's lines, speed lines, radar rings, crossed slashes, rank chevrons, confetti).
+ */
+const PATTERNS = {
+  daily: { image: svgUrl(`<svg xmlns='http://www.w3.org/2000/svg' width='26' height='26'><path d='M26 0V26H0' ${LINE}/></svg>`), size: "26px 26px", at: "0 0" },
+  classic: {
+    image: svgUrl(
+      `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'><g ${LINE}><circle cx='60' cy='60' r='56'/><ellipse cx='60' cy='60' rx='38' ry='56'/><ellipse cx='60' cy='60' rx='16' ry='56'/><path d='M60 4V116M4 60H116M12 32H108M12 88H108'/></g></svg>`,
+    ),
+    size: "auto 165%",
+    at: "88% 40%",
+  },
+  streak: { image: svgUrl(`<svg xmlns='http://www.w3.org/2000/svg' width='30' height='30'><path d='M-4 26L26 -4M11 41L41 11' ${LINE}/></svg>`), size: "30px 30px", at: "0 0" },
+  hunt: {
+    image: svgUrl(
+      `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 160'><g ${LINE}><circle cx='80' cy='80' r='18'/><circle cx='80' cy='80' r='38'/><circle cx='80' cy='80' r='58'/><circle cx='80' cy='80' r='78'/><path d='M80 0V160M0 80H160'/></g></svg>`,
+    ),
+    size: "auto 190%",
+    at: "86% 45%",
+  },
+  duels: { image: svgUrl(`<svg xmlns='http://www.w3.org/2000/svg' width='22' height='22'><path d='M0 0L22 22M22 0L0 22' ${LINE}/></svg>`), size: "22px 22px", at: "0 0" },
+  ranked: { image: svgUrl(`<svg xmlns='http://www.w3.org/2000/svg' width='28' height='18'><path d='M2 14L14 5L26 14' ${LINE}/></svg>`), size: "28px 18px", at: "0 0" },
+  party: {
+    image: svgUrl(
+      `<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><g fill='white' fill-opacity='.1'><rect x='6' y='8' width='7' height='3' rx='1' transform='rotate(30 9 9)'/><circle cx='40' cy='12' r='2'/><rect x='48' y='34' width='7' height='3' rx='1' transform='rotate(-40 51 35)'/><circle cx='18' cy='44' r='2.4'/><rect x='30' y='52' width='6' height='3' rx='1' transform='rotate(70 33 53)'/><circle cx='58' cy='58' r='1.6'/><path d='M26 24l2 4l4 1l-3 3l1 4l-4-2l-4 2l1-4l-3-3l4-1z'/></g></svg>`,
+    ),
+    size: "64px 64px",
+    at: "0 0",
+  },
+} as const;
+type Pattern = keyof typeof PATTERNS;
+
+/** A card's backdrop, faint, fading in from its left so the name stays on plain purple. */
+function Backdrop({ pattern }: { pattern: Pattern }) {
+  const p = PATTERNS[pattern];
+  return (
+    <span
+      className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl [mask-image:linear-gradient(90deg,rgb(0_0_0/.35),black_55%)]"
+      style={{ backgroundImage: p.image, backgroundSize: p.size, backgroundPosition: p.at, backgroundRepeat: p.size.includes("%") ? "no-repeat" : "repeat" }}
+      aria-hidden
+    />
+  );
+}
+
 /** A mode as a card: its name top left, its emblem big on the right, bursting out of the card's top edge. */
 function ModeTile({
   emblem,
+  pattern,
   title,
   sub,
   onClick,
@@ -510,6 +566,7 @@ function ModeTile({
   button,
 }: {
   emblem: StaticImageData;
+  pattern: Pattern;
   title: string;
   /** Where the player stands in it (time left, a best), under the name. */
   sub?: string | null;
@@ -521,6 +578,7 @@ function ModeTile({
 }) {
   const body = (
     <>
+      <Backdrop pattern={pattern} />
       <Image
         src={emblem}
         alt=""
@@ -529,7 +587,7 @@ function ModeTile({
         className="pointer-events-none absolute -top-[12%] right-[4%] h-[94%] w-auto drop-shadow-[0_10px_10px_rgb(10_5_40/0.55)] transition-transform duration-300 ease-out group-hover:-translate-y-1.5 group-hover:rotate-[-4deg] group-hover:scale-105 motion-reduce:transition-none"
       />
       <span className="relative block min-w-0 max-w-[58%] px-3.5 pt-3.5">
-        <span className="block font-display text-[clamp(1.05rem,2.6vh,1.35rem)] font-bold italic leading-[1.05] text-white [text-shadow:0_2px_0_rgb(18_10_60/0.6)] [:lang(en)_&]:capitalize">{title}</span>
+        <span className="block font-display text-[1.05rem] font-bold italic leading-[1.05] text-white [text-shadow:0_2px_0_rgb(18_10_60/0.6)] md:text-[clamp(0.95rem,1.1vw,1.45rem)] [:lang(en)_&]:capitalize">{title}</span>
         {sub && <span className="mt-1 block truncate text-[13px] font-semibold text-[#c9c0ff]">{sub}</span>}
       </span>
     </>
@@ -549,8 +607,15 @@ function ModeTile({
   );
 }
 
-/** A mode's slot: a card in the phone's row along the bottom (room above it for the emblem); wider, a card of its column, GeoGuessr's shape (2.24 wide to 1 tall). */
-const SLOT = "h-[5.5rem] w-[12rem] shrink-0 snap-start md:aspect-[2.24/1] md:h-auto md:w-full";
+/**
+ * The wide layout's measures, shared by the world and the cards around it: --cw a card column's width (GeoGuessr's
+ * share of the screen), --side the margin at each edge (from 1280px wide, room for a 160px-wide ad beside the cards).
+ * The columns sit the same distance from both edges, and the world fits between them with the same gap each side.
+ */
+const LAYOUT = "[--cw:min(clamp(12.5rem,13.1vw,17rem),calc((100svh-25rem)/1.8))] [--side:clamp(1rem,calc((100vw-1100px)*0.9),11rem)]";
+
+/** A mode's slot: on a phone a cell of its section's two-column grid; wider, a card of its column, GeoGuessr's shape (2.24 wide to 1 tall). */
+const SLOT = "h-[5.25rem] md:aspect-[2.24/1] md:h-auto md:w-full";
 
 export function HubTop({ d }: { d: HubTopData }) {
   const t = useT(geoSolo);
@@ -572,6 +637,7 @@ export function HubTop({ d }: { d: HubTopData }) {
     <div key="classic" data-testid="geo-solo-card">
       <ModeTile
         emblem={classicEmblem}
+        pattern="classic"
         title={t("hub.solo.title")}
         onClick={d.onClassic}
         button={{ "aria-expanded": d.soloOpen, "aria-controls": "solo" }}
@@ -581,62 +647,65 @@ export function HubTop({ d }: { d: HubTopData }) {
     <div key="streak" data-testid="region-streak-card">
       <ModeTile
         emblem={streakEmblem}
+        pattern="streak"
         title={t("regionStreak.label")}
         href="/pokeguessr/streak"
         testId="region-streak-link"
       />
     </div>,
     <div key="hunt">
-      <ModeTile emblem={huntEmblem} title={h("tile.title")} onClick={d.onHunt} button={{ "aria-expanded": d.huntOpen, "aria-controls": "hunt" }} testId="hunt-hub-entry" />
+      <ModeTile emblem={huntEmblem} pattern="hunt" title={h("tile.title")} onClick={d.onHunt} button={{ "aria-expanded": d.huntOpen, "aria-controls": "hunt" }} testId="hunt-hub-entry" />
     </div>,
   ];
   const versus = [
-    { emblem: duelsEmblem, title: t("hub.multi.duels"), onClick: d.onDuels, testId: "geo-home-duels" },
-    { emblem: rankedEmblem, title: t("hub.multi.ranked"), onClick: d.onRanked, testId: "geo-home-ranked" },
-    { emblem: partyEmblem, title: t("hub.multi.party"), onClick: d.onParty, testId: "geo-home-party" },
+    { emblem: duelsEmblem, pattern: "duels" as const, title: t("hub.multi.duels"), onClick: d.onDuels, testId: "geo-home-duels" },
+    { emblem: rankedEmblem, pattern: "ranked" as const, title: t("hub.multi.ranked"), onClick: d.onRanked, testId: "geo-home-ranked" },
+    { emblem: partyEmblem, pattern: "party" as const, title: t("hub.multi.party"), onClick: d.onParty, testId: "geo-home-party" },
   ];
 
   return (
     <Space>
-      <WorldRise focus={focus} spots={d.dailyPlayed ? d.dailySpots : undefined} cheer={d.dailyPlayed} covered={d.covered} hopRef={trainer} className="[--ah:9rem] [--gd:min(98vw,30rem)] [--gt:calc(100%-20rem)] md:[--ah:clamp(8.5rem,26vh,15rem)] md:[--gd:min(44vw,74vh)] md:[--gt:max(13rem,40%)]" />
-      <HowToHelpButton className="gh-fade absolute right-2 top-2 z-10 text-white max-md:scale-90 md:right-5 md:top-4" />
+      <WorldRise focus={focus} spots={d.dailyPlayed ? d.dailySpots : undefined} cheer={d.dailyPlayed} covered={d.covered} hopRef={trainer} className={`${LAYOUT} [--ah:9rem] [--gd:min(98vw,30rem)] [--gt:15.5rem] md:[--ah:clamp(8.5rem,26vh,15rem)] md:[--gd:min(44vw,74vh,calc(100vw-2*(var(--side)+var(--cw)+3rem)))] md:[--gt:max(13rem,40%)]`} />
+      <HowToHelpButton className="gh-fade absolute right-2 top-2 z-10 text-white max-md:scale-90 md:right-5 md:top-4 [.light_&]:text-[#2a1f6e]" />
 
       {/*
-        Phone: a column (the title, the Daily, then every other mode in a row along the bottom). Wider: the Daily and
-        the single-player cards stacked down the left, the world in the middle, the multiplayer cards down the right;
-        the bottom row's wrappers step aside (display: contents) so the same cards serve both.
+        Phone: a column (the title, room for the trainer on the world, the Daily, then each section's cards two to a
+        row). Wider: the Daily and the single-player cards stacked down the left, the world in the middle, the
+        multiplayer cards down the right; the column's wrapper steps aside (display: contents) so the same cards serve both.
       */}
       <div
         className={cn(
-          "pointer-events-none relative z-[1] flex h-full flex-col px-4 pt-3 [&_button]:pointer-events-auto [&_a]:pointer-events-auto [--cw:min(clamp(13rem,17.5vw,16.5rem),calc((100svh-25rem)/1.8))] [--gap:clamp(0.55rem,1.6vh,0.85rem)]",
+          `pointer-events-none relative z-[1] flex h-full flex-col px-4 pt-3 [&_button]:pointer-events-auto [&_a]:pointer-events-auto ${LAYOUT} [--gap:clamp(0.45rem,0.6vw,0.85rem)]`,
           "md:grid md:grid-cols-[var(--cw)_1fr_var(--cw)] md:grid-rows-[1fr_auto_auto_1fr] md:gap-x-6",
-          "md:px-[max(1rem,calc(50vw-42rem))] md:pb-[clamp(1rem,4vh,2.5rem)] md:pt-[clamp(0.75rem,3vh,2rem)]",
+          "md:px-[var(--side)] md:pb-[clamp(1rem,4vh,2.5rem)] md:pt-[clamp(0.75rem,3vh,2rem)]",
         )}
       >
         <div className="md:absolute md:left-1/2 md:top-[clamp(0.75rem,3vh,2rem)] md:-translate-x-1/2">
           <Title />
         </div>
+        {/* Phone: the trainer and the top of the world get this room, clear of every card. */}
+        <div className="h-[12.5rem] shrink-0 md:hidden" aria-hidden />
         <div className="gh-in-s pointer-events-auto mt-3 md:col-start-1 md:row-start-2 md:mb-[calc(var(--gap)*1.6)] md:mt-0" style={delay(1)} {...points("world")}>
           <DailyCard d={d} onPlay={() => hop(trainer.current)} />
         </div>
-        <div className="-mx-4 mb-4 mt-auto flex snap-x scroll-px-4 gap-3 overflow-x-auto px-4 pb-1 pt-6 [scrollbar-width:none] max-md:pointer-events-auto md:contents">
-          <div className="contents md:col-start-1 md:row-start-3 md:flex md:flex-col md:gap-[var(--gap)]">
-            <span className={cn(TAB, "gh-in-s -mb-[var(--gap)] self-start max-md:hidden md:ml-3")} style={delay(2)}>
+        <div className="mt-6 flex flex-col gap-6 pb-16 max-md:pointer-events-auto md:contents">
+          <div className="grid grid-cols-2 gap-x-3 gap-y-4 md:col-start-1 md:row-start-3 md:flex md:flex-col md:gap-[var(--gap)]">
+            <span className={cn(TAB, "gh-in-s col-span-2 ml-3 -mb-[var(--gap)] self-start justify-self-start max-md:-mb-4")} style={delay(2)}>
               {t("hub.play.eyebrow")}
             </span>
             {tiles.map((tile, i) => (
-              <div key={i} className={cn("gh-in-s pointer-events-auto [&>div]:h-full", SLOT)} style={delay(3 + i)} {...points(tileFocus[i])}>
+              <div key={i} className={cn("gh-in-s pointer-events-auto [&>div]:h-full", SLOT, i === 2 && "max-md:col-span-2")} style={delay(3 + i)} {...points(tileFocus[i])}>
                 {tile}
               </div>
             ))}
           </div>
-          <div className="contents md:col-start-3 md:row-[2/4] md:flex md:flex-col md:justify-center md:gap-[var(--gap)]">
-            <span className={cn(TAB, "gh-in-e -mb-[var(--gap)] self-start max-md:hidden md:ml-3")} style={delay(1)}>
+          <div className="grid grid-cols-2 gap-x-3 gap-y-4 md:col-start-3 md:row-[2/4] md:flex md:flex-col md:justify-center md:gap-[var(--gap)]">
+            <span className={cn(TAB, "gh-in-e col-span-2 ml-3 -mb-[var(--gap)] self-start justify-self-start max-md:-mb-4")} style={delay(1)}>
               {t("hub.multi.title")}
             </span>
             {versus.map((v, i) => (
-              <div key={v.testId} className={cn("gh-in-e [&>button]:h-full", SLOT)} style={delay(2 + i)}>
-                <ModeTile emblem={v.emblem} title={v.title} onClick={v.onClick} testId={v.testId} />
+              <div key={v.testId} className={cn("gh-in-e [&>button]:h-full", SLOT, i === 2 && "max-md:col-span-2")} style={delay(2 + i)}>
+                <ModeTile emblem={v.emblem} pattern={v.pattern} title={v.title} onClick={v.onClick} testId={v.testId} />
               </div>
             ))}
           </div>
