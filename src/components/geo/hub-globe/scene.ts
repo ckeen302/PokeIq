@@ -59,7 +59,7 @@ export function createHubGlobe(host: HTMLElement, grab: HTMLElement, o: HubGlobe
   canvas.setAttribute("aria-hidden", "true");
   host.appendChild(canvas);
   const dev = deviceInfo();
-  // A weak device (as on the World globe's lowest start): no multisampling, a pixel ratio of 1, no clouds, fewer frames.
+  // A weak device (as on the World globe's lowest start): no multisampling, a low pixel ratio, no clouds, fewer frames.
   const weak = dev.tier === 0;
   let renderer: THREE.WebGLRenderer;
   const ctx = watchContext(canvas, () => o.onFailed());
@@ -72,7 +72,9 @@ export function createHubGlobe(host: HTMLElement, grab: HTMLElement, o: HubGlobe
   }
   renderer.setClearColor(0x000000, 0);
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const maxPr = weak ? 1 : Math.min(window.devicePixelRatio || 1, dev.tier <= 1 ? 1.5 : 2);
+  // (A weak device draws at the World globe's lowest pixel ratio.)
+  const maxPr = weak ? 0.75 : Math.min(window.devicePixelRatio || 1, dev.tier <= 1 ? 1.5 : 2);
+  const minPr = Math.min(maxPr, 1);
   const idleFps = weak ? 20 : 30;
   let pr = maxPr;
 
@@ -358,8 +360,8 @@ export function createHubGlobe(host: HTMLElement, grab: HTMLElement, o: HubGlobe
     else slow = Math.max(0, slow - rafDt / 2000);
     if (rafDt < 18) fast += rafDt / 1000;
     else fast = 0;
-    if (slow > 1.5 && pr > 1) {
-      pr = Math.max(1, pr - 0.25);
+    if (slow > 1.5 && pr > minPr) {
+      pr = Math.max(minPr, pr - 0.25);
       slow = 0;
       resize();
     } else if (fast > 10 && pr < maxPr) {
