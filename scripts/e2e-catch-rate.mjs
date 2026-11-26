@@ -57,6 +57,18 @@ export async function runCatchRate({ browser, BASE, OUT, errors, step }) {
   const consoleErrors = [];
   fs.mkdirSync(OUT, { recursive: true });
 
+  await step("catch rate: its card on /tools opens it", async () => {
+    const c = await newContext(browser, BASE);
+    const p = await c.newPage();
+    await p.goto(`${BASE}/tools`, { waitUntil: "load" });
+    const card = p.getByTestId("tool-card-catch-rate");
+    await card.waitFor({ timeout: 15_000 });
+    assert(/Catch Rate Calculator/i.test(await card.innerText()), "the /tools card doesn't say Catch Rate Calculator");
+    await card.click();
+    await p.waitForURL(/\/tools\/catch-rate-calculator$/, { timeout: 15_000 });
+    await c.close();
+  });
+
   await step("catch rate: page HTML (title, H1, explainer, structured data, ranking)", async () => {
     const html = await (await fetch(`${BASE}${PATH}`)).text();
     assert(/<h1[^>]*>Catch Rate Calculator<\/h1>/.test(html), "no H1");

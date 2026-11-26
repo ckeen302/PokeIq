@@ -1,6 +1,7 @@
 {
   "title": "Calculateur de capture",
   "subtitle": "Vos chances de capturer n'importe quel Pokémon avec chaque Ball, de Rubis et Saphir à Écarlate et Violet. Réglez le niveau, les PV et l'altération d'état, et voyez quelle Ball lancer.",
+  "cardSubtitle": "Découvre quelle Poké Ball le capture le mieux.",
   "metaTitle": "Calculateur de capture Pokémon : quelle Ball lancer",
   "metaDescription": "Calculez vos chances de capturer n'importe quel Pokémon avec toutes les Balls à la fois, classées : PV restants, altération d'état, niveau, tour, moment de la journée et plus, dans tous les jeux de Rubis et Saphir à Écarlate et Violet. Avec les vraies formules de capture. Gratuit.",
   "metaSharedTitle": "Capturer {name} : {pct} avec une {ball}",

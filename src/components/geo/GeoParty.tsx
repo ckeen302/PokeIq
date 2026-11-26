@@ -60,7 +60,7 @@ type P = Translator<typeof partyNs.en>;
  * anything changes, with polling as the fallback.
  */
 
-const FIT_MS = 800;
+const FIT_MS = 650;
 /** Names joined as the language does: "Red and Blue", "Red and Blue and Green" (English, as before). */
 const joinNames = (t: P, names: string[]) => names.reduce((a, b) => t("and", { a, b }));
 

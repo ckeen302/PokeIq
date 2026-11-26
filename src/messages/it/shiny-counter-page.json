@@ -1,6 +1,7 @@
 {
   "title": "Contatore caccia shiny",
   "subtitle": "Conta ogni incontro, guarda la tua vera probabilità e metti in bacheca ogni shiny che trovi.",
+  "cardSubtitle": "Conta le tue cacce shiny con le probabilità reali.",
   "metaTitle": "Contatore caccia shiny: conta gli incontri con la vera probabilità",
   "metaDescription": "Un contatore gratuito per la caccia agli shiny in tutti i giochi Pokémon principali: scegli obiettivo, gioco e metodo (Masuda, Poké Radar, NaviDex, pesca a catena, catene SOS, comparse massicce, Potere Brillio, Cromamuleto) e guarda la tua vera probabilità, quella accumulata finora e gli incontri all’ora. Fasi, bacheca e immagini da condividere.",
   "metaSharedFound": "Ho trovato un {pokemon} cromatico dopo {n} incontri",
