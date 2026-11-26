@@ -295,7 +295,9 @@ export function createHubGlobe(host: HTMLElement, layer: HTMLElement, o: HubGlob
   const onUp = (e: PointerEvent) => {
     if (!dragging) return;
     dragging = false;
+    // A throw: it carries on, but never faster than a few turns a minute.
     if (performance.now() - pt > 80) omega = 0;
+    omega = Math.max(-1.4, Math.min(1.4, omega));
     host.releasePointerCapture?.(e.pointerId);
     host.style.cursor = "";
     lastMove = performance.now();
@@ -403,7 +405,7 @@ export function createHubGlobe(host: HTMLElement, layer: HTMLElement, o: HubGlob
       } else {
         // After a drag: coast, then ease back to the world's own turn.
         const want = reduce ? 0 : SPIN;
-        const ease = idle < 900 ? 0.9 : 1.4;
+        const ease = idle < 900 ? 0.7 : 1.2;
         omega += (want - omega) * (1 - Math.exp(-dt / ease));
       }
       // Tipped by a drag: settle back onto the axis.
@@ -427,9 +429,11 @@ export function createHubGlobe(host: HTMLElement, layer: HTMLElement, o: HubGlob
 
   const settled = () => reduce && !dragging && target === null && Math.abs(tiltX) < 1e-3 && Math.abs(omega) < 1e-3 && pool === (focusName === "world" ? null : focusName) && Math.abs(focusK - (pool ? 1 : 0)) < 0.01 && Math.abs(worldK - (focusName === "world" ? 1 : 0)) < 0.01;
 
-  function frame(t: number) {
+  function frame() {
     raf = 0;
     if (dead || ctx.lost) return;
+    // The page's clock (not the frame's timestamp), so the motion keeps real time under a recording's virtual clock too.
+    const t = performance.now();
     const dt = last ? Math.min(0.05, (t - last) / 1000) : 1 / 60;
     last = t;
     const t0 = performance.now();
