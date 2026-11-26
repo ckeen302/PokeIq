@@ -157,6 +157,8 @@ const fail = (opts, msg) => opts.fail(`${opts.label}: ${msg}`);
 /** The landing's Pokémon Hunt tile opens the setup in place, and closes it again. */
 async function openSetup(page, f) {
   const tile = page.getByTestId("hunt-hub-entry");
+  // On a phone the modes sit in dropdowns: open any that are shut.
+  for (const bar of await page.locator('[data-testid^="hub-drop-"][aria-expanded="false"]').all()) if (await bar.isVisible().catch(() => false)) await bar.click();
   await tile.waitFor();
   if ((await tile.getAttribute("aria-expanded")) !== "false") f("the Pokémon Hunt tile doesn't say it's closed");
   if ((await tile.getAttribute("aria-controls")) !== "hunt") f("the Pokémon Hunt tile doesn't name the setup it opens");
