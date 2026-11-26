@@ -25,8 +25,7 @@ import { GeoHowToLoader, HowToHelpButton } from "./GeoHowToButton";
 import { HubSection } from "./HubParts";
 import { GeoYou } from "./GeoYou";
 import { HubTop } from "./HubTop";
-import { geoDailyStreak } from "@/lib/progress";
-import { previousDate } from "@/lib/daily";
+import { geoPlayStreak, geoPlayedOn } from "@/lib/progress";
 import { GEO_REGION_STREAK_KEY } from "@/lib/geo-streak-types";
 import { AchievementToasts, useGeoProgress, type MyGeoProgress } from "./GeoAchievements";
 import { achievementCloser } from "@/lib/geo-achievements";
@@ -1212,9 +1211,16 @@ function GeoGameInner({
     const themed = regions.filter((r) => r.theme);
     // The duel and party cards name the map as it stands: in the page's language.
     const shownRegion = t.locale === "en" ? region : { ...region, name: names.map(region) };
-    // The Daily's last seven days, oldest first, for the streak on its card.
-    const dailyDays: { date: string; played: boolean; today: boolean }[] = [];
-    for (let i = 0, d = today; d && i < 7; i++, d = previousDate(d)) dailyDays.unshift({ date: d, played: progress?.best[`geo-daily:${d}`] !== undefined, today: d === today });
+    // This week, Monday to Sunday, for the streak card: the days PokéGuessr was played (any mode), today, the days to come.
+    const weekDays: { date: string; played: boolean; today: boolean; future: boolean }[] = [];
+    if (today) {
+      const [y, m, dd] = today.split("-").map(Number);
+      const monday = Date.UTC(y, m - 1, dd) - ((new Date(Date.UTC(y, m - 1, dd)).getUTCDay() + 6) % 7) * 86_400_000;
+      for (let i = 0; i < 7; i++) {
+        const date = new Date(monday + i * 86_400_000).toISOString().slice(0, 10);
+        weekDays.push({ date, played: !!progress && geoPlayedOn(progress, date), today: date === today, future: date > today });
+      }
+    }
     return (
       // Under a game the hub stays where it is (nothing moves when a game starts or ends), out of reach.
       <div className="mx-auto max-w-6xl space-y-12" aria-hidden={covered || undefined} inert={covered} data-testid="geo-hub">
@@ -1241,8 +1247,8 @@ function GeoGameInner({
             onRanked: () => openDuels("ranked"),
             onParty: openParty,
             loading,
-            streak: progress && today ? geoDailyStreak(progress, today) : 0,
-            days: dailyDays,
+            streak: progress && today ? geoPlayStreak(progress, today) : 0,
+            days: weekDays,
           }}
         />
 

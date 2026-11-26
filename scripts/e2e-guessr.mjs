@@ -678,12 +678,13 @@ async function dailyResume(width, height) {
   const back = await page.getByTestId("geo-results-again").innerText();
   if (/again/i.test(back)) errors.push(`daily: a finished Daily offers to play again ("${back}")`);
 
-  // Back on the hub: the card shows today's result and when the next one comes, with no Play.
+  // Back on the hub: the card shows today's score, with no Play, and today on the streak card has its flame.
   await page.getByTestId("geo-results-again").click();
   const card = page.getByTestId("geo-daily-card");
   await card.getByTestId("geo-daily-result").waitFor({ timeout: 5_000 }).catch(() => errors.push("daily: the finished Daily's card has no result to show"));
   if (await card.getByTestId("geo-daily-play").count()) errors.push("daily: the finished Daily's card still has a Play button");
-  if (!/Next Daily in/i.test(await card.innerText())) errors.push("daily: the finished Daily's card doesn't say when the next one comes");
+  if (!/Played/i.test(await card.innerText())) errors.push("daily: the finished Daily's card doesn't say it's played");
+  if (!/\b[1-9]\d*-day streak/i.test(await page.getByTestId("geo-streak-count").innerText())) errors.push("daily: the streak didn't count today's game");
   await card.screenshot({ path: `${OUT}/guessr-daily-card-done-${width}.png` });
   await card.getByTestId("geo-daily-result").click();
   await page.getByTestId("geo-results").waitFor({ timeout: 10_000 });
@@ -719,7 +720,7 @@ async function weekly(width, height) {
   await page.goto(`${BASE}/pokeguessr`, { waitUntil: "networkidle" });
   await closeHowTo(page);
   for (const id of ["maps", "you"]) await page.getByTestId(`geo-hub-${id}`).waitFor();
-  for (const id of ["geo-solo-card", "geo-daily-card", "region-streak-card", "geo-home-duels", "geo-home-ranked", "geo-home-party", "globe-card", "geo-history-link"]) {
+  for (const id of ["geo-solo-card", "geo-daily-card", "geo-streak-card", "geo-home-duels", "geo-home-ranked", "geo-home-party", "globe-card", "geo-history-link"]) {
     if ((await page.getByTestId(id).count()) !== 1) errors.push(`the hub has no ${id}`);
   }
   if ((await page.getByTestId("geo-history-link").getAttribute("href")) !== "/pokeguessr/history") errors.push("the duel history link doesn't go to /pokeguessr/history");
