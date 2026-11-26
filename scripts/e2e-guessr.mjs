@@ -66,8 +66,14 @@ async function closeHowTo(p) {
 }
 
 /** The solo setup (maps, games, rounds, difficulty) is folded under "Set up a game": opens it, trying again if a click lands before hydration. */
+/** On a phone the landing folds its modes into dropdowns: opens any that are shut, so their cards can be pressed. */
+async function openDrops(p) {
+  for (const bar of await p.locator('[data-testid^="hub-drop-"][aria-expanded="false"]').all()) if (await bar.isVisible().catch(() => false)) await bar.click().catch(() => undefined);
+}
+
 async function openGeoSetup(p) {
   for (let i = 0; i < 5; i++) {
+    await openDrops(p);
     if (await p.getByTestId("geo-solo").isVisible().catch(() => false)) return;
     // The first visit's how-to can open late (the page's 3D trainer is still loading): out of the way first.
     if (await p.locator(HOWTO).first().isVisible().catch(() => false)) await closeHowTo(p);
@@ -729,6 +735,7 @@ async function weekly(width, height) {
   await page.getByRole("radio", { name: "Johto" }).first().click();
   await page.getByRole("radio", { name: "Johto", checked: true }).waitFor();
   // The Ranked tile opens the duel panel on the ranked queue.
+  await openDrops(page);
   await page.getByTestId("geo-home-ranked").click();
   await page.getByTestId("geo-ranked-card").waitFor();
   await page.getByTestId("geo-duel-queue-casual").click();
@@ -902,6 +909,7 @@ async function royale(width, height) {
   await red.goto(`${BASE}/pokeguessr?region=kanto`, { waitUntil: "networkidle" });
   await closeHowTo(red);
   await red.getByTestId("geo-home-party").waitFor();
+  await openDrops(red);
   await red.getByTestId("geo-home-party").click();
   await red.getByTestId("geo-party-new").waitFor();
   await red.waitForTimeout(800);
@@ -1002,6 +1010,7 @@ async function teamDuel(width, height) {
   step(`party: team duel 2v2 at ${tag}`);
   await red.goto(`${BASE}/pokeguessr?region=kanto`, { waitUntil: "networkidle" });
   await closeHowTo(red);
+  await openDrops(red);
   await red.getByTestId("geo-home-duels").click();
   await red.getByTestId("geo-duel-mode-team").click();
   await red.getByLabel("Your trainer name").first().fill("Red");

@@ -3,7 +3,7 @@
 import Image, { type StaticImageData } from "next/image";
 import Link from "@/components/ui/Link";
 import { useEffect, useRef, useState } from "react";
-import { Check, Compass, Flame, Pencil, Play, Trophy } from "lucide-react";
+import { Check, ChevronDown, Compass, Flame, Pencil, Play, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAccount } from "@/lib/account";
 import { useGeoNames } from "@/lib/geo-i18n-client";
@@ -451,7 +451,7 @@ function DailyCard({ d, onPlay }: { d: HubTopData; onPlay(): void }) {
     <div className={cn(CARD, "relative p-3 md:p-3.5")} data-testid="geo-daily-card">
       <Backdrop pattern="daily" />
       {/* The Daily's emblem, top right like every mode's. */}
-      <Image src={dailyEmblem} alt="" aria-hidden sizes="96px" className="pointer-events-none absolute -top-6 right-1 h-[4.5rem] w-auto rotate-[6deg] md:-right-3 md:-top-9 md:h-[clamp(3rem,3.6vw,4.75rem)] drop-shadow-[0_10px_10px_rgb(10_5_40/0.55)]" />
+      <Image src={dailyEmblem} alt="" aria-hidden sizes="96px" className="pointer-events-none absolute -top-5 right-2 h-[3.75rem] w-auto rotate-[6deg] md:-right-3 md:-top-9 md:h-[clamp(3rem,3.6vw,4.75rem)] drop-shadow-[0_10px_10px_rgb(10_5_40/0.55)]" />
       <div className="relative">
         <p className={cn(LABEL, "flex items-center gap-1.5 whitespace-nowrap text-[#ffd23c] md:pr-10 md:text-[clamp(9px,0.7vw,11px)]")}>
           <Compass className="h-3.5 w-3.5" aria-hidden />
@@ -607,6 +607,28 @@ function ModeTile({
   );
 }
 
+/** A phone's section of modes, folded into one bar: its name, its modes' emblems, a chevron; open, its cards drop below. */
+function DropBar({ label, emblems, open, onToggle, controls, testId }: { label: string; emblems: StaticImageData[]; open: boolean; onToggle(): void; controls: string; testId: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-expanded={open}
+      aria-controls={controls}
+      className={cn(CARD, "group relative flex h-[4.25rem] w-full items-center gap-3 overflow-hidden px-4 text-left transition-[filter] active:brightness-110 md:hidden")}
+      data-testid={testId}
+    >
+      <span className="font-display text-[1.2rem] font-bold italic leading-none text-white [text-shadow:0_2px_0_rgb(18_10_60/0.6)]">{label}</span>
+      <span className="ml-auto flex items-center" aria-hidden>
+        {emblems.map((e, i) => (
+          <Image key={i} src={e} alt="" sizes="48px" className="-ml-2.5 h-10 w-10 object-contain drop-shadow-[0_4px_6px_rgb(10_5_40/0.5)] first:ml-0" style={{ transform: `rotate(${(i - 1) * 8}deg)` }} />
+        ))}
+      </span>
+      <ChevronDown className={cn("h-5 w-5 shrink-0 text-white/85 transition-transform duration-300", open && "rotate-180")} aria-hidden />
+    </button>
+  );
+}
+
 /**
  * The wide layout's measures, shared by the world and the cards around it: --cw a card column's width (GeoGuessr's
  * share of the screen), --side the margin at each edge (from 1280px wide, room for a 160px-wide ad beside the cards).
@@ -614,11 +636,14 @@ function ModeTile({
  */
 const LAYOUT = "[--cw:min(clamp(12.5rem,13.1vw,17rem),calc((100svh-25rem)/1.8))] [--side:clamp(1rem,calc((100vw-1100px)*0.9),11rem)]";
 
-/** A mode's slot: on a phone a cell of its section's two-column grid; wider, a card of its column, GeoGuessr's shape (2.24 wide to 1 tall). */
-const SLOT = "h-[5.25rem] md:aspect-[2.24/1] md:h-auto md:w-full";
+/** A mode's slot: on a phone a row of its section's dropdown; wider, a card of its column, GeoGuessr's shape (2.24 wide to 1 tall). */
+const SLOT = "h-[4.75rem] md:aspect-[2.24/1] md:h-auto md:w-full";
 
 export function HubTop({ d }: { d: HubTopData }) {
   const t = useT(geoSolo);
+  // A phone folds each section of modes into a dropdown.
+  const [solo, setSolo] = useState(false);
+  const [multi, setMulti] = useState(false);
   const h = useT(huntNs);
   const delay = (i: number) => ({ animationDelay: `${0.15 + i * 0.08}s` });
   const [focus, setFocus] = useState<HubFocus>(null);
@@ -665,12 +690,14 @@ export function HubTop({ d }: { d: HubTopData }) {
 
   return (
     <Space>
-      <WorldRise focus={focus} spots={d.dailyPlayed ? d.dailySpots : undefined} cheer={d.dailyPlayed} covered={d.covered} hopRef={trainer} className={`${LAYOUT} [--ah:9rem] [--gd:min(98vw,30rem)] [--gt:15.5rem] md:[--ah:clamp(8.5rem,26vh,15rem)] md:[--gd:min(44vw,74vh,calc(100vw-2*(var(--side)+var(--cw)+3rem)))] md:[--gt:max(13rem,40%)]`} />
+      <WorldRise focus={focus} spots={d.dailyPlayed ? d.dailySpots : undefined} cheer={d.dailyPlayed} covered={d.covered} hopRef={trainer} className={`${LAYOUT} [--ah:9rem] [--gd:min(120vw,34rem)] [--gt:15.5rem] md:[--ah:clamp(8.5rem,26vh,15rem)] md:[--gd:min(44vw,74vh,calc(100vw-2*(var(--side)+var(--cw)+3rem)))] md:[--gt:max(13rem,40%)]`} />
+      {/* Phone: below the trainer's patch of the world, the planet fades into space so the cards sit on a clean sky. */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 top-[18.5rem] bg-[linear-gradient(180deg,transparent,#09081a_6rem)] md:hidden [.light_&]:bg-[linear-gradient(180deg,transparent,#e4ddff_6rem)]" aria-hidden />
       <HowToHelpButton className="gh-fade absolute right-2 top-2 z-10 text-white max-md:scale-90 md:right-5 md:top-4 [.light_&]:text-[#2a1f6e]" />
 
       {/*
-        Phone: a column (the title, room for the trainer on the world, the Daily, then each section's cards two to a
-        row). Wider: the Daily and the single-player cards stacked down the left, the world in the middle, the
+        Phone: a column (the title, the trainer on the top of the world, the Daily, then each section as a dropdown that
+        opens to its cards). Wider: the Daily and the single-player cards stacked down the left, the world in the middle, the
         multiplayer cards down the right; the column's wrapper steps aside (display: contents) so the same cards serve both.
       */}
       <div
@@ -684,27 +711,33 @@ export function HubTop({ d }: { d: HubTopData }) {
           <Title />
         </div>
         {/* Phone: the trainer and the top of the world get this room, clear of every card. */}
-        <div className="h-[12.5rem] shrink-0 md:hidden" aria-hidden />
+        <div className="h-[14.5rem] shrink-0 md:hidden" aria-hidden />
         <div className="gh-in-s pointer-events-auto mt-3 md:col-start-1 md:row-start-2 md:mb-[calc(var(--gap)*1.6)] md:mt-0" style={delay(1)} {...points("world")}>
           <DailyCard d={d} onPlay={() => hop(trainer.current)} />
         </div>
-        <div className="mt-6 flex flex-col gap-6 pb-16 max-md:pointer-events-auto md:contents">
-          <div className="grid grid-cols-2 gap-x-3 gap-y-4 md:col-start-1 md:row-start-3 md:flex md:flex-col md:gap-[var(--gap)]">
-            <span className={cn(TAB, "gh-in-s col-span-2 ml-3 -mb-[var(--gap)] self-start justify-self-start max-md:-mb-4")} style={delay(2)}>
+        <div className="mt-4 flex flex-col gap-3.5 pb-16 max-md:pointer-events-auto md:contents">
+          <div id="hub-solo-modes" className="flex flex-col gap-3.5 md:col-start-1 md:row-start-3 md:gap-[var(--gap)]">
+            <div className="gh-in-s md:hidden" style={delay(2)}>
+              <DropBar label={t("hub.play.eyebrow")} emblems={[classicEmblem, streakEmblem, huntEmblem]} open={solo} onToggle={() => setSolo((o) => !o)} controls="hub-solo-modes" testId="hub-drop-solo" />
+            </div>
+            <span className={cn(TAB, "gh-in-s ml-3 -mb-[var(--gap)] self-start max-md:hidden")} style={delay(2)}>
               {t("hub.play.eyebrow")}
             </span>
             {tiles.map((tile, i) => (
-              <div key={i} className={cn("gh-in-s pointer-events-auto [&>div]:h-full", SLOT, i === 2 && "max-md:col-span-2")} style={delay(3 + i)} {...points(tileFocus[i])}>
+              <div key={i} className={cn("gh-in-s pointer-events-auto [&>div]:h-full", SLOT, !solo && "max-md:hidden")} style={delay(3 + i)} {...points(tileFocus[i])}>
                 {tile}
               </div>
             ))}
           </div>
-          <div className="grid grid-cols-2 gap-x-3 gap-y-4 md:col-start-3 md:row-[2/4] md:flex md:flex-col md:justify-center md:gap-[var(--gap)]">
-            <span className={cn(TAB, "gh-in-e col-span-2 ml-3 -mb-[var(--gap)] self-start justify-self-start max-md:-mb-4")} style={delay(1)}>
+          <div id="hub-multi-modes" className="flex flex-col gap-3.5 md:col-start-3 md:row-[2/4] md:justify-center md:gap-[var(--gap)]">
+            <div className="gh-in-e md:hidden" style={delay(3)}>
+              <DropBar label={t("hub.multi.title")} emblems={[duelsEmblem, rankedEmblem, partyEmblem]} open={multi} onToggle={() => setMulti((o) => !o)} controls="hub-multi-modes" testId="hub-drop-multi" />
+            </div>
+            <span className={cn(TAB, "gh-in-e ml-3 -mb-[var(--gap)] self-start max-md:hidden")} style={delay(1)}>
               {t("hub.multi.title")}
             </span>
             {versus.map((v, i) => (
-              <div key={v.testId} className={cn("gh-in-e [&>button]:h-full", SLOT, i === 2 && "max-md:col-span-2")} style={delay(2 + i)}>
+              <div key={v.testId} className={cn("gh-in-e [&>button]:h-full", SLOT, !multi && "max-md:hidden")} style={delay(2 + i)}>
                 <ModeTile emblem={v.emblem} pattern={v.pattern} title={v.title} onClick={v.onClick} testId={v.testId} />
               </div>
             ))}
