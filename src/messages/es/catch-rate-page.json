@@ -1,6 +1,7 @@
 {
   "title": "Calculadora de captura",
   "subtitle": "Tus probabilidades de capturar cualquier Pokémon con cada Poké Ball, desde Rubí y Zafiro hasta Escarlata y Púrpura. Elige el nivel, los PS y el estado, y descubre qué Poké Ball lanzar.",
+  "cardSubtitle": "Descubre qué Poké Ball lo atrapa mejor.",
   "metaTitle": "Calculadora de captura Pokémon: qué Poké Ball lanzar",
   "metaDescription": "Calcula tu probabilidad de capturar cualquier Pokémon con todas las Poké Balls a la vez, ordenadas: PS restantes, estado, nivel, turno, hora del día y más, en todos los juegos desde Rubí y Zafiro hasta Escarlata y Púrpura. Usa las fórmulas de captura reales. Gratis.",
   "metaSharedTitle": "Capturar a {name}: {pct} con una {ball}",

@@ -1,6 +1,7 @@
 {
   "title": "Fangraten-Rechner",
   "subtitle": "Deine Chancen, jedes Pokémon mit jedem Pokéball zu fangen, von Rubin und Saphir bis Karmesin und Purpur. Stell Level, KP und Status ein und sieh, welchen Ball du werfen solltest.",
+  "cardSubtitle": "Finde heraus, welcher Pokéball es am besten fängt.",
   "metaTitle": "Pokémon-Fangraten-Rechner: welchen Ball werfen",
   "metaDescription": "Berechne deine Chance, jedes Pokémon zu fangen, mit allen Pokébällen auf einmal und nach Rang sortiert: verbleibende KP, Status, Level, Runde, Tageszeit und mehr, in jedem Spiel von Rubin und Saphir bis Karmesin und Purpur. Mit den echten Fangformeln. Kostenlos.",
   "metaSharedTitle": "{name} fangen: {pct} mit einem {ball}",
