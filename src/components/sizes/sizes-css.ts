@@ -44,6 +44,7 @@ html.sz-locked, html.sz-locked body { overflow: hidden; overscroll-behavior: non
 .szt .szt-v { white-space: nowrap; font-weight: 700; font-variant-numeric: tabular-nums; }
 .szt td.szt-s { white-space: nowrap; font-variant-numeric: tabular-nums; }
 @media (max-width: 639px) { .szt td.szt-s small { display: none; } }
+@media (max-width: 639px) { .szt td:nth-child(3):not(.szt-s) small { display: block; margin-left: 0; } }
 @media (max-width: 639px) { .szt th { padding-top: 0; padding-bottom: 0; } .szt th button { min-height: 2.75rem; min-width: 2.5rem; } }
 .szt th.szt-v button { color: hsl(var(--foreground)); }
 .szt .szt-w, .szt .szt-d { display: none; }
