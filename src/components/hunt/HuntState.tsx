@@ -7,12 +7,11 @@ import { PokeBallMark } from "./HuntCard";
 
 /**
  * The hunt's in-game states, on the game frame's navy: loading (a Poké Ball
- * spinning on the radar), an error with Try again and Back, and an empty
- * map (nothing to hunt in that region yet) with Back.
+ * spinning on the radar), and an error with Try again and Back.
  */
-export function HuntState({ kind, message, onRetry, onBack }: { kind: "loading" | "error" | "empty"; message?: string; onRetry?: () => void; onBack?: () => void }) {
+export function HuntState({ kind, message, onRetry, onBack }: { kind: "loading" | "error"; message?: string; onRetry?: () => void; onBack?: () => void }) {
   const t = useT(huntNs);
-  const text = message ?? (kind === "loading" ? t("state.loading") : kind === "error" ? t("state.error") : t("state.empty"));
+  const text = message ?? (kind === "loading" ? t("state.loading") : t("state.error"));
   return (
     <div className="absolute inset-0 z-[50] flex items-center justify-center bg-[radial-gradient(ellipse_at_50%_45%,#2d2766_0%,#1a163a_45%,#0f0d1f_80%)] p-4" data-testid={`hunt-${kind}`}>
       <div className="w-full max-w-sm text-center text-white" role={kind === "loading" ? "status" : "alert"} aria-live="polite">

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
-import { HuntGame } from "@/components/hunt/HuntGame";
+import { HuntPage as HuntPageView } from "@/components/hunt/HuntPage";
 import { geoRegions } from "@/lib/server/geo";
 import { WORLD_REGION } from "@/lib/geo-types";
 import { HUNT_MAP_REGIONS } from "@/lib/hunt/types";
@@ -13,19 +13,22 @@ export function generateMetadata(): Metadata {
   const t = serverT(hunt);
   return pageMetadata({
     title: t("name"),
-    description: t("hub.tagline"),
+    description: t("setup.tagline"),
     path: "/pokeguessr/hunt",
     image: SHARE_IMAGES.guessr,
   });
 }
 
-/** Pokémon Hunt: see a Pokémon, pin where it lives. The world map and the nine region maps it can be played on. */
+/**
+ * Pokémon Hunt's own page, kept for old and shared links: the same setup PokéGuessr's landing opens in
+ * place under its Pokémon Hunt tile (the way in now), with a link back to the landing.
+ */
 export default function HuntPage() {
   const ids = new Set<string>([WORLD_REGION, ...HUNT_MAP_REGIONS]);
   const maps = geoRegions().filter((r) => ids.has(r.id));
   return (
     <ClientMessages namespaces={GEO_HUNT_NAMESPACES}>
-      <HuntGame maps={maps} />
+      <HuntPageView maps={maps} />
     </ClientMessages>
   );
 }

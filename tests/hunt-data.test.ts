@@ -17,7 +17,7 @@ import { loadInputs } from "../scripts/hunt/build";
 import { FAMOUS } from "../scripts/hunt/famous";
 import { FORMS_IN_GAME, ORIGINAL_ONLY, PLACE_DEPENDENT_FORMS } from "../scripts/hunt/forms";
 import { buildPlaceIndex, classifyMethod, matchPlace, type GeoPlace } from "../scripts/hunt/match";
-import { AGREED_LABEL, METHODS, VERSION_REGIONS } from "../scripts/hunt/rules";
+import { COUNTED_LABELS as COUNTED, METHODS, VERSION_REGIONS } from "../scripts/hunt/rules";
 
 const table = answers as unknown as HuntAnswerFile;
 const entries: HuntEntry[] = table.entries;
@@ -25,7 +25,7 @@ const locations = (geo as unknown as { world: { locations: GeoPlace[] } }).world
 const pinned = new Map(locations.filter((l) => l.pin && l.mask && !l.parent).map((l) => [`${l.region}|${l.name}`, l]));
 const forms = aboutForms as unknown as [number, number, string, string, string][];
 const dex = new Map((pokedex as { id: number; slug: string; name: string }[]).map((p) => [p.id, p]));
-const COUNTED_LABELS = new Set([...Object.values(METHODS).filter((v): v is string => !!v), AGREED_LABEL]);
+const COUNTED_LABELS = new Set<string>(COUNTED);
 
 describe("hunt answer table: shape", () => {
   it("is the full table, not the sample", () => {
@@ -109,8 +109,7 @@ describe("hunt answer table: places", () => {
         for (const m of p.methods) {
           expect(COUNTED_LABELS, `${e.id} ${m.method}`).toContain(m.method);
           expect(m.versions).not.toContain("legends-arceus");
-          if (m.method === "Max Raid") for (const v of m.versions) expect(["sword", "shield"]).toContain(v);
-          for (const bad of ["Tera Raid", "Hyperspace", "Gift", "Trade", "Curry", "Underground", "Friend Safari", "Island Scan"]) expect(m.method).not.toContain(bad);
+          for (const bad of ["Tera Raid", "Hyperspace", "Gift", "Trade", "Curry", "Underground", "Friend Safari", "Island Scan", "Max Raid", "Poké Radar", "Hidden Grotto", "Berry", "Headbutt", "Fixed", "Horde", "SOS", "Honey", "Rock Smash"]) expect(m.method).not.toContain(bad);
         }
   });
 });
@@ -202,10 +201,21 @@ describe("hunt matching rules", () => {
     expect(at("Route 22", "x")).toBe(pinned.has("Kalos|Route 22") ? "Kalos|Route 22" : null);
   });
 
+  it("counts only normal wild encounters (Hunt v2's rules filter)", () => {
+    // Grass, caves, surfing, fishing with a rod, and the Pokémon you see wandering the overworld.
+    for (const [m, label] of [["Grass", "Grass"], ["Tall grass", "Grass"], ["Dark grass", "Grass"], ["Cave", "Cave"], ["Surf", "Surf"], ["Old Rod", "Old Rod"], ["Super Rod", "Super Rod"], ["Fishing spot", "Fishing"], ["Wild", "Overworld"], ["Overworld", "Overworld"], ["Wandering", "Overworld"], ["In the Sky", "Overworld"]])
+      expect(classifyMethod(m, ["red"]), m).toEqual({ kind: "counted", label });
+    // Devices, tricks, items, events and one-off meetings are left out.
+    for (const m of ["PokeRadar", "DexNav", "Hidden Grotto", "Berry Tree", "Berry tree", "Berry pile", "Shaking tree", "Headbutt", "Rock Smash", "Honey tree", "Horde", "SOS call", "Rustling grass", "Dust cloud", "Rippling water", "Ground ambush", "Sky ambush", "Special encounter", "Swarm", "Static", "Interact", "Poké Flute", "Devon Scope", "Squirt Bottle", "Wailmer Pail", "Max Raid", "Gift", "Trade", "Tera Raid", "Island Scan", "Roaming"])
+      expect(classifyMethod(m, ["sword"]).kind, m).toBe("excluded");
+    // Every counted label is one the reveal and the place hint know.
+    for (const label of Object.values(METHODS)) if (label) expect(COUNTED_LABELS.has(label), label).toBe(true);
+  });
+
   it("classifies methods by the rules table", () => {
     expect(classifyMethod("Super Rod", ["red"])).toEqual({ kind: "counted", label: "Super Rod" });
     expect(classifyMethod("Tera Raid", ["scarlet"]).kind).toBe("excluded");
-    expect(classifyMethod("Max Raid", ["scarlet"]).kind).toBe("unknown");
+    expect(classifyMethod("Max Raid", ["sword"]).kind).toBe("excluded");
     expect(classifyMethod("Something new", ["red"]).kind).toBe("unknown");
   });
 

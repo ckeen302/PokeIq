@@ -1,0 +1,414 @@
+{
+ "entries": 548,
+ "pairs": {
+  "both": 7916,
+  "one": 320,
+  "unchecked": 1042,
+  "errors": 0
+ },
+ "methods": {
+  "Grass": 1588,
+  "Overworld": 2257,
+  "Wild": 9,
+  "Cave": 167,
+  "Fishing": 52,
+  "Super Rod": 25,
+  "Surf": 102,
+  "Good Rod": 4
+ },
+ "badMethods": [],
+ "errors": [],
+ "changes": {
+  "before": 568,
+  "after": 548,
+  "removed": [
+   {
+    "id": "3",
+    "name": "Venusaur",
+    "why": "only met by Max Raid"
+   },
+   {
+    "id": "5",
+    "name": "Charmeleon",
+    "why": "only met by Max Raid"
+   },
+   {
+    "id": "9",
+    "name": "Blastoise",
+    "why": "only met by Max Raid"
+   },
+   {
+    "id": "53-alola",
+    "name": "Alolan Persian",
+    "why": "only met by SOS call"
+   },
+   {
+    "id": "144",
+    "name": "Articuno",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "146",
+    "name": "Moltres",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "150",
+    "name": "Mewtwo",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "169",
+    "name": "Crobat",
+    "why": "its only spots were special ones (rustling grass, bridge shadows) under a normal label (Grass, SOS call, Max Raid)"
+   },
+   {
+    "id": "249",
+    "name": "Lugia",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "250",
+    "name": "Ho-Oh",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "251",
+    "name": "Celebi",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "292",
+    "name": "Shedinja",
+    "why": "only met by Max Raid"
+   },
+   {
+    "id": "301",
+    "name": "Delcatty",
+    "why": "its only spots were special ones (rustling grass, bridge shadows) under a normal label (Grass)"
+   },
+   {
+    "id": "346",
+    "name": "Cradily",
+    "why": "only met by Max Raid"
+   },
+   {
+    "id": "379",
+    "name": "Registeel",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "380",
+    "name": "Latias",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "381",
+    "name": "Latios",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "384",
+    "name": "Rayquaza",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "386",
+    "name": "Deoxys",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "424",
+    "name": "Ambipom",
+    "why": "only met by SOS call"
+   },
+   {
+    "id": "469",
+    "name": "Yanmega",
+    "why": "its only spots were special ones (rustling grass, bridge shadows) under a normal label (Grass)"
+   },
+   {
+    "id": "472",
+    "name": "Gliscor",
+    "why": "its only spots were special ones (rustling grass, bridge shadows) under a normal label (Grass)"
+   },
+   {
+    "id": "485",
+    "name": "Heatran",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "486",
+    "name": "Regigigas",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "581",
+    "name": "Swanna",
+    "why": "its only spots were special ones (rustling grass, bridge shadows) under a normal label (Overworld, Fixed encounter)"
+   },
+   {
+    "id": "648",
+    "name": "Meloetta",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "685",
+    "name": "Slurpuff",
+    "why": "only met by Max Raid"
+   },
+   {
+    "id": "718",
+    "name": "Zygarde",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "719",
+    "name": "Diancie",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "785",
+    "name": "Tapu Koko",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "786",
+    "name": "Tapu Lele",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "788",
+    "name": "Tapu Fini",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "789",
+    "name": "Cosmog",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "791",
+    "name": "Solgaleo",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "792",
+    "name": "Lunala",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "865",
+    "name": "Sirfetch’d",
+    "why": "only met by Max Raid"
+   },
+   {
+    "id": "866",
+    "name": "Mr. Rime",
+    "why": "only met by Max Raid"
+   },
+   {
+    "id": "867",
+    "name": "Runerigus",
+    "why": "only met by Max Raid"
+   },
+   {
+    "id": "869",
+    "name": "Alcremie",
+    "why": "only met by Max Raid"
+   },
+   {
+    "id": "880",
+    "name": "Dracozolt",
+    "why": "only met by Max Raid"
+   },
+   {
+    "id": "881",
+    "name": "Arctozolt",
+    "why": "only met by Max Raid"
+   },
+   {
+    "id": "882",
+    "name": "Dracovish",
+    "why": "only met by Max Raid"
+   },
+   {
+    "id": "883",
+    "name": "Arctovish",
+    "why": "only met by Max Raid"
+   },
+   {
+    "id": "888",
+    "name": "Zacian",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "889",
+    "name": "Zamazenta",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "890",
+    "name": "Eternatus",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "891",
+    "name": "Kubfu",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "894",
+    "name": "Regieleki",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "895",
+    "name": "Regidrago",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "896",
+    "name": "Glastrier",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "897",
+    "name": "Spectrier",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "898",
+    "name": "Calyrex",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "1001",
+    "name": "Wo-Chien",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "1002",
+    "name": "Chien-Pao",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "1003",
+    "name": "Ting-Lu",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "1004",
+    "name": "Chi-Yu",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "1007",
+    "name": "Koraidon",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "1008",
+    "name": "Miraidon",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "1014",
+    "name": "Okidogi",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "1015",
+    "name": "Munkidori",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "1016",
+    "name": "Fezandipiti",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "1017",
+    "name": "Ogerpon",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "1024",
+    "name": "Terapagos",
+    "why": "legendary or mythical"
+   },
+   {
+    "id": "1025",
+    "name": "Pecharunt",
+    "why": "legendary or mythical"
+   }
+  ],
+  "added": [
+   "28",
+   "39",
+   "80",
+   "89",
+   "94",
+   "100",
+   "101",
+   "103",
+   "124",
+   "163",
+   "165",
+   "167",
+   "190",
+   "196",
+   "204",
+   "218",
+   "265",
+   "266",
+   "268",
+   "275",
+   "276",
+   "333",
+   "351",
+   "367",
+   "368",
+   "415",
+   "425",
+   "428",
+   "436",
+   "437",
+   "446",
+   "448",
+   "462",
+   "558",
+   "593",
+   "612",
+   "624",
+   "628",
+   "675",
+   "688",
+   "704",
+   "705",
+   "739",
+   "747"
+  ],
+  "methodsBefore": {
+   "Max Raid": 1561,
+   "Grass": 1536,
+   "Overworld": 1762,
+   "Headbutt": 75,
+   "Hidden Grotto": 31,
+   "SOS call": 40,
+   "Wild": 10,
+   "Cave": 146,
+   "Fishing": 44,
+   "Horde": 55,
+   "Fixed encounter": 348,
+   "Wandering": 416,
+   "Poké Radar": 36,
+   "Shaking tree": 5,
+   "Surf": 84,
+   "Super Rod": 21,
+   "Good Rod": 4,
+   "Rock Smash": 16,
+   "Berry tree": 50
+  }
+ }
+}

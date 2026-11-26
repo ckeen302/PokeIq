@@ -184,7 +184,7 @@ if (process.env.E2E_ONLY === "calc") {
   await runCalc({ browser, BASE, OUT, errors, step });
   await finish();
 }
-// E2E_ONLY=hunt runs just Pokémon Hunt (Classic, Region and the Daily, desktop and phone), then exits.
+// E2E_ONLY=hunt runs just Pokémon Hunt (the landing's setup, Normal, Easy, Hard and the Daily, desktop and phone), then exits.
 if (process.env.E2E_ONLY === "hunt") {
   await runHunt({ browser, BASE, OUT, errors, step });
   await finish();

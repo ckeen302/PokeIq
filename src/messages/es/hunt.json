@@ -1,48 +1,49 @@
 {
   "name": "Caza Pokémon",
   "tile": {
-    "label": "Modo nuevo",
-    "new": "Nuevo",
-    "title": "Caza Pokémon",
-    "blurb": "Mira un Pokémon. Marca dónde lo atraparías.",
-    "play": "A cazar"
+    "title": "Caza Pokémon"
   },
-  "hub": {
-    "back": "PokéGuessr",
-    "eyebrow": "PokéGuessr · modo nuevo",
-    "title": "<b>Caza</b> Pokémon",
-    "tagline": "Te enseñamos un Pokémon. Tú marcas dónde vive en estado salvaje.",
-    "modes": "Elige una caza",
+  "setup": {
+    "heading": "Caza Pokémon",
+    "tagline": "Te enseñamos un Pokémon. Tú marcas dónde lo atraparías en estado salvaje.",
+    "how": "Una chincheta por ronda, puntuada según lo cerca que caiga de un sitio real: justo encima son 5000.",
     "daily": {
       "label": "Caza diaria n.º {n} · Mundo",
       "title": "Caza diaria",
-      "blurb": "Los cinco Pokémon de hoy, los mismos para todos.",
-      "scored": "Hoy has sacado {score}.",
-      "played": "Jugada",
+      "blurb": "Los Pokémon de hoy en el mapa del mundo, los mismos para todos.",
       "play": "Jugar la de hoy",
-      "again": "Jugar otra vez (práctica)",
-      "resume": "Continuar"
+      "scored": "Hoy has sacado {score}.",
+      "again": "Jugar otra vez (práctica)"
     },
-    "classic": {
-      "label": "Solo · Mundo",
-      "title": "Clásica",
-      "blurb": "Cinco Pokémon de todo el mapa del mundo.",
-      "play": "Empezar a cazar"
+    "free": "Caza libre",
+    "map": "Mapa",
+    "difficulty": "Dificultad",
+    "level": {
+      "easy": "Fácil",
+      "normal": "Normal",
+      "hard": "Difícil"
     },
-    "region": {
-      "label": "Solo · una región",
-      "title": "Caza por región",
-      "blurb": "Cinco Pokémon, una región, una chincheta cada uno.",
-      "pick": "Elige una región",
-      "play": "Cazar en {region}"
+    "blurb": {
+      "easy": "Pokémon famosos en su región de origen.",
+      "normal": "Una mezcla de fáciles y difíciles, con pistas.",
+      "hard": "Cualquier Pokémon, en el mapa del mundo y sin pistas."
     },
-    "how": {
-      "title": "Cómo se juega",
-      "see": "Conoce al Pokémon: su ilustración, su nombre y su forma exacta.",
-      "pin": "Pon una chincheta en cada región donde puedas encontrarlo en estado salvaje.",
-      "score": "Cada chincheta puntúa según el sitio real más cercano, hasta 5000 por ronda."
-    },
-    "best": "Mejor: {score}"
+    "hardWorld": "El modo Difícil siempre se juega en el mapa del mundo.",
+    "play": "Jugar",
+    "playOn": "Jugar en {map}",
+    "best": "Mejor: {score}",
+    "back": "PokéGuessr"
+  },
+  "board": {
+    "title": "Los mejores cazadores de hoy",
+    "empty": "Todavía no hay nadie en la clasificación de hoy. Sé el primero.",
+    "label": "Pon tu puntuación en la clasificación de hoy",
+    "placeholder": "Tu nombre",
+    "submit": "Guardar",
+    "saved": "Guardado",
+    "failed": "No se ha podido guardar tu puntuación.",
+    "practice": "Solo tu primera Caza diaria del día puede entrar en la clasificación.",
+    "row": "{rank}. {name}: {score}"
   },
   "forms": {
     "alola": "Forma de Alola",
@@ -55,21 +56,27 @@
   },
   "card": {
     "artAlt": "Ilustración oficial de {name}",
-    "found": "{n, plural, one {Vive en # región} other {Vive en # regiones}}",
-    "foundIn": "Vive en {map}",
-    "dropOne": "Pon una chincheta donde lo encontrarías",
-    "dropEach": "Pon una chincheta en cada región",
-    "dropUpTo": "Pon hasta {max} chinchetas"
+    "question": "¿Dónde atraparías a <b>{name}</b>?",
+    "onMap": "En el mapa de {map}"
+  },
+  "hints": {
+    "label": "Pistas",
+    "cost": "−{cost}",
+    "costLabel": "Cuesta {cost} puntos",
+    "type": "Su tipo",
+    "place": "Tipo de lugar",
+    "games": "Sus juegos",
+    "kind": {
+      "grass": "Hierba alta",
+      "cave": "Cuevas",
+      "water": "Agua",
+      "open": "Al aire libre"
+    },
+    "nothing": "Nada que contar",
+    "failed": "Esa pista no ha cargado. Inténtalo otra vez.",
+    "spent": "Pistas: −{cost}"
   },
   "pins": {
-    "label": "Tus chinchetas",
-    "count": "{placed} de {max} chinchetas",
-    "select": "Mover la chincheta {n}",
-    "empty": "Chincheta {n}: aún sin poner",
-    "remove": "Quitar la chincheta {n}",
-    "hintPlace": "Toca el mapa para poner la chincheta {n}",
-    "hintMove": "Toca el mapa para mover la chincheta {n}",
-    "hintDone": "¡Todas puestas! Toca para mover la {n}",
     "hintOne": "Toca el mapa donde lo encontrarías",
     "hintMoveOne": "Toca otra vez para mover tu chincheta"
   },
@@ -79,55 +86,37 @@
     "mode": "Caza Pokémon"
   },
   "reveal": {
-    "found": "Has encontrado {found} de {total} regiones",
-    "foundAll": "{total, plural, one {¡Lo has encontrado!} other {¡Has encontrado las {total} regiones!}}",
-    "foundNone": "Esta vez no has encontrado ninguna región",
     "timeUp": "¡Se acabó el tiempo!",
     "spots": "Dónde vive de verdad",
+    "nearest": "El sitio más cercano a tu chincheta",
     "moreLabels": "{label} +{n}",
-    "pin": "Chincheta {n}",
-    "pinScore": "Chincheta {n}: {score}",
     "dex": "Dónde encontrarlo en la Pokédex",
     "skip": "Saltar",
     "next": "Siguiente Pokémon",
     "summary": "Ver resultados",
     "space": "Espacio",
     "pts": "pts",
+    "hintCost": "Pistas: −{cost}",
     "verdict": {
       "perfect": "¡Rastreador experto!",
       "great": "¡Gran caza!",
       "good": "Vas por buen camino.",
       "near": "Caliente, caliente…",
       "far": "Esta vez se ha escapado."
-    },
-    "close": {
-      "spotOn": "¡Justo en el rastro!",
-      "near": "Cerca de un sitio real",
-      "far": "Demasiado lejos de cualquier sitio"
     }
   },
   "results": {
     "title": "Caza completada",
-    "total": "Tu total",
-    "outOf": "de {max}",
-    "rounds": "Tus rondas",
-    "regions": "{found} de {total, plural, one {# región encontrada} other {# regiones encontradas}}",
-    "best": "Mejor",
-    "worst": "Peor",
-    "again": "Cazar otra vez",
-    "hub": "Todas las cazas",
+    "hub": "Volver a PokéGuessr",
     "show": "Ver la ronda {n} en el mapa"
   },
   "share": {
     "daily": "Caza Pokémon n.º {n}",
-    "legend": "Una casilla por chincheta: 🟩 casi todos sus puntos, 🟨 la mayoría, 🟧 algunos, 🟥 ninguno",
-    "copy": "Compartir",
-    "grid": "Tu caza, casilla a casilla"
+    "legend": "Una casilla por ronda: 🟩 casi todos sus puntos, 🟨 la mayoría, 🟧 algunos, 🟥 ninguno"
   },
   "state": {
     "loading": "Buscando un Pokémon…",
     "error": "Se perdió el rastro. No se ha podido cargar esta caza.",
-    "empty": "Aún no hay nada que cazar aquí. Prueba otra región.",
     "retry": "Reintentar",
     "back": "Volver a las cazas",
     "artFailed": "La imagen no ha cargado, pero ahí tienes el nombre."
