@@ -79,12 +79,12 @@ export interface HubTopData {
  * lip along its bottom, a faint dot grain over it.
  */
 const FACE = cn(
-  // By night: a deep violet slab, a soft sheen across its top, a darker lip along its bottom, a faint dot grain.
+  // By night: a deep violet face, a soft sheen across its top, a faint dot grain.
   "bg-[radial-gradient(120%_85%_at_50%_-25%,rgb(255_255_255/0.2),transparent_55%),radial-gradient(rgb(255_255_255/0.06)_1px,transparent_1.5px),linear-gradient(180deg,#5747d2_0%,#4233ab_55%,#31258a_100%)] [background-size:100%_100%,9px_9px,100%_100%]",
-  "shadow-[inset_0_2px_0_rgb(255_255_255/0.24),inset_0_-5px_0_rgb(18_10_60/0.45),0_10px_24px_rgb(0_0_0/0.5)] ring-1 ring-white/10",
-  // By day: the same slab in white and lavender, its lip a soft violet, so it sits on the light page like it belongs.
+  "shadow-[inset_0_2px_0_rgb(255_255_255/0.24),0_10px_24px_rgb(0_0_0/0.5)] ring-1 ring-white/10",
+  // By day: the same face in white and lavender, so it sits on the light page like it belongs.
   "[.light_&]:bg-[radial-gradient(120%_85%_at_50%_-25%,rgb(255_255_255/0.95),transparent_55%),radial-gradient(rgb(90_70_210/0.08)_1px,transparent_1.5px),linear-gradient(180deg,#ffffff_0%,#f3efff_55%,#e6dfff_100%)]",
-  "[.light_&]:shadow-[inset_0_2px_0_rgb(255_255_255/1),inset_0_-5px_0_rgb(120_100_220/0.24),0_10px_26px_rgb(70_50_170/0.2)] [.light_&]:ring-[#d4c9ff]",
+  "[.light_&]:shadow-[inset_0_2px_0_rgb(255_255_255/1),0_10px_26px_rgb(70_50_170/0.2)] [.light_&]:ring-[#d4c9ff]",
 );
 const CARD = cn("rounded-2xl", FACE);
 /** A section's name as a tab on top of its first card. */
@@ -498,7 +498,7 @@ function PartyTrio({ pk }: { pk: string }) {
   if (pk === "sil")
     return (
       <span
-        className="absolute -bottom-[6%] right-[24%] h-[92%] aspect-[900/449] bg-white/[0.14] [.light_&]:bg-[#5a46d0]/[0.18]"
+        className="absolute bottom-[4%] right-[24%] h-[86%] aspect-[900/449] bg-white/[0.14] [.light_&]:bg-[#5a46d0]/[0.18]"
         style={{ maskImage: `url(${partyTrio.src})`, WebkitMaskImage: `url(${partyTrio.src})`, maskSize: "contain", WebkitMaskSize: "contain", maskRepeat: "no-repeat", WebkitMaskRepeat: "no-repeat", maskPosition: "center bottom", WebkitMaskPosition: "center bottom" }}
       />
     );
@@ -542,7 +542,7 @@ function Backdrop({ pattern, pulse }: { pattern: Pattern; pulse?: boolean }) {
       {pk && pattern === "party" && <PartyTrio pk={pk} />}
       {pk === "sil" && pattern === "hunt" && (
         <span
-          className="absolute -bottom-[3%] right-[31%] aspect-[596/640] h-[100%] bg-white/[0.16] [.light_&]:bg-[#5a46d0]/[0.2]"
+          className="absolute bottom-[4%] right-[31%] aspect-[596/640] h-[92%] bg-white/[0.16] [.light_&]:bg-[#5a46d0]/[0.2]"
           style={{ maskImage: `url(${huntDetective.src})`, WebkitMaskImage: `url(${huntDetective.src})`, maskSize: "contain", WebkitMaskSize: "contain", maskRepeat: "no-repeat", WebkitMaskRepeat: "no-repeat", maskPosition: "center bottom", WebkitMaskPosition: "center bottom" }}
         />
       )}
