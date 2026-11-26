@@ -33,6 +33,17 @@ export const LAB_CSS = `
 .light .lab-accent{color:color-mix(in oklab,hsl(var(--lab-accent)) 55%,black)}
 .lab-led{color:hsl(var(--lab-accent))}
 
+/* Every card the same height: the title (two lines at most) and the pitch (four at most) share a room the
+   size of both at their longest, so a one-line title or a short pitch leaves the room's spare space at its foot. */
+.lab-card-title{line-height:1.15;padding-top:.06em;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+@media (min-width:640px){
+  .lab-card-pitch{line-height:1.5rem;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:4;overflow:hidden}
+  .lab-card-copy{min-height:calc(2.36 * 1.5rem + .75rem + 6rem + 2px)}
+}
+@media (min-width:1024px){.lab-card-copy{min-height:calc(2.36 * 1.875rem + .75rem + 6rem + 2px)}}
+/* Phones show no pitch: a title, then its kicker, in the room of a two-line title and the kicker. */
+@media (max-width:639px){.lab-card-text{min-height:calc(.75rem + 2.36 * 1.5rem + .25rem + 15px * 1.375 + 2px)}}
+
 /* A night race track: lanes running into the distance, runners streaking to the line. */
 .lab-track{background:radial-gradient(60% 45% at 20% 0%,rgb(255 244 214 / .28),transparent 70%),radial-gradient(60% 45% at 80% 0%,rgb(255 244 214 / .22),transparent 70%),linear-gradient(180deg,#0a0820,#140c2a 45%,#0b0718)}
 .lab-lanes{position:absolute;inset:44% 0 0 0;background:repeating-linear-gradient(180deg,rgb(255 255 255 / .5) 0 2px,transparent 2px 25%),linear-gradient(180deg,#8a2a3e,#5e1828);box-shadow:inset 0 18px 30px rgb(0 0 0 / .45)}
