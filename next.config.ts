@@ -130,6 +130,8 @@ const nextConfig: NextConfig = {
         ["./src/assets/fonts/*.ttf", "./public/sizes/art/256/*.webp", "./node_modules/pokemon-showdown/dist/{config,data,lib,sim}/**/*.{js,json}"],
       ])
     ),
+    // The Shiny Hunt Counter's cards draw with the site's fonts.
+    "/tools/shiny-hunt-counter/og": ["./src/assets/fonts/*.ttf"],
     // A shared PokéGuessr result's card draws the map that was played, by a computed path.
     "/pokeguessr/r/**": ["./public/geo/maps/*.webp"],
     "/[locale]/pokeguessr/r/**": ["./public/geo/maps/*.webp"],
@@ -166,6 +168,8 @@ const nextConfig: NextConfig = {
         { source: "/tools/pokeball-maker", has: [{ type: "query" as const, key: "d" }], destination: "/tools/pokeball-maker/shared" },
         // A Favorite Pokémon Picker result (?d=…).
         { source: "/tools/favorite-pokemon-picker", has: [{ type: "query" as const, key: "d" }], destination: "/tools/favorite-pokemon-picker/shared" },
+        // A shared Shiny Hunt Counter hunt (?d=…).
+        { source: "/tools/shiny-hunt-counter", has: [{ type: "query" as const, key: "d" }], destination: "/tools/shiny-hunt-counter/shared" },
         ...["b", "ask", "v"].map((key) => ({ source: "/lab/mass-battle", has: [{ type: "query" as const, key }], destination: "/lab/mass-battle/shared" })),
       ].flatMap(withLocales),
       afterFiles: [],

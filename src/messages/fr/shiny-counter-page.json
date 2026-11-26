@@ -1,0 +1,50 @@
+{
+  "title": "Compteur de chasse aux chromatiques",
+  "subtitle": "Comptez chaque rencontre, voyez votre vraie probabilité et gardez dans une vitrine chaque chromatique trouvé.",
+  "metaTitle": "Compteur de chasse aux chromatiques : comptez avec les vraies probabilités",
+  "metaDescription": "Un compteur gratuit de chasse aux chromatiques pour tous les jeux Pokémon principaux : choisissez votre cible, le jeu et la méthode (Masuda, Poké Radar, Navi-Dex, pêche à la chaîne, appels à l’aide, apparitions massives, Pouvoir Brillance, Charme Chroma) et voyez votre vraie probabilité, votre chance jusqu’ici et vos rencontres par heure. Phases, vitrine et images à partager.",
+  "metaSharedFound": "J’ai trouvé un {pokemon} chromatique après {n} rencontres",
+  "metaSharedHunting": "Chasse à {pokemon} chromatique : {n} rencontres pour l’instant",
+  "metaSharedDescription": "Compté avec le Compteur de chasse aux chromatiques de PokéIQ. Lancez votre propre chasse, gratuitement.",
+  "ogAlt": "Un Pokémon chromatique et sa chasse, comptés avec le Compteur de chasse aux chromatiques",
+  "ogEyebrow": "Compteur de chromatiques",
+  "ogTitle": {
+    "a": "Compteur",
+    "b": "de chromatiques"
+  },
+  "ogChips": {
+    "odds": "Vraies probabilités",
+    "methods": "Toutes les méthodes",
+    "phases": "Phases",
+    "trophies": "Vitrine"
+  },
+  "shared": {
+    "found": "Chromatique trouvé",
+    "hunting": "Chasse en cours",
+    "headlineFound": "{pokemon} chromatique",
+    "headlineHunting": "Chasse à {pokemon} chromatique",
+    "encounters": "Rencontres",
+    "time": "Durée",
+    "phases": "Phases",
+    "odds": "Probabilité",
+    "date": "Trouvé le",
+    "oddsValue": "1 sur {n}",
+    "cta": "Lancer votre propre chasse",
+    "broken": "Ce lien de chasse est incomplet, voici donc le compteur."
+  },
+  "howto": {
+    "title": "Comment ça marche",
+    "s1t": "Choisissez votre cible",
+    "s1": "Cherchez n’importe quel Pokémon par nom ou par numéro. Ses couleurs chromatiques s’affichent aussitôt, pour savoir quoi guetter.",
+    "s2t": "Choisissez le jeu et la méthode",
+    "s2": "Tous les jeux principaux, d’Or et Argent à Légendes : Z-A, avec les méthodes qui changent la probabilité : le Charme Chroma, la méthode Masuda, le Poké Radar, le Safari des Amis, la pêche à la chaîne, le Navi-Dex, les appels à l’aide en chaîne, les Ultra-Brèches, les combos de captures, les Pokémon à aura, les apparitions massives et le Pouvoir Brillance.",
+    "s3t": "Comptez chaque rencontre",
+    "s3": "Touchez le grand bouton, ou appuyez sur Espace ou Entrée. Comptez par 5 pour les hordes, annulez une erreur ou tapez le compte. Le chrono démarre à votre premier compte et calcule vos rencontres par heure.",
+    "s4t": "Fêtez-le et partagez",
+    "s4": "Trouvé ? Marquez-le et il rejoint votre vitrine avec ses rencontres, sa durée et sa date. Un autre chromatique est apparu d’abord ? Enregistrez-le comme phase et continuez.",
+    "oddsTitle": "Comment fonctionnent les probabilités",
+    "odds": "À chaque rencontre, le jeu tire une ou plusieurs fois au sort le chromatique. La probabilité de base est de 1 sur 8 192 des générations 2 à 5 et de 1 sur 4 096 depuis X et Y, et le Charme Chroma comme les autres méthodes ajoutent des tirages. Votre chance jusqu’ici vaut 1 − (1 − p)ⁿ : pile à la probabilité, elle est d’environ 63 %, et elle n’atteint jamais 100 %. Chaque rencontre est un nouveau tirage : dépasser la probabilité ne rend pas la suivante plus probable.",
+    "privacy": "Vos chasses sont enregistrées dans ce navigateur, sur cet appareil. Rien n’est envoyé en ligne, et un lien partagé ne contient que la chasse partagée."
+  },
+  "credit": "Images : rendus Pokémon HOME et sprites de PokéAPI. Probabilités tirées du code et des analyses des jeux, vérifiées avec Bulbapedia et Serebii. Pokémon est © Nintendo, Game Freak et Creatures."
+}
