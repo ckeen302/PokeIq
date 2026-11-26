@@ -594,7 +594,8 @@ export function HubTop({ d }: { d: HubTopData }) {
     onBlur: () => setFocus(null),
   });
   const regionOr = (n?: string | null): HubFocus => (n && WORLD_LABELS.some(([l]) => l === n) ? n : "world");
-  const tileFocus: HubFocus[] = ["world", regionOr(d.weeklyRegion), "world", "Kanto"];
+  // Classic, the Streak and Hunt are played on the whole world (and its regions); the Weekly on its own region.
+  const tileFocus: HubFocus[] = ["world", regionOr(d.weeklyRegion), "world", "world"];
 
   const tiles = [
     <div key="classic" data-testid="geo-solo-card">
