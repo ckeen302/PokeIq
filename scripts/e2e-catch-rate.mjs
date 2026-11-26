@@ -46,7 +46,8 @@ const closeSituation = async (page) => {
   await page.getByTestId("cr-situation-done").click();
   await page.getByTestId("cr-situation").waitFor({ state: "detached", timeout: 5000 });
 };
-const noSideScroll = (page) => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
+// Against the viewport's own width: a page wider than a phone gets zoomed out, and then innerWidth grows with it.
+const noSideScroll = (page) => page.evaluate((w) => document.documentElement.scrollWidth <= w + 1 && window.innerWidth <= w + 1, page.viewportSize().width);
 
 function assert(cond, msg) {
   if (!cond) throw new Error(msg);
@@ -338,7 +339,8 @@ export async function runCatchRate({ browser, BASE, OUT, errors, step }) {
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const BASE = process.argv[2] ?? "http://localhost:3000";
   const OUT = process.argv[3] ?? "e2e-shots/catch-rate";
-  const browser = await chromium.launch(process.env.PW_CHROMIUM ? { executablePath: process.env.PW_CHROMIUM } : {});
+  const exe = process.env.CHROMIUM_PATH || process.env.PW_CHROMIUM;
+  const browser = await chromium.launch(exe ? { executablePath: exe } : {});
   const errors = [];
   const step = async (name, f) => {
     try {

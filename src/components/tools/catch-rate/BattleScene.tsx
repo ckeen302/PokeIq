@@ -169,9 +169,9 @@ export function BattleScene({ place, darkGrass, speciesId, speciesName, status, 
     <div
       ref={scope}
       className={cn(
-        "relative h-[560px] select-none rounded-[28px] shadow-[0_30px_80px_-40px_rgb(0_0_0/0.7)] max-sm:rounded-[24px] sm:h-[600px] lg:h-[clamp(520px,calc(100svh-236px),640px)]",
-        "[--ew:62%] [--ex:66%] [--ey:66%] [--hy:71%] [--hz:50%] [--mw:56%] [--px:16%] [--py:88%]",
-        "md:[--ew:40%] md:[--ex:69%] md:[--ey:61%] md:[--hy:74%] md:[--hz:47%] md:[--mw:42%] md:[--px:17%] md:[--py:91%]"
+        "relative h-[560px] select-none rounded-[28px] shadow-[0_30px_80px_-40px_rgb(0_0_0/0.7)] max-sm:rounded-[24px] sm:h-[600px] lg:h-[clamp(500px,calc(100svh-316px),640px)]",
+        "[--ew:62%] [--ex:66%] [--ey:69%] [--hy:74%] [--hz:53%] [--mw:56%] [--px:16%] [--py:89%]",
+        "md:[--ew:40%] md:[--ex:71%] md:[--ey:61%] md:[--hy:74%] md:[--hz:47%] md:[--mw:42%] md:[--px:17%] md:[--py:91%]"
       )}
       data-testid="cr-stage"
     >
@@ -280,19 +280,19 @@ export function BattleScene({ place, darkGrass, speciesId, speciesName, status, 
             </p>
           )}
         </div>
-        <div className="mt-2.5 flex items-center gap-3">
+        <div className="mt-2.5 flex items-center gap-3 max-sm:gap-2.5">
           <BallArt id={ball} size={40} />
           <div className="min-w-0 flex-1">
             <p className="truncate text-[13px] font-semibold text-white/75" data-testid="cr-hand-name">
               {ballName}
             </p>
             <p className="flex items-baseline gap-1.5 leading-none">
-              <span className="font-display text-[28px] font-bold tabular-nums md:text-[30px]" style={{ color: chance >= 0.6 ? "#4fe39a" : chance >= 0.25 ? "#ffcf3f" : "#ff6b7d" }}>
+              <span className="font-display text-[28px] font-bold tabular-nums max-sm:text-[26px] md:text-[30px]" style={{ color: chance >= 0.6 ? "#4fe39a" : chance >= 0.25 ? "#ffcf3f" : "#ff6b7d" }}>
                 {pct(chance, locale)}
               </span>
               <span className="truncate text-[12px] text-white/60">
                 {t("results.perThrow")}
-                {chance > 0 && chance < 1 && Number.isFinite(expected) && <span className="max-[380px]:hidden"> · ≈{throws(expected, locale)}</span>}
+                {chance > 0 && chance < 1 && Number.isFinite(expected) && <span className="max-sm:hidden"> · ≈{throws(expected, locale)}</span>}
               </span>
             </p>
           </div>
@@ -300,7 +300,7 @@ export function BattleScene({ place, darkGrass, speciesId, speciesName, status, 
             type="button"
             onClick={() => void go()}
             disabled={busy || chance <= 0}
-            className="relative inline-flex h-12 shrink-0 items-center gap-2 overflow-hidden rounded-full bg-gradient-to-b from-[#ff5b8d] to-[#e0245e] pl-2 pr-5 font-display text-[16px] font-bold uppercase italic tracking-wide text-white shadow-[0_6px_18px_rgb(240_60_110/0.45),inset_0_-4px_0_rgb(0_0_0/0.2),inset_0_2px_0_rgb(255_255_255/0.3)] ring-2 ring-black/20 transition-[filter,transform] hover:brightness-110 active:scale-[0.97] disabled:opacity-55 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/70"
+            className="relative inline-flex h-12 shrink-0 items-center gap-2 overflow-hidden rounded-full bg-gradient-to-b from-[#ff5b8d] to-[#e0245e] pl-2 pr-5 font-display text-[16px] max-sm:gap-1.5 max-sm:pr-4 max-sm:text-[15px] font-bold uppercase italic tracking-wide text-white shadow-[0_6px_18px_rgb(240_60_110/0.45),inset_0_-4px_0_rgb(0_0_0/0.2),inset_0_2px_0_rgb(255_255_255/0.3)] ring-2 ring-black/20 transition-[filter,transform] hover:brightness-110 active:scale-[0.97] disabled:opacity-55 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/70"
             data-testid="cr-throw"
           >
             <BallArt id={ball} size={32} />

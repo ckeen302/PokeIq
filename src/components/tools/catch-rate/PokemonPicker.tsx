@@ -75,17 +75,17 @@ export function PokemonPicker({ species, names, onPick }: { species: CatchSpecie
     setQ("");
   };
   return (
-    <div ref={root} className="relative min-w-0" data-testid="cr-picker">
+    <div ref={root} className="relative -ml-1.5 min-w-0" data-testid="cr-picker">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
         aria-haspopup="listbox"
         aria-label={`${t("pokemon.change")}: ${nameOf(species, names)}`}
-        className="group -ml-1.5 flex min-w-0 max-w-full items-center gap-1 rounded-xl px-1.5 py-0.5 text-left transition-colors hover:bg-black/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8b7cff]"
+        className="group flex min-w-0 max-w-full items-center gap-1 rounded-xl px-1.5 py-0.5 text-left transition-colors hover:bg-black/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8b7cff]"
         data-testid="cr-picker-button"
       >
-        <span className="truncate font-display text-[22px] font-bold uppercase italic leading-tight tracking-wide max-sm:text-[19px]" data-testid="cr-species-name">
+        <span className="truncate pr-[0.14em] font-display text-[22px] font-bold uppercase italic leading-tight tracking-wide max-sm:text-[19px]" data-testid="cr-species-name">
           {nameOf(species, names)}
         </span>
         <ChevronDown className={cn("h-4 w-4 shrink-0 opacity-60 transition-transform group-hover:opacity-100", open && "rotate-180")} aria-hidden />
@@ -97,7 +97,7 @@ export function PokemonPicker({ species, names, onPick }: { species: CatchSpecie
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={reduce ? { opacity: 0 } : { opacity: 0, y: -6, scale: 0.98 }}
             transition={{ duration: 0.16 }}
-            className="absolute left-[-10px] top-full z-40 mt-2 w-[min(380px,calc(100vw-40px))] origin-top text-foreground overflow-hidden rounded-[22px] border border-foreground/[0.1] bg-card shadow-[0_24px_60px_-20px_hsl(var(--shade)/0.6)]"
+            className="absolute left-[-4px] top-full z-40 mt-2 w-[min(380px,calc(100vw-40px))] origin-top text-foreground overflow-hidden rounded-[22px] border border-foreground/[0.1] bg-card shadow-[0_24px_60px_-20px_hsl(var(--shade)/0.6)]"
           >
             <label className="relative block border-b border-foreground/[0.07] p-2">
               <Search className="pointer-events-none absolute left-5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden />

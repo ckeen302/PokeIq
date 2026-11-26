@@ -176,11 +176,13 @@ export function SituationButton({ r, inputs, set, kind, setKind, open, onOpen }:
       className="group flex h-14 min-w-0 flex-1 items-center gap-3 rounded-2xl border border-foreground/[0.09] bg-card px-3 text-left shadow-[0_10px_30px_-24px_hsl(var(--shade)/0.8)] transition-colors hover:border-foreground/[0.2] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       data-testid="cr-situation-open"
     >
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/[0.12] text-primary" aria-hidden>
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/[0.12] text-primary max-[400px]:hidden" aria-hidden>
         <SlidersHorizontal className="h-[18px] w-[18px]" />
       </span>
       <span className="min-w-0 shrink-0 text-[14px] font-semibold">{t("situation.label")}</span>
-      <span className="flex min-w-0 flex-1 items-center justify-end gap-1.5 overflow-hidden">
+      {/* The summary sits on the right; when it doesn't fit, its last icons are cut, never the turn. */}
+      <span className="flex min-w-0 flex-1 overflow-hidden">
+        <span className="ml-auto flex shrink-0 items-center gap-1.5">
         <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-foreground/[0.07] px-2 py-1 text-[12px] font-semibold tabular-nums text-foreground/80">
           <Hourglass className="h-3 w-3" aria-hidden />
           {t("why.timerOn", { n: inputs.turn })}
@@ -189,11 +191,12 @@ export function SituationButton({ r, inputs, set, kind, setKind, open, onOpen }:
         {on.map((x) => {
           const I = x.icon;
           return (
-            <span key={x.key} className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-white" style={{ background: x.tint }} title={x.label}>
+            <span key={x.key} className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-white ring-2 ring-card [&+&]:-ml-3" style={{ background: x.tint }} title={x.label}>
               <I className="h-3.5 w-3.5" aria-hidden />
             </span>
           );
         })}
+        </span>
       </span>
     </button>
   );

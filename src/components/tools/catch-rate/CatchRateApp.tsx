@@ -215,7 +215,7 @@ function GameStrip({ game, onPick, t }: { game: GameId; onPick(id: GameId): void
           {td(`game.full.${current.id}`)} · {t("game.gen", { n: current.gen })}
         </span>
       </p>
-      <div className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 [&::-webkit-scrollbar]:hidden">
+      <div className="-mx-4 flex gap-1.5 overflow-x-auto lg:gap-1 px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 [&::-webkit-scrollbar]:hidden">
         {GAMES.map((x) => {
           const [a, b] = GAME_COLOURS[x.id];
           const on = x.id === game;
@@ -227,14 +227,14 @@ function GameStrip({ game, onPick, t }: { game: GameId; onPick(id: GameId): void
               aria-label={td(`game.full.${x.id}`)}
               onClick={() => onPick(x.id)}
               className={cn(
-                "inline-flex h-10 shrink-0 items-center gap-2 whitespace-nowrap rounded-full pl-1 pr-3.5 text-[13px] font-semibold transition-[background-color,box-shadow,transform,color] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                "inline-flex h-10 shrink-0 items-center gap-2 whitespace-nowrap rounded-full pl-1 pr-3.5 text-[13px] lg:h-9 lg:gap-1.5 lg:pr-3 font-semibold transition-[background-color,box-shadow,transform,color] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                 on ? "text-white [text-shadow:0_1px_1px_rgb(0_0_0/0.35)]" : "border border-foreground/[0.1] bg-card text-foreground/75 hover:border-foreground/[0.22] hover:text-foreground"
               )}
               style={on ? { background: `linear-gradient(120deg, ${a}, ${b})`, boxShadow: `0 8px 20px -8px ${a}, inset 0 -3px 0 rgb(0 0 0 / 0.18), inset 0 1px 0 rgb(255 255 255 / 0.3)` } : undefined}
               data-testid={`cr-game-${x.id}`}
             >
               <span
-                className={cn("flex h-8 w-8 items-center justify-center rounded-full font-display text-[12px] font-bold italic text-white [text-shadow:0_1px_1px_rgb(0_0_0/0.4)]", on ? "bg-white/20 ring-1 ring-white/40" : "")}
+                className={cn("flex h-8 w-8 items-center justify-center rounded-full font-display text-[12px] lg:h-7 lg:w-7 lg:text-[11px] font-bold italic text-white [text-shadow:0_1px_1px_rgb(0_0_0/0.4)]", on ? "bg-white/20 ring-1 ring-white/40" : "")}
                 style={on ? undefined : { background: `linear-gradient(135deg, ${a} 0 50%, ${b} 50% 100%)` }}
                 aria-hidden
               >
@@ -333,7 +333,7 @@ function Hud({ r, inputs, set, names, newer, t }: { r: Ranking; inputs: Inputs; 
               aria-pressed={r.target.hp === hp}
               aria-label={key === "one" ? `${label}: ${t("hp.oneHint")}` : undefined}
               onClick={() => set({ hp: toPermille(hp) })}
-              className={cn("h-7 rounded-full px-2.5 text-[11.5px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8b7cff]", r.target.hp === hp ? "bg-[#1d1b33] text-white" : "bg-[#1d1b33]/[0.06] text-[#1d1b33]/70 hover:bg-[#1d1b33]/[0.12]")}
+              className={cn("tap mp-dense h-7 rounded-full px-2.5 text-[11.5px] font-semibold transition-colors max-sm:h-8 max-sm:px-3 max-sm:text-[12.5px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8b7cff]", r.target.hp === hp ? "bg-[#1d1b33] text-white" : "bg-[#1d1b33]/[0.06] text-[#1d1b33]/70 hover:bg-[#1d1b33]/[0.12]")}
               data-testid={`cr-hp-${key}`}
             >
               {label}
@@ -355,7 +355,7 @@ function Hud({ r, inputs, set, names, newer, t }: { r: Ranking; inputs: Inputs; 
                 title={td(`status.names.${s}`)}
                 onClick={() => set({ status: s })}
                 className={cn(
-                  "h-8 min-w-0 flex-1 rounded-lg font-display text-[11.5px] font-bold italic tracking-wide transition-[background-color,color,box-shadow] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8b7cff]",
+                  "tap mp-dense h-8 min-w-0 flex-1 rounded-lg font-display text-[11.5px] font-bold italic tracking-wide max-sm:h-9 max-sm:text-[12.5px] transition-[background-color,color,box-shadow] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8b7cff]",
                   on ? (s === "none" ? "bg-[#1d1b33] text-white" : "text-black/85 shadow-[inset_0_-2px_0_rgb(0_0_0/0.2)]") : "bg-[#1d1b33]/[0.05] text-[#1d1b33]/55 hover:bg-[#1d1b33]/[0.1] hover:text-[#1d1b33]"
                 )}
                 style={on && s !== "none" ? { background: STATUS_COLOUR[s] } : undefined}

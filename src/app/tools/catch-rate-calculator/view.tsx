@@ -89,7 +89,7 @@ function Explainer() {
       <h2 id="cr-how" className="font-display text-[28px] font-bold tracking-tight max-sm:text-[24px]">
         {t("explain.title")}
       </h2>
-      <div className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
+      <div className="mt-6 grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
         <div className="space-y-4">
           <div className={card}>
             <p className="text-[14.5px] leading-relaxed text-muted-foreground">{t("explain.intro")}</p>
