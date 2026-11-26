@@ -1,0 +1,32 @@
+{
+  "title": "Calcolatore di cattura",
+  "subtitle": "Le tue probabilità di catturare qualsiasi Pokémon con ogni Poké Ball, da Rubino e Zaffiro a Scarlatto e Violetto. Imposta livello, PS e problema di stato e scopri quale Ball lanciare.",
+  "metaTitle": "Calcolatore di cattura Pokémon: quale Poké Ball lanciare",
+  "metaDescription": "Calcola la probabilità di catturare qualsiasi Pokémon con tutte le Poké Ball insieme, in classifica: PS rimasti, stato, livello, turno, ora del giorno e altro, in ogni gioco da Rubino e Zaffiro a Scarlatto e Violetto. Con le vere formule di cattura. Gratis.",
+  "metaSharedTitle": "Catturare {name}: {pct} con una {ball}",
+  "metaSharedDescription": "Le probabilità di catturare {name} con ogni Poké Ball, in classifica, dal calcolatore di cattura di PokéIQ. Cambia i PS, lo stato o il gioco e scopri cosa lanciare.",
+  "ogAlt": "Probabilità di cattura di un Pokémon su PokéIQ",
+  "credit": "Formule della terza e quarta generazione dal codice decompilato dei giochi (i progetti pret di Rubino, Smeraldo, Rosso Fuoco, Platino e HeartGold); dalla quinta generazione, dalle ricerche sulla cattura di Dragonfly Cave, verificate con Bulbapedia e Serebii. Tassi di cattura da PokéAPI e Bulbapedia.",
+  "explain": {
+    "title": "Come funziona il tasso di cattura",
+    "intro": "Ogni specie ha un tasso di cattura da 3 a 255: 3 per le più difficili, come Mewtwo, 255 per le più facili, come Caterpie. A ogni lancio, quel numero, i PS rimasti, il problema di stato e la Ball diventano un solo valore, il tasso di cattura modificato a. Dalla generazione 5:",
+    "legend": "MaxHP e HP sono i PS massimi e attuali del Pokémon selvatico, Rate il tasso di cattura della sua specie, Ball il moltiplicatore della Ball, Status il bonus di stato e Bonus tutto il resto che il gioco conta: livelli bassi, medaglie e poteri di cattura. La terza e la quarta generazione non hanno Bonus e arrotondano per difetto a ogni passaggio; dalla quinta generazione i giochi contano in 4096esimi, e il calcolatore arrotonda ogni passaggio come loro.",
+    "hpTitle": "PS",
+    "hp": "A PS pieni la parte dei PS vale un terzo; a 1 PS quasi uno. Portare un Pokémon a 1 PS con Falsofinale quasi triplica le probabilità, e i PS in rosso sono quasi altrettanto buoni.",
+    "statusTitle": "Stato",
+    "status": "Il sonno e il congelamento moltiplicano a per 2,5 (per 2 prima della generazione 5); paralisi, avvelenamento e scottatura per 1,5. Il sonno è lo stato migliore da infliggere, e la Dream Ball funziona meglio su un Pokémon addormentato.",
+    "levelTitle": "Livelli e medaglie",
+    "level": "Spada e Scudo rendono più facile catturare un Pokémon selvatico sotto il livello 20, moltiplicando a per (30 − livello) ÷ 10. Finché non hai l'ottava medaglia, però, un Pokémon di livello più alto del tuo è ×0,1, e oltre il livello consentito dalle tue medaglie non puoi nemmeno lanciare una Ball. In Scarlatto e Violetto il bonus vale sotto il livello 13, di (36 − 2 × livello) ÷ 10, e un Pokémon di livello troppo alto per obbedirti è ×0,8 per ogni medaglia che ti manca.",
+    "shakeTitle": "Le scosse",
+    "shake": "Se a è 255 o più, il Pokémon è catturato. Altrimenti il gioco calcola un valore di scossa b e fa delle prove di scossa: ognuna riesce se un numero casuale da 0 a 65535 è minore di b. La Ball si scuote una volta per ogni prova riuscita, e il Pokémon è catturato solo se riescono tutte. Dalla generazione 6 le prove sono quattro:",
+    "shakeGens": "La generazione 5 faceva tre prove con b = 65536 ÷ (255 ÷ a)^(1/4). Le generazioni 3 e 4 ne facevano quattro con b = 1048560 ÷ √(√(16711680 ÷ a)), che dà una probabilità di circa a ÷ 255.",
+    "critTitle": "Catture critiche",
+    "crit": "Dalla quinta generazione, un lancio può essere una cattura critica: la Ball trema a mezz'aria, si scuote una volta e un solo controllo decide. La probabilità è ⌊a × P ÷ 6⌋ su 256, dove P dipende dalle specie catturate: 0 fino a 30, poi 0,5, 1, 1,5, 2 e 2,5 oltre 150, 300, 450 e 600. Il Cattura Charm di Spada e Scudo e di Scarlatto e Violetto la raddoppia. Inserisci quante ne hai catturate e il calcolatore tiene conto delle catture critiche.",
+    "ballsTitle": "Le Ball",
+    "balls": "Una Mega Ball moltiplica a per 1,5 e una Ultra Ball per 2. Le Ball speciali fanno molto di più nella situazione giusta, e il moltiplicatore di ognuna è cambiato con le generazioni: il calcolatore usa il valore giusto per il gioco che scegli e mostra perché ogni Ball è forte o debole in questo momento. Dalla settima generazione, tutte le Ball tranne la UC Ball sono ×0,1 contro un'Ultracreatura. Anche il tasso di cattura di alcune specie è cambiato da un gioco all'altro, e il calcolatore usa quello di ciascun gioco.",
+    "powerTitle": "Poteri di cattura",
+    "power": "Alcuni giochi aggiungono un moltiplicatore tutto loro: il Potere Cattura dell'Intramondo in Nero e Bianco (×1,1, ×1,2 o ×1,3), il Cattura O-Potere in X e Y e in Rubino Omega e Zaffiro Alpha (×1,5, ×2 o ×2,5) e il Potere Cattura di un panino in Scarlatto e Violetto (×1,1, ×1,25 o ×2), raddoppiato se cogli il Pokémon di sorpresa. In Nero e Bianco l'erba scura fa il contrario: finché non hai catturato più di 600 specie, a scende tra 0,3 e 0,9 volte il suo valore.",
+    "leftTitle": "Cosa non include",
+    "left": "Pokémon: Let's Go, Pikachu! e Let's Go, Eevee! e Leggende Pokémon: Arceus catturano con altre formule, con tassi di cattura e dati propri (PL, lanci, bacche, grado della squadra, comportamento del Pokémon), e le fonti non concordano su valori chiave: Bulbapedia dà alla Poké Ball di Leggende: Arceus ×0,75 dove Serebii dà ×1, e scrivono la formula di Let's Go in modo diverso. Il Rotom Cattura di Ultrasole e Ultraluna resta fuori per lo stesso motivo: Bulbapedia dice ×2, Dragonfly Cave ×2,5. Dalla sesta generazione i giochi conservano la penalità dell'erba scura di Nero e Bianco, ma nessuno ha scoperto cosa la attiva, quindi conta come spenta. I PS massimi sono calcolati con IV di 15 (quelli di un Pokémon selvatico sono casuali), quindi i PS mostrati possono differire di qualche punto; quello che imposti è la parte di PS rimasta."
+  }
+}

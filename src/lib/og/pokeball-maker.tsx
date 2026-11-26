@@ -48,7 +48,7 @@ function marks(d: Design, half: "top" | "bottom"): string | null {
   }
 }
 
-function Ball({ d, size }: { d: Design; size: number }) {
+export function Ball({ d, size }: { d: Design; size: number }) {
   const band = hexOf(d.colours.band);
   const topM = marks(d, "top"), botM = marks(d, "bottom");
   const half = size * 0.45, bandH = size * 0.1;

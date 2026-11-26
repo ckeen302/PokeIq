@@ -43,6 +43,8 @@ export const NAMESPACES = [
   "battle-tooltips",
   "battle-tournaments",
   "battle-watch",
+  "catch-rate",
+  "catch-rate-page",
   "chat",
   "coach",
   "common",

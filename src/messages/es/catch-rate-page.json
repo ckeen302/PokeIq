@@ -1,0 +1,32 @@
+{
+  "title": "Calculadora de captura",
+  "subtitle": "Tus probabilidades de capturar cualquier Pokémon con cada Poké Ball, desde Rubí y Zafiro hasta Escarlata y Púrpura. Elige el nivel, los PS y el estado, y descubre qué Poké Ball lanzar.",
+  "metaTitle": "Calculadora de captura Pokémon: qué Poké Ball lanzar",
+  "metaDescription": "Calcula tu probabilidad de capturar cualquier Pokémon con todas las Poké Balls a la vez, ordenadas: PS restantes, estado, nivel, turno, hora del día y más, en todos los juegos desde Rubí y Zafiro hasta Escarlata y Púrpura. Usa las fórmulas de captura reales. Gratis.",
+  "metaSharedTitle": "Capturar a {name}: {pct} con una {ball}",
+  "metaSharedDescription": "Las probabilidades de capturar a {name} con cada Poké Ball, ordenadas, en la calculadora de captura de PokéIQ. Cambia los PS, el estado o el juego y mira qué lanzar.",
+  "ogAlt": "Probabilidades de captura de un Pokémon en PokéIQ",
+  "credit": "Fórmulas de las Generaciones 3 y 4 sacadas del código descompilado de los juegos (los proyectos de pret de Rubí, Esmeralda, Rojo Fuego, Platino y HeartGold); desde la Generación 5, de la investigación sobre capturas de Dragonfly Cave, contrastada con Bulbapedia y Serebii. Ratios de captura de PokéAPI y Bulbapedia.",
+  "explain": {
+    "title": "Cómo funciona la captura",
+    "intro": "Cada especie tiene un ratio de captura de 3 a 255: 3 para las más difíciles, como Mewtwo, y 255 para las más fáciles, como Caterpie. En cada lanzamiento, ese número, los PS restantes, el problema de estado y la Poké Ball se convierten en una sola cifra, el ratio de captura modificado a. Desde la generación 5:",
+    "legend": "MaxHP y HP son los PS máximos y actuales del Pokémon salvaje, Rate el ratio de captura de su especie, Ball el multiplicador de la Poké Ball, Status la bonificación por estado y Bonus todo lo demás que cuenta el juego: niveles bajos, medallas y poderes de captura. Las Generaciones 3 y 4 no tienen Bonus y redondean hacia abajo en cada paso; desde la Generación 5 los juegos cuentan en 4096avos, y la calculadora redondea cada paso igual que ellos.",
+    "hpTitle": "PS",
+    "hp": "Con los PS llenos, la parte de los PS vale un tercio; con 1 PS, casi uno. Dejar a un Pokémon con 1 PS con Falsotortazo casi triplica tus probabilidades, y con los PS en rojo es casi igual de bueno.",
+    "statusTitle": "Estado",
+    "status": "El sueño y la congelación multiplican a por 2,5 (por 2 antes de la generación 5); la parálisis, el envenenamiento y las quemaduras, por 1,5. Dormir al Pokémon es lo mejor, y la Ensueño Ball funciona mejor con un Pokémon dormido.",
+    "levelTitle": "Niveles y medallas",
+    "level": "Espada y Escudo facilitan la captura de un Pokémon salvaje de nivel inferior a 20, multiplicando a por (30 − nivel) ÷ 10. Pero hasta que tengas la octava medalla, un Pokémon de nivel mayor que el tuyo es ×0,1, y por encima del nivel que permiten tus medallas no puedes ni lanzarle una Poké Ball. En Escarlata y Púrpura la bonificación es por debajo del nivel 13, de (36 − 2 × nivel) ÷ 10, y un Pokémon de demasiado nivel para obedecerte es ×0,8 por cada medalla que te falta.",
+    "shakeTitle": "Las sacudidas",
+    "shake": "Si a es 255 o más, el Pokémon queda capturado. Si no, el juego calcula un valor de sacudida b y hace comprobaciones: cada una se supera si un número al azar del 0 al 65535 es menor que b. La Poké Ball se sacude una vez por cada comprobación superada, y el Pokémon solo queda capturado si se superan todas. Desde la generación 6 hay cuatro comprobaciones:",
+    "shakeGens": "La generación 5 hacía tres comprobaciones con b = 65536 ÷ (255 ÷ a)^(1/4). Las generaciones 3 y 4 hacían cuatro con b = 1048560 ÷ √(√(16711680 ÷ a)), lo que da una probabilidad de aproximadamente a ÷ 255.",
+    "critTitle": "Capturas críticas",
+    "crit": "Desde la Generación 5, un lanzamiento puede ser una captura crítica: la Poké Ball tiembla en el aire, se sacude una vez y una sola comprobación decide. La probabilidad es ⌊a × P ÷ 6⌋ entre 256, donde P depende de las especies que has capturado: 0 hasta 30, y luego 0,5, 1, 1,5, 2 y 2,5 a partir de 150, 300, 450 y 600. El Amuleto Captura de Espada y Escudo y de Escarlata y Púrpura la duplica. Indica cuántas has capturado y la calculadora tendrá en cuenta las capturas críticas.",
+    "ballsTitle": "Las Poké Balls",
+    "balls": "Una Super Ball multiplica a por 1,5 y una Ultra Ball por 2. Las Poké Balls especiales hacen mucho más en la situación adecuada, y el multiplicador de cada una ha cambiado con las generaciones: la calculadora usa el valor correcto para el juego que elijas y muestra por qué cada una es fuerte o débil ahora mismo. Desde la Generación 7, todas salvo la Ente Ball son ×0,1 contra un Ultraente. El ratio de captura de algunas especies también cambió entre juegos, y la calculadora usa el de cada juego.",
+    "powerTitle": "Poderes de captura",
+    "power": "Algunos juegos añaden un multiplicador propio: el Poder Captura del Nexo Teselia en Negro y Blanco (×1,1, ×1,2 o ×1,3), el Poder O Captura en X e Y y en Rubí Omega y Zafiro Alfa (×1,5, ×2 o ×2,5) y el Poder Captura de un bocadillo en Escarlata y Púrpura (×1,1, ×1,25 o ×2), que se duplica si pillas al Pokémon desprevenido. En Negro y Blanco, la hierba alta oscura funciona al revés: hasta que hayas capturado más de 600 especies, a se reduce a entre 0,3 y 0,9 veces su valor.",
+    "leftTitle": "Lo que no incluye",
+    "left": "Pokémon: Let's Go, Pikachu! y Let's Go, Eevee! y Leyendas Pokémon: Arceus capturan con otras fórmulas, con ratios de captura y datos propios (PC, lanzamientos, bayas, rango del equipo, cómo se comporta el Pokémon), y las fuentes no coinciden en valores clave: Bulbapedia da a la Poké Ball de Leyendas: Arceus ×0,75 y Serebii ×1, y escriben la fórmula de Let's Go de forma distinta. El Rotom Captura de Ultrasol y Ultraluna queda fuera por lo mismo: Bulbapedia dice ×2 y Dragonfly Cave ×2,5. Desde la Generación 6 los juegos conservan la penalización de la hierba alta oscura de Negro y Blanco, pero nadie ha descubierto qué la activa, así que cuenta como desactivada. Los PS máximos se calculan con IV de 15 (los de un Pokémon salvaje son aleatorios), así que los PS que se muestran pueden variar unos puntos; lo que fijas es la parte de PS que le queda."
+  }
+}
