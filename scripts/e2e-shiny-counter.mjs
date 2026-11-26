@@ -48,6 +48,23 @@ export async function runShinyCounter({ browser, BASE, OUT, errors, step }) {
   const fail = (m) => errors.push(`shiny counter: ${m}`);
   const consoleErrors = [];
 
+  step("shiny counter: its card on /tools opens it");
+  {
+    const c = await newContext(browser, BASE);
+    const p = await c.newPage();
+    try {
+      await p.goto(`${BASE}/tools`, { waitUntil: "load" });
+      const card = p.getByTestId("tool-card-shiny-hunt-counter");
+      await card.waitFor({ timeout: 15_000 });
+      if (!/Shiny Hunt Counter/i.test(await card.innerText())) fail("the /tools card doesn't say Shiny Hunt Counter");
+      await card.click();
+      await p.waitForURL(/\/tools\/shiny-hunt-counter$/, { timeout: 15_000 });
+    } catch (e) {
+      fail(`the /tools card: ${e.message.split("\n")[0]}`);
+    }
+    await c.close();
+  }
+
   step("shiny counter: the page's HTML");
   try {
     const res = await fetch(`${BASE}${PATH}`);

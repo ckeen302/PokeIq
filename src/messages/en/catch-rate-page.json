@@ -1,6 +1,7 @@
 {
   "title": "Catch Rate Calculator",
   "subtitle": "Your odds of catching any Pokémon with every Poké Ball, from Ruby & Sapphire to Scarlet & Violet. Set the level, the HP and the status, and see which ball to throw.",
+  "cardSubtitle": "See which Poké Ball catches it best.",
   "metaTitle": "Pokémon Catch Rate Calculator: which Poké Ball to throw",
   "metaDescription": "Work out your chance of catching any Pokémon with every Poké Ball at once, ranked: HP left, status, level, turn, time of day and more, in every game from Ruby & Sapphire to Scarlet & Violet. Uses the real catch formulas. Free.",
   "metaSharedTitle": "Catching {name}: {pct} with a {ball}",

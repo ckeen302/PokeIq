@@ -1,6 +1,7 @@
 {
   "title": "Shiny Hunt Counter",
   "subtitle": "Count every encounter, see your real odds, and keep a trophy case of every shiny you find.",
+  "cardSubtitle": "Count your shiny hunts, with the real odds.",
   "metaTitle": "Shiny Hunt Counter: count encounters with real shiny odds",
   "metaDescription": "A free shiny hunting counter for every main Pokémon game: pick your target, game and method (Masuda, Poké Radar, DexNav, chain fishing, SOS, outbreaks, Sparkling Power, Shiny Charm) and see your real odds, your chance so far and encounters per hour. Phases, a trophy case and share cards.",
   "metaSharedFound": "I found a shiny {pokemon} after {n} encounters",

@@ -1,6 +1,7 @@
 {
   "title": "Compteur de chasse aux chromatiques",
   "subtitle": "Comptez chaque rencontre, voyez votre vraie probabilité et gardez dans une vitrine chaque chromatique trouvé.",
+  "cardSubtitle": "Compte tes chasses aux chromatiques, avec les vraies probabilités.",
   "metaTitle": "Compteur de chasse aux chromatiques : comptez avec les vraies probabilités",
   "metaDescription": "Un compteur gratuit de chasse aux chromatiques pour tous les jeux Pokémon principaux : choisissez votre cible, le jeu et la méthode (Masuda, Poké Radar, Navi-Dex, pêche à la chaîne, appels à l’aide, apparitions massives, Pouvoir Brillance, Charme Chroma) et voyez votre vraie probabilité, votre chance jusqu’ici et vos rencontres par heure. Phases, vitrine et images à partager.",
   "metaSharedFound": "J’ai trouvé un {pokemon} chromatique après {n} rencontres",
