@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image, { type StaticImageData } from "next/image";
 import Link from "@/components/ui/Link";
 import { CalendarRange, Check, Compass, Crosshair, Flame, MapPin, Pencil, Play, Swords, Trophy, Users } from "lucide-react";
@@ -345,6 +346,7 @@ function DailyCard({ d }: { d: HubTopData }) {
 /** A mode as a tile: its picture, its name over it, where you stand in it. */
 function ModeTile({
   art,
+  art2x,
   icon,
   label,
   title,
@@ -356,6 +358,8 @@ function ModeTile({
   children,
 }: {
   art?: string | StaticImageData | null;
+  /** MOCK: the picture at twice the size, for sharp screens. */
+  art2x?: string;
   icon: React.ReactNode;
   label?: string;
   title: string;
@@ -374,7 +378,7 @@ function ModeTile({
           <Image src={art} alt="" fill sizes="200px" className={pic} />
         ) : (
           // eslint-disable-next-line @next/next/no-img-element -- the hub's own tile pictures
-          <img src={art} alt="" className={cn("absolute inset-0 h-full w-full", pic)} />
+          <img src={art} srcSet={art2x ? `${art} 1x, ${art2x} 2x` : undefined} alt="" className={cn("absolute inset-0 h-full w-full", pic)} />
         ))}
       <span className="absolute inset-0 bg-gradient-to-t from-[#1b1640] via-[#1b1640]/75 to-[#1b1640]/5" aria-hidden />
       {children}
@@ -410,6 +414,10 @@ export function HubTop({ d }: { d: HubTopData }) {
   const t = useT(geoSolo);
   const h = useT(huntNs);
   const delay = (i: number) => ({ animationDelay: `${0.15 + i * 0.08}s` });
+  // MOCK: ?mp=A|B|C swaps the multiplayer tiles' pictures for a mock direction's.
+  const [mp, setMp] = useState<string | null>(null);
+  useEffect(() => setMp(new URLSearchParams(window.location.search).get("mp")?.toUpperCase() ?? null), []);
+  const mock = (mode: string) => (mp && /^[ABC]$/.test(mp) ? { art: `/mock-mp/${mp}-${mode}.webp`, art2x: `/mock-mp/${mp}-${mode}@2x.webp` } : null);
 
   const tiles = [
     <div key="classic" data-testid="geo-solo-card">
@@ -454,10 +462,10 @@ export function HubTop({ d }: { d: HubTopData }) {
     </div>,
   ];
   const versus = [
-    { icon: <Swords className="text-[#a99cff]" />, title: t("hub.multi.duels"), label: t("hub.multi.duelsLabel", { map: d.classicMap }), art: duelArt, onClick: d.onDuels, testId: "geo-home-duels" },
-    { icon: <BallIcon tier="ultra" />, title: t("hub.multi.ranked"), label: t("hub.multi.rankedLabel"), art: rankedArt, onClick: d.onRanked, testId: "geo-home-ranked" },
+    { icon: <Swords className="text-[#a99cff]" />, title: t("hub.multi.duels"), label: t("hub.multi.duelsLabel", { map: d.classicMap }), art: duelArt as string | StaticImageData, ...mock("duel"), onClick: d.onDuels, testId: "geo-home-duels" },
+    { icon: <BallIcon tier="ultra" />, title: t("hub.multi.ranked"), label: t("hub.multi.rankedLabel"), art: rankedArt as string | StaticImageData, ...mock("ranked"), onClick: d.onRanked, testId: "geo-home-ranked" },
     // The party's label without its size ("Friends · up to 16"): the blurb says who it's for.
-    { icon: <Users className="text-[#ff8fb3]" />, title: t("hub.multi.party"), label: t("hub.multi.partyLabel").split(/ · |・/)[0], art: partyArt, onClick: d.onParty, testId: "geo-home-party" },
+    { icon: <Users className="text-[#ff8fb3]" />, title: t("hub.multi.party"), label: t("hub.multi.partyLabel").split(/ · |・/)[0], art: partyArt as string | StaticImageData, ...mock("party"), onClick: d.onParty, testId: "geo-home-party" },
   ];
 
   return (
@@ -499,7 +507,7 @@ export function HubTop({ d }: { d: HubTopData }) {
             <div className="contents md:grid md:grid-cols-2 md:gap-[var(--gap)]">
               {versus.map((v, i) => (
                 <div key={v.testId} className={cn("gh-in-e [&>button]:h-full", SLOT, i === 2 && "md:col-span-2")} style={delay(2 + i)}>
-                  <ModeTile art={v.art} icon={v.icon} label={v.label} title={v.title} onClick={v.onClick} testId={v.testId} />
+                  <ModeTile art={v.art} art2x={"art2x" in v ? v.art2x : undefined} icon={v.icon} label={v.label} title={v.title} onClick={v.onClick} testId={v.testId} />
                 </div>
               ))}
             </div>
