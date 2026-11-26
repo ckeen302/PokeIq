@@ -371,6 +371,7 @@ export function GeoParty({ code, regions, names }: { code: string; regions: GeoR
     const pressed = view.next?.pressed[me] ?? false;
     const nextIn = view.next ? seconds(view.next.at - now) : 0;
     const stillIn = !view.players[me]?.out;
+    const nextLabel = final ? t("reveal.standings") : !stillIn ? t("reveal.nextIn", { n: nextIn }) : pressed ? t("reveal.waiting", { n: nextIn }) : t("reveal.next", { n: nextIn });
     return (
       <GameShell>
         {() => (
@@ -381,11 +382,11 @@ export function GeoParty({ code, regions, names }: { code: string; regions: GeoR
               onClick={() => (final ? showResults() : void nextRound())}
               data-testid="party-next"
               className={cn(
-                "flex h-12 w-full items-center justify-center gap-2 rounded-md px-6 font-display text-base font-bold uppercase tracking-wider text-white shadow-lg transition-[background-color,transform]",
+                "flex h-12 w-full min-w-0 items-center justify-center gap-2 whitespace-nowrap rounded-md px-6 font-display text-base font-bold uppercase tracking-wider text-white shadow-lg transition-[background-color,transform]",
                 !final && (pressed || busy || !stillIn) ? "cursor-wait bg-black/60" : "bg-[#4cbb17] hover:bg-[#58d01c] active:scale-[0.98]"
               )}
             >
-              {final ? t("reveal.standings") : !stillIn ? t("reveal.nextIn", { n: nextIn }) : pressed ? t("reveal.waiting", { n: nextIn }) : t("reveal.next", { n: nextIn })}
+              <span className="min-w-0 truncate" title={nextLabel}>{nextLabel}</span>
             </button>
             {!final && <div className="mt-2 flex justify-center">{leaveButton}</div>}
           </PartyReveal>
@@ -596,7 +597,7 @@ function PartyReveal({
               {/* eslint-disable-next-line @next/next/no-img-element -- the same cached screenshot, as a thumbnail */}
               <img src={result.shot} alt="" className="hidden h-12 w-16 shrink-0 rounded border border-white/20 object-cover sm:block" />
               <div className="min-w-0">
-                <p className="font-display text-base font-extrabold uppercase italic leading-tight sm:text-lg" data-testid="party-headline">
+                <p className="truncate font-display text-base font-extrabold uppercase italic leading-tight sm:text-lg" data-testid="party-headline">
                   {verdict(t, view, result)}
                   {team && team.hurt !== null && team.multiplier > 1 && <span className="text-[#ffd23c]">{t("reveal.multiplier", { m: multIn(t.locale, team.multiplier) })}</span>}
                 </p>
@@ -618,7 +619,7 @@ function PartyReveal({
                 </div>
               </div>
             </div>
-            <div className="w-full md:w-72">{children}</div>
+            <div className="w-full min-w-0 md:w-auto md:min-w-72 md:max-w-[26rem]">{children}</div>
           </div>
         </motion.div>
       </div>
