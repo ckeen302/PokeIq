@@ -18,10 +18,7 @@ import huntNs from "@/messages/hunt";
 import avatarNs from "@/messages/avatar";
 import creatorNs from "@/messages/trainer-creator";
 import { HowToHelpButton } from "./GeoHowToButton";
-import worldBody from "@/assets/guessr/hub-world.webp";
-import worldAir from "@/assets/guessr/hub-world-air.webp";
-// Weather: soft fractal clouds, thinning towards the planet's edge, drawn once to a picture (a live SVG filter under a mask cost frames).
-import cloudsArt from "@/assets/guessr/hub-clouds.webp";
+import { HubGlobe, HUB_GLOBE_FRAC } from "./hub-globe/HubGlobe";
 // Every mode's emblem, one family: modelled and lit in three.js for PokéIQ, rendered to stills.
 import dailyEmblem from "@/assets/guessr/emblems/daily.webp";
 import classicEmblem from "@/assets/guessr/emblems/classic.webp";
@@ -36,7 +33,7 @@ const STAND_IN = presetTrainer(TRAINER_PRESETS[0]);
 
 /**
  * The top of the PokéGuessr hub, after GeoGuessr's home screen: space, the Pokémon world rising from the bottom and
- * turning slowly (a still of it, drawn by the globe's own scene), the player's trainer standing on it (their 3D
+ * turning (the World globe's own, live; drag it to spin it), the player's trainer standing on it (their 3D
  * trainer, else their avatar's Pokémon; signed out, nothing), the Daily and the single-player modes down the left and
  * the multiplayer modes down the right. On a phone: the Daily at the top, every other mode in a row along the bottom.
  * One set of cards serves both layouts.
@@ -90,34 +87,6 @@ const TITLE = "font-display font-bold uppercase italic leading-none tracking-wid
 const GREEN =
   "flex items-center justify-center gap-2 whitespace-nowrap rounded-full bg-gradient-to-b from-[#62d42a] to-[#3f9e12] font-display font-bold uppercase italic tracking-wide text-white shadow-[0_4px_16px_rgb(76_187_23/0.4),inset_0_-4px_0_rgb(0_0_0/0.2),inset_0_2px_0_rgb(255_255_255/0.25)] ring-2 ring-[#1e1a3f]/40 transition-[filter,transform] hover:brightness-110 active:scale-[0.98] disabled:opacity-60";
 
-/**
- * The still of the world (src/assets/guessr/hub-world.webp, drawn by the globe's scene in the atlas map's colours):
- * the planet alone, facing 20°E 8°N, lit from the camera so it can turn in the page while its light (the shading, and
- * the atmosphere, hub-world-air.webp) stays put. The disc spans WORLD_FRAC of the square.
- */
-const WORLD_FRAC = 0.86;
-/** The main regions on that face, where the still shows them (% of the square), from the atlas's own region points. */
-const WORLD_LABELS: [string, number, number][] = [
-  ["Johto", 60.8, 59.1],
-  ["Kanto", 86.6, 56.0],
-  ["Sinnoh", 70.8, 19.4],
-  ["Hoenn", 41.0, 82.9],
-  ["Kalos", 21.1, 23.6],
-];
-
-/** Where the still faces, fitted to the atlas's region points: an orthographic view of the globe, its disc this far (% of the square) from the centre. */
-const GLOBE_FACE = { lon: 19.75, lat: 8.5, r: 45.7 };
-/** A point of the globe ([longitude, latitude]) on the still (% of the square), or null round the back. */
-function onFace([lon, lat]: [number, number]): [number, number] | null {
-  const k = Math.PI / 180;
-  const [l, p, l0, p0] = [lon * k, lat * k, GLOBE_FACE.lon * k, GLOBE_FACE.lat * k];
-  const z = Math.sin(p0) * Math.sin(p) + Math.cos(p0) * Math.cos(p) * Math.cos(l - l0);
-  if (z < 0.12) return null;
-  const x = Math.cos(p) * Math.sin(l - l0);
-  const y = Math.cos(p0) * Math.sin(p) - Math.sin(p0) * Math.cos(p) * Math.cos(l - l0);
-  return [50 + x * GLOBE_FACE.r, 50 - y * GLOBE_FACE.r];
-}
-
 /** What a hovered mode points at on the globe: one region (an atlas name), or the whole world. */
 export type HubFocus = string | "world" | null;
 
@@ -125,8 +94,6 @@ export type HubFocus = string | "world" | null;
 /** The motion: CSS only, and all of it off for reduced motion (the end states are the resting ones). */
 const MOTION = `
 @keyframes gh-rise { from { transform: translateY(14%) scale(.94); opacity: 0 } to { transform: none; opacity: 1 } }
-@keyframes gh-spin { to { transform: rotate(-360deg) } }
-@keyframes gh-unspin { to { transform: rotate(360deg) } }
 @keyframes gh-drop {
   0% { transform: translateY(-45vh); opacity: 0 }
   8% { opacity: 1 }
@@ -145,13 +112,8 @@ const MOTION = `
 @keyframes gh-fade { from { opacity: 0 } to { opacity: 1 } }
 @keyframes gh-drift { to { transform: translate3d(var(--dx), 0, 0) } }
 @keyframes gh-twinkle { 0%, 100% { opacity: .15; transform: scale(.6) } 50% { opacity: 1; transform: none } }
-@keyframes gh-pin { 0% { transform: translateY(-70%) scale(.2); opacity: 0 } 55% { transform: translateY(6%) scale(1.12, .88); opacity: 1 } 78% { transform: translateY(-8%) } 100% { transform: none; opacity: 1 } }
 @keyframes gh-sheen { from { transform: translateX(-120%) skewX(-18deg) } to { transform: translateX(260%) skewX(-18deg) } }
 .gh-rise { animation: gh-rise 1.4s cubic-bezier(.16,1,.3,1) both }
-.gh-spin { animation: gh-spin 240s linear infinite }
-.gh-unspin { animation: gh-unspin 240s linear infinite }
-.gh-clouds { animation: gh-spin 150s linear infinite }
-.gh-pin { animation: gh-pin .55s cubic-bezier(.3,.9,.4,1) both; transform-origin: 50% 100% }
 .gh-drop { animation: gh-drop 1.25s cubic-bezier(.3,0,.3,1) .55s both; transform-origin: 50% 90% }
 .gh-shadow { animation: gh-shadow 1.25s ease-out .55s both }
 .gh-in-s, .gh-in-e { animation: gh-in-u .7s cubic-bezier(.16,1,.3,1) both }
@@ -271,8 +233,8 @@ export function hop(el: HTMLElement | null) {
 /**
  * The world rising from the bottom, turning slowly under the trainer, who drops onto it. Placed by CSS variables on
  * an ancestor: --gd the planet's diameter, --gt where its top is, --gx its centre across, --ah the trainer's height.
- * Over the still: clouds drifting a little faster than the land, the evening's edge creeping across and back, the
- * region a hovered mode is played in lit, and (once today's Daily is played) roughly where its places were.
+ * The planet is the World globe's own (hub-globe/HubGlobe.tsx): it turns, a drag spins it, the region a hovered mode
+ * is played in lights up, and (once today's Daily is played) pins show roughly where its places were.
  */
 function WorldRise({ className, focus, spots, cheer, covered, hopRef }: { className?: string; focus: HubFocus; spots?: [number, number][]; cheer: boolean; covered?: boolean; hopRef: React.Ref<HTMLDivElement> }) {
   const account = useAccount();
@@ -280,101 +242,17 @@ function WorldRise({ className, focus, spots, cheer, covered, hopRef }: { classN
   const ta = useT(avatarNs);
   const tc = useT(creatorNs);
   const names = useGeoNames();
-  const [label, setLabel] = useState<string | null>(null);
-  const lit = label ?? (focus && focus !== "world" ? focus : null);
   const mood = useTrainerMood({ cheer, covered });
-  const disc = `${((1 - WORLD_FRAC) / 2) * 100}%`;
-  const pins = (spots ?? []).map(onFace).filter((p): p is [number, number] => !!p);
   return (
     <div className={cn("pointer-events-none absolute inset-0 [--gx:50%]", className)}>
       <div
         className="absolute aspect-square -translate-x-1/2"
-        style={{ left: "var(--gx)", width: `calc(var(--gd) / ${WORLD_FRAC})`, top: `calc(var(--gt) - var(--gd) * ${(1 / WORLD_FRAC - 1) / 2})` }}
+        style={{ left: "var(--gx)", width: `calc(var(--gd) / ${HUB_GLOBE_FRAC})`, top: `calc(var(--gt) - var(--gd) * ${(1 / HUB_GLOBE_FRAC - 1) / 2})` }}
         data-testid="geo-home-world"
-        data-focus={lit ?? focus ?? undefined}
       >
         <div className="gh-rise absolute inset-0">
-          {/* The atmosphere; it doesn't turn (the light comes from up and to the left). */}
-          <Image src={worldAir} alt="" priority unoptimized className="absolute inset-0 h-full w-full select-none" />
-          <div className="gh-spin absolute inset-0">
-            <Image src={worldBody} alt="" priority unoptimized className="absolute inset-0 h-full w-full select-none" />
-          </div>
-          <div className="absolute overflow-hidden rounded-full [transform:translateZ(0)]" style={{ inset: disc }}>
-            {/* Clouds, turning a little faster than the land, so they drift over it; thin towards the edge. */}
-            <div
-              className="gh-clouds absolute inset-0 opacity-[.6]"
-              style={{ backgroundImage: `url(${cloudsArt.src})`, backgroundSize: "100% 100%" }}
-              data-testid="geo-home-clouds"
-            />
-            {/* The light stays where it is while the world turns: lit up and to the left, night falling to the lower right. */}
-            <div
-              className="absolute inset-0 [.light_&]:opacity-40"
-              style={{
-                background: "radial-gradient(circle at 32% 22%, rgb(255 255 255 / .10), transparent 42%), radial-gradient(circle at 34% 26%, transparent 48%, rgb(8 10 40 / .30) 78%, rgb(6 6 24 / .62) 100%)",
-              }}
-            />
-            {/* Evening: a soft edge, warm where the sun sets, on the right (still: a moving layer this size cost frames). */}
-            <div
-              className="absolute left-[-80%] top-[-80%] h-[260%] w-[260%] [transform:translate(-16%,2%)] [.light_&]:hidden"
-              style={{ background: "radial-gradient(circle at 50% 50%, transparent 0 29%, rgb(255 160 90 / .14) 31%, rgb(40 20 80 / .34) 33.5%, rgb(8 8 34 / .58) 37.5%, rgb(6 6 28 / .64) 100%)" }}
-              data-testid="geo-home-night"
-            />
-          </div>
-          {/* The whole world in play (Classic, the Daily, the Streak): the planet's rim picked out. */}
-          <div
-            className={cn("gh-tr absolute rounded-full ring-white/0 transition-[box-shadow,opacity] duration-300", focus === "world" && !label ? "opacity-100" : "opacity-0")}
-            style={{ inset: disc, boxShadow: "0 0 0 1.5px rgb(255 255 255 / .55), 0 0 28px 2px rgb(150 170 255 / .28), inset 0 0 26px rgb(170 190 255 / .22)" }}
-            aria-hidden
-          />
-          <div className="gh-spin absolute inset-0">
-            {/* The region a hovered mode plays in: a pool of light on the land under its name (kept on the planet). */}
-            <div className="absolute overflow-hidden rounded-full" style={{ inset: disc }} aria-hidden>
-              {WORLD_LABELS.map(([n, x, y]) => (
-                <span
-                  key={n}
-                  className={cn("gh-tr absolute aspect-square w-[26%] -translate-x-1/2 -translate-y-1/2 rounded-full transition-opacity duration-300", lit === n ? "opacity-100" : "opacity-0")}
-                  style={{
-                    left: `${(x - 50) / WORLD_FRAC + 50}%`,
-                    top: `${(y - 50) / WORLD_FRAC + 50}%`,
-                    background: "radial-gradient(circle, rgb(255 238 170 / .5), rgb(255 214 90 / .24) 38%, rgb(255 214 90 / .08) 58%, transparent 70%)",
-                  }}
-                />
-              ))}
-            </div>
-            {/* Today's Daily, played: roughly where its places were (rounded, no names). */}
-            {pins.map(([x, y], i) => (
-              <span key={`pin-${i}`} className="absolute" style={{ left: `${x}%`, top: `${y}%` }} data-testid="geo-home-pin">
-                <span className="gh-unspin block">
-                  <span className="gh-pin -ml-[6px] -mt-[16px] block" style={{ animationDelay: `${2.1 + i * 0.12}s` }}>
-                    <svg width="12" height="17" viewBox="0 0 10 14" aria-hidden className="drop-shadow-[0_1px_1.5px_rgb(0_0_0/.6)]">
-                      <path d="M5 13.5C5 13.5 9.5 8.6 9.5 5A4.5 4.5 0 0 0 .5 5c0 3.6 4.5 8.5 4.5 8.5Z" fill="#ffd23c" stroke="#3a2200" strokeWidth="1" />
-                      <circle cx="5" cy="5" r="1.6" fill="#3a2200" />
-                    </svg>
-                  </span>
-                </span>
-              </span>
-            ))}
-            {WORLD_LABELS.map(([n, x, y]) => (
-              // On a phone the world is wider than the screen: its names would poke in at the edges, so they're left off.
-              <span key={n} className="absolute max-md:hidden" style={{ left: `${x}%`, top: `${y}%` }}>
-                <span className="gh-unspin block">
-                  <span
-                    className={cn(
-                      "gh-tr pointer-events-auto block -translate-x-1/2 -translate-y-1/2 cursor-default whitespace-nowrap rounded-[4px] px-1.5 py-[3px] font-display text-[9px] font-bold uppercase leading-none tracking-[0.16em] ring-1 backdrop-blur-[2px] transition-[background-color,color,opacity,box-shadow] duration-300 md:text-[10px]",
-                      lit === n ? "bg-[#ffd23c] text-[#2a1a00] shadow-[0_2px_10px_rgb(0_0_0/.45)] ring-[#fff3c4]/70" : "bg-[#120f24]/60 text-white/90 ring-white/20",
-                      lit && lit !== n && "opacity-60",
-                    )}
-                    onPointerEnter={() => setLabel(n)}
-                    onPointerLeave={() => setLabel(null)}
-                    data-testid="geo-home-region"
-                    data-lit={lit === n || undefined}
-                  >
-                    {names.region(n)}
-                  </span>
-                </span>
-              </span>
-            ))}
-          </div>
+          {/* The World globe's own world (hub-globe/), turning, to be spun by hand; its names, pins and lights move with it. */}
+          <HubGlobe focus={focus} spots={spots} paused={covered} label={(n) => names.region(n)} />
         </div>
       </div>
       {/* Their own 3D trainer, else a stand-in, the creator's first look (until everyone can make one). */}
@@ -690,8 +568,8 @@ export function HubTop({ d }: { d: HubTopData }) {
 
   return (
     <Space>
-      <WorldRise focus={focus} spots={d.dailyPlayed ? d.dailySpots : undefined} cheer={d.dailyPlayed} covered={d.covered} hopRef={trainer} className={`${LAYOUT} [--ah:9rem] [--gd:min(120vw,34rem)] [--gt:15.5rem] md:[--ah:clamp(8.5rem,26vh,15rem)] md:[--gd:min(44vw,74vh,calc(100vw-2*(var(--side)+var(--cw)+3rem)))] md:[--gt:max(13rem,40%)]`} />
-      {/* Phone: below the trainer's patch of the world, the planet fades into space so the cards sit on a clean sky. */}
+      <WorldRise focus={focus} spots={d.dailyPlayed ? d.dailySpots : undefined} cheer={d.dailyPlayed} covered={d.covered} hopRef={trainer} className={`${LAYOUT} [--ah:9rem] [--gd:min(120vw,34rem)] [--gt:15.5rem] max-md:[--globe-floor:24.5rem] md:[--ah:clamp(8.5rem,26vh,15rem)] md:[--gd:min(44vw,74vh,calc(100vw-2*(var(--side)+var(--cw)+3rem)))] md:[--gt:max(13rem,40%)]`} />
+      {/* Phone: below the trainer's patch of the world, the planet fades into space so the cards sit on a clean sky (by 24.5rem: the globe draws nothing lower, --globe-floor). */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 top-[18.5rem] bg-[linear-gradient(180deg,transparent,#09081a_6rem)] md:hidden [.light_&]:bg-[linear-gradient(180deg,transparent,#e4ddff_6rem)]" aria-hidden />
       <HowToHelpButton className="gh-fade absolute right-2 top-2 z-10 text-white max-md:scale-90 md:right-5 md:top-4 [.light_&]:text-[#2a1f6e]" />
 
