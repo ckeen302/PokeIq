@@ -160,13 +160,6 @@ function LabCard({ experience: e, priority }: { experience: LabExperience; prior
             </h2>
             <p className="lab-card-pitch text-muted-foreground max-sm:hidden">{t(`cards.${e.id}.pitch`)}</p>
           </div>
-          <ul className="flex h-[23px] flex-wrap gap-2 overflow-hidden max-sm:hidden" aria-label={t("highlights")}>
-            {e.tags.map((tag, i) => (
-              <li key={tag} className="rounded-sm border border-foreground/10 bg-background/50 px-2 py-1 font-pixel text-[9px] uppercase tracking-[0.12em] text-muted-foreground">
-                {t(`cards.${e.id}.tags.${i as 0 | 1 | 2}`)}
-              </li>
-            ))}
-          </ul>
           <div className="mt-auto pt-2 max-sm:hidden">
             <Link href={e.href} className={buttonVariants({ size: "lg" })} data-testid={`lab-open-${e.id}`} aria-label={t("openLabel", { title })}>
               {t("open")} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
