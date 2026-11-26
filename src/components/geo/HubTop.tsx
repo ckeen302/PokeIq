@@ -416,7 +416,6 @@ export function HubTop({ d }: { d: HubTopData }) {
       <ModeTile
         art={d.classicArt}
         icon={<MapPin className="text-[#a99cff]" />}
-        label={t("hub.solo.label", { map: d.classicMap })}
         title={t("hub.solo.title")}
         onClick={d.onClassic}
         button={{ "aria-expanded": d.soloOpen, "aria-controls": "solo" }}
@@ -439,7 +438,6 @@ export function HubTop({ d }: { d: HubTopData }) {
       <ModeTile
         art={streakArt}
         icon={<Flame className="text-[#ff9a1f]" />}
-        label={t("hub.play.eyebrow")}
         title={t("regionStreak.label")}
         href="/pokeguessr/streak"
         testId="region-streak-link"
@@ -447,7 +445,7 @@ export function HubTop({ d }: { d: HubTopData }) {
     </div>,
     // Pokémon Hunt: a Pokémon on a map (Hunt's question: where would you catch it?).
     <div key="hunt">
-      <ModeTile art={huntMap} icon={<Crosshair className="text-primary" />} label={h("tile.label")} title={h("tile.title")} href="/pokeguessr/hunt" testId="hunt-hub-entry">
+      <ModeTile art={huntMap} icon={<Crosshair className="text-primary" />} title={h("tile.title")} href="/pokeguessr/hunt" testId="hunt-hub-entry">
         {/* eslint-disable-next-line @next/next/no-img-element -- static board art */}
         <img src={boardArtUrl(143)} alt="" aria-hidden className="absolute -right-[4%] -top-[3%] h-[60%] w-auto object-contain drop-shadow-[0_6px_10px_rgb(0_0_0/0.55)] transition-transform duration-500 group-hover:-translate-y-1 group-hover:scale-105" />
       </ModeTile>
