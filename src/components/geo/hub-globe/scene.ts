@@ -207,18 +207,18 @@ export function createHubGlobe(host: HTMLElement, grab: HTMLElement, o: HubGlobe
     view.x = 0; view.y = 0; view.w = W; view.h = H;
     const clip = o.clip;
     if (!clip) return;
-    // The host's place in the clip (layout offsets: the rise's transform doesn't count).
-    let x = 0, y = 0, el: HTMLElement | null = host;
+    // How far down the clip the host starts (layout offsets: the rise's transform doesn't count). Only the bottom is
+    // cropped: across, the box is centred by a transform, which offsets don't see.
+    let y = 0, el: HTMLElement | null = host;
     while (el && el !== clip) {
-      x += el.offsetLeft; y += el.offsetTop;
+      y += el.offsetTop;
       el = el.offsetParent as HTMLElement | null;
     }
     if (el !== clip) return;
-    const x0 = Math.max(0, -x), y0 = Math.max(0, -y);
-    const x1 = Math.min(W, clip.clientWidth - x), y1 = Math.min(H, clip.clientHeight - y);
-    if (x1 - x0 < 8 || y1 - y0 < 8) return;
-    view.x = Math.floor(x0); view.y = Math.floor(y0);
-    view.w = Math.ceil(x1) - view.x; view.h = Math.ceil(y1) - view.y;
+    const y0 = Math.max(0, -y), y1 = Math.min(H, clip.clientHeight - y);
+    if (y1 - y0 < 8) return;
+    view.y = Math.floor(y0);
+    view.h = Math.ceil(y1) - view.y;
   }
   function size(full: boolean) {
     if (full) { view.x = 0; view.y = 0; view.w = W; view.h = H; }
