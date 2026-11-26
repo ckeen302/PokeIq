@@ -15,6 +15,7 @@ import guessrCards from "@/messages/guessr-cards";
 import guessrRanked from "@/messages/guessr-ranked";
 import guessrHud from "@/messages/guessr-hud";
 import hunt from "@/messages/hunt";
+import community from "@/messages/community";
 
 /**
  * The message namespaces each PokéGuessr page hands its client components (<ClientMessages>): the game frame and
@@ -22,8 +23,8 @@ import hunt from "@/messages/hunt";
  * The hub shows the duel, party and ranked cards; history and replays show Gym Leader tags and the duel HUD's distances.
  */
 export const GEO_GAME_NAMESPACES: Namespace[] = [geo, geoNames];
-export const GEO_HUB_NAMESPACES: Namespace[] = [...GEO_GAME_NAMESPACES, geoSolo, badges, geoRecord, geoHowto, howto, share, duel, tier, guessrCards, guessrRanked, hunt];
+export const GEO_HUB_NAMESPACES: Namespace[] = [...GEO_GAME_NAMESPACES, geoSolo, badges, geoRecord, geoHowto, howto, share, duel, tier, guessrCards, guessrRanked, hunt, community];
 export const GEO_STREAK_NAMESPACES: Namespace[] = [...GEO_GAME_NAMESPACES, geoStreak, share];
 export const GEO_REPLAY_NAMESPACES: Namespace[] = [...GEO_GAME_NAMESPACES, geoReplay, duel, guessrRanked, guessrHud];
-/** Pokémon Hunt (/pokeguessr/hunt). */
-export const GEO_HUNT_NAMESPACES: Namespace[] = [...GEO_GAME_NAMESPACES, hunt];
+/** Pokémon Hunt's own page (/pokeguessr/hunt), for old and shared links; the landing opens the same setup in place. */
+export const GEO_HUNT_NAMESPACES: Namespace[] = [...GEO_GAME_NAMESPACES, hunt, share, community];

@@ -207,3 +207,14 @@ Branches: integration `feat/pokemon-hunt`; data on `hunt/data`; design on `hunt/
 
 - **PR: https://github.com/ckeen302/PokeIq/pull/345** (`feat/pokemon-hunt` → `main`). It is not merged: the coordinator merges once CI is green.
 - Design's two accessibility follow-ups (keyboard pin placement; Tab reaching the page behind the game frame) are listed in the PR under "Later". Both apply to PokéGuessr as well. The second needs the site layout, which this PR doesn't touch.
+
+### 2026-11-26 · Hunt v2
+
+- **The owner asked for a rebuild and approved every change below.** spec.md is rewritten for v2.
+- **Gameplay:** one pin a round ("Where would you catch Gible?"), scored against the nearest real spot on PokéGuessr's own curve (`geoCurveScore`, now shared with PokéGuessr's grading), at the scale of that spot's region's own map. The reveal draws the pin's line to the nearest spot and shows every spot.
+- **Answers:** only normal wild encounters (grass, caves, surfing, rods, the overworld). Poké Radar, DexNav, Hidden Grottoes, berry trees, Headbutt, Rock Smash, honey trees, hordes, SOS calls, Unova's phenomena, ambushes, swarms, Max Raids, fixed and scripted meetings, and legendary and mythical Pokémon are out. Rebuilt with `build.ts`; audited with the new `verify-v2.ts` (verification.md).
+- **Hints:** type, kind of place and games, each costing points on the server (500, 750, 1,000). Hard has none.
+- **Setup:** the landing's Pokémon Hunt tile opens it in place (`#hunt`); `/pokeguessr/hunt` stays for old links. Easy (famous Pokémon in their home region; famous.ts is now 101 such picks), Normal, Hard (world, no hints).
+- **End screen:** Classic's (#367), with the breakdown map of every round's pin and spots.
+- **Daily board:** migration 0057 (`hunt_daily_scores`), hidden until it's applied.
+- Removed: `HuntHub` (the old separate page's hub) and `HuntPinTray` (several pins). `map-marks.tsx` stays: GeoMap draws the reveal's spots with it.

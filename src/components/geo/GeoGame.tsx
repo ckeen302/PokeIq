@@ -32,6 +32,12 @@ import { AchievementToasts, useGeoProgress, type MyGeoProgress } from "./GeoAchi
 import { achievementCloser } from "@/lib/geo-achievements";
 import type { DuelQueue } from "./DuelCard";
 import { geoWeekOf, geoWeeklyLeftParts, geoWeeklyMap, geoWeeklyNumber } from "@/lib/geo-weekly";
+import { HUNT_MAP_REGIONS } from "@/lib/hunt/types";
+
+/** Pokémon Hunt's setup and game, opened in place by its tile: its code loads once it's asked for. */
+const HuntGame = dynamic(() => import("@/components/hunt/HuntGame").then((m) => m.HuntGame), { ssr: false, loading: () => null });
+/** The maps a hunt is played on: the world and the nine regions. */
+const HUNT_MAP_IDS = new Set<string>([WORLD_REGION, ...HUNT_MAP_REGIONS]);
 
 /**
  * What a solo round doesn't need is split off the first load: the duel card,
@@ -740,6 +746,20 @@ function GeoGameInner({
     setSoloOpen(true);
     window.setTimeout(() => scrollTo("solo"), 50);
   }
+  /** The Pokémon Hunt tile (or /pokeguessr#hunt, where shared hunts link): opens the hunt's setup in place, as Classic's tile opens its own, or folds it away. */
+  const [huntOpen, setHuntOpen] = useState(false);
+  /** A hunt is being played over the page: the hub steps aside (inert) as it does under a game. */
+  const [huntActive, setHuntActive] = useState(false);
+  useEffect(() => {
+    if (window.location.hash !== "#hunt") return;
+    setHuntOpen(true);
+    window.setTimeout(() => document.getElementById("hunt")?.scrollIntoView({ block: "start" }), 300);
+  }, []);
+  function toHunt() {
+    if (huntOpen) return setHuntOpen(false);
+    setHuntOpen(true);
+    window.setTimeout(() => scrollTo("hunt"), 80);
+  }
   /** The Party tile (or /pokeguessr#party): opens the party form, so the hub's other forms are the only ones on the page until then. */
   const [partyOpen, setPartyOpen] = useState(false);
   useEffect(() => {
@@ -1220,6 +1240,8 @@ function GeoGameInner({
             classicBest: bestGame,
             soloOpen,
             onClassic: toSolo,
+            huntOpen,
+            onHunt: toHunt,
             regionStreakBest: progress?.best[`geo:${GEO_REGION_STREAK_KEY}`] ?? 0,
             onDuels: () => openDuels("casual"),
             onRanked: () => openDuels("ranked"),
@@ -1373,6 +1395,9 @@ function GeoGameInner({
             </CardContent>
           </Card>
         )}
+
+        {/* ---- Pokémon Hunt's setup (its tile, above, opens it); a hunt itself plays over the page ---- */}
+        {huntOpen && <HuntGame inline maps={allRegions.filter((r) => HUNT_MAP_IDS.has(r.id))} onActive={setHuntActive} />}
 
         {/* ---- Multiplayer: the panels the landing's Duels, Ranked and Party cards open (their own cards are up top) ---- */}
         <section id="multiplayer" className="scroll-mt-24 space-y-4" data-testid="geo-hub-multiplayer">
@@ -1622,7 +1647,7 @@ function GeoGameInner({
   };
 
   // Under a game the hub doesn't change: it's built once as the game starts, so the round's ticks never re-render it.
-  const hubView = inGame && hubUnderGame.current ? hubUnderGame.current : renderHub(inGame);
+  const hubView = inGame && hubUnderGame.current ? hubUnderGame.current : renderHub(inGame || huntActive);
   hubUnderGame.current = inGame ? hubView : null;
   if (!inGame) return hubView;
   const guessView = game ? guessViewOf(game) : null;

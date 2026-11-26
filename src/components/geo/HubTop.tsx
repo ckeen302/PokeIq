@@ -23,9 +23,6 @@ import streakArt from "@/assets/guessr/region-streak.webp";
 import worldBody from "@/assets/guessr/hub-world.webp";
 import worldAir from "@/assets/guessr/hub-world-air.webp";
 import huntMap from "@/assets/guessr/kanto.webp";
-import duelArt from "@/assets/guessr/johto.webp";
-import rankedArt from "@/assets/guessr/sinnoh.webp";
-import partyArt from "@/assets/guessr/kalos.webp";
 
 /** Who stands on the globe until a player makes their own 3D trainer (and for visitors): the creator's first look. */
 const STAND_IN = presetTrainer(TRAINER_PRESETS[0]);
@@ -69,6 +66,9 @@ export interface HubTopData {
   classicBest?: number;
   soloOpen: boolean;
   onClassic(): void;
+  /** Pokémon Hunt's setup is open on the page (its tile opens it in place, as Classic's does). */
+  huntOpen: boolean;
+  onHunt(): void;
   regionStreakBest: number;
   onDuels(): void;
   onRanked(): void;
@@ -353,9 +353,12 @@ function ModeTile({
   testId,
   disabled,
   button,
+  hero,
   children,
 }: {
   art?: string | StaticImageData | null;
+  /** A mode drawn as its own emblem: a glowing backdrop in the mode's colours and its icon, big (in place of a picture and the corner chip). */
+  hero?: { icon: React.ReactNode; glow: string; tint: string };
   icon: React.ReactNode;
   label?: string;
   title: string;
@@ -376,11 +379,19 @@ function ModeTile({
           // eslint-disable-next-line @next/next/no-img-element -- the hub's own tile pictures
           <img src={art} alt="" className={cn("absolute inset-0 h-full w-full", pic)} />
         ))}
-      <span className="absolute inset-0 bg-gradient-to-t from-[#1b1640] via-[#1b1640]/75 to-[#1b1640]/5" aria-hidden />
+      {hero && (
+        <span className="absolute inset-0 overflow-hidden" aria-hidden style={{ background: `radial-gradient(120% 95% at 78% 18%, ${hero.tint} 0%, #2d2766 58%, #1b1640 100%)` }}>
+          <span className="absolute right-[6%] top-[8%] aspect-square h-[78%] rounded-full blur-2xl transition-opacity duration-500 group-hover:opacity-100" style={{ background: hero.glow, opacity: 0.7 }} />
+          <span className="absolute right-[10%] top-[12%] flex aspect-square h-[62%] items-center justify-center transition-transform duration-500 ease-out [&>svg]:h-full [&>svg]:w-full [&>svg]:drop-shadow-[0_6px_14px_rgb(0_0_0/0.5)] group-hover:-translate-y-1 group-hover:rotate-[-6deg] group-hover:scale-110 motion-reduce:transition-none">
+            {hero.icon}
+          </span>
+        </span>
+      )}
+      <span className={cn("absolute inset-0 bg-gradient-to-t", hero ? "from-[#1b1640]/90 via-transparent to-transparent" : "from-[#1b1640] via-[#1b1640]/75 to-[#1b1640]/5")} aria-hidden />
       {children}
-      <span className="absolute left-2 top-2 flex h-7 w-7 items-center justify-center rounded-md bg-[#120f24]/75 ring-1 ring-white/15 backdrop-blur [&>svg]:h-4 [&>svg]:w-4" aria-hidden>
+      {!hero && <span className="absolute left-2 top-2 flex h-7 w-7 items-center justify-center rounded-md bg-[#120f24]/75 ring-1 ring-white/15 backdrop-blur [&>svg]:h-4 [&>svg]:w-4" aria-hidden>
         {icon}
-      </span>
+      </span>}
       <span className="relative mt-auto block min-w-0 p-2.5 pt-0">
         {label && <span className={cn(LABEL, "mb-1 block truncate text-[9px] md:text-[10px]")}>{label}</span>}
         {/* The name's size follows the tile's width too, so its longest word ("Challenge") always fits whole. */}
@@ -445,17 +456,17 @@ export function HubTop({ d }: { d: HubTopData }) {
     </div>,
     // Pokémon Hunt: a Pokémon on a map (Hunt's question: where would you catch it?).
     <div key="hunt">
-      <ModeTile art={huntMap} icon={<Crosshair className="text-primary" />} title={h("tile.title")} href="/pokeguessr/hunt" testId="hunt-hub-entry">
+      <ModeTile art={huntMap} icon={<Crosshair className="text-primary" />} title={h("tile.title")} onClick={d.onHunt} button={{ "aria-expanded": d.huntOpen, "aria-controls": "hunt" }} testId="hunt-hub-entry">
         {/* eslint-disable-next-line @next/next/no-img-element -- static board art */}
         <img src={boardArtUrl(143)} alt="" aria-hidden className="absolute -right-[4%] -top-[3%] h-[60%] w-auto object-contain drop-shadow-[0_6px_10px_rgb(0_0_0/0.55)] transition-transform duration-500 group-hover:-translate-y-1 group-hover:scale-105" />
       </ModeTile>
     </div>,
   ];
   const versus = [
-    { icon: <Swords className="text-[#a99cff]" />, title: t("hub.multi.duels"), label: t("hub.multi.duelsLabel", { map: d.classicMap }), art: duelArt, onClick: d.onDuels, testId: "geo-home-duels" },
-    { icon: <BallIcon tier="ultra" />, title: t("hub.multi.ranked"), label: t("hub.multi.rankedLabel"), art: rankedArt, onClick: d.onRanked, testId: "geo-home-ranked" },
-    // The party's label without its size ("Friends · up to 16"): the blurb says who it's for.
-    { icon: <Users className="text-[#ff8fb3]" />, title: t("hub.multi.party"), label: t("hub.multi.partyLabel").split(/ · |・/)[0], art: partyArt, onClick: d.onParty, testId: "geo-home-party" },
+    // Each mode as its emblem: crossed swords, the Master Ball, a party.
+    { icon: <Swords />, hero: { icon: <Swords className="text-white" strokeWidth={1.8} />, glow: "#ff3d64", tint: "#b8264f" }, title: t("hub.multi.duels"), onClick: d.onDuels, testId: "geo-home-duels" },
+    { icon: <BallIcon tier="master" />, hero: { icon: <BallIcon tier="master" />, glow: "#b45cff", tint: "#7a35c8" }, title: t("hub.multi.ranked"), onClick: d.onRanked, testId: "geo-home-ranked" },
+    { icon: <Users />, hero: { icon: <Users className="text-white" strokeWidth={1.8} />, glow: "#ffb13d", tint: "#b8741c" }, title: t("hub.multi.party"), onClick: d.onParty, testId: "geo-home-party" },
   ];
 
   return (
@@ -497,7 +508,7 @@ export function HubTop({ d }: { d: HubTopData }) {
             <div className="contents md:grid md:grid-cols-2 md:gap-[var(--gap)]">
               {versus.map((v, i) => (
                 <div key={v.testId} className={cn("gh-in-e [&>button]:h-full", SLOT, i === 2 && "md:col-span-2")} style={delay(2 + i)}>
-                  <ModeTile art={v.art} icon={v.icon} label={v.label} title={v.title} onClick={v.onClick} testId={v.testId} />
+                  <ModeTile hero={v.hero} icon={v.icon} title={v.title} onClick={v.onClick} testId={v.testId} />
                 </div>
               ))}
             </div>

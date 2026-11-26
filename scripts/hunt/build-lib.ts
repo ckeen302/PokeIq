@@ -3,12 +3,12 @@
  * Pure: takes the loaded inputs, returns the table and the review list, so the
  * tests can run it and check it's deterministic. The CLI is scripts/hunt/build.ts.
  */
-import { HUNT_MAP_REGIONS, HUNT_REGIONS, HUNT_REGION_OF_GEO, huntPinsFor, type HuntEntry, type HuntMapRegionId, type HuntMethod, type HuntPlace, type HuntRegionId } from "../../src/lib/hunt/types";
+import { HUNT_MAP_REGIONS, HUNT_REGIONS, HUNT_REGION_OF_GEO, huntScales, type HuntEntry, type HuntMapRegionId, type HuntMethod, type HuntPlace, type HuntRegionId } from "../../src/lib/hunt/types";
 import { VERSION_BY_KEY, versionOrder } from "../../src/lib/pokemon/encounter-types";
-import { buildGrid, goodShare, round3, worldDifficulty, type MapGrid, type Pt } from "./difficulty";
+import { buildGrid, goodShare, round3, type MapGrid, type Pt } from "./difficulty";
 import { FAMOUS } from "./famous";
 import { PLACE_DEPENDENT_FORMS, regionalForms, resolveForms, type EvidenceEntry, type FormInfo } from "./forms";
-import { AGREED_LABEL, ALTERING_CAVE, EVENT_ONLY, VERSION_REGIONS } from "./rules";
+import { AGREED_LABELS, AGREED_LABEL_WILD, ALTERING_CAVE, EVENT_ONLY, VERSION_REGIONS } from "./rules";
 import { normPlace } from "../../src/lib/pokemon/encounter-transform";
 
 /** Rows that need an event (rules.ts EVENT_ONLY, Altering Cave): left out like any event. */
@@ -31,7 +31,9 @@ export interface EncRow {
 }
 export interface Inputs {
   geo: { world: { map: { width: number; height: number; squarePx: number }; crops: Record<string, { regions: string[]; box: [number, number, number, number] }>; locations: GeoPlace[] } };
-  pokedex: { id: number; slug: string; name: string }[];
+  pokedex: { id: number; slug: string; name: string; gen?: number; types?: string[]; legendary?: boolean; mythical?: boolean }[];
+  /** dex → its forms' types (src/data/pokedex-details.json), by the form's art id. */
+  formTypes?: Record<string, Record<string, string[]>>;
   aboutForms: [number, number, string, string, string][];
   /** dex → its encounter generations. */
   encounters: Map<number, { g: number; rows: EncRow[] }[]>;
@@ -65,11 +67,17 @@ export interface BuildResult {
   stats: Record<string, number>;
 }
 
-/** Everywhere: in this many regions or more, and easy on the world map. */
-export const EVERYWHERE_REGIONS = 4;
-export const EVERYWHERE_DIFFICULTY = 0.91;
-/** In this many regions it's everywhere whatever the measure says (three pins find three of them). */
-export const EVERYWHERE_ALWAYS = 6;
+/**
+ * Everywhere: found so widely that a pin anywhere scores (a round has to have a real "where"). In this many
+ * regions or more, or at this many places or more, or so spread out that a pin scores well on this share of
+ * the world's land (1 − difficulty).
+ */
+export const EVERYWHERE_REGIONS = 6;
+export const EVERYWHERE_PLACES = 13;
+export const EVERYWHERE_DIFFICULTY = 0.92;
+
+/** The region each generation's games are set in: a Pokémon's home. */
+const HOME_BY_GEN: Record<number, HuntRegionId> = { 1: "kanto", 2: "johto", 3: "hoenn", 4: "sinnoh", 5: "unova", 6: "kalos", 7: "alola", 8: "galar", 9: "paldea" };
 
 const regionOrder = (r: HuntRegionId) => HUNT_REGIONS.indexOf(r);
 const entryId = (dex: number, form: string | null) => (form ? `${dex}-${form}` : String(dex));
@@ -91,7 +99,7 @@ export function buildAnswers(inp: Inputs, opts: { difficulty?: boolean } = {}): 
   const review: ReviewItem[] = [];
   const missing = new Map<string, { versions: Set<string>; entries: Set<string> }>();
   const excludedAt = new Set<string>();
-  const stats: Record<string, number> = { rows: 0, counted: 0, excludedMethod: 0, offMap: 0, excludedGame: 0, dataDenRows: 0, summaryRows: 0, summaryOnly: 0, addedByAgreement: 0, droppedUnconfirmed: 0 };
+  const stats: Record<string, number> = { rows: 0, counted: 0, excludedMethod: 0, offMap: 0, excludedGame: 0, dataDenRows: 0, summaryRows: 0, summaryOnly: 0, addedByAgreement: 0, agreedLeftOut: 0, droppedUnconfirmed: 0, legendary: 0 };
 
   const nameOf = (dex: number, form: string | null) => (form ? formsBy.get(dex)!.find((f) => f.key === form)!.name : dexBy.get(dex)!.name);
   const acc = (dex: number, form: string | null): Acc => {
@@ -105,6 +113,13 @@ export function buildAnswers(inp: Inputs, opts: { difficulty?: boolean } = {}): 
     const dex = mon.id;
     const forms: FormInfo[] | undefined = formsBy.get(dex);
     const allForms: (string | null)[] = [null, ...(forms ?? []).map((f) => f.key)];
+    // Legendary and mythical Pokémon are never a normal wild encounter: every meeting is a one-off (a fixed spot, a
+    // post-game scripted spawn, a den or an event), so v2 leaves them out whatever the rows call it.
+    if (mon.legendary || mon.mythical) {
+      review.push({ id: String(dex), name: mon.name, why: `left out: ${mon.mythical ? "mythical" : "legendary"}, never a normal wild encounter` });
+      stats.legendary++;
+      continue;
+    }
     if (PLACE_DEPENDENT_FORMS[dex]) {
       review.push({ id: String(dex), name: mon.name, why: PLACE_DEPENDENT_FORMS[dex] });
       continue;
@@ -133,7 +148,7 @@ export function buildAnswers(inp: Inputs, opts: { difficulty?: boolean } = {}): 
             // Remember where: the sources' agreed list must not add back what a rule left out.
             // Only for rules that leave out a real encounter at that spot (gifts, events, swarms…), not
             // for ones that leave out something else there (curry, raids), which says nothing about the wild.
-            if (!isOffMap(r.loc) && !/^(Curry|Tera Raid|Hyperspace|Underground|Massive mass outbreak)$/.test(r.m ?? "")) {
+            if (!isOffMap(r.loc) && !/^(Curry|Tera Raid|Hyperspace|Underground|Massive mass outbreak|Max Raid)$/.test(r.m ?? "")) {
               const at = matchPlace(idx, r.loc, v);
               if (at.kind === "place") excludedAt.add(`${dex}|${v}|${at.key}`);
             }
@@ -205,10 +220,16 @@ export function buildAnswers(inp: Inputs, opts: { difficulty?: boolean } = {}): 
       if (v === "legends-arceus" || !VERSION_BY_KEY[v]) continue;
       const ours = new Set([...a.places].filter(([, byLabel]) => [...byLabel.values()].some((vs) => vs.has(v))).map(([k]) => k));
       for (const [key, hint] of g.both) {
-        if (ours.has(key) || hint === "Max Raid" || excludedAt.has(`${a.dex}|${v}|${key}`) || !idx.pinned.has(key)) continue;
+        if (ours.has(key) || excludedAt.has(`${a.dex}|${v}|${key}`) || !idx.pinned.has(key)) continue;
+        // A source's method must be one the rules count. With no method named, the place is added only for a
+        // Pokémon the data already has in the wild in that game: a wild spot it missed, never a gift or a one-off.
+        const label = hint === null ? (ours.size ? AGREED_LABEL_WILD : null) : (AGREED_LABELS[hint] ?? null);
+        if (!label) {
+          stats.agreedLeftOut++;
+          continue;
+        }
         const byLabel = a.places.get(key) ?? new Map<string, Set<string>>();
         a.places.set(key, byLabel);
-        const label = hint ?? AGREED_LABEL;
         (byLabel.get(label) ?? byLabel.set(label, new Set()).get(label)!).add(v);
         stats.addedByAgreement++;
       }
@@ -234,6 +255,9 @@ export function buildAnswers(inp: Inputs, opts: { difficulty?: boolean } = {}): 
   const world = (p: Pt): Pt => [p[0] * W, p[1] * H];
   const pinned = [...idx.pinned.values()];
   const worldGrid = !measure ? null : buildGrid([0, 0, W, H], squarePx, pinned.map((p) => p.mask.map(world)));
+  // The curve's scale for a spot: its region's own map's diagonal (the mean of them for a region with no map of its own), as the server scores.
+  const scales = huntScales(inp.geo.world.crops);
+  const scaleOf = (r: HuntRegionId) => scales[r];
   const regionGrids = new Map<HuntMapRegionId, { grid: MapGrid; regions: string[] }>();
   for (const id of measure ? HUNT_MAP_REGIONS : []) {
     const crop = inp.geo.world.crops[id];
@@ -263,8 +287,8 @@ export function buildAnswers(inp: Inputs, opts: { difficulty?: boolean } = {}): 
     places.sort((x, y) => regionOrder(x.region) - regionOrder(y.region) || x.geoRegion.localeCompare(y.geoRegion) || x.name.localeCompare(y.name));
     const regions = HUNT_REGIONS.filter((r) => places.some((p) => p.region === r));
     const spotsOf = (filter: (p: PinnedPlace) => boolean) => places.map((p) => idx.pinned.get(placeKey(p.geoRegion, p.name))!).filter(filter).map((p) => p.mask.map(world));
-    const shares = regions.map((r) => (!worldGrid ? 0 : goodShare(worldGrid, spotsOf((p) => HUNT_REGION_OF_GEO[p.region] === r))));
-    const difficulty = !measure ? 0 : worldDifficulty(shares, huntPinsFor(regions.length, "classic"));
+    // One pin, scored against the nearest of every spot (on its region's own scale): the share of the world's land where it would score well.
+    const difficulty = !measure || !worldGrid ? 0 : round3(1 - goodShare(worldGrid, spotsOf(() => true), (i) => scaleOf(places[i].region)));
     const regionDifficulty: Partial<Record<HuntMapRegionId, number>> = {};
     for (const [rid, { grid, regions: geoRegions }] of regionGrids) {
       const spots = spotsOf((p) => geoRegions.includes(p.region));
@@ -273,6 +297,10 @@ export function buildAnswers(inp: Inputs, opts: { difficulty?: boolean } = {}): 
     const mon = dexBy.get(a.dex)!;
     const form = a.form ? formsBy.get(a.dex)!.find((f) => f.key === a.form)! : null;
     const famous = FAMOUS.find((f) => f.id === id && places.some((p) => p.name === f.place));
+    // Its home: the region of the generation it was introduced in (a regional form's, its region), when it lives there.
+    const homeOf = a.form ? (a.form.split("-")[0] as HuntRegionId) : HOME_BY_GEN[mon.gen ?? 0];
+    const home = homeOf && regions.includes(homeOf) ? homeOf : undefined;
+    const types = (form ? inp.formTypes?.[String(a.dex)]?.[String(form.art)] : mon.types) ?? [];
     const entry: HuntEntry = {
       id,
       dex: a.dex,
@@ -280,12 +308,14 @@ export function buildAnswers(inp: Inputs, opts: { difficulty?: boolean } = {}): 
       name,
       art: form ? form.art : a.dex,
       slug: mon.slug,
+      types,
+      ...(home ? { home } : {}),
       regions,
       places,
       difficulty,
       regionDifficulty,
       ...(famous ? { famous: true } : {}),
-      ...((regions.length >= EVERYWHERE_REGIONS && difficulty < EVERYWHERE_DIFFICULTY) || regions.length >= EVERYWHERE_ALWAYS ? { everywhere: true } : {}),
+      ...(regions.length >= EVERYWHERE_REGIONS || places.length >= EVERYWHERE_PLACES || (measure && difficulty < EVERYWHERE_DIFFICULTY) ? { everywhere: true } : {}),
     };
     const fact = factOf(entry);
     if (fact) entry.fact = fact;
@@ -304,14 +334,8 @@ export function buildAnswers(inp: Inputs, opts: { difficulty?: boolean } = {}): 
 /** Only one way to meet it, everywhere: the fact says so. */
 const ONLY_METHOD: [RegExp, string][] = [
   [/^(Old Rod|Good Rod|Super Rod|Fishing)$/, "You can only fish it up."],
-  [/^(Surf|Dive)$/, "It's only ever found out on the water."],
-  [/^Headbutt$/, "It's only ever found by headbutting trees."],
-  [/^Rock Smash$/, "It only turns up by smashing rocks."],
-  [/^Honey tree$/, "It only comes to honey trees."],
-  [/^Max Raid$/, "You only meet it in Max Raid dens."],
-  [/^SOS call$/, "It only turns up when another Pokémon calls for help."],
-  [/^Horde$/, "It only turns up in hordes."],
-  [/^Fixed encounter$/, "It's never a random encounter: every spot is a one-off meeting."],
+  [/^Surf$/, "It's only ever found out on the water."],
+  [/^Cave$/, "It only ever lives in caves."],
 ];
 
 /**

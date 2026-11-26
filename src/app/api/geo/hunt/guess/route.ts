@@ -2,19 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { claimOnce, recallResponse, rememberResponse, requestFingerprint } from "@/lib/server/replay-guard";
-import { gradeHunt, readHunt } from "@/lib/server/hunt";
-import { HUNT_MAX_PINS } from "@/lib/hunt/types";
+import { gradeHunt, huntHintKey, readHunt } from "@/lib/server/hunt";
+import { HUNT_HINTS, type HuntHintKind } from "@/lib/hunt/types";
 
 /**
- * POST /api/geo/hunt/guess — { token, pins, timeout? }. Graded here: the
- * pins are matched to the Pokémon's regions, and the answer (every real spot)
- * comes back with the next Pokémon.
+ * POST /api/geo/hunt/guess — { token, pins, timeout? }. Graded here: the pin scores against the
+ * Pokémon's nearest real spot, less the hints taken, and the answer (every real spot) comes back with
+ * the next Pokémon.
  */
 
 const pin = z.object({ x: z.number().finite(), y: z.number().finite() });
 const bodySchema = z.object({
   token: z.string().min(10).max(4096),
-  pins: z.array(pin).max(HUNT_MAX_PINS),
+  pins: z.array(pin).max(1),
   timeout: z.boolean().optional(),
 });
 
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
 
   const state = readHunt(parsed.data.token);
   if (!state) return NextResponse.json({ error: "Game expired or invalid. Start a new one." }, { status: 401 });
-  const outcome = gradeHunt(state, parsed.data);
+  let outcome = gradeHunt(state, parsed.data);
   if (!outcome.ok) return NextResponse.json({ error: outcome.error }, { status: outcome.status });
 
   // Each round is graded once; an identical retry (a lost response) gets the same answer back.
@@ -38,6 +38,13 @@ export async function POST(request: NextRequest) {
     if (cached) return NextResponse.json(cached, { headers: { "Cache-Control": "no-store" } });
     return NextResponse.json({ error: "That round was already guessed." }, { status: 409 });
   }
+  // A hint is charged even when the guess comes with an older token that doesn't carry it: every hint
+  // given on this round holds its claim, so a hint this token doesn't list is claimed now, and a claim
+  // that's already taken is a hint that was given.
+  const taken: HuntHintKind[] = [];
+  for (const kind of HUNT_HINTS) if (!state.hints.includes(kind) && !(await claimOnce(huntHintKey(state, kind)))) taken.push(kind);
+  if (taken.length) outcome = gradeHunt(state, parsed.data, Date.now(), taken);
+  if (!outcome.ok) return NextResponse.json({ error: outcome.error }, { status: outcome.status });
   rememberResponse(outcome.claimKey, fingerprint, outcome.body);
   return NextResponse.json(outcome.body, { headers: { "Cache-Control": "no-store" } });
 }
