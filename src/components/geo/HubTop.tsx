@@ -27,6 +27,8 @@ import rankedEmblem from "@/assets/guessr/emblems/ranked.webp";
 import partyEmblem from "@/assets/guessr/emblems/party.webp";
 // MOCK: Party's trio dancing in birthday hats, a silhouette worn as a mask (it takes each theme's colour).
 import partyTrio from "@/assets/guessr/party-trio.webp";
+// MOCK: Hunt's detective Pikachu, magnifier to its eye, worn the same way.
+import huntDetective from "@/assets/guessr/hunt-detective.webp";
 
 /** Who stands on the globe until a player makes their own 3D trainer (and for visitors): the creator's first look. */
 const STAND_IN = presetTrainer(TRAINER_PRESETS[0]);
@@ -538,7 +540,13 @@ function Backdrop({ pattern, pulse }: { pattern: Pattern; pulse?: boolean }) {
   return (
     <span className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl" aria-hidden>
       {pk && pattern === "party" && <PartyTrio pk={pk} />}
-      {pk === "sil" && pattern !== "party" && (
+      {pk === "sil" && pattern === "hunt" && (
+        <span
+          className="absolute -bottom-[3%] right-[31%] aspect-[607/640] h-[100%] bg-white/[0.16] [.light_&]:bg-[#5a46d0]/[0.2]"
+          style={{ maskImage: `url(${huntDetective.src})`, WebkitMaskImage: `url(${huntDetective.src})`, maskSize: "contain", WebkitMaskSize: "contain", maskRepeat: "no-repeat", WebkitMaskRepeat: "no-repeat", maskPosition: "center bottom", WebkitMaskPosition: "center bottom" }}
+        />
+      )}
+      {pk === "sil" && false && (
         <span
           className="absolute -bottom-[22%] right-[26%] aspect-square h-[125%] bg-white/[0.13] [.light_&]:bg-[#5a46d0]/[0.16]"
           style={{ maskImage: `url(/art/160/${id}.webp)`, WebkitMaskImage: `url(/art/160/${id}.webp)`, maskSize: "contain", WebkitMaskSize: "contain", maskRepeat: "no-repeat", WebkitMaskRepeat: "no-repeat", maskPosition: "center bottom", WebkitMaskPosition: "center bottom" }}
@@ -550,7 +558,7 @@ function Backdrop({ pattern, pulse }: { pattern: Pattern; pulse?: boolean }) {
       )}
       <span className={cn("absolute -right-[6%] -top-[30%] aspect-square h-[150%] rounded-full opacity-50 [.light_&]:opacity-35", pulse && "gh-pulse")} style={{ background: `radial-gradient(closest-side, ${GLOW[pattern]}, transparent)` }} />
       <span
-        className="absolute inset-0 bg-white/[0.16] [.light_&]:bg-[#5a46d0]/[0.2]"
+        className={cn("absolute inset-0 bg-white/[0.16] [.light_&]:bg-[#5a46d0]/[0.2]", pk === "sil" && (pattern === "hunt" || pattern === "party") && "hidden")}
         style={{
           maskImage: `${p.image}, linear-gradient(90deg, rgb(0 0 0 / .5), black 55%)`,
           WebkitMaskImage: `${p.image}, linear-gradient(90deg, rgb(0 0 0 / .5), black 55%)`,
