@@ -520,7 +520,7 @@ function ModeTile({
 }: {
   art?: string | StaticImageData | null;
   icon: React.ReactNode;
-  label: string;
+  label?: string;
   title: string;
   onClick?: () => void;
   href?: string;
@@ -545,12 +545,13 @@ function ModeTile({
         {icon}
       </span>
       <span className="relative mt-auto block min-w-0 p-2.5 pt-0">
-        <span className={cn(LABEL, "block truncate text-[9px] md:text-[10px]")}>{label}</span>
-        <span className={cn(TITLE, "mt-1 block text-[clamp(0.85rem,2.2vh,1.05rem)] leading-[1.05]")}>{title}</span>
+        {label && <span className={cn(LABEL, "mb-1 block truncate text-[9px] md:text-[10px]")}>{label}</span>}
+        {/* The name's size follows the tile's width too, so its longest word ("Challenge") always fits whole. */}
+        <span className={cn(TITLE, "block text-[min(clamp(0.85rem,2.2vh,1.05rem),12.5cqw)] leading-[1.05]")}>{title}</span>
       </span>
     </>
   );
-  const cls = "gh-lift group relative flex h-full w-full flex-col overflow-hidden rounded-xl bg-[#2d2766] text-left ring-2 ring-[#8b7cff]/35 shadow-[0_8px_22px_rgb(0_0_0/0.45)] hover:ring-[#a99cff]/80 disabled:cursor-default disabled:hover:ring-[#8b7cff]/35";
+  const cls = "gh-lift group relative flex h-full [container-type:inline-size] w-full flex-col overflow-hidden rounded-xl bg-[#2d2766] text-left ring-2 ring-[#8b7cff]/35 shadow-[0_8px_22px_rgb(0_0_0/0.45)] hover:ring-[#a99cff]/80 disabled:cursor-default disabled:hover:ring-[#8b7cff]/35";
   return href ? (
     <Link href={href} className={cls} data-testid={testId}>
       {body}
@@ -589,7 +590,6 @@ export function HubTop({ d }: { d: HubTopData }) {
       <ModeTile
         art={d.classicArt}
         icon={<MapPin className="text-[#a99cff]" />}
-        label={t("hub.solo.label", { map: d.classicMap })}
         title={t("hub.solo.title")}
         onClick={d.onClassic}
         button={{ "aria-expanded": d.soloOpen, "aria-controls": "solo" }}
@@ -600,7 +600,6 @@ export function HubTop({ d }: { d: HubTopData }) {
       <ModeTile
         art={d.weeklyArt}
         icon={<CalendarRange className="text-[#9be15d]" />}
-        label={`${d.weeklyNum ? t("hub.weekly.numbered", { n: d.weeklyNum }) : t("hub.weekly.word")}${d.weeklyMap ? ` · ${d.weeklyMap}` : ""}`}
         title={t("hub.weekly.title")}
         // Played: the tile shows its result (when it's saved here); else it starts this week's, or picks it up.
         onClick={d.weeklyPlayed ? d.onWeeklyResult : d.onWeekly}
@@ -613,7 +612,6 @@ export function HubTop({ d }: { d: HubTopData }) {
       <ModeTile
         art={streakArt}
         icon={<Flame className="text-[#ff9a1f]" />}
-        label={t("hub.play.eyebrow")}
         title={t("regionStreak.label")}
         href="/pokeguessr/streak"
         testId="region-streak-link"
@@ -621,7 +619,7 @@ export function HubTop({ d }: { d: HubTopData }) {
     </div>,
     // Pokémon Hunt: a Pokémon on a map (Hunt's question: where would you catch it?).
     <div key="hunt">
-      <ModeTile art={huntMap} icon={<Crosshair className="text-primary" />} label={h("tile.label")} title={h("tile.title")} href="/pokeguessr/hunt" testId="hunt-hub-entry">
+      <ModeTile art={huntMap} icon={<Crosshair className="text-primary" />} title={h("tile.title")} href="/pokeguessr/hunt" testId="hunt-hub-entry">
         {/* eslint-disable-next-line @next/next/no-img-element -- static board art */}
         <img src={boardArtUrl(143)} alt="" aria-hidden className="absolute -right-[4%] -top-[3%] h-[60%] w-auto object-contain drop-shadow-[0_6px_10px_rgb(0_0_0/0.55)] transition-transform duration-500 group-hover:-translate-y-1 group-hover:scale-105" />
       </ModeTile>

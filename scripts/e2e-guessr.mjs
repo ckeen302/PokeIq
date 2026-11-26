@@ -713,7 +713,7 @@ async function weekly(width, height) {
   });
   await page.goto(`${BASE}/pokeguessr`, { waitUntil: "networkidle" });
   await closeHowTo(page);
-  for (const id of ["multiplayer", "maps", "you"]) await page.getByTestId(`geo-hub-${id}`).waitFor();
+  for (const id of ["maps", "you"]) await page.getByTestId(`geo-hub-${id}`).waitFor();
   for (const id of ["geo-solo-card", "geo-daily-card", "geo-weekly-card", "region-streak-card", "geo-home-duels", "geo-home-ranked", "geo-home-party", "globe-card", "geo-history-link"]) {
     if ((await page.getByTestId(id).count()) !== 1) errors.push(`the hub has no ${id}`);
   }
@@ -734,7 +734,7 @@ async function weekly(width, height) {
   await page.getByTestId("geo-ranked-card").waitFor();
   await page.getByTestId("geo-duel-queue-casual").click();
   const label = await page.getByTestId("geo-weekly-card").innerText();
-  if (!/Weekly #\d+/i.test(label)) errors.push(`the weekly card has no number: ${label}`);
+  if (!/Weekly Challenge/i.test(label) || /Weekly #\d+/i.test(label)) errors.push(`the weekly card should just say Weekly Challenge: ${label}`);
   await page.getByTestId("geo-weekly-play").click();
   await shotLoaded(page);
   if (!/Weekly #\d+/i.test(await page.getByTestId(phone ? "geo-round-mode" : "geo-notch").innerText())) errors.push("the weekly game's round header doesn't say Weekly");
