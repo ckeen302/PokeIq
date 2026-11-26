@@ -67,8 +67,18 @@ function layoutProblems(phoneWidth) {
     const interactive = el.matches("a[href], button, input, select, textarea");
     const text = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim());
     if (!interactive && !text) continue;
-    const r = el.getBoundingClientRect();
-    if (!r.width || !r.height || r.top >= vh || r.bottom <= top + 2) continue;
+    // What shows of it: its box, cut to every scrolling box it sits in (a list's rows below its fold aren't on screen).
+    const b = el.getBoundingClientRect();
+    const r = { left: b.left, right: b.right, top: b.top, bottom: b.bottom };
+    for (let a = el.parentElement; a && a !== document.body; a = a.parentElement) {
+      const o = getComputedStyle(a);
+      if (o.overflowX === "visible" && o.overflowY === "visible") continue;
+      const c = a.getBoundingClientRect();
+      r.left = Math.max(r.left, c.left); r.right = Math.min(r.right, c.right); r.top = Math.max(r.top, c.top); r.bottom = Math.min(r.bottom, c.bottom);
+    }
+    r.width = r.right - r.left;
+    r.height = r.bottom - r.top;
+    if (r.width <= 0 || r.height <= 0 || r.top >= vh || r.bottom <= top + 2) continue;
     const hit = document.elementFromPoint(Math.min(vw - 1, Math.max(0, r.left + r.width / 2)), Math.min(vh - 1, Math.max(top + 1, r.bottom - 2)));
     if (hit && bar.contains(hit)) out.push(`under the tab bar: <${el.tagName.toLowerCase()}> "${(el.innerText || el.getAttribute("aria-label") || "").trim().slice(0, 40)}"`);
   }
