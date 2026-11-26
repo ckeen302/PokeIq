@@ -46,6 +46,13 @@ const MAX_THROW = 2.5;
 /** The ambient clock under reduced motion (as the World globe holds it). */
 const STILL_T = 12;
 
+/** A CSS length in px or rem, as pixels (else null). */
+function cssLength(v: string): number | null {
+  const m = v.trim().match(/^(-?[\d.]+)(px|rem)$/);
+  if (!m) return null;
+  return Number(m[1]) * (m[2] === "rem" ? parseFloat(getComputedStyle(document.documentElement).fontSize) || 16 : 1);
+}
+
 export function createHubGlobe(host: HTMLElement, grab: HTMLElement, o: HubGlobeOptions): HubGlobeApi | null {
   const canvas = document.createElement("canvas");
   canvas.className = "pointer-events-none absolute left-0 top-0";
@@ -66,7 +73,7 @@ export function createHubGlobe(host: HTMLElement, grab: HTMLElement, o: HubGlobe
   renderer.setClearColor(0x000000, 0);
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const maxPr = weak ? 1 : Math.min(window.devicePixelRatio || 1, dev.tier <= 1 ? 1.5 : 2);
-  const idleFps = weak ? 24 : 30;
+  const idleFps = weak ? 20 : 30;
   let pr = maxPr;
 
   const camera = new THREE.PerspectiveCamera(FOV, 1, 0.1, 50);
@@ -215,7 +222,10 @@ export function createHubGlobe(host: HTMLElement, grab: HTMLElement, o: HubGlobe
       el = el.offsetParent as HTMLElement | null;
     }
     if (el !== clip) return;
-    const y0 = Math.max(0, -y), y1 = Math.min(H, clip.clientHeight - y);
+    // --globe-floor (on an ancestor): how far down the clip anything of the globe shows (the page fades it out
+    // there, under its cards).
+    const floor = cssLength(getComputedStyle(host).getPropertyValue("--globe-floor"));
+    const y0 = Math.max(0, -y), y1 = Math.min(H, (floor ?? clip.clientHeight) - y, clip.clientHeight - y);
     if (y1 - y0 < 8) return;
     view.y = Math.floor(y0);
     view.h = Math.ceil(y1) - view.y;

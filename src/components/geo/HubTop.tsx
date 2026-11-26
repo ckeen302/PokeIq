@@ -568,8 +568,8 @@ export function HubTop({ d }: { d: HubTopData }) {
 
   return (
     <Space>
-      <WorldRise focus={focus} spots={d.dailyPlayed ? d.dailySpots : undefined} cheer={d.dailyPlayed} covered={d.covered} hopRef={trainer} className={`${LAYOUT} [--ah:9rem] [--gd:min(120vw,34rem)] [--gt:15.5rem] md:[--ah:clamp(8.5rem,26vh,15rem)] md:[--gd:min(44vw,74vh,calc(100vw-2*(var(--side)+var(--cw)+3rem)))] md:[--gt:max(13rem,40%)]`} />
-      {/* Phone: below the trainer's patch of the world, the planet fades into space so the cards sit on a clean sky. */}
+      <WorldRise focus={focus} spots={d.dailyPlayed ? d.dailySpots : undefined} cheer={d.dailyPlayed} covered={d.covered} hopRef={trainer} className={`${LAYOUT} [--ah:9rem] [--gd:min(120vw,34rem)] [--gt:15.5rem] max-md:[--globe-floor:24.5rem] md:[--ah:clamp(8.5rem,26vh,15rem)] md:[--gd:min(44vw,74vh,calc(100vw-2*(var(--side)+var(--cw)+3rem)))] md:[--gt:max(13rem,40%)]`} />
+      {/* Phone: below the trainer's patch of the world, the planet fades into space so the cards sit on a clean sky (by 24.5rem: the globe draws nothing lower, --globe-floor). */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 top-[18.5rem] bg-[linear-gradient(180deg,transparent,#09081a_6rem)] md:hidden [.light_&]:bg-[linear-gradient(180deg,transparent,#e4ddff_6rem)]" aria-hidden />
       <HowToHelpButton className="gh-fade absolute right-2 top-2 z-10 text-white max-md:scale-90 md:right-5 md:top-4 [.light_&]:text-[#2a1f6e]" />
 
