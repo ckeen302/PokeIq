@@ -49,6 +49,15 @@ html.light .hg-poster { background-image: url(/geo/hub-globe-day.webp) }
 
 type Debug = { __hubGlobe?: HubGlobeApi | null };
 
+/** The nearest ancestor that clips what overflows it (the landing's space): the globe draws only what it shows. */
+function clipOf(el: HTMLElement): HTMLElement | null {
+  for (let p = el.parentElement; p && p !== document.body; p = p.parentElement) {
+    const s = getComputedStyle(p);
+    if (s.overflowX !== "visible" && s.overflowY !== "visible") return p;
+  }
+  return null;
+}
+
 export function HubGlobe({
   focus,
   spots,
@@ -102,6 +111,7 @@ export function HubGlobe({
           if (gone || !host.current || !grab.current || !overlay.current) return;
           made = createHubGlobe(host.current, grab.current, {
             frac: HUB_GLOBE_FRAC,
+            clip: clipOf(host.current),
             overlay: overlay.current,
             onReady: () => !gone && setLive(true),
             onFailed: () => {

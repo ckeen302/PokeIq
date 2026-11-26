@@ -21,6 +21,8 @@ export interface HubGlobeOptions {
   /** The disc's share of the canvas (the rest is atmosphere). */
   frac: number;
   overlay: Overlay;
+  /** A positioned ancestor that clips the globe (overflow: hidden): only the part inside it is drawn. */
+  clip?: HTMLElement | null;
   onReady(): void;
   onFailed(): void;
 }
@@ -46,7 +48,7 @@ const STILL_T = 12;
 
 export function createHubGlobe(host: HTMLElement, grab: HTMLElement, o: HubGlobeOptions): HubGlobeApi | null {
   const canvas = document.createElement("canvas");
-  canvas.className = "pointer-events-none absolute inset-0 h-full w-full";
+  canvas.className = "pointer-events-none absolute left-0 top-0";
   canvas.setAttribute("aria-hidden", "true");
   host.appendChild(canvas);
   const dev = deviceInfo();
@@ -197,15 +199,42 @@ export function createHubGlobe(host: HTMLElement, grab: HTMLElement, o: HubGlobe
   const layer = grab.parentElement?.querySelector<HTMLElement>("[data-hg-layer]") ?? null;
   layer?.addEventListener("pointerdown", onDown);
 
-  // ---- size
+  // ---- size: the whole square is W × H; the canvas covers only the part of it the clipping ancestor shows (the
+  // world rises from the bottom of the landing: its lower part is never seen, so never drawn)
   let W = 0, H = 0;
+  const view = { x: 0, y: 0, w: 0, h: 0 };
+  function visible() {
+    view.x = 0; view.y = 0; view.w = W; view.h = H;
+    const clip = o.clip;
+    if (!clip) return;
+    // The host's place in the clip (layout offsets: the rise's transform doesn't count).
+    let x = 0, y = 0, el: HTMLElement | null = host;
+    while (el && el !== clip) {
+      x += el.offsetLeft; y += el.offsetTop;
+      el = el.offsetParent as HTMLElement | null;
+    }
+    if (el !== clip) return;
+    const x0 = Math.max(0, -x), y0 = Math.max(0, -y);
+    const x1 = Math.min(W, clip.clientWidth - x), y1 = Math.min(H, clip.clientHeight - y);
+    if (x1 - x0 < 8 || y1 - y0 < 8) return;
+    view.x = Math.floor(x0); view.y = Math.floor(y0);
+    view.w = Math.ceil(x1) - view.x; view.h = Math.ceil(y1) - view.y;
+  }
+  function size(full: boolean) {
+    if (full) { view.x = 0; view.y = 0; view.w = W; view.h = H; }
+    else visible();
+    renderer.setSize(view.w, view.h, false);
+    canvas.style.cssText = `left:${view.x}px;top:${view.y}px;width:${view.w}px;height:${view.h}px`;
+    camera.aspect = W / H;
+    if (view.w === W && view.h === H) camera.clearViewOffset();
+    else camera.setViewOffset(W, H, view.x, view.y, view.w, view.h);
+    camera.updateProjectionMatrix();
+  }
   const resize = () => {
     W = host.clientWidth; H = host.clientHeight;
     if (!W || !H) return;
     renderer.setPixelRatio(pr);
-    renderer.setSize(W, H, false);
-    camera.aspect = W / H;
-    camera.updateProjectionMatrix();
+    size(false);
     // The night lights in proportion to the disc (the World globe's are drawn for a disc about 700px across).
     look.lightMat.uniforms.uPx.value = pr * Math.max(0.5, Math.min(1, (W * o.frac) / 700));
     o.overlay.resize(W, H);
@@ -213,6 +242,7 @@ export function createHubGlobe(host: HTMLElement, grab: HTMLElement, o: HubGlobe
   };
   const ro = new ResizeObserver(() => resize());
   ro.observe(host);
+  if (o.clip) ro.observe(o.clip);
 
   // ---- the loop: only while on screen and visible
   let onScreen = true, paused = false, raf = 0, last = 0, lastRaf = 0, dead = false, ready = false, force = false;
@@ -369,7 +399,7 @@ export function createHubGlobe(host: HTMLElement, grab: HTMLElement, o: HubGlobe
       angle = angleFacing(START_LON); cloudA = 0; clock = 0; tiltX = 0; focusK = 0; worldK = 0;
       // At the full pixel ratio, whatever the frame rate has brought it down to.
       renderer.setPixelRatio(maxPr);
-      renderer.setSize(W, H, false);
+      size(true);
       draw();
       const url = canvas.toDataURL("image/png");
       ({ angle, cloudA, clock, tiltX, focusK, worldK } = kept);
