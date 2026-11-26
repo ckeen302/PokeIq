@@ -651,7 +651,7 @@ export function HubTop({ d }: { d: HubTopData }) {
               </div>
             ))}
           </div>
-          <div id="hub-multi-modes" className="flex flex-col gap-3.5 md:col-start-3 md:row-[2/4] md:justify-center md:gap-[var(--gap)]">
+          <div id="hub-multi-modes" className="flex flex-col gap-3.5 md:col-start-3 md:row-start-3 md:gap-[var(--gap)]">
             <div className="gh-in-e md:hidden" style={delay(3)}>
               <DropBar label={t("hub.multi.title")} emblems={[duelsEmblem, rankedEmblem, partyEmblem]} open={multi} onToggle={() => setMulti((o) => !o)} controls="hub-multi-modes" testId="hub-drop-multi" />
             </div>
