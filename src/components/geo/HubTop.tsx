@@ -385,10 +385,10 @@ function DailyCard({ d, onPlay }: { d: HubTopData; onPlay(): void }) {
 }
 
 const svgUrl = (svg: string) => `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
-const LINE = "fill='none' stroke='white' stroke-opacity='.09' stroke-width='1.2'";
+const LINE = "fill='none' stroke='white' stroke-opacity='.14' stroke-width='1.4'";
 /**
  * Each card's faint backdrop, after GeoGuessr's: line art in white at a few percent, what the mode is about
- * (a calendar's grid, a globe's lines, speed lines, radar rings, crossed slashes, rank chevrons, confetti).
+ * (a calendar's grid, a globe's lines, speed lines, radar rings, a duel's ring and crossed slashes, rank chevrons under a star, a confetti burst).
  */
 const PATTERNS = {
   daily: { image: svgUrl(`<svg xmlns='http://www.w3.org/2000/svg' width='26' height='26'><path d='M26 0V26H0' ${LINE}/></svg>`), size: "26px 26px", at: "0 0" },
@@ -407,14 +407,26 @@ const PATTERNS = {
     size: "auto 190%",
     at: "86% 45%",
   },
-  duels: { image: svgUrl(`<svg xmlns='http://www.w3.org/2000/svg' width='22' height='22'><path d='M0 0L22 22M22 0L0 22' ${LINE}/></svg>`), size: "22px 22px", at: "0 0" },
-  ranked: { image: svgUrl(`<svg xmlns='http://www.w3.org/2000/svg' width='28' height='18'><path d='M2 14L14 5L26 14' ${LINE}/></svg>`), size: "28px 18px", at: "0 0" },
+  duels: {
+    image: svgUrl(
+      `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 160'><g ${LINE}><circle cx='80' cy='80' r='72'/><circle cx='80' cy='80' r='52'/><circle cx='80' cy='80' r='14'/><path d='M22 22L138 138M138 22L22 138M80 8V28M80 132V152M8 80H28M132 80H152'/></g></svg>`,
+    ),
+    size: "auto 190%",
+    at: "86% 45%",
+  },
+  ranked: {
+    image: svgUrl(
+      `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 160'><g ${LINE}><path d='M80 14l9 19 21 3-15 15 4 21-19-10-19 10 4-21-15-15 21-3z'/><path d='M38 104L80 82L122 104M38 126L80 104L122 126M38 148L80 126L122 148'/><path d='M24 60a58 58 0 0 0 20 64M136 60a58 58 0 0 1-20 64'/></g></svg>`,
+    ),
+    size: "auto 175%",
+    at: "86% 42%",
+  },
   party: {
     image: svgUrl(
-      `<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><g fill='white' fill-opacity='.1'><rect x='6' y='8' width='7' height='3' rx='1' transform='rotate(30 9 9)'/><circle cx='40' cy='12' r='2'/><rect x='48' y='34' width='7' height='3' rx='1' transform='rotate(-40 51 35)'/><circle cx='18' cy='44' r='2.4'/><rect x='30' y='52' width='6' height='3' rx='1' transform='rotate(70 33 53)'/><circle cx='58' cy='58' r='1.6'/><path d='M26 24l2 4l4 1l-3 3l1 4l-4-2l-4 2l1-4l-3-3l4-1z'/></g></svg>`,
+      `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 160'><g ${LINE}><path d='M80 80L80 10M80 80L130 30M80 80L150 80M80 80L130 130M80 80L80 150M80 80L30 130M80 80L10 80M80 80L30 30' stroke-dasharray='4 9'/><circle cx='80' cy='80' r='24'/></g><g fill='white' fill-opacity='.15'><rect x='104' y='22' width='12' height='5' rx='2' transform='rotate(30 110 24)'/><rect x='30' y='48' width='12' height='5' rx='2' transform='rotate(-35 36 50)'/><rect x='118' y='104' width='12' height='5' rx='2' transform='rotate(60 124 106)'/><rect x='40' y='118' width='12' height='5' rx='2' transform='rotate(15 46 120)'/><circle cx='56' cy='22' r='3.5'/><circle cx='138' cy='64' r='3'/><circle cx='22' cy='100' r='3'/><circle cx='100' cy='142' r='3.5'/><path d='M126 140l2.5 5 5.5 .8-4 3.9 1 5.5-5-2.6-5 2.6 1-5.5-4-3.9 5.5-.8z'/><path d='M24 16l2.5 5 5.5 .8-4 3.9 1 5.5-5-2.6-5 2.6 1-5.5-4-3.9 5.5-.8z'/></g></svg>`,
     ),
-    size: "64px 64px",
-    at: "0 0",
+    size: "auto 190%",
+    at: "86% 45%",
   },
 } as const;
 type Pattern = keyof typeof PATTERNS;
@@ -424,7 +436,7 @@ function Backdrop({ pattern }: { pattern: Pattern }) {
   const p = PATTERNS[pattern];
   return (
     <span
-      className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl [mask-image:linear-gradient(90deg,rgb(0_0_0/.35),black_55%)]"
+      className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl [mask-image:linear-gradient(90deg,rgb(0_0_0/.5),black_55%)]"
       style={{ backgroundImage: p.image, backgroundSize: p.size, backgroundPosition: p.at, backgroundRepeat: p.size.includes("%") ? "no-repeat" : "repeat" }}
       aria-hidden
     />
