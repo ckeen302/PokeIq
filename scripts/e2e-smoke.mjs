@@ -2751,6 +2751,17 @@ step("3D Lab: the nav's tab, /lab's cards, a card opens its page, the trophy ope
   const art = page.getByTestId(`lab-card-${firstCard}`).locator("img").first();
   await art.evaluate((img) => img.scrollIntoView({ block: "center" }));
   if (!(await art.evaluate((img) => img.complete ? img.naturalWidth > 0 : new Promise((r) => { img.onload = () => r(true); img.onerror = () => r(false); })))) errors.push("3d lab: the timeline card's picture didn't load");
+  // Every card the same size and shape, its picture a 16:9 box (desktop here, a phone below).
+  const labCardsEqual = (p) => p.$$eval('[data-testid^="lab-card-"]', (cards) => {
+    const box = (el) => el.getBoundingClientRect();
+    const sizes = cards.map((c) => [box(c).width, box(c).height]);
+    const arts = cards.map((c) => box(c.querySelector('[data-testid^="lab-art-"]')));
+    const bad = [];
+    if (sizes.some(([w, h]) => Math.abs(w - sizes[0][0]) > 1 || Math.abs(h - sizes[0][1]) > 1)) bad.push(`cards aren't one size: ${sizes.map(([w, h]) => `${Math.round(w)}x${Math.round(h)}`).join(", ")}`);
+    if (arts.some((a) => Math.abs(a.width / a.height - 16 / 9) > 0.02)) bad.push("a card's picture isn't 16:9");
+    return bad;
+  });
+  for (const bad of await labCardsEqual(page)) errors.push(`3d lab: ${bad}`);
   // Race shows only once its page is live.
   if (await page.getByTestId("lab-card-race").count()) {
     const res = await page.request.get(`${BASE}/pokedex/race`);
@@ -2788,6 +2799,7 @@ step("3D Lab: the nav's tab, /lab's cards, a card opens its page, the trophy ope
   if (!(await phone.getByTestId("more-leaderboard").isVisible())) errors.push("3d lab: no leaderboard in the phone's More sheet");
   await phone.keyboard.press("Escape");
   if (await phone.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)) errors.push("3d lab: /lab scrolls sideways on a phone");
+  for (const bad of await labCardsEqual(phone)) errors.push(`3d lab (phone): ${bad}`);
   await phone.screenshot({ path: `${OUT}/lab-phone.png` });
   await phone.context().close();
 }
