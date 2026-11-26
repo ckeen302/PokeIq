@@ -20,6 +20,7 @@ import huntNs from "@/messages/hunt";
 import avatarNs from "@/messages/avatar";
 import creatorNs from "@/messages/trainer-creator";
 import { HowToHelpButton } from "./GeoHowToButton";
+import { HubGlobe, HUB_GLOBE_FRAC } from "./hub-globe/HubGlobe";
 import streakArt from "@/assets/guessr/region-streak.webp";
 import worldBody from "@/assets/guessr/hub-world.webp";
 import worldAir from "@/assets/guessr/hub-world-air.webp";
@@ -274,7 +275,10 @@ export function hop(el: HTMLElement | null) {
  * Over the still: clouds drifting a little faster than the land, the evening's edge creeping across and back, the
  * region a hovered mode is played in lit, and (once today's Daily is played) roughly where its places were.
  */
-function WorldRise({ className, focus, spots, cheer, covered, hopRef }: { className?: string; focus: HubFocus; spots?: [number, number][]; cheer: boolean; covered?: boolean; hopRef: React.Ref<HTMLDivElement> }) {
+/** The mock directions for the live globe (?globe=a|b|c); none: the still, as now. */
+export type GlobeMock = "a" | "b" | "c" | null;
+
+function WorldRise({ className, focus, spots, cheer, covered, hopRef, globe }: { className?: string; focus: HubFocus; spots?: [number, number][]; cheer: boolean; covered?: boolean; hopRef: React.Ref<HTMLDivElement>; globe?: GlobeMock }) {
   const account = useAccount();
   const a = account.user?.avatar ?? null;
   const ta = useT(avatarNs);
@@ -283,98 +287,105 @@ function WorldRise({ className, focus, spots, cheer, covered, hopRef }: { classN
   const [label, setLabel] = useState<string | null>(null);
   const lit = label ?? (focus && focus !== "world" ? focus : null);
   const mood = useTrainerMood({ cheer, covered });
+  const frac = globe ? HUB_GLOBE_FRAC : WORLD_FRAC;
   const disc = `${((1 - WORLD_FRAC) / 2) * 100}%`;
   const pins = (spots ?? []).map(onFace).filter((p): p is [number, number] => !!p);
   return (
     <div className={cn("pointer-events-none absolute inset-0 [--gx:50%]", className)}>
       <div
         className="absolute aspect-square -translate-x-1/2"
-        style={{ left: "var(--gx)", width: `calc(var(--gd) / ${WORLD_FRAC})`, top: `calc(var(--gt) - var(--gd) * ${(1 / WORLD_FRAC - 1) / 2})` }}
+        style={{ left: "var(--gx)", width: `calc(var(--gd) / ${frac})`, top: `calc(var(--gt) - var(--gd) * ${(1 / frac - 1) / 2})` }}
         data-testid="geo-home-world"
         data-focus={lit ?? focus ?? undefined}
       >
-        <div className="gh-rise absolute inset-0">
-          {/* The atmosphere; it doesn't turn (the light comes from up and to the left). */}
-          <Image src={worldAir} alt="" priority unoptimized className="absolute inset-0 h-full w-full select-none" />
-          <div className="gh-spin absolute inset-0">
-            <Image src={worldBody} alt="" priority unoptimized className="absolute inset-0 h-full w-full select-none" />
+        {globe ? (
+          <div className="gh-rise absolute inset-0">
+            <HubGlobe mode={globe === "c" ? "tour" : "spin"} focus={focus} spots={spots} paused={covered} label={(n) => names.region(n)} />
           </div>
-          <div className="absolute overflow-hidden rounded-full [transform:translateZ(0)]" style={{ inset: disc }}>
-            {/* Clouds, turning a little faster than the land, so they drift over it; thin towards the edge. */}
+        ) : (
+          <div className="gh-rise absolute inset-0">
+            {/* The atmosphere; it doesn't turn (the light comes from up and to the left). */}
+            <Image src={worldAir} alt="" priority unoptimized className="absolute inset-0 h-full w-full select-none" />
+            <div className="gh-spin absolute inset-0">
+              <Image src={worldBody} alt="" priority unoptimized className="absolute inset-0 h-full w-full select-none" />
+            </div>
+            <div className="absolute overflow-hidden rounded-full [transform:translateZ(0)]" style={{ inset: disc }}>
+              {/* Clouds, turning a little faster than the land, so they drift over it; thin towards the edge. */}
+              <div
+                className="gh-clouds absolute inset-0 opacity-[.6] [mask-image:radial-gradient(circle,black_40%,rgb(0_0_0/.45)_62%,transparent_71%)]"
+                style={{ backgroundImage: CLOUDS, backgroundSize: "100% 100%" }}
+                data-testid="geo-home-clouds"
+              />
+              {/* The light stays where it is while the world turns: lit up and to the left, night falling to the lower right. */}
+              <div
+                className="absolute inset-0"
+                style={{
+                  background: "radial-gradient(circle at 32% 22%, rgb(255 255 255 / .10), transparent 42%), radial-gradient(circle at 34% 26%, transparent 48%, rgb(8 10 40 / .30) 78%, rgb(6 6 24 / .62) 100%)",
+                }}
+              />
+              {/* Evening: a soft edge, warm where the sun sets, creeping in from the right and back out. */}
+              <div
+                className="gh-night absolute left-[-80%] top-[-80%] h-[260%] w-[260%] [transform:translate(-16%,2%)]"
+                style={{ background: "radial-gradient(circle at 50% 50%, transparent 0 29%, rgb(255 160 90 / .14) 31%, rgb(40 20 80 / .34) 33.5%, rgb(8 8 34 / .58) 37.5%, rgb(6 6 28 / .64) 100%)" }}
+                data-testid="geo-home-night"
+              />
+            </div>
+            {/* The whole world in play (Classic, the Daily, the Streak): the planet's rim picked out. */}
             <div
-              className="gh-clouds absolute inset-0 opacity-[.6] [mask-image:radial-gradient(circle,black_40%,rgb(0_0_0/.45)_62%,transparent_71%)]"
-              style={{ backgroundImage: CLOUDS, backgroundSize: "100% 100%" }}
-              data-testid="geo-home-clouds"
+              className={cn("gh-tr absolute rounded-full ring-white/0 transition-[box-shadow,opacity] duration-300", focus === "world" && !label ? "opacity-100" : "opacity-0")}
+              style={{ inset: disc, boxShadow: "0 0 0 1.5px rgb(255 255 255 / .55), 0 0 28px 2px rgb(150 170 255 / .28), inset 0 0 26px rgb(170 190 255 / .22)" }}
+              aria-hidden
             />
-            {/* The light stays where it is while the world turns: lit up and to the left, night falling to the lower right. */}
-            <div
-              className="absolute inset-0"
-              style={{
-                background: "radial-gradient(circle at 32% 22%, rgb(255 255 255 / .10), transparent 42%), radial-gradient(circle at 34% 26%, transparent 48%, rgb(8 10 40 / .30) 78%, rgb(6 6 24 / .62) 100%)",
-              }}
-            />
-            {/* Evening: a soft edge, warm where the sun sets, creeping in from the right and back out. */}
-            <div
-              className="gh-night absolute left-[-80%] top-[-80%] h-[260%] w-[260%] [transform:translate(-16%,2%)]"
-              style={{ background: "radial-gradient(circle at 50% 50%, transparent 0 29%, rgb(255 160 90 / .14) 31%, rgb(40 20 80 / .34) 33.5%, rgb(8 8 34 / .58) 37.5%, rgb(6 6 28 / .64) 100%)" }}
-              data-testid="geo-home-night"
-            />
-          </div>
-          {/* The whole world in play (Classic, the Daily, the Streak): the planet's rim picked out. */}
-          <div
-            className={cn("gh-tr absolute rounded-full ring-white/0 transition-[box-shadow,opacity] duration-300", focus === "world" && !label ? "opacity-100" : "opacity-0")}
-            style={{ inset: disc, boxShadow: "0 0 0 1.5px rgb(255 255 255 / .55), 0 0 28px 2px rgb(150 170 255 / .28), inset 0 0 26px rgb(170 190 255 / .22)" }}
-            aria-hidden
-          />
-          <div className="gh-spin absolute inset-0">
-            {/* The region a hovered mode plays in: a pool of light on the land under its name (kept on the planet). */}
-            <div className="absolute overflow-hidden rounded-full" style={{ inset: disc }} aria-hidden>
+            <div className="gh-spin absolute inset-0">
+              {/* The region a hovered mode plays in: a pool of light on the land under its name (kept on the planet). */}
+              <div className="absolute overflow-hidden rounded-full" style={{ inset: disc }} aria-hidden>
+                {WORLD_LABELS.map(([n, x, y]) => (
+                  <span
+                    key={n}
+                    className={cn("gh-tr absolute aspect-square w-[26%] -translate-x-1/2 -translate-y-1/2 rounded-full transition-opacity duration-300", lit === n ? "opacity-100" : "opacity-0")}
+                    style={{
+                      left: `${(x - 50) / WORLD_FRAC + 50}%`,
+                      top: `${(y - 50) / WORLD_FRAC + 50}%`,
+                      background: "radial-gradient(circle, rgb(255 238 170 / .5), rgb(255 214 90 / .24) 38%, rgb(255 214 90 / .08) 58%, transparent 70%)",
+                    }}
+                  />
+                ))}
+              </div>
+              {/* Today's Daily, played: roughly where its places were (rounded, no names). */}
+              {pins.map(([x, y], i) => (
+                <span key={`pin-${i}`} className="absolute" style={{ left: `${x}%`, top: `${y}%` }} data-testid="geo-home-pin">
+                  <span className="gh-unspin block">
+                    <span className="gh-pin -ml-[6px] -mt-[16px] block" style={{ animationDelay: `${2.1 + i * 0.12}s` }}>
+                      <svg width="12" height="17" viewBox="0 0 10 14" aria-hidden className="drop-shadow-[0_1px_1.5px_rgb(0_0_0/.6)]">
+                        <path d="M5 13.5C5 13.5 9.5 8.6 9.5 5A4.5 4.5 0 0 0 .5 5c0 3.6 4.5 8.5 4.5 8.5Z" fill="#ffd23c" stroke="#3a2200" strokeWidth="1" />
+                        <circle cx="5" cy="5" r="1.6" fill="#3a2200" />
+                      </svg>
+                    </span>
+                  </span>
+                </span>
+              ))}
               {WORLD_LABELS.map(([n, x, y]) => (
-                <span
-                  key={n}
-                  className={cn("gh-tr absolute aspect-square w-[26%] -translate-x-1/2 -translate-y-1/2 rounded-full transition-opacity duration-300", lit === n ? "opacity-100" : "opacity-0")}
-                  style={{
-                    left: `${(x - 50) / WORLD_FRAC + 50}%`,
-                    top: `${(y - 50) / WORLD_FRAC + 50}%`,
-                    background: "radial-gradient(circle, rgb(255 238 170 / .5), rgb(255 214 90 / .24) 38%, rgb(255 214 90 / .08) 58%, transparent 70%)",
-                  }}
-                />
+                <span key={n} className="absolute" style={{ left: `${x}%`, top: `${y}%` }}>
+                  <span className="gh-unspin block">
+                    <span
+                      className={cn(
+                        "gh-tr pointer-events-auto block -translate-x-1/2 -translate-y-1/2 cursor-default whitespace-nowrap rounded-[4px] px-1.5 py-[3px] font-display text-[9px] font-bold uppercase leading-none tracking-[0.16em] ring-1 backdrop-blur-[2px] transition-[background-color,color,opacity,box-shadow] duration-300 md:text-[10px]",
+                        lit === n ? "bg-[#ffd23c] text-[#2a1a00] shadow-[0_2px_10px_rgb(0_0_0/.45)] ring-[#fff3c4]/70" : "bg-[#120f24]/60 text-white/90 ring-white/20",
+                        lit && lit !== n && "opacity-60",
+                      )}
+                      onPointerEnter={() => setLabel(n)}
+                      onPointerLeave={() => setLabel(null)}
+                      data-testid="geo-home-region"
+                      data-lit={lit === n || undefined}
+                    >
+                      {names.region(n)}
+                    </span>
+                  </span>
+                </span>
               ))}
             </div>
-            {/* Today's Daily, played: roughly where its places were (rounded, no names). */}
-            {pins.map(([x, y], i) => (
-              <span key={`pin-${i}`} className="absolute" style={{ left: `${x}%`, top: `${y}%` }} data-testid="geo-home-pin">
-                <span className="gh-unspin block">
-                  <span className="gh-pin -ml-[6px] -mt-[16px] block" style={{ animationDelay: `${2.1 + i * 0.12}s` }}>
-                    <svg width="12" height="17" viewBox="0 0 10 14" aria-hidden className="drop-shadow-[0_1px_1.5px_rgb(0_0_0/.6)]">
-                      <path d="M5 13.5C5 13.5 9.5 8.6 9.5 5A4.5 4.5 0 0 0 .5 5c0 3.6 4.5 8.5 4.5 8.5Z" fill="#ffd23c" stroke="#3a2200" strokeWidth="1" />
-                      <circle cx="5" cy="5" r="1.6" fill="#3a2200" />
-                    </svg>
-                  </span>
-                </span>
-              </span>
-            ))}
-            {WORLD_LABELS.map(([n, x, y]) => (
-              <span key={n} className="absolute" style={{ left: `${x}%`, top: `${y}%` }}>
-                <span className="gh-unspin block">
-                  <span
-                    className={cn(
-                      "gh-tr pointer-events-auto block -translate-x-1/2 -translate-y-1/2 cursor-default whitespace-nowrap rounded-[4px] px-1.5 py-[3px] font-display text-[9px] font-bold uppercase leading-none tracking-[0.16em] ring-1 backdrop-blur-[2px] transition-[background-color,color,opacity,box-shadow] duration-300 md:text-[10px]",
-                      lit === n ? "bg-[#ffd23c] text-[#2a1a00] shadow-[0_2px_10px_rgb(0_0_0/.45)] ring-[#fff3c4]/70" : "bg-[#120f24]/60 text-white/90 ring-white/20",
-                      lit && lit !== n && "opacity-60",
-                    )}
-                    onPointerEnter={() => setLabel(n)}
-                    onPointerLeave={() => setLabel(null)}
-                    data-testid="geo-home-region"
-                    data-lit={lit === n || undefined}
-                  >
-                    {names.region(n)}
-                  </span>
-                </span>
-              </span>
-            ))}
           </div>
-        </div>
+        )}
       </div>
       {/* Their own 3D trainer, else a stand-in, the creator's first look (until everyone can make one). */}
       <div className="pointer-events-auto absolute -translate-x-1/2" style={{ left: "var(--gx)", top: "calc(var(--gt) - var(--ah) * 0.9)", width: "calc(var(--ah) * 0.8)", height: "var(--ah)" }} {...mood.events}>
@@ -569,8 +580,31 @@ const TILE_AT = ["md:col-start-1 md:row-start-4", "md:col-start-2 md:row-start-4
 /** A mode's slot: a card in the phone's row along the bottom, a cell of its column wider. */
 const SLOT = "h-[7.25rem] w-[8.75rem] shrink-0 snap-start md:h-[clamp(6rem,14vh,7.75rem)] md:w-auto";
 
+/**
+ * Where the world sits (see WorldRise), per mock direction. none: as now. a: the live planet rising from the bottom,
+ * higher and larger, most of it in view. b: the whole planet floating in the middle. c: b's float, larger, touring
+ * the regions with a dial under it.
+ */
+const GLOBE_FRAME: Record<"none" | "a" | "b" | "c", string> = {
+  none: "[--ah:9rem] [--gd:min(98vw,30rem)] [--gt:calc(100%-20rem)] md:[--ah:clamp(8.5rem,26vh,15rem)] md:[--gd:min(44vw,74vh)] md:[--gt:max(13rem,40%)]",
+  a: "[--ah:6rem] [--gd:min(92vw,22rem)] [--gt:calc(100%-24rem)] md:[--ah:clamp(8rem,22vh,12rem)] md:[--gd:min(46vw,70vh)] md:[--gt:max(12.5rem,37%)]",
+  b: "[--ah:6rem] [--gd:15.5rem] [--gt:calc(100%-8.75rem-var(--gd))] md:[--ah:clamp(7rem,20vh,11rem)] md:[--gd:min(32vw,52vh)] md:[--gt:calc(50%-var(--gd)/2+var(--ah)*0.4)]",
+  c: "[--ah:5.5rem] [--gd:14rem] [--gt:calc(100%-11rem-var(--gd))] md:[--ah:clamp(7rem,17vh,10rem)] md:[--gd:min(34vw,52vh)] md:[--gt:calc(100%-var(--gd)-5.5rem)]",
+};
+
+/** The mock's flag (?globe=a|b|c), read once on the client. */
+function useGlobeMock(): GlobeMock {
+  const [g, setG] = useState<GlobeMock>(null);
+  useEffect(() => {
+    const v = new URLSearchParams(location.search).get("globe");
+    if (v === "a" || v === "b" || v === "c") setG(v);
+  }, []);
+  return g;
+}
+
 export function HubTop({ d }: { d: HubTopData }) {
   const t = useT(geoSolo);
+  const globe = useGlobeMock();
   const h = useT(huntNs);
   const delay = (i: number) => ({ animationDelay: `${0.15 + i * 0.08}s` });
   const [focus, setFocus] = useState<HubFocus>(null);
@@ -634,7 +668,7 @@ export function HubTop({ d }: { d: HubTopData }) {
 
   return (
     <Space>
-      <WorldRise focus={focus} spots={d.dailyPlayed ? d.dailySpots : undefined} cheer={d.dailyPlayed} covered={d.covered} hopRef={trainer} className="[--ah:9rem] [--gd:min(98vw,30rem)] [--gt:calc(100%-20rem)] md:[--ah:clamp(8.5rem,26vh,15rem)] md:[--gd:min(44vw,74vh)] md:[--gt:max(13rem,40%)]" />
+      <WorldRise focus={focus} spots={d.dailyPlayed ? d.dailySpots : undefined} cheer={d.dailyPlayed} covered={d.covered} hopRef={trainer} globe={globe} className={GLOBE_FRAME[globe ?? "none"]} />
       <HowToHelpButton className="gh-fade absolute right-2 top-2 z-10 text-white max-md:scale-90 md:right-5 md:top-4" />
 
       {/*
