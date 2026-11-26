@@ -473,11 +473,72 @@ const GLOW: Record<Pattern, string> = {
  * A card's backdrop: its mode's colour glowing behind the emblem, and its line drawing (white by night, violet by
  * day), fading in from the left so the name stays on a plain face. The drawing is a mask, so one picture serves both.
  */
+/** MOCK: a Pokémon for each card (?pk=sil a faint silhouette in the backdrop, ?pk=peek a small render peeking up from the bottom edge). */
+const MOCK_PK: Record<Pattern, number> = { daily: 483, classic: 18, streak: 6, hunt: 143, duels: 448, ranked: 150, party: 25 };
+function useMockPk(): string | null {
+  const [v, setV] = useState<string | null>(null);
+  useEffect(() => setV(new URLSearchParams(location.search).get("pk")), []);
+  return v;
+}
+
+/** MOCK: Party's trio (Pikachu, Eevee, Charmander) in birthday hats, as silhouettes or as small renders. */
+const TRIO = [
+  { id: 133, x: 26, h: 52, hat: { x: 30, y: 2, r: -14 } },
+  { id: 25, x: 40, h: 60, hat: { x: 46, y: -2, r: 8 } },
+  { id: 4, x: 55, h: 54, hat: { x: 46, y: 0, r: 12 } },
+];
+const HAT = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 28'><path d='M10 1 L19 26 L1 26 Z' fill='%23ff5ca8'/><path d='M7.2 9 L12.8 9 L14.2 13 L5.8 13 Z M4.6 17 L15.4 17 L16.8 21 L3.2 21 Z' fill='%23ffd23c'/><circle cx='10' cy='2.5' r='2.5' fill='%23ffffff'/></svg>";
+const HAT_SIL = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 28'><path d='M10 1 L19 26 L1 26 Z'/><circle cx='10' cy='2.5' r='2.5'/></svg>";
+function PartyTrio({ pk }: { pk: string }) {
+  const sil = pk === "sil";
+  return (
+    <>
+      {TRIO.map((m) => (
+        <span key={m.id} className="absolute -bottom-[14%] aspect-square" style={{ right: `${m.x}%`, height: `${m.h + (sil ? 30 : 0)}%` }}>
+          {sil ? (
+            <span
+              className="absolute inset-0 bg-white/[0.13] [.light_&]:bg-[#5a46d0]/[0.16]"
+              style={{ maskImage: `url(/art/160/${m.id}.webp)`, WebkitMaskImage: `url(/art/160/${m.id}.webp)`, maskSize: "contain", WebkitMaskSize: "contain", maskRepeat: "no-repeat", WebkitMaskRepeat: "no-repeat", maskPosition: "center bottom", WebkitMaskPosition: "center bottom" }}
+            />
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element -- mock
+            <img src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${m.id}.png`} alt="" className="absolute inset-0 h-full w-full object-contain object-bottom drop-shadow-[0_4px_6px_rgb(10_5_40/0.45)]" />
+          )}
+          <span
+            className={cn("absolute aspect-[20/28] w-[22%]", sil && "bg-white/[0.13] [.light_&]:bg-[#5a46d0]/[0.16]")}
+            style={{
+              left: `${m.hat.x}%`,
+              top: `${m.hat.y}%`,
+              transform: `rotate(${m.hat.r}deg)`,
+              ...(sil
+                ? { maskImage: `url("data:image/svg+xml,${HAT_SIL}")`, WebkitMaskImage: `url("data:image/svg+xml,${HAT_SIL}")`, maskSize: "contain", WebkitMaskSize: "contain", maskRepeat: "no-repeat", WebkitMaskRepeat: "no-repeat" }
+                : { backgroundImage: `url("data:image/svg+xml,${HAT}")`, backgroundSize: "contain", backgroundRepeat: "no-repeat" }),
+            }}
+          />
+        </span>
+      ))}
+    </>
+  );
+}
+
 function Backdrop({ pattern, pulse }: { pattern: Pattern; pulse?: boolean }) {
   const p = PATTERNS[pattern];
+  const pk = useMockPk();
+  const id = MOCK_PK[pattern];
   const tile = p.size.includes("%") ? "no-repeat" : "repeat";
   return (
     <span className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl" aria-hidden>
+      {pk && pattern === "party" && <PartyTrio pk={pk} />}
+      {pk === "sil" && pattern !== "party" && (
+        <span
+          className="absolute -bottom-[22%] right-[26%] aspect-square h-[125%] bg-white/[0.13] [.light_&]:bg-[#5a46d0]/[0.16]"
+          style={{ maskImage: `url(/art/160/${id}.webp)`, WebkitMaskImage: `url(/art/160/${id}.webp)`, maskSize: "contain", WebkitMaskSize: "contain", maskRepeat: "no-repeat", WebkitMaskRepeat: "no-repeat", maskPosition: "center bottom", WebkitMaskPosition: "center bottom" }}
+        />
+      )}
+      {pk === "peek" && pattern !== "party" && (
+        // eslint-disable-next-line @next/next/no-img-element -- mock
+        <img src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${id}.png`} alt="" className="absolute -bottom-[14%] right-[34%] h-[64%] w-auto drop-shadow-[0_4px_6px_rgb(10_5_40/0.45)]" />
+      )}
       <span className={cn("absolute -right-[6%] -top-[30%] aspect-square h-[150%] rounded-full opacity-50 [.light_&]:opacity-35", pulse && "gh-pulse")} style={{ background: `radial-gradient(closest-side, ${GLOW[pattern]}, transparent)` }} />
       <span
         className="absolute inset-0 bg-white/[0.16] [.light_&]:bg-[#5a46d0]/[0.2]"
