@@ -1,0 +1,50 @@
+{
+  "title": "Contador de caza shiny",
+  "subtitle": "Cuenta cada encuentro, mira tu probabilidad real y guarda en una vitrina cada shiny que encuentres.",
+  "metaTitle": "Contador de caza shiny: cuenta encuentros con la probabilidad real",
+  "metaDescription": "Un contador gratuito para cazar shinies en todos los juegos principales de Pokémon: elige tu objetivo, el juego y el método (Masuda, Pokéradar, DexNav, pesca en cadena, cadenas de auxilio, apariciones masivas, Poder Brillo, Amuleto Iris) y mira tu probabilidad real, la que llevas acumulada y tus encuentros por hora. Fases, vitrina e imágenes para compartir.",
+  "metaSharedFound": "He encontrado un {pokemon} variocolor tras {n} encuentros",
+  "metaSharedHunting": "Cazando un {pokemon} variocolor: {n} encuentros por ahora",
+  "metaSharedDescription": "Contado con el Contador de caza shiny de PokéIQ. Empieza tu propia caza, gratis.",
+  "ogAlt": "Un Pokémon variocolor y su caza, contados con el Contador de caza shiny",
+  "ogEyebrow": "Contador de caza shiny",
+  "ogTitle": {
+    "a": "Contador de",
+    "b": "caza shiny"
+  },
+  "ogChips": {
+    "odds": "Probabilidad real",
+    "methods": "Todos los métodos",
+    "phases": "Fases",
+    "trophies": "Vitrina"
+  },
+  "shared": {
+    "found": "Shiny encontrado",
+    "hunting": "Caza en curso",
+    "headlineFound": "{pokemon} variocolor",
+    "headlineHunting": "Cazando a {pokemon} variocolor",
+    "encounters": "Encuentros",
+    "time": "Tiempo",
+    "phases": "Fases",
+    "odds": "Probabilidad",
+    "date": "Encontrado",
+    "oddsValue": "1 entre {n}",
+    "cta": "Empieza tu propia caza",
+    "broken": "Este enlace de caza está incompleto, así que aquí tienes el contador."
+  },
+  "howto": {
+    "title": "Cómo funciona",
+    "s1t": "Elige tu objetivo",
+    "s1": "Busca cualquier Pokémon por nombre o número. Sus colores variocolor aparecen al momento, para que sepas qué buscar.",
+    "s2t": "Elige el juego y el método",
+    "s2": "Todos los juegos principales, de Oro y Plata a Leyendas: Z-A, con los métodos que cambian la probabilidad: el Amuleto Iris, el método Masuda, el Pokéradar, el Safari Amistad, la pesca en cadena, el DexNav, las cadenas de auxilio, los ultraumbrales, los combos de capturas, los Pokémon aurales, las apariciones masivas y el Poder Brillo.",
+    "s3t": "Cuenta cada encuentro",
+    "s3": "Pulsa el botón grande, o la tecla Espacio o Intro. Cuenta de 5 en 5 en las hordas, deshaz un error o escribe la cuenta. El cronómetro arranca con tu primera cuenta y calcula tus encuentros por hora.",
+    "s4t": "Celébralo y compártelo",
+    "s4": "¿Te ha salido? Márcalo y pasará a tu vitrina con sus encuentros, su tiempo y su fecha. ¿Te ha salido antes otro shiny? Guárdalo como fase y sigue.",
+    "oddsTitle": "Cómo funciona la probabilidad",
+    "odds": "En cada encuentro el juego comprueba una o más veces si sale shiny. La probabilidad base es de 1 entre 8192 en las generaciones 2 a 5 y de 1 entre 4096 desde X e Y, y el Amuleto Iris y los demás métodos añaden comprobaciones. Tu probabilidad acumulada es 1 − (1 − p)ⁿ: justo al llegar a la probabilidad ronda el 63 %, y nunca llega al 100 %. Cada encuentro es una oportunidad nueva, así que pasarte de la probabilidad no hace que el siguiente sea más probable.",
+    "privacy": "Tus cazas se guardan en este navegador, en este dispositivo. No se sube nada, y un enlace compartido solo lleva la caza que compartes."
+  },
+  "credit": "Imágenes: renders de Pokémon HOME y sprites de PokéAPI. Probabilidades según el código y los análisis de los juegos, comprobadas con Bulbapedia y Serebii. Pokémon es © Nintendo, Game Freak y Creatures."
+}
