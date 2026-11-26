@@ -1,15 +1,14 @@
 /**
  * Measured difficulty: how much of a map scores well for a Pokémon.
  *
- * A pin earns PokéGuessr's curve, share · e^(−10 · d / D), against the nearest spot's area
- * (D the map's diagonal, full points within half a town-map square). "Scores well" is at least
- * 60% of the pin's share, so within D · ln(1/0.6) / 10 of a spot's area.
+ * A pin earns PokéGuessr's curve, 5000 · e^(−10 · d / D), against the nearest spot's area, with D the
+ * diagonal of that spot's region's own map (src/lib/hunt/score.ts), and full points within half a
+ * town-map square. "Scores well" is at least 60% of the round, so within D · ln(1/0.6) / 10 of a spot's area.
  *
- * The map's land is every map square (PokéGuessr's 28 px grid) within two squares of any
- * place's area. For one region r of a Pokémon, s_r is the share of the land within that
- * distance of one of its spots in r. A round has p pins (huntPinsFor) and every pin has to
- * find its own region, so on the world map the measure is the mean of the p largest s_r, and
- * difficulty = 1 − that. On a region's own map it's 1 − s for that region, one pin.
+ * The map's land is every map square (PokéGuessr's 28 px grid) within two squares of any place's area.
+ * A round has one pin, scored against the nearest of all the Pokémon's spots, so the measure is the share
+ * of the land within that distance of any of its spots, and difficulty = 1 − that, on the world map and on
+ * each region's own map alike.
  */
 export type Pt = [number, number];
 
@@ -59,22 +58,17 @@ function mark(g: MapGrid, area: Pt[], r: number, out: Uint8Array) {
   }
 }
 
-/** The share of the map's land where a pin scores at least 60% against one of these spots' areas. */
-export function goodShare(g: MapGrid, spots: Pt[][]): number {
+/**
+ * The share of the map's land where a pin scores at least 60% against one of these spots' areas.
+ * `diagonal` is each spot's curve scale (its region's own map's diagonal); the map's own by default.
+ */
+export function goodShare(g: MapGrid, spots: Pt[][], diagonal: (i: number) => number = () => g.diagonal): number {
   if (!spots.length || !g.landCount) return 0;
-  const r = (g.diagonal * Math.log(1 / GOOD)) / 10;
   const hit = new Uint8Array(g.cols * g.rows);
-  for (const a of spots) mark(g, a, r, hit);
+  spots.forEach((a, i) => mark(g, a, (diagonal(i) * Math.log(1 / GOOD)) / 10, hit));
   let n = 0;
   for (let k = 0; k < hit.length; k++) if (hit[k] && g.land[k]) n++;
   return n / g.landCount;
-}
-
-/** 1 − the mean of the `pins` largest per-region shares. */
-export function worldDifficulty(shares: number[], pins: number): number {
-  const top = [...shares].sort((a, b) => b - a).slice(0, Math.max(1, pins));
-  const mean = top.reduce((s, v) => s + v, 0) / top.length;
-  return round3(1 - mean);
 }
 
 export const round3 = (v: number) => Math.round(v * 1000) / 1000;

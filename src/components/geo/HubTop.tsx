@@ -69,6 +69,9 @@ export interface HubTopData {
   classicBest?: number;
   soloOpen: boolean;
   onClassic(): void;
+  /** Pokémon Hunt's setup is open on the page (its tile opens it in place, as Classic's does). */
+  huntOpen: boolean;
+  onHunt(): void;
   regionStreakBest: number;
   onDuels(): void;
   onRanked(): void;
@@ -445,7 +448,7 @@ export function HubTop({ d }: { d: HubTopData }) {
     </div>,
     // Pokémon Hunt: a Pokémon on a map (Hunt's question: where would you catch it?).
     <div key="hunt">
-      <ModeTile art={huntMap} icon={<Crosshair className="text-primary" />} title={h("tile.title")} href="/pokeguessr/hunt" testId="hunt-hub-entry">
+      <ModeTile art={huntMap} icon={<Crosshair className="text-primary" />} title={h("tile.title")} onClick={d.onHunt} button={{ "aria-expanded": d.huntOpen, "aria-controls": "hunt" }} testId="hunt-hub-entry">
         {/* eslint-disable-next-line @next/next/no-img-element -- static board art */}
         <img src={boardArtUrl(143)} alt="" aria-hidden className="absolute -right-[4%] -top-[3%] h-[60%] w-auto object-contain drop-shadow-[0_6px_10px_rgb(0_0_0/0.55)] transition-transform duration-500 group-hover:-translate-y-1 group-hover:scale-105" />
       </ModeTile>

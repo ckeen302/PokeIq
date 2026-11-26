@@ -9,25 +9,27 @@ import { formatNumber } from "@/i18n/format";
 import geoNs from "@/messages/geo";
 import { BAR_BTN, CountdownPill, ExitButton, FullscreenButton, GuessButton, HudDials, MapDock, Notch, RoundBadge, RoundReadout, ScoreTracker, TimerDial, usePhone } from "@/components/geo/GameShell";
 import { GeoMap, mapAspect, type MapPin } from "@/components/geo/GeoMap";
+import huntNs from "@/messages/hunt";
+import type { HuntHint, HuntHintKind } from "@/lib/hunt/types";
 import { HuntCard, type HuntPokemonView } from "./HuntCard";
-import { HuntPinTray, useHuntPinHint } from "./HuntPinTray";
+import { HuntHints } from "./HuntHints";
 
 export interface HuntRoundProps {
-  /** The map the pins go on: the world, or the region being hunted. */
+  /** The map the pin goes on: the world, or the region being hunted. */
   region: GeoRegionInfo;
   pokemon: HuntPokemonView;
-  /** How many regions it's found in (shown on the card). */
-  regions: number;
-  /** The pins, one slot per pin this round takes (1 in Region mode, up to 3 on the world). */
-  pins: (MapPin | null)[];
-  /** The pin a tap on the map places or moves. */
-  activePin: number;
+  /** The pin, once it's down. */
+  pin: MapPin | null;
   onPlace: (pin: MapPin) => void;
-  onSelectPin: (i: number) => void;
-  onRemovePin: (i: number) => void;
   onGuess: () => void;
   /** The guess is being sent. */
   busy?: boolean;
+  /** The hints this round offers, those taken, the one on its way and one that failed. */
+  hints: HuntHintKind[];
+  taken: Partial<Record<HuntHintKind, HuntHint>>;
+  hintBusy?: HuntHintKind | null;
+  hintFailed?: HuntHintKind | null;
+  onHint: (kind: HuntHintKind) => void;
   /** 0-based round index (the map recentres for each). */
   roundIndex: number;
   rounds: number;
@@ -45,39 +47,27 @@ export interface HuntRoundProps {
 }
 
 /**
- * A Pokémon Hunt round, laid out exactly as a PokéGuessr round: the exit and
- * full-screen buttons top left, the notch with the round and the 1:30 pill
- * under it, GeoGuessr's score tracker top right, and the corner map dock
- * with the Guess button; the phone gets the dials, the round badge and the
- * bottom bar. The Pokémon card takes the screenshot's place, and the pin
- * tray sits between the map and Guess when the round takes more than one pin.
+ * A Pokémon Hunt round, laid out exactly as a PokéGuessr round: the exit and full-screen buttons top
+ * left, the notch with the round and the 1:30 pill under it, GeoGuessr's score tracker top right, and
+ * the corner map dock with the Guess button; the phone gets the dials, the round badge and the bottom
+ * bar. The Pokémon card takes the screenshot's place, with the round's hints under its question. One pin,
+ * as PokéGuessr's.
  */
 export function HuntRound(p: HuntRoundProps) {
   const t = useT(geoNs);
+  const h = useT(huntNs);
   const phone = usePhone();
   const names = useGeoNames();
   const fmt = (n: number) => formatNumber(n, t.locale);
   const total = p.scores.reduce((a, b) => a + b, 0);
   const round = Math.min(p.roundIndex + 1, p.rounds);
-  const placed = p.pins.filter(Boolean).length;
-  const multi = p.pins.length > 1;
-  const hint = useHuntPinHint(p.pins.map(Boolean), p.activePin);
-  const map = ({ fill, land }: { fill: boolean; land: boolean | "fit" }) => (
-    <GeoMap
-      land={land}
-      round={p.roundIndex}
-      region={p.region}
-      fill={fill}
-      picks={p.pins}
-      activePick={p.activePin}
-      onPick={p.onPlace}
-      onPickSelect={p.onSelectPin}
-    />
-  );
+  const map = ({ fill, land }: { fill: boolean; land: boolean | "fit" }) => <GeoMap land={land} round={p.roundIndex} region={p.region} fill={fill} pick={p.pin} onPick={p.onPlace} />;
   return (
     <div className="relative h-full" data-testid="hunt-round">
       <div className="absolute inset-0" style={{ bottom: "var(--geo-bar)" }}>
-        <HuntCard pokemon={p.pokemon} regions={p.regions} maxPins={p.pins.length} priority={p.roundIndex === 0} mapName={p.region.id === WORLD_REGION ? undefined : names.map(p.region)} />
+        <HuntCard pokemon={p.pokemon} priority={p.roundIndex === 0} mapName={p.region.id === WORLD_REGION ? undefined : names.map(p.region)}>
+          <HuntHints offered={p.hints} taken={p.taken} busy={p.hintBusy} failed={p.hintFailed} onTake={p.onHint} />
+        </HuntCard>
       </div>
 
       {phone ? (
@@ -113,10 +103,9 @@ export function HuntRound(p: HuntRoundProps) {
       <MapDock
         aspect={mapAspect(p.region)}
         resetKey={p.roundIndex}
-        hasPin={placed > 0}
-        hint={hint}
+        hasPin={!!p.pin}
+        hint={p.pin ? h("pins.hintMoveOne") : h("pins.hintOne")}
         map={map}
-        extra={<HuntPinTray pins={p.pins.map(Boolean)} active={p.activePin} onSelect={p.onSelectPin} onRemove={p.onRemovePin} className={cn(!multi && "hidden")} />}
         tools={
           <>
             <button type="button" onClick={p.onExit} className={BAR_BTN} aria-label={t("shell.back")} title={t("shell.back")} data-testid="geo-exit" data-keep>
@@ -125,7 +114,7 @@ export function HuntRound(p: HuntRoundProps) {
             <FullscreenButton fs={p.fs} onClick={p.onFullscreen} className={cn(BAR_BTN, "!h-11 !w-11 !rounded-full !bg-[#4a3f9e] !backdrop-blur-none")} />
           </>
         }
-        button={<GuessButton hasPin={placed > 0} busy={p.busy} disabled={p.busy} onClick={p.onGuess} />}
+        button={<GuessButton hasPin={!!p.pin} busy={p.busy} disabled={p.busy} onClick={p.onGuess} />}
       />
     </div>
   );

@@ -21,11 +21,3 @@ export const HUNT_ROUND_MAX = 5000;
 
 /** A round's verdict, by its score. */
 export const verdictOf = (score: number) => (score >= 4500 ? "perfect" : score >= 3500 ? "great" : score >= 2000 ? "good" : score > 0 ? "near" : "far");
-
-/** The Daily's square for a round (the spec's share grid): 🟩 ≥ 4,000, 🟨 ≥ 2,000, 🟧 ≥ 500, 🟥 below. */
-export function huntSquare(score: number): "green" | "yellow" | "orange" | "red" {
-  if (score >= 4000) return "green";
-  if (score >= 2000) return "yellow";
-  if (score >= 500) return "orange";
-  return "red";
-}
