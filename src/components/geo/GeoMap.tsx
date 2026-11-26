@@ -31,6 +31,8 @@ export interface RevealedRound {
   color?: string;
   /** The trainer's avatar, shown inside the pin. */
   image?: string;
+  /** The guess pin was already standing there (the result showed it while the answer was on its way): no drop. */
+  still?: boolean;
 }
 
 export interface FitTiming {
@@ -118,8 +120,8 @@ const CROP_WAIT_MS = 1500;
 const LOCKED_ROOM = 1.04;
 /** A reveal never zooms closer than this many world pixels across (a handful of towns). */
 const REVEAL_MIN_BOX = 260;
-/** The line draws itself over this long before the camera moves. */
-export const LINE_DRAW_MS = 600;
+/** The line draws itself over this long before the camera moves (globals.css's .geo-line: 0.05 s, then 0.45 s). */
+export const LINE_DRAW_MS = 400;
 
 /** Where a revealed round's flag stands: the exact spot when the shot has one, else the place's pin. */
 const flagAt = (answer: RevealedRound["answer"]): [number, number] => answer.spot ?? answer.pin;
@@ -403,7 +405,7 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
                   </>
                 )}
                 <Flag x={ax} y={ay} n={r.flag} />
-                {g && <GuessPin x={g[0]} y={g[1]} label={r.label} color={r.color} image={r.image} delay={0.12 * i} />}
+                {g && <GuessPin x={g[0]} y={g[1]} label={r.label} color={r.color} image={r.image} delay={0.12 * i} still={r.still} />}
               </g>
             );
           })}
@@ -527,12 +529,12 @@ function Density({ density, toScreen, cell, id }: { density: NonNullable<Props["
  * The guess marker: a teardrop pin (GeoGuessr's) with the trainer's avatar
  * inside, or a Poké Ball for a guest, dropping in. The tip is the guess.
  */
-export function GuessPin({ x, y, label, color = "#3a8dde", image, delay = 0 }: { x: number; y: number; label?: string; color?: string; image?: string; delay?: number }) {
+export function GuessPin({ x, y, label, color = "#3a8dde", image, delay = 0, still = false }: { x: number; y: number; label?: string; color?: string; image?: string; delay?: number; still?: boolean }) {
   const r = 11;
   const id = useId();
   return (
     <g transform={`translate(${x} ${y})`}>
-      <g className="geo-drop" style={{ animationDelay: `${delay}s` }}>
+      <g className={still ? undefined : "geo-drop"} style={still ? undefined : { animationDelay: `${delay}s` }}>
         <ellipse cy={1} rx={5} ry={2} fill="rgba(0,0,0,0.35)" />
         {/* The teardrop: a circle at the top and a point at the origin. */}
         <path d={`M0 0 L${-r * 0.82} ${-r * 1.35} A${r} ${r} 0 1 1 ${r * 0.82} ${-r * 1.35} Z`} fill={color} stroke="#120f24" strokeWidth={2} strokeLinejoin="round" />

@@ -106,14 +106,10 @@ const claimedBy = new Map<string, { fingerprint: string; expires: number }>();
 const MAX_CLAIMED_BY = 20_000;
 const byKey = (key: string, fingerprint: string) => `${key}#${fingerprint}`;
 
-async function recordClaimant(key: string, fingerprint: string): Promise<void> {
+function rememberClaimant(key: string, fingerprint: string): void {
   claimedBy.delete(key);
   claimedBy.set(key, { fingerprint, expires: Date.now() + MEMORY_TTL_MS });
   if (claimedBy.size > MAX_CLAIMED_BY) claimedBy.delete(claimedBy.keys().next().value!);
-  const supabase = getServiceSupabase();
-  if (!supabase) return;
-  const { error } = await supabase.from("token_claims").insert({ key: byKey(key, fingerprint) });
-  if (error && error.code !== "23505") console.error("[replay-guard] claimant not recorded:", error.message);
 }
 
 async function madeBy(key: string, fingerprint: string): Promise<boolean> {
@@ -134,9 +130,16 @@ async function madeBy(key: string, fingerprint: string): Promise<boolean> {
  * same request comes again (answer it again), "other" for a different one.
  */
 export async function claimFor(key: string, fingerprint: string): Promise<"new" | "same" | "other"> {
-  if (await claimOnce(key)) {
-    await recordClaimant(key, fingerprint);
-    return "new";
+  const supabase = getServiceSupabase();
+  if (claimInMemory(key, supabase ? MEMORY_CLAIMS_WITH_DATABASE : Infinity)) {
+    // The claim and who made it go in together, in one round trip: one statement, so both rows or neither.
+    const error = supabase ? (await supabase.from("token_claims").insert([{ key }, { key: byKey(key, fingerprint) }])).error : null;
+    if (!error || error.code !== "23505") {
+      if (error) console.error("[replay-guard] claim failed, allowing:", error.message);
+      rememberClaimant(key, fingerprint);
+      return "new";
+    }
+    // Claimed elsewhere: by this very request (a retry on another instance) or by another.
   }
   if (await madeBy(key, fingerprint)) return "same";
   // The first request may still be recording itself on another instance: one more look.

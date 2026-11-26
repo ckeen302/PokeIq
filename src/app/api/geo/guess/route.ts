@@ -43,6 +43,16 @@ async function playerOf(request: NextRequest, device: string): Promise<{ key: st
   return { key: deriveSeed("geo-player", `d:${device}`), name: null };
 }
 
+/**
+ * GET: wakes this function and loads what grading needs, sent as a round
+ * starts when no guess has gone for a while, so the guess that follows doesn't
+ * wait on a cold start. Answers nothing.
+ */
+export async function GET() {
+  await import("@/lib/server/geo-learn");
+  return new NextResponse(null, { status: 204, headers: { "Cache-Control": "no-store" } });
+}
+
 export async function POST(request: NextRequest) {
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
   // Per game (its id is signed into the token): players sharing one address each have their own allowance.
