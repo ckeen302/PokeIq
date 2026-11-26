@@ -35,6 +35,8 @@ async function open(browser, viewport, phone) {
   await context.addInitScript(() => {
     sessionStorage.setItem("pokeiq-splash", "1");
     localStorage.setItem("pokeiq-muted", "1");
+    // PokéGuessr's how-to opens by itself on a first visit, late enough to land on a click: seen already.
+    localStorage.setItem("pokeiq:guessr-prefs:v1", JSON.stringify({ seenHowToDemo: true }));
   });
   const page = await context.newPage();
   page.setDefaultTimeout(30_000);
@@ -69,9 +71,15 @@ async function closeHowTo(page) {
   }
 }
 
+/** Drops the pin. The desktop dock grows when the pointer reaches it, so it's hovered first and measured once it's settled; a tap that missed (the dock still moving) is tried again. */
 async function tapMap(page, fx, fy) {
-  const { map, area } = await guessMapReady(page);
-  await map.click({ position: spotIn(area, fx, fy) });
+  for (let i = 0; i < 3; i++) {
+    await page.locator("[role=application]").hover().catch(() => {});
+    const { map, area } = await guessMapReady(page);
+    await map.click({ position: spotIn(area, fx, fy) });
+    if (await page.getByTestId("geo-guess").isEnabled()) return;
+    await page.waitForTimeout(400);
+  }
 }
 
 const num = (s) => Number(String(s).replace(/[^\d]/g, "")) || 0;
@@ -196,7 +204,7 @@ export async function runHunt({ browser, BASE, OUT, errors, step }) {
       if (!(await page.locator("[data-testid=hunt-map-picker] [data-map=galar]").isDisabled())) f("Hard still lets a region be picked");
       await page.getByTestId("hunt-play").click();
       await playRound(page, { phone: false, fail: f, label: "hard", spot: SPOTS[0], noHints: true });
-      if (!/World|Welt|Monde|Mundo|世界/.test(await page.getByTestId("geo-shell").innerText())) f("Hard isn't on the world map");
+      if (!/World|Welt|Monde|Mundo|世界/i.test(await page.getByTestId("geo-shell").innerText())) f("Hard isn't on the world map");
     } catch (e) {
       f(e.message);
       await page.screenshot({ path: `${OUT}/hunt-desktop-failure.png` }).catch(() => {});

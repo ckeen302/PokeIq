@@ -170,6 +170,13 @@ export function HuntGame({ maps, inline = false, onActive }: {
 
   const active = phase !== "setup";
   useEffect(() => onActive?.(active), [active, onActive]);
+  // Back at the setup after a hunt: today's board again (a score may have just gone on it).
+  const wasActive = useRef(false);
+  const reloadBoard = board.reload;
+  useEffect(() => {
+    if (!active && wasActive.current) reloadBoard();
+    wasActive.current = active;
+  }, [active, reloadBoard]);
 
   const mapOf = useCallback((id: string) => maps.find((m) => m.id === id) ?? maps.find((m) => m.id === WORLD_REGION)!, [maps]);
   const setupMaps = [mapOf(WORLD_REGION), ...maps.filter((m) => isHuntMapRegion(m.id))];
