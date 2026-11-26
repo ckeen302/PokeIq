@@ -6,7 +6,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { fetchBoardOrUnavailable } from "@/lib/server/leaderboard";
 import { fetchGeoBoardOrUnavailable } from "@/lib/server/geo-leaderboard";
 import { currentGeoWeekly, geoRegions, isGeoSpec } from "@/lib/server/geo";
-import { GEO_WEEKLY_BOARD_RE, geoPreviousWeek, geoWeeklyBoard, geoWeeklyMap, geoWeeklyNumber, isGeoWeek } from "@/lib/geo-weekly";
+import { GEO_WEEKLY_BOARD_RE, geoWeeklyBoard, geoWeeklyMap, geoWeeklyNumber, isGeoWeek } from "@/lib/geo-weekly";
 import { GEO_ROUND_OPTIONS, WORLD_REGION, geoBoardKey, geoMapRank } from "@/lib/geo-types";
 import { GEO_REGION_STREAK_BOARD } from "@/lib/geo-streak-types";
 import type { GeoEra } from "@/lib/geo-families";
@@ -297,12 +297,11 @@ export async function LeaderboardView({ params }: { params: LeaderboardParams })
       .map((r) => (r.id === WORLD_REGION ? { ...r, boards: [...r.boards, { id: GEO_REGION_STREAK_BOARD, name: t("geo.regionStreak") }] } : r))
       .filter((r) => r.boards.length)
       .sort((a, b) => geoMapRank(a.id) - geoMapRank(b.id));
-    // The Weekly Challenge: this week's board, and the weeks before it by their Monday.
+    // The Weekly Challenge is retired: its old boards still open by their link (their Monday), with no tab.
     const thisWeek = currentGeoWeekly();
     const weekAsked = GEO_WEEKLY_BOARD_RE.exec(params.format ?? "")?.[1];
     const week = weekAsked && isGeoWeek(weekAsked) && (!thisWeek || weekAsked <= thisWeek.week) ? weekAsked : null;
     const weekMapName = (w: string) => maps.find((r) => r.id === geoWeeklyMap(w, (id) => isGeoSpec({ region: id, kind: "game" })))?.name ?? "";
-    const lastWeek = thisWeek && isGeoWeek(geoPreviousWeek(thisWeek.week)) ? geoPreviousWeek(thisWeek.week) : null;
     const map = week ? undefined : maps.find((r) => r.boards.some((b) => b.id === params.format));
     const mode = week ? geoWeeklyBoard(week) : map ? params.format! : null;
     const geoRead = mode ? await fetchGeoBoardOrUnavailable({ mode }) : await fetchGeoBoardOrUnavailable({ daily: date });
@@ -327,20 +326,6 @@ export async function LeaderboardView({ params }: { params: LeaderboardParams })
                 {t("geo.daily", { n: dailyNumber(date) })}
               </Badge>
             </Link>
-            {thisWeek && (
-              <Link href={`/leaderboard?board=geo&format=${geoWeeklyBoard(thisWeek.week)}`} data-testid="geo-board-weekly">
-                <Badge variant={week === thisWeek.week ? "secondary" : "outline"} className="border-warning/50 hover:bg-accent">
-                  {t("geo.weekly", { n: geoWeeklyNumber(thisWeek.week), map: weekMapName(thisWeek.week) })}
-                </Badge>
-              </Link>
-            )}
-            {lastWeek && (
-              <Link href={`/leaderboard?board=geo&format=${geoWeeklyBoard(lastWeek)}`}>
-                <Badge variant={week === lastWeek ? "secondary" : "outline"} className="hover:bg-accent">
-                  {t("geo.lastWeek", { map: weekMapName(lastWeek) })}
-                </Badge>
-              </Link>
-            )}
             {maps
               .filter((r) => !r.theme)
               .map((r) => (

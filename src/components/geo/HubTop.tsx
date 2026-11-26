@@ -20,10 +20,11 @@ import creatorNs from "@/messages/trainer-creator";
 import { HowToHelpButton } from "./GeoHowToButton";
 import worldBody from "@/assets/guessr/hub-world.webp";
 import worldAir from "@/assets/guessr/hub-world-air.webp";
+// Weather: soft fractal clouds, thinning towards the planet's edge, drawn once to a picture (a live SVG filter under a mask cost frames).
+import cloudsArt from "@/assets/guessr/hub-clouds.webp";
 // Every mode's emblem, one family: modelled and lit in three.js for PokéIQ, rendered to stills.
 import dailyEmblem from "@/assets/guessr/emblems/daily.webp";
 import classicEmblem from "@/assets/guessr/emblems/classic.webp";
-import weeklyEmblem from "@/assets/guessr/emblems/weekly.webp";
 import streakEmblem from "@/assets/guessr/emblems/streak.webp";
 import huntEmblem from "@/assets/guessr/emblems/hunt.webp";
 import duelsEmblem from "@/assets/guessr/emblems/duels.webp";
@@ -58,19 +59,6 @@ export interface HubTopData {
   /** The finished Daily's result, when it's saved here. */
   onDailyResult?: () => void;
   dailyWarm?: Warm;
-  weeklyNum: number | null;
-  weeklyMap: string | null;
-  /** The Weekly's region (its atlas name), when it's one region's map. */
-  weeklyRegion?: string | null;
-  weeklyPlayed: boolean;
-  weeklyScore?: number;
-  weeklyLeft: string | null;
-  weeklyResume: boolean;
-  weeklyReady: boolean;
-  onWeekly(): void;
-  /** The finished Weekly's result, when it's saved here. */
-  onWeeklyResult?: () => void;
-  onWeeklyWarm?: () => void;
   classicMap: string;
   classicBest?: number;
   soloOpen: boolean;
@@ -133,10 +121,6 @@ function onFace([lon, lat]: [number, number]): [number, number] | null {
 /** What a hovered mode points at on the globe: one region (an atlas name), or the whole world. */
 export type HubFocus = string | "world" | null;
 
-/** Weather: soft fractal clouds (one SVG, drawn once), thinning towards the planet's edge. */
-const CLOUDS = `url("data:image/svg+xml,${encodeURIComponent(
-  `<svg xmlns='http://www.w3.org/2000/svg' width='600' height='600'><filter id='c' x='0' y='0' width='100%' height='100%'><feTurbulence type='fractalNoise' baseFrequency='.011 .02' numOctaves='5' seed='11' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  3.6 0 0 0 -1.72'/></filter><rect width='600' height='600' filter='url(#c)'/></svg>`,
-)}")`;
 
 /** The motion: CSS only, and all of it off for reduced motion (the end states are the resting ones). */
 const MOTION = `
@@ -159,16 +143,14 @@ const MOTION = `
 @keyframes gh-in-d { from { transform: translateY(-1rem); opacity: 0 } to { transform: none; opacity: 1 } }
 @keyframes gh-in-u { from { transform: translateY(1.5rem); opacity: 0 } to { transform: none; opacity: 1 } }
 @keyframes gh-fade { from { opacity: 0 } to { opacity: 1 } }
-@keyframes gh-drift { to { background-position: -1200px 0, -900px 0 } }
+@keyframes gh-drift { to { transform: translate3d(var(--dx), 0, 0) } }
 @keyframes gh-twinkle { 0%, 100% { opacity: .15; transform: scale(.6) } 50% { opacity: 1; transform: none } }
-@keyframes gh-night { from { transform: translate(-6%, -1%) } to { transform: translate(-27%, 4%) } }
 @keyframes gh-pin { 0% { transform: translateY(-70%) scale(.2); opacity: 0 } 55% { transform: translateY(6%) scale(1.12, .88); opacity: 1 } 78% { transform: translateY(-8%) } 100% { transform: none; opacity: 1 } }
 @keyframes gh-sheen { from { transform: translateX(-120%) skewX(-18deg) } to { transform: translateX(260%) skewX(-18deg) } }
 .gh-rise { animation: gh-rise 1.4s cubic-bezier(.16,1,.3,1) both }
 .gh-spin { animation: gh-spin 240s linear infinite }
 .gh-unspin { animation: gh-unspin 240s linear infinite }
 .gh-clouds { animation: gh-spin 150s linear infinite }
-.gh-night { animation: gh-night 34s ease-in-out infinite alternate }
 .gh-pin { animation: gh-pin .55s cubic-bezier(.3,.9,.4,1) both; transform-origin: 50% 100% }
 .gh-drop { animation: gh-drop 1.25s cubic-bezier(.3,0,.3,1) .55s both; transform-origin: 50% 90% }
 .gh-shadow { animation: gh-shadow 1.25s ease-out .55s both }
@@ -176,7 +158,7 @@ const MOTION = `
 @media (min-width: 768px) { .gh-in-s { animation-name: gh-in-l } .gh-in-e { animation-name: gh-in-r } }
 .gh-in-d { animation: gh-in-d .8s cubic-bezier(.16,1,.3,1) both }
 .gh-fade { animation: gh-fade 1s ease-out both }
-.gh-stars { animation: gh-drift 240s linear infinite }
+.gh-stars { animation: gh-drift 240s linear infinite; will-change: transform }
 .gh-twinkle { animation: gh-twinkle 3.2s ease-in-out infinite both }
 .gh-lift { transition: transform .25s cubic-bezier(.2,.8,.2,1), filter .2s }
 .gh-lift:not(:disabled):hover { transform: translateY(-3px) }
@@ -207,7 +189,9 @@ function Space({ children }: { children: React.ReactNode }) {
     >
       <style>{MOTION}</style>
       {/* Two layers of the starfield, drifting at different speeds (a slow parallax), and a few stars that twinkle. */}
-      <div className="gh-stars pointer-events-none absolute inset-0 opacity-90 [background-image:url(/geo/hub-stars.svg),url(/geo/hub-stars.svg)] [background-position:0_0,300px_200px] [background-size:1200px_800px,900px_600px]" aria-hidden />
+      {/* Each layer is a tile wider than the screen, slid along by a transform (moving a background repaints the whole screen every frame). */}
+      <div className="gh-stars pointer-events-none absolute inset-y-0 left-0 w-[calc(100%+1200px)] opacity-90 [--dx:-1200px] [background-image:url(/geo/hub-stars.svg)] [background-size:1200px_800px]" aria-hidden />
+      <div className="gh-stars pointer-events-none absolute inset-y-0 left-0 w-[calc(100%+900px)] opacity-90 [--dx:-900px] [background-image:url(/geo/hub-stars.svg)] [background-position:300px_200px] [background-size:900px_600px]" aria-hidden />
       <div className="pointer-events-none absolute inset-0" aria-hidden>
         {TWINKLES.map((s, i) => (
           <span key={i} className="gh-twinkle absolute rounded-full bg-white" style={{ left: `${s.l}%`, top: `${s.t}%`, width: s.s, height: s.s, animationDelay: `${s.d}s`, animationDuration: `${s.p}s` }} />
@@ -312,8 +296,8 @@ function WorldRise({ className, focus, spots, cheer, covered, hopRef }: { classN
           <div className="absolute overflow-hidden rounded-full [transform:translateZ(0)]" style={{ inset: disc }}>
             {/* Clouds, turning a little faster than the land, so they drift over it; thin towards the edge. */}
             <div
-              className="gh-clouds absolute inset-0 opacity-[.6] [mask-image:radial-gradient(circle,black_40%,rgb(0_0_0/.45)_62%,transparent_71%)]"
-              style={{ backgroundImage: CLOUDS, backgroundSize: "100% 100%" }}
+              className="gh-clouds absolute inset-0 opacity-[.6]"
+              style={{ backgroundImage: `url(${cloudsArt.src})`, backgroundSize: "100% 100%" }}
               data-testid="geo-home-clouds"
             />
             {/* The light stays where it is while the world turns: lit up and to the left, night falling to the lower right. */}
@@ -323,9 +307,9 @@ function WorldRise({ className, focus, spots, cheer, covered, hopRef }: { classN
                 background: "radial-gradient(circle at 32% 22%, rgb(255 255 255 / .10), transparent 42%), radial-gradient(circle at 34% 26%, transparent 48%, rgb(8 10 40 / .30) 78%, rgb(6 6 24 / .62) 100%)",
               }}
             />
-            {/* Evening: a soft edge, warm where the sun sets, creeping in from the right and back out. */}
+            {/* Evening: a soft edge, warm where the sun sets, on the right (still: a moving layer this size cost frames). */}
             <div
-              className="gh-night absolute left-[-80%] top-[-80%] h-[260%] w-[260%] [transform:translate(-16%,2%)]"
+              className="absolute left-[-80%] top-[-80%] h-[260%] w-[260%] [transform:translate(-16%,2%)]"
               style={{ background: "radial-gradient(circle at 50% 50%, transparent 0 29%, rgb(255 160 90 / .14) 31%, rgb(40 20 80 / .34) 33.5%, rgb(8 8 34 / .58) 37.5%, rgb(6 6 28 / .64) 100%)" }}
               data-testid="geo-home-night"
             />
@@ -459,9 +443,9 @@ function DailyCard({ d, onPlay }: { d: HubTopData; onPlay(): void }) {
   return (
     <div className={cn(CARD, "relative p-3 md:p-3.5")} data-testid="geo-daily-card">
       {/* The Daily's emblem, top right like every mode's. */}
-      <Image src={dailyEmblem} alt="" aria-hidden sizes="96px" className="pointer-events-none absolute -top-7 right-1 h-[clamp(5rem,12.5vh,6.75rem)] w-auto rotate-[6deg] drop-shadow-[0_10px_10px_rgb(10_5_40/0.55)]" />
+      <Image src={dailyEmblem} alt="" aria-hidden sizes="96px" className="pointer-events-none absolute -top-7 right-1 h-[clamp(5rem,12.5vh,6.75rem)] w-auto rotate-[6deg] md:-right-3 md:-top-10 md:h-[clamp(3.75rem,8.5vh,4.75rem)] drop-shadow-[0_10px_10px_rgb(10_5_40/0.55)]" />
       <div className="relative">
-        <p className={cn(LABEL, "flex items-center gap-1.5 text-[#ffd23c]")}>
+        <p className={cn(LABEL, "flex items-center gap-1.5 text-[#ffd23c] md:pr-14")}>
           <Compass className="h-3.5 w-3.5" aria-hidden />
           {t("hub.daily.label", { num: d.dailyNum ?? "" })}
           {d.dailyMap && <span className="text-[#c8bfff]">· {d.dailyMap}</span>}
@@ -542,9 +526,9 @@ function ModeTile({
         alt=""
         aria-hidden
         sizes="128px"
-        className="pointer-events-none absolute -top-[22%] right-[3%] h-[118%] w-auto drop-shadow-[0_10px_10px_rgb(10_5_40/0.55)] transition-transform duration-300 ease-out group-hover:-translate-y-1.5 group-hover:rotate-[-4deg] group-hover:scale-105 motion-reduce:transition-none"
+        className="pointer-events-none absolute -top-[12%] right-[4%] h-[94%] w-auto drop-shadow-[0_10px_10px_rgb(10_5_40/0.55)] transition-transform duration-300 ease-out group-hover:-translate-y-1.5 group-hover:rotate-[-4deg] group-hover:scale-105 motion-reduce:transition-none"
       />
-      <span className="relative block min-w-0 max-w-[62%] px-3.5 pt-3">
+      <span className="relative block min-w-0 max-w-[58%] px-3.5 pt-3.5">
         <span className="block font-display text-[clamp(1.05rem,2.6vh,1.35rem)] font-bold italic leading-[1.05] text-white [text-shadow:0_2px_0_rgb(18_10_60/0.6)] [:lang(en)_&]:capitalize">{title}</span>
         {sub && <span className="mt-1 block truncate text-[13px] font-semibold text-[#c9c0ff]">{sub}</span>}
       </span>
@@ -565,8 +549,8 @@ function ModeTile({
   );
 }
 
-/** A mode's slot: a card in the phone's row along the bottom (room above it for the emblem), a row of its column wider. */
-const SLOT = "h-[5.25rem] w-[12.5rem] shrink-0 snap-start md:h-[clamp(4.1rem,9.2vh,5.4rem)] md:w-auto";
+/** A mode's slot: a card in the phone's row along the bottom (room above it for the emblem); wider, a card of its column, GeoGuessr's shape (2.24 wide to 1 tall). */
+const SLOT = "h-[5.5rem] w-[12rem] shrink-0 snap-start md:aspect-[2.24/1] md:h-auto md:w-full";
 
 export function HubTop({ d }: { d: HubTopData }) {
   const t = useT(geoSolo);
@@ -581,9 +565,8 @@ export function HubTop({ d }: { d: HubTopData }) {
     onFocus: () => setFocus(at),
     onBlur: () => setFocus(null),
   });
-  const regionOr = (n?: string | null): HubFocus => (n && WORLD_LABELS.some(([l]) => l === n) ? n : "world");
-  // Classic, the Streak and Hunt are played on the whole world (and its regions); the Weekly on its own region.
-  const tileFocus: HubFocus[] = ["world", regionOr(d.weeklyRegion), "world", "world"];
+  // Classic, the Streak and Hunt are played on the whole world (and its regions).
+  const tileFocus: HubFocus[] = ["world", "world", "world"];
 
   const tiles = [
     <div key="classic" data-testid="geo-solo-card">
@@ -593,18 +576,6 @@ export function HubTop({ d }: { d: HubTopData }) {
         onClick={d.onClassic}
         button={{ "aria-expanded": d.soloOpen, "aria-controls": "solo" }}
         testId="geo-solo-setup"
-      />
-    </div>,
-    <div key="weekly" data-testid="geo-weekly-card">
-      <ModeTile
-        emblem={weeklyEmblem}
-        title={t("hub.weekly.title")}
-        sub={d.weeklyLeft ? t("hub.weekly.endsIn", { left: d.weeklyLeft }) : null}
-        // Played: the tile shows its result (when it's saved here); else it starts this week's, or picks it up.
-        onClick={d.weeklyPlayed ? d.onWeeklyResult : d.onWeekly}
-        disabled={d.weeklyPlayed ? !d.onWeeklyResult : !d.weeklyReady || d.loading}
-        button={d.weeklyPlayed ? undefined : { onPointerEnter: d.onWeeklyWarm }}
-        testId={d.weeklyPlayed ? (d.onWeeklyResult ? "geo-weekly-result" : "geo-weekly-played") : "geo-weekly-play"}
       />
     </div>,
     <div key="streak" data-testid="region-streak-card">
@@ -637,7 +608,7 @@ export function HubTop({ d }: { d: HubTopData }) {
       */}
       <div
         className={cn(
-          "pointer-events-none relative z-[1] flex h-full flex-col px-4 pt-3 [&_button]:pointer-events-auto [&_a]:pointer-events-auto [--cw:clamp(15.5rem,21vw,19rem)] [--gap:clamp(0.55rem,1.6vh,0.85rem)]",
+          "pointer-events-none relative z-[1] flex h-full flex-col px-4 pt-3 [&_button]:pointer-events-auto [&_a]:pointer-events-auto [--cw:min(clamp(13rem,17.5vw,16.5rem),calc((100svh-25rem)/1.8))] [--gap:clamp(0.55rem,1.6vh,0.85rem)]",
           "md:grid md:grid-cols-[var(--cw)_1fr_var(--cw)] md:grid-rows-[1fr_auto_auto_1fr] md:gap-x-6",
           "md:px-[max(1rem,calc(50vw-42rem))] md:pb-[clamp(1rem,4vh,2.5rem)] md:pt-[clamp(0.75rem,3vh,2rem)]",
         )}
