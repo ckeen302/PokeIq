@@ -111,6 +111,8 @@ const MOTION = `
 @keyframes gh-in-u { from { transform: translateY(1.5rem); opacity: 0 } to { transform: none; opacity: 1 } }
 @keyframes gh-fade { from { opacity: 0 } to { opacity: 1 } }
 @keyframes gh-drift { to { transform: translate3d(var(--dx), 0, 0) } }
+@keyframes gh-shine { 0%, 58% { background-position: 160% 0 } 82%, 100% { background-position: -60% 0 } }
+@keyframes gh-glow { 0%, 62%, 100% { filter: drop-shadow(0 0 0 rgb(255 60 130 / 0)) } 76% { filter: drop-shadow(0 0 14px rgb(255 60 130 / .75)) } }
 @keyframes gh-twinkle { 0%, 100% { opacity: .15; transform: scale(.6) } 50% { opacity: 1; transform: none } }
 @keyframes gh-sheen { from { transform: translateX(-120%) skewX(-18deg) } to { transform: translateX(260%) skewX(-18deg) } }
 .gh-rise { animation: gh-rise 1.4s cubic-bezier(.16,1,.3,1) both }
@@ -120,6 +122,8 @@ const MOTION = `
 @media (min-width: 768px) { .gh-in-s { animation-name: gh-in-l } .gh-in-e { animation-name: gh-in-r } }
 .gh-in-d { animation: gh-in-d .8s cubic-bezier(.16,1,.3,1) both }
 .gh-fade { animation: gh-fade 1s ease-out both }
+.gh-shine::before { content: attr(data-text); color: transparent; -webkit-text-fill-color: transparent; background: linear-gradient(105deg, transparent 38%, rgb(255 255 255 / .95) 48%, rgb(255 226 240 / .9) 52%, transparent 62%) 160% 0 / 280% 100% no-repeat; -webkit-background-clip: text; background-clip: text; animation: gh-shine 6s ease-in-out 1.6s infinite }
+.gh-glow { animation: gh-glow 6s ease-in-out 1.6s infinite }
 .gh-stars { animation: gh-drift 240s linear infinite; will-change: transform }
 .gh-twinkle { animation: gh-twinkle 3.2s ease-in-out infinite both }
 .gh-lift { transition: transform .25s cubic-bezier(.2,.8,.2,1), filter .2s }
@@ -291,7 +295,11 @@ function Title() {
   return (
     <div className="gh-in-d text-center">
       <h1 className={cn(TITLE, "text-[2.1rem] tracking-tight [text-shadow:0_3px_0_#120f24,0_6px_18px_rgb(0_0_0/0.6)] md:text-[clamp(1.9rem,5.6vh,3.25rem)] [.light_&]:text-[#1d1552] [.light_&]:[text-shadow:0_3px_0_rgb(255_255_255/0.85),0_8px_24px_rgb(120_100_255/0.35)]")}>
-        Poké<span className="text-primary">Guessr</span>
+        <span className="relative inline-block">
+          Poké<span className="gh-glow text-primary">Guessr</span>
+          {/* Every few seconds a light sweeps across the name (the same letters again, painted only by the moving light). */}
+          <span className="gh-shine pointer-events-none absolute inset-0 select-none [text-shadow:none]" data-text="PokéGuessr" aria-hidden />
+        </span>
       </h1>
       <p className="mt-1.5 text-[clamp(0.8rem,2.2vh,1rem)] text-white/70 max-md:hidden [.light_&]:font-medium [.light_&]:text-[#2a1f6e]/80">{t("hub.tagline")}</p>
     </div>
