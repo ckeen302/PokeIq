@@ -697,14 +697,13 @@ async function dailyResume(width, height) {
 }
 
 // ---------------------------------------------------------------------------
-// The hub's sections, and the Weekly Challenge (one scored try a week)
+// The hub's sections (the Weekly Challenge is retired)
 // ---------------------------------------------------------------------------
 
 async function weekly(width, height) {
-  const phone = width < 768;
   const tag = `${width}`;
   const page = await newPage({ width, height });
-  step(`hub + weekly challenge at ${tag}`);
+  step(`hub at ${tag}`);
   // No start or guess response may name a place before it's guessed.
   page.on("response", async (res) => {
     if (!res.url().endsWith("/api/geo") || res.request().method() !== "POST" || !res.ok()) return;
@@ -714,7 +713,7 @@ async function weekly(width, height) {
   await page.goto(`${BASE}/pokeguessr`, { waitUntil: "networkidle" });
   await closeHowTo(page);
   for (const id of ["maps", "you"]) await page.getByTestId(`geo-hub-${id}`).waitFor();
-  for (const id of ["geo-solo-card", "geo-daily-card", "geo-weekly-card", "region-streak-card", "geo-home-duels", "geo-home-ranked", "geo-home-party", "globe-card", "geo-history-link"]) {
+  for (const id of ["geo-solo-card", "geo-daily-card", "region-streak-card", "geo-home-duels", "geo-home-ranked", "geo-home-party", "globe-card", "geo-history-link"]) {
     if ((await page.getByTestId(id).count()) !== 1) errors.push(`the hub has no ${id}`);
   }
   if ((await page.getByTestId("geo-history-link").getAttribute("href")) !== "/pokeguessr/history") errors.push("the duel history link doesn't go to /pokeguessr/history");
@@ -733,31 +732,10 @@ async function weekly(width, height) {
   await page.getByTestId("geo-home-ranked").click();
   await page.getByTestId("geo-ranked-card").waitFor();
   await page.getByTestId("geo-duel-queue-casual").click();
-  const label = await page.getByTestId("geo-weekly-card").innerText();
-  if (!/Weekly Challenge/i.test(label) || /Weekly #\d+/i.test(label)) errors.push(`the weekly card should just say Weekly Challenge: ${label}`);
-  await page.getByTestId("geo-weekly-play").click();
-  await shotLoaded(page);
-  if (!/Weekly #\d+/i.test(await page.getByTestId(phone ? "geo-round-mode" : "geo-notch").innerText())) errors.push("the weekly game's round header doesn't say Weekly");
-  for (let i = 0; i < 5; i++) {
-    await shotLoaded(page);
-    await pinAndGuess(page, phone, 0.3 + i * 0.1);
-    const next = page.getByTestId("geo-next");
-    await next.waitFor();
-    const text = await next.innerText();
-    await next.click();
-    if (/summary|results/i.test(text)) break;
-  }
-  await page.getByTestId("geo-share-card").waitFor();
-  const card = (await page.getByTestId("geo-share-card").getAttribute("data-share")) ?? "";
-  if (!/PokéGuessr Weekly #\d+/.test(card)) errors.push(`the weekly result card is off: ${card}`);
-  await checkEndScreen(page, { tag: `weekly-${tag}`, rounds: 5, phone, once: true });
-  if (!(await page.getByTestId("geo-results-next-weekly").isVisible())) errors.push("weekly: the end screen doesn't say when the next Weekly comes");
-  // A second start the same week is refused: the Weekly is played once, like the Daily.
-  const again = await page.request.post(`${BASE}/api/geo`, { data: { weekly: true } });
-  if (again.status() !== 409 || (await again.json()).code !== "weekly-started") errors.push("a second weekly start wasn't refused");
-  await page.goto(`${BASE}/leaderboard?board=geo&format=weekly`, { waitUntil: "networkidle" });
-  await page.getByTestId("geo-board-weekly").click();
-  await page.getByTestId("geo-weekly-board-title").waitFor();
+  // The Weekly Challenge is retired: no card for it on the hub, no tab for it on the board.
+  if (await page.locator('[data-testid^="geo-weekly-"]').count()) errors.push("the hub still offers the Weekly Challenge");
+  await page.goto(`${BASE}/leaderboard?board=geo`, { waitUntil: "networkidle" });
+  if (await page.getByTestId("geo-board-weekly").count()) errors.push("the leaderboard still has a Weekly tab");
   await page.context().close();
 }
 

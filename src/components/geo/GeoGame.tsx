@@ -32,7 +32,7 @@ import { GEO_REGION_STREAK_KEY } from "@/lib/geo-streak-types";
 import { AchievementToasts, useGeoProgress, type MyGeoProgress } from "./GeoAchievements";
 import { achievementCloser } from "@/lib/geo-achievements";
 import type { DuelQueue } from "./DuelCard";
-import { geoWeekOf, geoWeeklyLeftParts, geoWeeklyMap, geoWeeklyNumber } from "@/lib/geo-weekly";
+import { geoWeekOf, geoWeeklyLeftParts, geoWeeklyNumber } from "@/lib/geo-weekly";
 import { HUNT_MAP_REGIONS } from "@/lib/hunt/types";
 
 /** Pokémon Hunt's setup and game, opened in place by its tile: its code loads once it's asked for. */
@@ -1224,15 +1224,6 @@ function GeoGameInner({
     const theme = themeOf(region.id);
     const maps = regions.filter((r) => !r.theme);
     const themed = regions.filter((r) => r.theme);
-    // The Weekly Challenge, worked out once the page is in the browser (the week turns on the player's clock, at Monday 00:00 UTC).
-    const week = today ? geoWeekOf(Date.now()) : null;
-    const weeklyMap = week ? byId(geoWeeklyMap(week, (id) => playable(byId(id))) ?? "") : undefined;
-    const weeklySave = week ? keptSaves.weekly : undefined;
-    const weeklyDone = week ? (progress?.best[`geo-weekly:${week}`] ?? savedScore(weeklySave)) : undefined;
-    const weeklyPlayed = weeklyDone !== undefined || (!!week && refused.weekly === week && !weeklySave);
-    const weeklyResume = !weeklyPlayed && weeklySave ? weeklySave : null;
-    const weeklyLeft = week ? geoWeeklyLeftParts(week, Date.now()) : null;
-    const weeklyLeftText = weeklyLeft ? t(`hub.weekly.${weeklyLeft.unit}`, { d: weeklyLeft.d, h: weeklyLeft.h, m: weeklyLeft.m }) : null;
     // The duel and party cards name the map as it stands: in the page's language.
     const shownRegion = t.locale === "en" ? region : { ...region, name: names.map(region) };
     // The Daily's last seven days, oldest first, for the streak on its card.
@@ -1254,19 +1245,6 @@ function GeoGameInner({
             onDaily: () => today && (dailyResume ? void resume(dailyResume) : void start({ kind: "game", daily: today })),
             onDailyResult: dailySave ? () => resume(dailySave) : undefined,
             dailyWarm: warmProps({ kind: "game", daily: today || "today" }),
-            weeklyNum: week ? geoWeeklyNumber(week) : null,
-            weeklyMap: weeklyMap ? names.map(weeklyMap) : null,
-            weeklyRegion: weeklyMap && !weeklyMap.theme ? weeklyMap.name : null,
-            // A region's week shows that region's map; a themed week (Gyms, Towns, Routes) keeps its own screenshot.
-            weeklyPlayed,
-            weeklyScore: weeklyDone,
-            weeklyLeft: weeklyLeftText,
-            weeklyResume: !!weeklyResume,
-            weeklyReady: !!week && !!weeklyMap,
-            // This week's, part played: picked up where it was left, its clock where it stopped.
-            onWeekly: () => (weeklyResume ? void resume(weeklyResume) : void start({ kind: "game", weekly: true })),
-            onWeeklyResult: weeklySave ? () => resume(weeklySave) : undefined,
-            onWeeklyWarm: () => prefetch({ kind: "game", weekly: true }),
             classicMap: names.map(region),
             classicBest: bestGame,
             soloOpen,
