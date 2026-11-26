@@ -46,8 +46,6 @@ export interface HubTopData {
   dailyNum: string | null;
   dailyMap: string | null;
   dailyPlayed: boolean;
-  /** Played and saved here: roughly where today's places were ([longitude, latitude]). Never sent before it's played. */
-  dailySpots?: [number, number][];
   /** A game is open over the hub. */
   covered?: boolean;
   dailyScore?: number;
@@ -242,7 +240,7 @@ export function hop(el: HTMLElement | null) {
  * The planet is the World globe's own (hub-globe/HubGlobe.tsx): it turns, a drag spins it, the region a hovered mode
  * is played in lights up, and (once today's Daily is played) pins show roughly where its places were.
  */
-function WorldRise({ className, focus, spots, cheer, covered, hopRef }: { className?: string; focus: HubFocus; spots?: [number, number][]; cheer: boolean; covered?: boolean; hopRef: React.Ref<HTMLDivElement> }) {
+function WorldRise({ className, focus, cheer, covered, hopRef }: { className?: string; focus: HubFocus; cheer: boolean; covered?: boolean; hopRef: React.Ref<HTMLDivElement> }) {
   const account = useAccount();
   const a = account.user?.avatar ?? null;
   const ta = useT(avatarNs);
@@ -258,7 +256,7 @@ function WorldRise({ className, focus, spots, cheer, covered, hopRef }: { classN
       >
         <div className="gh-rise absolute inset-0">
           {/* The World globe's own world (hub-globe/), turning, to be spun by hand; its names, pins and lights move with it. */}
-          <HubGlobe focus={focus} spots={spots} paused={covered} label={(n) => names.region(n)} />
+          <HubGlobe focus={focus} paused={covered} label={(n) => names.region(n)} />
         </div>
       </div>
       {/* Their own 3D trainer, else a stand-in, the creator's first look (until everyone can make one). */}
@@ -614,7 +612,7 @@ export function HubTop({ d }: { d: HubTopData }) {
 
   return (
     <Space>
-      <WorldRise focus={focus} spots={d.dailyPlayed ? d.dailySpots : undefined} cheer={d.dailyPlayed} covered={d.covered} hopRef={trainer} className={`${LAYOUT} [--ah:8rem] [--gd:min(80vw,19.5rem)] [--gt:11rem] max-md:[--globe-floor:33rem] md:[--ah:clamp(8.5rem,26vh,15rem)] md:[--gd:min(44vw,74vh,calc(100vw-2*(var(--side)+var(--cw)+3rem)))] md:[--gt:max(13rem,40%)]`} />
+      <WorldRise focus={focus} cheer={d.dailyPlayed} covered={d.covered} hopRef={trainer} className={`${LAYOUT} [--ah:8rem] [--gd:min(80vw,19.5rem)] [--gt:11rem] max-md:[--globe-floor:33rem] md:[--ah:clamp(8.5rem,26vh,15rem)] md:[--gd:min(44vw,74vh,calc(100vw-2*(var(--side)+var(--cw)+3rem)))] md:[--gt:max(13rem,40%)]`} />
       {/* Phone: the whole world shows under the trainer; just its glow fades out above the Daily (the globe draws nothing below --globe-floor). */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 top-[30.5rem] bg-[linear-gradient(180deg,transparent,#09081a_2.5rem)] md:hidden [.light_&]:bg-[linear-gradient(180deg,transparent,#e4ddff_2.5rem)]" aria-hidden />
       <HowToHelpButton className="gh-fade absolute right-2 top-2 z-10 text-white max-md:scale-90 md:right-5 md:top-4 [.light_&]:text-[#2a1f6e]" />
