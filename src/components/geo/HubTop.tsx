@@ -111,6 +111,13 @@ const MOTION = `
 @keyframes gh-in-u { from { transform: translateY(1.5rem); opacity: 0 } to { transform: none; opacity: 1 } }
 @keyframes gh-fade { from { opacity: 0 } to { opacity: 1 } }
 @keyframes gh-drift { to { transform: translate3d(var(--dx), 0, 0) } }
+@keyframes gh-shine { 0%, 58% { background-position: 160% 0 } 82%, 100% { background-position: -60% 0 } }
+@keyframes gh-glow { 0%, 62%, 100% { filter: drop-shadow(0 0 0 rgb(255 60 130 / 0)) } 76% { filter: drop-shadow(0 0 14px rgb(255 60 130 / .75)) } }
+@keyframes gh-meteor { 0%, 91% { opacity: 0; transform: translate3d(0, 0, 0) rotate(-32deg) } 92.5% { opacity: 1 } 99% { opacity: 0; transform: translate3d(-30vw, 19vw, 0) rotate(-32deg) } 100% { opacity: 0 } }
+@keyframes gh-sparkle { 0%, 80%, 100% { opacity: 0; transform: scale(.2) rotate(0) } 88% { opacity: .9; transform: scale(1) rotate(45deg) } }
+@keyframes gh-pulse { 0%, 100% { opacity: .38 } 50% { opacity: .85 } }
+@keyframes gh-flicker { 0%, 100% { transform: rotate(8deg) scale(1) } 25% { transform: rotate(6deg) scale(1.03, 1.06) } 50% { transform: rotate(9deg) scale(.98, 1.02) } 75% { transform: rotate(7deg) scale(1.02, .99) } }
+@keyframes gh-pop { 0% { transform: scale(0); opacity: 0 } 60% { transform: scale(1.35); opacity: 1 } 100% { transform: scale(1) } }
 @keyframes gh-twinkle { 0%, 100% { opacity: .15; transform: scale(.6) } 50% { opacity: 1; transform: none } }
 @keyframes gh-sheen { from { transform: translateX(-120%) skewX(-18deg) } to { transform: translateX(260%) skewX(-18deg) } }
 .gh-rise { animation: gh-rise 1.4s cubic-bezier(.16,1,.3,1) both }
@@ -120,6 +127,17 @@ const MOTION = `
 @media (min-width: 768px) { .gh-in-s { animation-name: gh-in-l } .gh-in-e { animation-name: gh-in-r } }
 .gh-in-d { animation: gh-in-d .8s cubic-bezier(.16,1,.3,1) both }
 .gh-fade { animation: gh-fade 1s ease-out both }
+.gh-shine::before { content: attr(data-text); color: transparent; -webkit-text-fill-color: transparent; background: linear-gradient(105deg, transparent 38%, rgb(255 255 255 / .95) 48%, rgb(255 226 240 / .9) 52%, transparent 62%) 160% 0 / 280% 100% no-repeat; -webkit-background-clip: text; background-clip: text; animation: gh-shine 6s ease-in-out 1.6s infinite }
+.gh-glow { animation: gh-glow 6s ease-in-out 1.6s infinite }
+.gh-meteor { opacity: 0; transform-origin: 100% 50%; background: linear-gradient(90deg, rgb(255 255 255 / 0), rgb(255 255 255 / .95)); border-radius: 9999px; box-shadow: 0 0 6px rgb(200 190 255 / .8); animation: gh-meteor linear infinite; will-change: transform, opacity }
+.gh-sparkle { opacity: 0; background: radial-gradient(circle, #fff 0 18%, transparent 20%), conic-gradient(from 45deg, transparent 0 20%, rgb(124 100 255 / .85) 25%, transparent 30% 45%, rgb(124 100 255 / .85) 50%, transparent 55% 70%, rgb(124 100 255 / .85) 75%, transparent 80% 95%, rgb(124 100 255 / .85) 100%); mask: radial-gradient(circle, black 0 30%, transparent 70%); animation: gh-sparkle ease-in-out infinite }
+.gh-pulse { animation: gh-pulse 3.2s ease-in-out infinite }
+.gh-flicker { animation: gh-flicker 2.4s ease-in-out infinite; transform-origin: 50% 90% }
+.gh-pop { animation: gh-pop .6s cubic-bezier(.3,1.6,.5,1) both }
+.gh-px-far, .gh-px-mid, .gh-px-near { transition: transform .6s cubic-bezier(.2,.8,.2,1) }
+.gh-px-far { transform: translate3d(calc(var(--px, 0) * 6px), calc(var(--py, 0) * 4px), 0) }
+.gh-px-mid { transform: translate3d(calc(var(--px, 0) * -10px), calc(var(--py, 0) * -6px), 0) }
+.gh-px-near { transform: translate3d(calc(var(--px, 0) * 4px), calc(var(--py, 0) * 3px), 0) }
 .gh-stars { animation: gh-drift 240s linear infinite; will-change: transform }
 .gh-twinkle { animation: gh-twinkle 3.2s ease-in-out infinite both }
 .gh-lift { transition: transform .25s cubic-bezier(.2,.8,.2,1), filter .2s }
@@ -139,9 +157,49 @@ const TWINKLES = (() => {
   return Array.from({ length: 34 }, () => ({ l: r() * 100, t: r() * 70, s: 1.5 + r() * 2.2, d: r() * 3.2, p: 2.6 + r() * 2.4 }));
 })();
 
+/** Shooting stars by night (where each starts, % across and down; its cycle and head start, s): one every few seconds. */
+const METEORS = [
+  { l: 72, t: 6, p: 11, d: 3 },
+  { l: 38, t: 3, p: 17, d: 9 },
+  { l: 90, t: 22, p: 14, d: 14 },
+];
+/** By day, soft sparkles in their place. */
+const SPARKLES = [
+  { l: 16, t: 14, p: 9, d: 1 },
+  { l: 82, t: 9, p: 12, d: 5 },
+  { l: 64, t: 32, p: 10, d: 8 },
+  { l: 28, t: 40, p: 13, d: 3 },
+];
+
 function Space({ children }: { children: React.ReactNode }) {
+  const ref = useRef<HTMLElement>(null);
+  // Mouse parallax: the sky, the world and the cards shift a few pixels with the pointer (--px, --py from -1 to 1),
+  // so the scene has depth. A fine pointer only, and never under reduced motion.
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || still() || !matchMedia("(pointer: fine)").matches) return;
+    let raf = 0;
+    let x = 0;
+    let y = 0;
+    const move = (e: PointerEvent) => {
+      x = (e.clientX / innerWidth) * 2 - 1;
+      y = (e.clientY / innerHeight) * 2 - 1;
+      if (!raf)
+        raf = requestAnimationFrame(() => {
+          raf = 0;
+          el.style.setProperty("--px", x.toFixed(3));
+          el.style.setProperty("--py", y.toFixed(3));
+        });
+    };
+    addEventListener("pointermove", move, { passive: true });
+    return () => {
+      removeEventListener("pointermove", move);
+      cancelAnimationFrame(raf);
+    };
+  }, []);
   return (
     <section
+      ref={ref}
       className={cn(
         // Full width under the header (the page's own padding pulled back), down to the tab bar on a phone.
         "relative mx-[calc(50%-50vw)] -mt-8 overflow-hidden bg-[#09081a] text-white max-md:-mt-6 [.light_&]:bg-[#e3ddff]",
@@ -151,6 +209,7 @@ function Space({ children }: { children: React.ReactNode }) {
       data-testid="geo-home"
     >
       <style>{MOTION}</style>
+      <div className="gh-px-far pointer-events-none absolute -inset-4" aria-hidden>
       {/* Light mode: still space, but bright: a pale lavender void lit by nebulae, the sun flaring in from the upper left, ink-dark stars. */}
       <div className="pointer-events-none absolute inset-0 hidden [.light_&]:block" aria-hidden>
         <div className="absolute inset-0 bg-[radial-gradient(55%_50%_at_12%_4%,rgb(255_247_224/0.95)_0%,rgb(255_226_240/0.5)_26%,transparent_55%),radial-gradient(45%_40%_at_88%_30%,rgb(196_224_255/0.75)_0%,transparent_70%),radial-gradient(50%_45%_at_22%_78%,rgb(255_205_236/0.55)_0%,transparent_70%),radial-gradient(70%_60%_at_60%_100%,rgb(186_172_255/0.6)_0%,transparent_75%),linear-gradient(180deg,#e6e0ff_0%,#d9d1ff_55%,#ece8ff_100%)]" />
@@ -163,6 +222,14 @@ function Space({ children }: { children: React.ReactNode }) {
       <div className="pointer-events-none absolute inset-0" aria-hidden>
         {TWINKLES.map((s, i) => (
           <span key={i} className="gh-twinkle absolute rounded-full bg-white [.light_&]:bg-[#4c3caa]" style={{ left: `${s.l}%`, top: `${s.t}%`, width: s.s, height: s.s, animationDelay: `${s.d}s`, animationDuration: `${s.p}s` }} />
+        ))}
+      </div>
+        {/* Shooting stars (by night) and sparkles (by day): now and then, never all at once. */}
+        {METEORS.map((m, i) => (
+          <span key={`m${i}`} className="gh-meteor absolute block h-px w-[clamp(5rem,9vw,9rem)] [.light_&]:hidden" style={{ left: `${m.l}%`, top: `${m.t}%`, animationDuration: `${m.p}s`, animationDelay: `${m.d}s` }} />
+        ))}
+        {SPARKLES.map((m, i) => (
+          <span key={`s${i}`} className="gh-sparkle absolute hidden h-4 w-4 [.light_&]:block" style={{ left: `${m.l}%`, top: `${m.t}%`, animationDuration: `${m.p}s`, animationDelay: `${m.d}s` }} />
         ))}
       </div>
       {children}
@@ -244,7 +311,7 @@ function WorldRise({ className, focus, cheer, covered, hopRef }: { className?: s
   const names = useGeoNames();
   const mood = useTrainerMood({ cheer, covered });
   return (
-    <div className={cn("pointer-events-none absolute inset-0 [--gx:50%]", className)}>
+    <div className={cn("gh-px-mid pointer-events-none absolute inset-0 [--gx:50%]", className)}>
       <div
         className="absolute aspect-square -translate-x-1/2"
         style={{ left: "var(--gx)", width: `calc(var(--gd) / ${HUB_GLOBE_FRAC})`, top: `calc(var(--gt) - var(--gd) * ${(1 / HUB_GLOBE_FRAC - 1) / 2})` }}
@@ -291,7 +358,11 @@ function Title() {
   return (
     <div className="gh-in-d text-center">
       <h1 className={cn(TITLE, "text-[2.1rem] tracking-tight [text-shadow:0_3px_0_#120f24,0_6px_18px_rgb(0_0_0/0.6)] md:text-[clamp(1.9rem,5.6vh,3.25rem)] [.light_&]:text-[#1d1552] [.light_&]:[text-shadow:0_3px_0_rgb(255_255_255/0.85),0_8px_24px_rgb(120_100_255/0.35)]")}>
-        Poké<span className="text-primary">Guessr</span>
+        <span className="relative inline-block">
+          Poké<span className="gh-glow text-primary">Guessr</span>
+          {/* Every few seconds a light sweeps across the name (the same letters again, painted only by the moving light). */}
+          <span className="gh-shine pointer-events-none absolute inset-0 select-none [text-shadow:none]" data-text="PokéGuessr" aria-hidden />
+        </span>
       </h1>
       <p className="mt-1.5 text-[clamp(0.8rem,2.2vh,1rem)] text-white/70 max-md:hidden [.light_&]:font-medium [.light_&]:text-[#2a1f6e]/80">{t("hub.tagline")}</p>
     </div>
@@ -312,7 +383,7 @@ function StreakCard({ streak, days }: { streak: number; days: HubTopData["days"]
       </span>
       <div className={cn(CARD, "relative px-3 pb-3 pt-2.5")}>
         <Backdrop pattern="streak" />
-        <Image src={streakEmblem} alt="" aria-hidden sizes="96px" className="pointer-events-none absolute -right-2 -top-12 z-[1] h-[4.25rem] w-auto rotate-[8deg] drop-shadow-[0_10px_10px_rgb(10_5_40/0.55)] [.light_&]:drop-shadow-[0_8px_10px_rgb(70_50_170/0.3)] md:-top-[clamp(2.5rem,3vw,3.25rem)] md:h-[clamp(3.25rem,3.8vw,4.75rem)]" />
+        <Image src={streakEmblem} alt="" aria-hidden sizes="96px" className="gh-flicker pointer-events-none absolute -right-2 -top-12 z-[1] h-[4.25rem] w-auto rotate-[8deg] drop-shadow-[0_10px_10px_rgb(10_5_40/0.55)] [.light_&]:drop-shadow-[0_8px_10px_rgb(70_50_170/0.3)] md:-top-[clamp(2.5rem,3vw,3.25rem)] md:h-[clamp(3.25rem,3.8vw,4.75rem)]" />
         <ol className="relative grid grid-cols-7 gap-1 md:gap-[clamp(2px,0.3vw,5px)]" aria-label={t("hub.daily.streak", { n: streak })}>
           {days.map((d) => (
             <li key={d.date} className="flex flex-col items-center gap-1">
@@ -321,7 +392,7 @@ function StreakCard({ streak, days }: { streak: number; days: HubTopData["days"]
               </span>
               <span
                 className={cn(
-                  "flex aspect-square w-full items-center justify-center rounded-md font-display text-[clamp(0.7rem,0.85vw,0.95rem)] font-bold leading-none",
+                  "flex aspect-square w-full items-center justify-center rounded-md max-md:aspect-auto max-md:h-9 font-display text-[clamp(0.7rem,0.85vw,0.95rem)] font-bold leading-none",
                   d.played
                     ? "bg-gradient-to-b from-[#ffb23c] to-[#ff6a1f] text-white shadow-[inset_0_-2px_0_rgb(0_0_0/0.18)]"
                     : "bg-[#120f24]/55 text-white/80 [.light_&]:bg-[#e2dbff] [.light_&]:text-[#4b4280]",
@@ -330,7 +401,7 @@ function StreakCard({ streak, days }: { streak: number; days: HubTopData["days"]
                 )}
                 title={d.played ? t("hub.played") : undefined}
               >
-                {d.played ? <Flame className="h-[60%] w-[60%] fill-current" aria-hidden /> : Number(d.date.slice(8))}
+                {d.played ? <Flame className={cn("h-[60%] w-[60%] fill-current", d.today && "gh-pop")} aria-hidden /> : Number(d.date.slice(8))}
               </span>
             </li>
           ))}
@@ -402,12 +473,12 @@ const GLOW: Record<Pattern, string> = {
  * A card's backdrop: its mode's colour glowing behind the emblem, and its line drawing (white by night, violet by
  * day), fading in from the left so the name stays on a plain face. The drawing is a mask, so one picture serves both.
  */
-function Backdrop({ pattern }: { pattern: Pattern }) {
+function Backdrop({ pattern, pulse }: { pattern: Pattern; pulse?: boolean }) {
   const p = PATTERNS[pattern];
   const tile = p.size.includes("%") ? "no-repeat" : "repeat";
   return (
     <span className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl" aria-hidden>
-      <span className="absolute -right-[6%] -top-[30%] aspect-square h-[150%] rounded-full opacity-50 [.light_&]:opacity-35" style={{ background: `radial-gradient(closest-side, ${GLOW[pattern]}, transparent)` }} />
+      <span className={cn("absolute -right-[6%] -top-[30%] aspect-square h-[150%] rounded-full opacity-50 [.light_&]:opacity-35", pulse && "gh-pulse")} style={{ background: `radial-gradient(closest-side, ${GLOW[pattern]}, transparent)` }} />
       <span
         className="absolute inset-0 bg-white/[0.16] [.light_&]:bg-[#5a46d0]/[0.2]"
         style={{
@@ -431,6 +502,7 @@ function Backdrop({ pattern }: { pattern: Pattern }) {
 function ModeTile({
   emblem,
   pattern,
+  pulse,
   title,
   sub,
   onClick,
@@ -441,6 +513,8 @@ function ModeTile({
 }: {
   emblem: StaticImageData;
   pattern: Pattern;
+  /** The mode's light breathes (the Daily, while today's is still to play). */
+  pulse?: boolean;
   title: string;
   /** Where the player stands in it (time left, a best), under the name. */
   sub?: string | null;
@@ -452,7 +526,7 @@ function ModeTile({
 }) {
   const body = (
     <>
-      <Backdrop pattern={pattern} />
+      <Backdrop pattern={pattern} pulse={pulse} />
       <Image
         src={emblem}
         alt=""
@@ -540,6 +614,7 @@ export function HubTop({ d }: { d: HubTopData }) {
       <ModeTile
         emblem={dailyEmblem}
         pattern="daily"
+        pulse={!dailyDone && !!d.dailyNum}
         title={t("hub.daily.title")}
         sub={dailyDone ? (d.dailyScore !== undefined ? `${t("hub.played")} · ${fmt(d.dailyScore)}` : t("hub.played")) : d.dailyResume ? t("hub.daily.resume", { num: d.dailyNum ?? "" }) : d.dailyNum ? t("hub.daily.label", { num: d.dailyNum }) : null}
         onClick={
@@ -589,7 +664,7 @@ export function HubTop({ d }: { d: HubTopData }) {
       */}
       <div
         className={cn(
-          `pointer-events-none relative z-[1] flex h-full flex-col px-4 pt-3 [&_button]:pointer-events-auto [&_a]:pointer-events-auto ${LAYOUT} [--gap:clamp(0.45rem,0.6vw,0.85rem)]`,
+          `gh-px-near pointer-events-none relative z-[1] flex h-full flex-col px-4 pt-3 [&_button]:pointer-events-auto [&_a]:pointer-events-auto ${LAYOUT} [--gap:clamp(0.45rem,0.6vw,0.85rem)]`,
           "md:grid md:grid-cols-[var(--cw)_1fr_var(--cw)] md:grid-rows-[minmax(0,0.55fr)_auto_auto_1fr] md:gap-x-6",
           "md:px-[var(--side)] md:pb-[clamp(1rem,4vh,2.5rem)] md:pt-[clamp(0.75rem,3vh,2rem)]",
         )}
