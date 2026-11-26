@@ -101,7 +101,7 @@
       "description": "Echte Pokémon-Kämpfe mit der Engine von Pokémon Showdown: Zufallskampf, Zufalls-Doppel oder dein eigenes OU-Team, gegen den Computer, einen per Matchmaking gefundenen Trainer oder einen Freund per Einladungslink."
     },
     "crumb": "Spielen",
-    "title": "Starte einen",
+    "title": "Starte einen ",
     "accent": "Kampf",
     "intro": "Die Kampf-Engine von Pokémon Showdown selbst: Jede Attacke, jede Fähigkeit und jedes Item wirkt wie dort. Wähle einen Gegner, ein Format und los."
   },
@@ -111,7 +111,7 @@
     },
     "description": "Der Duellturm mit der Engine von Pokémon Showdown: Bring dein Team unter Flat Rules (Level 50, sechs mitbringen, drei wählen) und bau eine Siegesserie gegen Computer-Trainer auf, mit dem Turmherrn in jedem siebten Kampf.",
     "name": "Duellturm",
-    "title": "Der",
+    "title": "Der ",
     "accent": "Duellturm",
     "intro": "Dein Team, Flat Rules und eine Serie von Computer-Trainern, die beim Aufstieg immer härter werden. Jeder siebte Kampf ist der Turmherr, mit seinem besten Team."
   },
@@ -121,7 +121,7 @@
     },
     "description": "Die Kampffabrik mit der Engine von Pokémon Showdown: Leih dir sechs Pokémon aus Showdowns Battle-Factory-Sets, gewinne sieben in Folge gegen einen immer stärkeren Computer und tausche nach jedem Sieg gegen ein Pokémon deines Gegners.",
     "name": "Kampffabrik",
-    "title": "Die",
+    "title": "Die ",
     "accent": "Kampffabrik",
     "intro": "Kein Team nötig: Leih dir sechs Pokémon aus den Battle-Factory-Sets von Pokémon Showdown, gewinne sieben in Folge und tausche nach jedem Sieg eines deiner Pokémon gegen eines deines Gegners. Oder finde über die Kampfvorbereitung einen Gegner, der sich ebenfalls eins leiht."
   }

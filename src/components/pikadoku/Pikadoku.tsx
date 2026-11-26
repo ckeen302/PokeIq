@@ -572,7 +572,7 @@ function Game({ initial }: { initial?: PdkPublicDays }) {
     difficulty: mode === "daily" ? difficulty : mode === "archive" && archive ? archive.difficulty : "normal",
     grid: rarityGrid((i) => !!locked[i], result?.pcts ?? Array.from({ length: 9 }, (_, i) => locked[i]?.pct ?? null)),
     ...(result?.score != null && { score: result.score }),
-    ...(mode === "daily" && block.streak > 1 && { streak: block.streak }),
+    ...(mode === "daily" && block.streak > 0 && { streak: block.streak }),
   });
   const shareText = () => {
     const r = shareResult();

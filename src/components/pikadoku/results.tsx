@@ -13,31 +13,17 @@ import { useT } from "@/i18n/client";
 import pikadoku from "@/messages/pikadoku";
 import board from "@/messages/pikadoku-board";
 import { useCatLabel, usePdkLocal } from "./parts";
+import { NextDailyCountdown } from "@/components/NextDailyCountdown";
 
 /** Pikadoku's end-of-game pieces: the next-puzzle countdown, the share-card preview, the answers reveal and the guess toast. */
 
-function msToLocalMidnight(now = new Date()) {
-  return new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).getTime() - now.getTime();
-}
-const hms = (ms: number) => {
-  const s = Math.max(0, Math.floor(ms / 1000));
-  return `${Math.floor(s / 3600)}:${String(Math.floor(s / 60) % 60).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
-};
-
-/** "Next Pikadoku in 4:12:09": the next daily arrives at the player's local midnight. */
+/** "Next Pikadoku in 04:12:09": the shared next-daily countdown (to the player's local midnight), as on the other dailies. */
 export function NextPuzzleCountdown({ className }: { className?: string }) {
-  const [left, setLeft] = useState<number | null>(null);
   const t = useT(pikadoku);
-  useEffect(() => {
-    const tick = () => setLeft(msToLocalMidnight());
-    tick();
-    const id = window.setInterval(tick, 1000);
-    return () => window.clearInterval(id);
-  }, []);
   return (
-    <p className={cn("text-sm text-muted-foreground", className)} data-testid="pdk-countdown">
-      {t.rich("countdown", { time: left === null ? "–:––:––" : hms(left), b: (c) => <b className="inline-block min-w-[4.5rem] text-left font-display tabular-nums text-foreground">{c}</b> })}
-    </p>
+    <div className={className} data-testid="pdk-countdown">
+      <NextDailyCountdown label={t("nextIn")} />
+    </div>
   );
 }
 

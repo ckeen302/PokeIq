@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ImageOff, Play, RotateCcw, Volume2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { preloadedImage } from "@/lib/preload";
+import { preloadAudio, preloadedCry, preloadedImage } from "@/lib/preload";
 import { useT } from "@/i18n/client";
 import runNs from "@/messages/quiz-run";
 import { cryElement, markCryUnlocked, playableCryUrl, wavCryUrl } from "@/lib/cry-audio";
@@ -117,7 +117,9 @@ export function CryPlayer({ src }: { src: string }) {
     if (!audio) return;
     let live = true;
     let url = playableCryUrl(src);
-    const ours = () => live && audio.src === new URL(url, window.location.href).href;
+    /** What the element was given for `url`: the downloaded cry when there is one (Safari needs that), else the URL. */
+    let given = url;
+    const ours = () => live && audio.src === new URL(given, window.location.href).href;
 
     const play = () => {
       try {
@@ -142,9 +144,13 @@ export function CryPlayer({ src }: { src: string }) {
     };
     const load = (next: string) => {
       url = next;
+      given = preloadedCry(url) ?? url;
       audio.pause();
-      audio.src = url;
+      audio.dataset.cry = url; // which cry it is, when `src` is the in-memory copy (the e2e test reads it)
+      audio.src = given;
       play();
+      // Not downloaded yet (a slow connection): fetch it, so a retry plays it from memory.
+      if (given === url) void preloadAudio(url);
     };
     const onPlaying = () => ours() && setState("playing");
     const onStopped = () => ours() && setState((s) => (s === "playing" ? "ready" : s));

@@ -1,6 +1,7 @@
 {
   "header": {
-    "battle": "Combates"
+    "battle": "Combates",
+    "breadcrumb": "Ruta de navegación"
   },
   "play": {
     "title": "Combate contra la CPU"

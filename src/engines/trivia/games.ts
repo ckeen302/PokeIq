@@ -1,4 +1,5 @@
 import type { Difficulty } from "../types";
+import { aOrAn } from "../shared";
 import { handwrittenLoc, harder, pool, ROMAN, slug, type HandwrittenRow, type TriviaItem } from "./bank";
 import { must } from "../localize";
 import { gameIn, genIn, genOption, personIn, placeIn, regionIn, typeIn } from "./words";
@@ -86,7 +87,7 @@ function gymItems(): TriviaItem[] {
         prompt: `In ${r.game}, which type does Gym Leader ${r.leader} specialize in?`,
         answer: r.type!,
         distractors: typeDistractors(r.gen, family.map((o) => o.type), r.type!, r.leader),
-        explanation: `${r.leader} is a ${r.type}-type specialist in ${r.game}.`,
+        explanation: `${r.leader} is ${aOrAn(r.type!)} ${r.type}-type specialist in ${r.game}.`,
         from: { table: "gyms", index, field: "type" },
         loc: (L) => {
           const v = { game: gameIn(L, r.game), leader: personIn(L, r.leader), type: typeIn(L, r.type!) };
@@ -338,7 +339,7 @@ function villainItems(): TriviaItem[] {
       prompt: `In Pokémon Scarlet and Violet, which type does Team Star boss ${r.boss} use?`,
       answer: r.type,
       distractors: pool(TEAM_STAR.map((o) => o.type), r.type),
-      explanation: `${r.boss} leads Team Star's ${r.squad}, a ${r.type}-type crew.`,
+      explanation: `${r.boss} leads Team Star's ${r.squad}, ${aOrAn(r.type)} ${r.type}-type crew.`,
       source: r.source,
       from: { table: "team-star", index, field: "type" },
       loc: (L) => {

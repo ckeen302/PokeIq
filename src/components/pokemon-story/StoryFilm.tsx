@@ -733,7 +733,7 @@ export function StoryFilm({ initialChapter, story, children }: { initialChapter:
     const c = CHAPTERS[ui.chapter];
     const text = show.current.playhead < PROLOGUE * 0.6 || !c ? STORY.title : `${c.title} (${c.when}) · ${STORY.title}`;
     if (typeof navigator.share === "function" && window.matchMedia("(pointer: coarse)").matches) {
-      try { await navigator.share({ title: STORY.title, text, url }); return; } catch { /* closed: copy instead */ }
+      try { await navigator.share({ title: STORY.title, text, url }); return; } catch (e) { if ((e as Error).name === "AbortError") return; /* not allowed here: copy instead */ }
     }
     if (await copyText(url)) setToast(t("copied"));
   };
@@ -847,7 +847,7 @@ export function StoryFilm({ initialChapter, story, children }: { initialChapter:
             {ready && ui.title === "prologue" && (
               <FilmWords key="pro" kind="prologue" jumped={ui.jumped} className="wh-pro pointer-events-none absolute inset-x-0 top-[18%] z-[6] flex flex-col items-center px-6 text-center text-white" testId="ps-prologue">
                 <p className="wh-title-k text-[10px] uppercase text-[#e8c15a] sm:text-xs">{t("kicker")}</p>
-                <h1 className="wh-serif wh-title mt-3 max-w-4xl text-5xl font-semibold leading-[0.95] sm:text-7xl lg:text-8xl">{STORY.prologue.title}</h1>
+                <h2 className="wh-serif wh-title mt-3 max-w-4xl text-5xl font-semibold leading-[0.95] sm:text-7xl lg:text-8xl">{STORY.prologue.title}</h2>
                 <p className="wh-serif wh-cap-lead mt-4 max-w-xl text-lg italic text-white/85 sm:text-2xl">{STORY.prologue.line}</p>
                 <p className="wh-hint mt-6 inline-flex items-center gap-2 font-display text-[11px] font-semibold uppercase tracking-[0.2em] text-white/75">{t("scrollHint")} <ArrowDown className="h-3.5 w-3.5" aria-hidden /></p>
               </FilmWords>

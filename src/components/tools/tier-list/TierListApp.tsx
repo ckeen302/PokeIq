@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, ChevronUp, Download, Keyboard, Plus, Redo2, RotateCcw, Share2, Sparkles, Undo2, Check, Copy, Type } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useT } from "@/i18n/client";
+import { localUrl } from "@/i18n/paths";
 import { useRouter } from "@/i18n/navigation";
 import tierList from "@/messages/tier-list";
 import { getTemplate, type Template } from "@/lib/tier-list/templates";
@@ -326,7 +327,7 @@ export default function TierListApp({ roster, template, shared }: AppProps) {
   };
 
   // ---- Share.
-  const shareUrl = useCallback((st: ToolState) => `${window.location.origin}/tools/tier-list/${st.template}?s=${encodeShare(st, codec)}`, [codec]);
+  const shareUrl = useCallback((st: ToolState) => `${window.location.origin}${localUrl(`/tools/tier-list/${st.template}?s=${encodeShare(st, codec)}`)}`, [codec]);
   const copy = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
@@ -438,7 +439,7 @@ export default function TierListApp({ roster, template, shared }: AppProps) {
         )}
       >
         <section
-          className={cn("min-w-0", showPool && "tlm-scroll lg:overflow-y-auto lg:pr-1", showPool && phone && poolOpen && "pb-[calc(40svh+16px)]")}
+          className={cn("min-w-0", showPool && "tlm-scroll lg:overflow-y-auto lg:pr-1")}
           data-scroll={showPool ? "" : undefined}
           data-testid="tl-stage"
         >
@@ -560,6 +561,8 @@ export default function TierListApp({ roster, template, shared }: AppProps) {
             )}
             aria-label={t("pool.label")}
             data-testid="tl-pool-panel"
+            // Phones: the page's end (the tiers, the credits, the footer) scrolls clear of the drawer (tier-list.css).
+            data-tl-drawer={phone ? (poolOpen ? "open" : "closed") : undefined}
           >
             {phone && (
               <button type="button" onClick={() => setPoolOpen((v) => !v)} className="flex h-11 w-full shrink-0 items-center justify-between text-[14px] font-semibold" aria-expanded={poolOpen} data-testid="pool-toggle">

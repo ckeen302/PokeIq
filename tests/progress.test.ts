@@ -82,6 +82,18 @@ describe("PokéGuessr daily streak", () => {
   });
 });
 
+describe("PokéGuessr personal bests", () => {
+  beforeEach(() => store.clear());
+
+  it("says what a game's best was before it (none before a first game)", async () => {
+    const { recordGeoGame } = await freshProgress();
+    const play = (score: number) => recordGeoGame("kanto:classic", { kind: "game", score, rounds: [score, 0, 0, 0, 0] });
+    expect(play(4000)).toMatchObject({ best: true, previous: undefined });
+    expect(play(3000)).toMatchObject({ best: false, previous: 4000 });
+    expect(play(9000)).toMatchObject({ best: true, previous: 4000 });
+  });
+});
+
 describe("recordRun personal bests", () => {
   beforeEach(() => store.clear());
 

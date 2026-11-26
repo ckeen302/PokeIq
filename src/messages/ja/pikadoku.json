@@ -126,7 +126,7 @@
     "gen9": { "name": "第9世代ウィーク", "blurb": "パルデアのポケモンと、一緒に登場したすがた。" },
     "competitive": { "name": "対戦ウィーク", "blurb": "OUの常連：種族値、タイプ、そして対戦環境の道具立て。" }
   },
-  "countdown": "次のPikadokuまで <b>{time}</b>",
+  "nextIn": "次のPikadokuまで",
   "rarity": {
     "p": "1%未満が選択",
     "b": "10%未満が選択",

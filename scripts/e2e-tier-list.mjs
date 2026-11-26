@@ -336,6 +336,15 @@ const topKeys = (page) =>
         const box = await p.getByTestId("tl-pool-panel").boundingBox();
         const bar = await p.getByTestId("tabbar").boundingBox().catch(() => null);
         if (box && bar && box.y + box.height > bar.y + 1) fail(`${w}px: the pool goes under the tab bar`);
+        // At the end of the page the footer scrolls up above the drawer, open or closed.
+        for (const open of [true, false]) {
+          if ((await p.getByTestId("pool-toggle").getAttribute("aria-expanded")) !== String(open)) await p.getByTestId("pool-toggle").click();
+          await p.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+          await p.waitForTimeout(250);
+          const drawer = await p.getByTestId("tl-pool-panel").boundingBox();
+          const foot = await p.locator("body > footer").boundingBox();
+          if (drawer && foot && foot.y + foot.height > drawer.y + 1) fail(`${w}px: the footer stays under the ${open ? "open" : "closed"} pool drawer`);
+        }
       }
     } catch (e) {
       fail(`${w}px: stopped: ${e.message.split("\n")[0]}`);

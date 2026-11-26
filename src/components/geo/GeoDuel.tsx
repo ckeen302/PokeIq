@@ -51,7 +51,7 @@ import { gameName, mapName, namedMap, placeName, type GuessrNames } from "./duel
 type D = Translator<typeof duelNs.en>;
 
 /** The camera fits both pins and the answer this long (ms), after the lines have drawn. */
-const FIT_MS = 800;
+const FIT_MS = 650;
 
 export interface GeoDuelProps {
   code: string;

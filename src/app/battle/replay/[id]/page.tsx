@@ -59,7 +59,7 @@ export default async function ReplayPage({ params }: PageProps) {
   const w = serverT(battleReplayWords);
   return (
     <div className="mx-auto max-w-7xl space-y-6">
-      <BattleHeader back="/battle/replays" crumb={t("replay.crumb")} title={`${replayMatchup(replay).a} ${w(`joiner.${replayMatchup(replay).joiner}`)}`} accent={replayMatchup(replay).b}>
+      <BattleHeader back="/battle/replays" crumb={t("replay.crumb")} title={`${replayMatchup(replay).a} ${w(`joiner.${replayMatchup(replay).joiner}`)} `} accent={replayMatchup(replay).b}>
         {replay.ranked ? t("replay.ranked") : ""}
         {t("replay.summary", { format: replay.formatName, result: replayResult(replay, w), turns: replay.turns })}
       </BattleHeader>

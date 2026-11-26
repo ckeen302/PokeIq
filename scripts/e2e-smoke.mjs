@@ -17,6 +17,7 @@ import { runShinyMaker } from "./e2e-shiny-maker.mjs";
 import { runTierList } from "./e2e-tier-list.mjs";
 import { runPokeballMaker } from "./e2e-pokeball-maker.mjs";
 import { runFavoritePicker } from "./e2e-favorite-picker.mjs";
+import { runCatchRate } from "./e2e-catch-rate.mjs";
 import { runCalc } from "./e2e-calc.mjs";
 import { runHunt } from "./e2e-hunt.mjs";
 import { runVideoGames } from "./e2e-video-games.mjs";
@@ -184,7 +185,7 @@ if (process.env.E2E_ONLY === "calc") {
   await runCalc({ browser, BASE, OUT, errors, step });
   await finish();
 }
-// E2E_ONLY=hunt runs just Pokémon Hunt (Classic, Region and the Daily, desktop and phone), then exits.
+// E2E_ONLY=hunt runs just Pokémon Hunt (the landing's setup, Normal, Easy, Hard and the Daily, desktop and phone), then exits.
 if (process.env.E2E_ONLY === "hunt") {
   await runHunt({ browser, BASE, OUT, errors, step });
   await finish();
@@ -203,6 +204,11 @@ if (process.env.E2E_ONLY === "tier-list") {
 if (process.env.E2E_ONLY === "pokeball-maker") {
   await runPokeballMaker({ browser, BASE, OUT, errors, step });
 await runFavoritePicker({ browser, BASE, OUT, errors, step });
+  await finish();
+}
+// E2E_ONLY=catch-rate runs just the Catch Rate Calculator (picking, inputs, the ranking, a throw, a share link, the phone layout), then exits.
+if (process.env.E2E_ONLY === "catch-rate") {
+  await runCatchRate({ browser, BASE, OUT, errors, step });
   await finish();
 }
 // E2E_ONLY=favorite-picker runs just the Favorite Pokémon Picker (its card on /tools, a run to the end, the type chart, PNGs, a share link), then exits.
@@ -927,7 +933,8 @@ async function playGeoRounds(rounds) {
 step("pokéguessr: 5-round game + challenge link");
 let geoChallenge = null;
 page.on("response", async (res) => {
-  if (res.url().endsWith("/api/geo/guess") && res.ok()) {
+  // Guesses only (a round's start may wake the endpoint with a GET).
+  if (res.url().endsWith("/api/geo/guess") && res.request().method() === "POST" && res.ok()) {
     const body = await res.json().catch(() => null);
     if (body?.challengeToken) geoChallenge = body.challengeToken;
   }
@@ -941,7 +948,8 @@ await openGeoSetup(page);
 await page.getByRole("button", { name: /5-round game/ }).click();
 await playGeoRounds(5);
 await page.getByText("Survey complete").waitFor();
-await page.getByRole("button", { name: /Challenge a friend/ }).waitFor();
+// The end screen's share card offers the challenge (the link replays the same places).
+await page.getByTestId("geo-share-card").filter({ hasText: /Challenge a friend/ }).waitFor();
 await page.screenshot({ path: `${OUT}/guessr-summary.png`, fullPage: true });
 if (!geoChallenge) throw new Error("no PokéGuessr challenge token");
 
@@ -1024,7 +1032,7 @@ step("pokéguessr: friend accepts the challenge");
 await gotoSettled(page, `${BASE}/pokeguessr/c/${encodeURIComponent(geoChallenge)}`);
 await page.getByRole("button", { name: /Accept challenge/ }).click();
 await playGeoRounds(5);
-await page.getByText(/You beat|wins this one|Dead heat/).waitFor();
+await page.getByTestId("geo-end-challenge").filter({ hasText: /You beat|wins? this one|Dead heat/ }).waitFor();
 await page.screenshot({ path: `${OUT}/guessr-challenge-result.png`, fullPage: true });
 
 step("pokéguessr: 3-round game (picked rounds)");
@@ -1035,14 +1043,14 @@ await page.getByTestId("geo-rounds-3").click();
 await page.getByRole("button", { name: /3-round game/ }).click();
 let geoPlayed = 0;
 const countGuess = (res) => {
-  if (res.url().endsWith("/api/geo/guess") && res.ok()) geoPlayed++;
+  if (res.url().endsWith("/api/geo/guess") && res.request().method() === "POST" && res.ok()) geoPlayed++;
 };
 page.on("response", countGuess);
 await playGeoRounds(3);
 await page.getByText("Survey complete").waitFor();
 page.off("response", countGuess);
 if (geoPlayed !== 3) throw new Error(`a 3-round game took ${geoPlayed} guesses`);
-await page.getByText(/out of 15,000/).waitFor();
+await page.getByText(/of 15,000 points/i).waitFor();
 await page.screenshot({ path: `${OUT}/guessr-3-round-summary.png`, fullPage: true });
 
 step("pokéguessr: Hard game is practice, with a Wordle-style result card to copy");
@@ -1063,10 +1071,10 @@ page.off("response", readStart);
 if (hardStart?.practice !== "difficulty") throw new Error(`a Hard game should be practice, got ${hardStart?.practice}`);
 await page.getByText("Survey complete").waitFor();
 await page.getByText(/Easy and Hard games are practice/).waitFor();
-const geoCard = await page.getByTestId("geo-share-preview").innerText();
+const geoCard = (await page.getByTestId("geo-share-card").getAttribute("data-share")) ?? "";
 if (!/PokéGuessr .*· Hard/.test(geoCard) || !/[🟩🟨🟧🟥]{5}/u.test(geoCard)) throw new Error(`result card looks wrong: ${geoCard}`);
-await page.getByTestId("geo-copy-result").click();
-await page.getByTestId("geo-share-card").filter({ hasText: /Copied!|Couldn.t copy/ }).waitFor();
+await page.getByTestId("geo-share").click();
+await page.getByTestId("geo-share").filter({ hasText: /Copied!|Shared!/ }).or(page.getByText(/Couldn.t copy/)).first().waitFor();
 await page.screenshot({ path: `${OUT}/guessr-hard-summary.png`, fullPage: true });
 
 step("pokéguessr: world globe card opens the 3D globe (canvas, or the no-WebGL fallback)");
@@ -1226,8 +1234,11 @@ for (let i = 0; i < 5; i++) {
 }
 await page.getByText("Survey complete").waitFor();
 await page.screenshot({ path: `${OUT}/guessr-2d-summary.png`, fullPage: true });
-await page.getByRole("button", { name: /Play again/ }).click();
+// NEXT: back to the hub, where Play again is.
+await page.getByTestId("geo-results-again").click();
+await page.getByTestId("geo-hub").waitFor();
 if (await page.getByTestId("geo-guess-game").count()) errors.push("PokéGuessr still offers Guess the game too");
+if (!(await page.getByTestId("geo-era-all").isVisible())) await openGeoSetup(page);
 await page.getByTestId("geo-era-all").click();
 
 // Two trainers in two browsers: Red opens a duel on Kanto, Blue joins from the link.
@@ -1254,7 +1265,7 @@ const shotLoaded = (p) =>
     null,
     { timeout: 30_000 }
   );
-await gotoSettled(red, `${BASE}/pokeguessr?region=kanto`);
+await gotoSettled(red, `${BASE}/pokeguessr?region=kanto#duels`);
 await closeHowTo(red);
 await red.getByLabel("Your trainer name").fill("Red");
 await clickUntilUrl(red, red.getByRole("button", { name: /Create duel/ }), /\/pokeguessr\/duel\/[a-z2-9]{8}$/);
@@ -1317,7 +1328,7 @@ await blue.getByText("Victory!").waitFor();
 await blue.screenshot({ path: `${OUT}/duel-forfeit.png` });
 
 step("pokéguessr duel: 3-round points race to the end, rematch keeps the settings");
-await gotoSettled(red, `${BASE}/pokeguessr?region=kanto`);
+await gotoSettled(red, `${BASE}/pokeguessr?region=kanto#duels`);
 await closeHowTo(red);
 await red.getByTestId("geo-duel-mode-race").click();
 await red.getByTestId("geo-duel-rounds-3").click();
@@ -1914,7 +1925,7 @@ await findOpponent("/pokedle", (p) => p.getByLabel("Guess a Pokémon").waitFor()
 step("matchmaking: pokéconnections");
 await findOpponent("/pokeconnections", (p) => p.getByTestId("conn-tile").first().waitFor({ timeout: 15_000 }));
 step("matchmaking: pokéguessr world");
-await findOpponent("/pokeguessr", shotLoaded);
+await findOpponent("/pokeguessr#duels", shotLoaded);
 
 // Ranked PokéGuessr: two new trainers (1,000 Elo each) queue ranked and are paired at once into one rated duel on the
 // world map, with division badges in the HUD. Blue forfeits: the duel is counted and Red's result shows the division
@@ -1922,7 +1933,7 @@ await findOpponent("/pokeguessr", shotLoaded);
 step("ranked pokéguessr: two trainers matched by Elo, counted after a forfeit");
 /** Opens /pokeguessr on the ranked queue as `name`, ready to queue. */
 async function rankedPanel(p, name) {
-  await gotoSettled(p, `${BASE}/pokeguessr`);
+  await gotoSettled(p, `${BASE}/pokeguessr#ranked`);
   await closeHowTo(p);
   await p.getByTestId("geo-duel-queue-ranked").click();
   await p.getByTestId("geo-ranked-card").waitFor();

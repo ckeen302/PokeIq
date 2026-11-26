@@ -1045,7 +1045,9 @@ export function stoneMaterial(o: { color: string; roughness?: number; dirt?: num
 
 /** Merges geometries (all with the same attributes) into one. */
 export function merge(geos: THREE.BufferGeometry[]): THREE.BufferGeometry {
-  const ni = geos.map((g) => (g.index ? g : g.toNonIndexed()));
+  // Indexed or not, each part is copied as it is (a part without an index gets one below). toNonIndexed() on a part
+  // that has no index (an icosahedron, an extrusion) did nothing but print a three.js warning, hundreds a film.
+  const ni = geos;
   const attrs = ["position", "normal", "uv"];
   let vCount = 0, iCount = 0;
   for (const g of ni) { vCount += g.getAttribute("position").count; iCount += g.index ? g.index.count : g.getAttribute("position").count; }

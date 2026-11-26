@@ -78,7 +78,7 @@ const REF_SCALE = 0.2;
 /** A region's map is framed with this much room around it; a result frames at least this many map pixels, with 1.5× room. */
 const LOCKED_ROOM = 1.04;
 const REVEAL_MIN_BOX = 260;
-const FIT_MS = 800;
+const FIT_MS = 650;
 const SCORE_COUNT_MS = 1000;
 
 interface View {
@@ -475,7 +475,7 @@ function Reveal({ reduced }: { reduced: boolean }) {
   const t = useT(geoHowto);
   const names = useGeoNames();
   const fmt = (n: number) => formatNumber(n, t.locale);
-  const countDelay = reduced ? 0 : LINE_DRAW_MS + FIT_MS * 0.6;
+  const countDelay = reduced ? 0 : 100;
   const shown = useCountUp(SCORE, SCORE_COUNT_MS, countDelay, reduced);
   const bar = { initial: { width: reduced ? `${(SCORE / GEO_MAX_ROUND_SCORE) * 100}%` : 0 }, animate: { width: `${(SCORE / GEO_MAX_ROUND_SCORE) * 100}%` }, transition: { duration: reduced ? 0 : SCORE_COUNT_MS / 1000, delay: reduced ? 0 : countDelay / 1000, ease: "easeOut" as const } };
   const rise = (delay: number) => ({ initial: reduced ? false : { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.35, delay: reduced ? 0 : delay, ease: [0.2, 0.8, 0.2, 1] as const } });
@@ -507,7 +507,7 @@ function Reveal({ reduced }: { reduced: boolean }) {
               <span className="font-pixel text-[9px] text-white/50">{fmt(GEO_MAX_ROUND_SCORE)}</span>
             </div>
           </div>
-          <motion.div {...rise(reduced ? 0 : (LINE_DRAW_MS + FIT_MS) / 1000)} className="flex min-w-0 flex-col items-center gap-2">
+          <motion.div {...rise(reduced ? 0 : (LINE_DRAW_MS + 150) / 1000)} className="flex min-w-0 flex-col items-center gap-2">
             <span className="inline-flex items-center gap-2 rounded-full border-2 border-[#a99cff] bg-[#4cbb17] px-4 py-1.5 font-display text-sm font-bold uppercase italic tracking-wide text-white shadow-lg">
               <MapPinIcon className="h-4 w-4" aria-hidden />
               {t("demo.squares", { d: t.locale === "en" ? SQUARES.toFixed(1) : formatNumber(SQUARES, t.locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) })}

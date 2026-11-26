@@ -723,7 +723,7 @@ export function WorldHistoryExperience({ initialChapter, localized, children }: 
     const c = CHAPTERS[ui.chapter];
     const text = show.current.playhead < PROLOGUE * 0.6 || !c ? HISTORY.title : `${c.title} (${c.region}) · ${HISTORY.title}`;
     if (typeof navigator.share === "function" && window.matchMedia("(pointer: coarse)").matches) {
-      try { await navigator.share({ title: HISTORY.title, text, url }); return; } catch { /* closed: copy instead */ }
+      try { await navigator.share({ title: HISTORY.title, text, url }); return; } catch (e) { if ((e as Error).name === "AbortError") return; /* not allowed here: copy instead */ }
     }
     if (await copyText(url)) setToast(t("copied"));
   };
@@ -835,7 +835,7 @@ export function WorldHistoryExperience({ initialChapter, localized, children }: 
             {ready && ui.title === "prologue" && (
               <FilmWords key="pro" kind="prologue" jumped={ui.jumped} className="wh-pro pointer-events-none absolute inset-x-0 top-[18%] z-[6] flex flex-col items-center px-6 text-center text-white" testId="wh-prologue">
                 <p className="wh-title-k wh-tk text-[10px] uppercase text-[#f2c96b] sm:text-xs">{t("kicker")}</p>
-                <h1 className="wh-serif wh-title mt-3 max-w-4xl text-5xl font-semibold leading-[0.95] sm:text-7xl lg:text-8xl">{t("name")}</h1>
+                <h2 className="wh-serif wh-title mt-3 max-w-4xl text-5xl font-semibold leading-[0.95] sm:text-7xl lg:text-8xl">{t("name")}</h2>
                 <p className="wh-cap-lead mt-4 max-w-xl text-sm text-white/80 sm:text-base">{t("prologueLine")}</p>
                 <p className="wh-hint mt-6 inline-flex items-center gap-2 font-display text-[11px] font-semibold uppercase tracking-[0.2em] text-white/75">{t("scrollHint")} <ArrowDown className="h-3.5 w-3.5" aria-hidden /></p>
               </FilmWords>

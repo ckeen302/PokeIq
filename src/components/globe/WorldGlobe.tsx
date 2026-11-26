@@ -475,7 +475,7 @@ export function WorldGlobe({ regions, eras, local }: { regions: GlobeRegionCard[
         <Suspense fallback={null}>
           <MakeClip
             subject={tc("globeSubject", { region: local?.names[regionCard.name] ?? regionCard.name })}
-            file={`${regionCard.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-globe`}
+            file={`pokeiq-${regionCard.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-globe`}
             kind="globe"
             onClose={() => setClipOpen(false)}
             make={async (signal, onProgress) => {

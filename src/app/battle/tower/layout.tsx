@@ -28,7 +28,6 @@ export default function BattleTowerLayout({ children }: { children: React.ReactN
   const t = serverT(pagesNs);
   return (
     <div className="mx-auto max-w-6xl space-y-8">
-      <GameJsonLd name={t("tower.name")} path="/battle/tower" description={t("tower.description")} />
       <BattleHeader crumb={t("tower.name")} title={t("tower.title")} accent={t("tower.accent")}>
         {t("tower.intro")}
       </BattleHeader>
@@ -36,6 +35,8 @@ export default function BattleTowerLayout({ children }: { children: React.ReactN
       <ClientMessages namespaces={[frontierNs, formatsNs, teamPickNs, pickersNs, battleTeams, battleTeamInsights, battleTerms, battleInputs]}>
         <RouteSlot>{children}</RouteSlot>
       </ClientMessages>
+      {/* Last: an invisible <script> first in a spaced stack would push the header down. */}
+      <GameJsonLd name={t("tower.name")} path="/battle/tower" description={t("tower.description")} />
     </div>
   );
 }

@@ -28,6 +28,7 @@ import { startBattle } from "./start-battle";
 import type { TeamSource } from "./TeamPick";
 import { RulesVerdictNote, useRulesCheck } from "./RulesCheck";
 import { useT } from "@/i18n/client";
+import { localUrl } from "@/i18n/paths";
 import { formatNumber } from "@/i18n/format";
 import type { Translator } from "@/i18n/catalog";
 import home from "@/messages/battle-home";
@@ -286,7 +287,7 @@ export function BattleHome() {
         rules: custom ? rules : undefined,
         ...(mode === "pvp" ? { hidden } : {}),
       });
-      if (copyLink) await navigator.clipboard?.writeText(`${window.location.origin}${href}`).catch(() => undefined);
+      if (copyLink) await navigator.clipboard?.writeText(`${window.location.origin}${localUrl(href)}`).catch(() => undefined);
       router.push(href);
     } catch (err) {
       setError(err instanceof Error ? err.message : t("startFailed"));
@@ -312,7 +313,8 @@ export function BattleHome() {
             <span className="led h-1.5 w-1.5 animate-blink text-screen" /> {t("unit")}
           </p>
           <h1 className="font-display text-5xl font-bold uppercase leading-none tracking-tight">
-            {t("title")} <span className="text-primary [text-shadow:0_0_30px_hsl(var(--primary)/0.45)]">{t("accent")}</span>
+            {/* The title ends with its own space where the language wants one (BattleHeader). */}
+            {t("title")}<span className="text-primary [text-shadow:0_0_30px_hsl(var(--primary)/0.45)]">{t("accent")}</span>
           </h1>
         </div>
         <div className="flex gap-2" data-testid="live-counts">
@@ -491,7 +493,7 @@ export function BattleHome() {
               const cls = "menu-item flex items-center gap-2 rounded-lg border bg-card px-3 py-3 font-display text-sm font-bold uppercase tracking-wide hover:border-screen/60";
               const inner = (
                 <>
-                  <Icon className="h-4 w-4 shrink-0 text-primary" aria-hidden /> <span className="truncate">{label}</span>
+                  <Icon className="h-4 w-4 shrink-0 text-primary" aria-hidden /> <span className="min-w-0">{label}</span>
                 </>
               );
               return href ? (

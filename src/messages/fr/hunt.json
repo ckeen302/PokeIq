@@ -1,48 +1,49 @@
 {
   "name": "Chasse aux Pokémon",
   "tile": {
-    "label": "Nouveau mode",
-    "new": "Nouveau",
-    "title": "Chasse aux Pokémon",
-    "blurb": "Regarde un Pokémon. Place un repère là où tu l'attraperais.",
-    "play": "Partir en chasse"
+    "title": "Chasse aux Pokémon"
   },
-  "hub": {
-    "back": "PokéGuessr",
-    "eyebrow": "PokéGuessr · nouveau mode",
-    "title": "<b>Chasse</b> aux Pokémon",
-    "tagline": "On te montre un Pokémon. Tu places un repère là où il vit à l'état sauvage.",
-    "modes": "Choisis une chasse",
+  "setup": {
+    "heading": "Chasse aux Pokémon",
+    "tagline": "On te montre un Pokémon. Tu places un repère là où tu l'attraperais à l'état sauvage.",
+    "how": "Un repère par manche, noté selon sa distance au vrai lieu le plus proche : pile dessus, c'est 5 000.",
     "daily": {
       "label": "Chasse du jour nº {n} · Monde",
       "title": "Chasse du jour",
-      "blurb": "Les cinq Pokémon du jour, les mêmes pour tout le monde.",
-      "scored": "Ton score du jour : {score}.",
-      "played": "Jouée",
+      "blurb": "Les Pokémon du jour sur la carte du monde, les mêmes pour tout le monde.",
       "play": "Jouer celle du jour",
-      "again": "Rejouer (entraînement)",
-      "resume": "Reprendre"
+      "scored": "Ton score du jour : {score}.",
+      "again": "Rejouer (entraînement)"
     },
-    "classic": {
-      "label": "Solo · Monde",
-      "title": "Classique",
-      "blurb": "Cinq Pokémon venus de toute la carte du monde.",
-      "play": "Commencer la chasse"
+    "free": "Chasse libre",
+    "map": "Carte",
+    "difficulty": "Difficulté",
+    "level": {
+      "easy": "Facile",
+      "normal": "Normal",
+      "hard": "Difficile"
     },
-    "region": {
-      "label": "Solo · une région",
-      "title": "Chasse régionale",
-      "blurb": "Cinq Pokémon, une région, un repère chacun.",
-      "pick": "Choisis une région",
-      "play": "Chasser à {region}"
+    "blurb": {
+      "easy": "Des Pokémon célèbres dans leur région d'origine.",
+      "normal": "Un mélange de faciles et de difficiles, avec des indices.",
+      "hard": "N'importe quel Pokémon, sur la carte du monde, sans indices."
     },
-    "how": {
-      "title": "Comment jouer",
-      "see": "Découvre le Pokémon : son illustration, son nom et sa forme exacte.",
-      "pin": "Place un repère dans chaque région où tu peux le trouver à l'état sauvage.",
-      "score": "Chaque repère marque selon le vrai lieu le plus proche, jusqu'à 5 000 par manche."
-    },
-    "best": "Record : {score}"
+    "hardWorld": "Le mode Difficile se joue toujours sur la carte du monde.",
+    "play": "Jouer",
+    "playOn": "Jouer sur {map}",
+    "best": "Record : {score}",
+    "back": "PokéGuessr"
+  },
+  "board": {
+    "title": "Les meilleurs chasseurs du jour",
+    "empty": "Personne n'est encore au classement du jour. Sois le premier.",
+    "label": "Inscris ton score au classement du jour",
+    "placeholder": "Ton nom",
+    "submit": "Enregistrer",
+    "saved": "Enregistré",
+    "failed": "Impossible d'enregistrer ton score.",
+    "practice": "Seule ta première Chasse du jour peut entrer au classement.",
+    "row": "{rank}. {name} : {score}"
   },
   "forms": {
     "alola": "Forme d'Alola",
@@ -55,21 +56,27 @@
   },
   "card": {
     "artAlt": "Illustration officielle de {name}",
-    "found": "{n, plural, one {Présent dans # région} other {Présent dans # régions}}",
-    "foundIn": "Présent à {map}",
-    "dropOne": "Place un repère là où tu le trouverais",
-    "dropEach": "Place un repère dans chaque région",
-    "dropUpTo": "Place jusqu'à {max} repères"
+    "question": "Où attraperais-tu <b>{name}</b> ?",
+    "onMap": "Sur la carte de {map}"
+  },
+  "hints": {
+    "label": "Indices",
+    "cost": "−{cost}",
+    "costLabel": "Coûte {cost} points",
+    "type": "Son type",
+    "place": "Type de lieu",
+    "games": "Ses jeux",
+    "kind": {
+      "grass": "Hautes herbes",
+      "cave": "Grottes",
+      "water": "Eau",
+      "open": "En plein air"
+    },
+    "nothing": "Rien à dire",
+    "failed": "Cet indice ne s'est pas chargé. Réessaie.",
+    "spent": "Indices : −{cost}"
   },
   "pins": {
-    "label": "Tes repères",
-    "count": "{placed} repère(s) sur {max}",
-    "select": "Déplacer le repère {n}",
-    "empty": "Repère {n} : pas encore placé",
-    "remove": "Retirer le repère {n}",
-    "hintPlace": "Touche la carte pour placer le repère {n}",
-    "hintMove": "Touche la carte pour déplacer le repère {n}",
-    "hintDone": "Tout est placé ! Touche pour déplacer le {n}",
     "hintOne": "Touche la carte là où tu le trouverais",
     "hintMoveOne": "Touche à nouveau pour déplacer ton repère"
   },
@@ -79,55 +86,37 @@
     "mode": "Chasse aux Pokémon"
   },
   "reveal": {
-    "found": "Tu as trouvé {found} région(s) sur {total}",
-    "foundAll": "{total, plural, one {Tu l'as trouvé !} other {Tu as trouvé les {total} régions !}}",
-    "foundNone": "Aucune région trouvée cette fois",
     "timeUp": "Temps écoulé !",
     "spots": "Là où il vit vraiment",
+    "nearest": "Le lieu le plus proche de ton repère",
     "moreLabels": "{label} +{n}",
-    "pin": "Repère {n}",
-    "pinScore": "Repère {n} : {score}",
     "dex": "Où le trouver dans le Pokédex",
     "skip": "Passer",
     "next": "Pokémon suivant",
     "summary": "Voir les résultats",
     "space": "Espace",
     "pts": "pts",
+    "hintCost": "Indices : −{cost}",
     "verdict": {
       "perfect": "Pisteur expert !",
       "great": "Belle chasse !",
       "good": "Sur la bonne piste.",
       "near": "Tu chauffes…",
       "far": "Il t'a échappé cette fois."
-    },
-    "close": {
-      "spotOn": "Pile sur la piste !",
-      "near": "Près d'un vrai lieu",
-      "far": "Trop loin de tout vrai lieu"
     }
   },
   "results": {
     "title": "Chasse terminée",
-    "total": "Ton total",
-    "outOf": "sur {max}",
-    "rounds": "Tes manches",
-    "regions": "{found} {total, plural, one {région trouvée sur #} other {région(s) trouvée(s) sur #}}",
-    "best": "Meilleure",
-    "worst": "Pire",
-    "again": "Rechasser",
-    "hub": "Toutes les chasses",
+    "hub": "Retour à PokéGuessr",
     "show": "Voir la manche {n} sur la carte"
   },
   "share": {
     "daily": "Chasse aux Pokémon nº {n}",
-    "legend": "Une case par repère : 🟩 presque tous ses points, 🟨 la plupart, 🟧 quelques-uns, 🟥 aucun",
-    "copy": "Partager",
-    "grid": "Ta chasse, case par case"
+    "legend": "Une case par manche : 🟩 presque tous ses points, 🟨 la plupart, 🟧 quelques-uns, 🟥 aucun"
   },
   "state": {
     "loading": "Recherche d'un Pokémon…",
     "error": "La piste s'est refroidie. Cette chasse n'a pas pu se charger.",
-    "empty": "Rien à chasser ici pour l'instant. Essaie une autre région.",
     "retry": "Réessayer",
     "back": "Retour aux chasses",
     "artFailed": "L'image ne s'est pas chargée, mais le nom est bien là."

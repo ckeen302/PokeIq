@@ -2,9 +2,10 @@
 
 import "@/components/tools/shiny-maker/maker.css";
 import { useCallback, useContext, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import { Box, Clapperboard, Dices, Download, Film, Image as ImageIcon, Link2, Printer, Redo2, Share, Sparkles, Undo2, X } from "lucide-react";
+import { Box, Clapperboard, Dices, Download, Film, Image as ImageIcon, Link2, Printer, Redo2, Share2, Sparkles, Undo2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useT } from "@/i18n/client";
+import { localUrl } from "@/i18n/paths";
 import msgs from "@/messages/pokeball-maker";
 import { isCleanName } from "@/lib/name-filter";
 import { play } from "@/lib/sound";
@@ -448,7 +449,7 @@ export default function BallMaker({ initial, linkBroken }: { initial: Design | n
 
   // ---- Share and downloads.
   const share = async () => {
-    const url = `${window.location.origin}/tools/pokeball-maker?d=${encodeDesign(designRef.current)}`;
+    const url = `${window.location.origin}${localUrl(`/tools/pokeball-maker?d=${encodeDesign(designRef.current)}`)}`;
     if (touch && navigator.share) {
       try {
         await navigator.share({ title: designRef.current.name || t("title"), url });
@@ -750,7 +751,7 @@ export default function BallMaker({ initial, linkBroken }: { initial: Design | n
               <Dices className="h-[18px] w-[18px]" aria-hidden /> {t("actions.randomise")}
             </button>
             <button type="button" onClick={() => togglePanel("export")} className="flex h-12 items-center justify-center gap-2 rounded-full bg-primary font-display text-sm font-semibold uppercase tracking-wider text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80" data-testid="pbm-share">
-              <Share className="h-4 w-4" aria-hidden /> {t("actions.share")}
+              <Share2 className="h-4 w-4" aria-hidden /> {t("actions.share")}
             </button>
           </div>
         </div>
@@ -802,7 +803,7 @@ function Dock({ panel, onTab, onRandomise, onShare, shareOpen, t }: { panel: Pan
         <Dices className="h-[18px] w-[18px]" aria-hidden />
       </button>
       <button type="button" onClick={onShare} aria-expanded={shareOpen} className="ml-0.5 flex h-11 shrink-0 items-center gap-2 rounded-full bg-primary px-5 font-display text-sm font-semibold uppercase tracking-wider text-primary-foreground transition-[filter] hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-black" data-testid="pbm-share">
-        <Share className="h-4 w-4" aria-hidden /> {t("actions.share")}
+        <Share2 className="h-4 w-4" aria-hidden /> {t("actions.share")}
       </button>
     </div>
   );

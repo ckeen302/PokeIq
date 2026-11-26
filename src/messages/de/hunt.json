@@ -1,48 +1,49 @@
 {
   "name": "Pokémon-Jagd",
   "tile": {
-    "label": "Neuer Modus",
-    "new": "Neu",
-    "title": "Pokémon-Jagd",
-    "blurb": "Sieh dir ein Pokémon an. Setz eine Nadel, wo du es fangen würdest.",
-    "play": "Auf die Jagd"
+    "title": "Pokémon-Jagd"
   },
-  "hub": {
-    "back": "PokéGuessr",
-    "eyebrow": "PokéGuessr · neuer Modus",
-    "title": "Pokémon-<b>Jagd</b>",
-    "tagline": "Wir zeigen dir ein Pokémon. Du setzt eine Nadel, wo es in freier Wildbahn lebt.",
-    "modes": "Wähle eine Jagd",
+  "setup": {
+    "heading": "Pokémon-Jagd",
+    "tagline": "Wir zeigen dir ein Pokémon. Du setzt eine Nadel, wo du es in freier Wildbahn fangen würdest.",
+    "how": "Eine Nadel pro Runde, gewertet nach dem Abstand zum nächsten echten Fundort: genau drauf gibt 5.000.",
     "daily": {
       "label": "Tagesjagd Nr. {n} · Welt",
       "title": "Tagesjagd",
-      "blurb": "Die fünf Pokémon von heute, für alle gleich.",
-      "scored": "Heute hast du {score} erreicht.",
-      "played": "Gespielt",
+      "blurb": "Die Pokémon von heute auf der Weltkarte, für alle gleich.",
       "play": "Heutige spielen",
-      "again": "Nochmal spielen (Übung)",
-      "resume": "Weiterspielen"
+      "scored": "Heute hast du {score} erreicht.",
+      "again": "Nochmal spielen (Übung)"
     },
-    "classic": {
-      "label": "Solo · Welt",
-      "title": "Klassisch",
-      "blurb": "Fünf Pokémon von der ganzen Weltkarte.",
-      "play": "Jagd starten"
+    "free": "Freie Jagd",
+    "map": "Karte",
+    "difficulty": "Schwierigkeit",
+    "level": {
+      "easy": "Leicht",
+      "normal": "Normal",
+      "hard": "Schwer"
     },
-    "region": {
-      "label": "Solo · eine Region",
-      "title": "Regionsjagd",
-      "blurb": "Fünf Pokémon, eine Region, je eine Nadel.",
-      "pick": "Wähle eine Region",
-      "play": "In {region} jagen"
+    "blurb": {
+      "easy": "Berühmte Pokémon in ihrer Heimatregion.",
+      "normal": "Eine Mischung aus leichten und schweren, mit Tipps.",
+      "hard": "Jedes Pokémon, auf der Weltkarte, ohne Tipps."
     },
-    "how": {
-      "title": "So geht's",
-      "see": "Lern das Pokémon kennen: sein Artwork, seinen Namen und seine genaue Form.",
-      "pin": "Setz eine Nadel in jede Region, in der du es in freier Wildbahn findest.",
-      "score": "Jede Nadel zählt zum nächsten echten Fundort, bis zu 5.000 pro Runde."
-    },
-    "best": "Bestwert: {score}"
+    "hardWorld": "Schwer wird immer auf der Weltkarte gespielt.",
+    "play": "Spielen",
+    "playOn": "In {map} spielen",
+    "best": "Bestwert: {score}",
+    "back": "PokéGuessr"
+  },
+  "board": {
+    "title": "Die besten Jäger von heute",
+    "empty": "Noch niemand steht in der heutigen Bestenliste. Sei der Erste.",
+    "label": "Trag deine Punkte in die heutige Bestenliste ein",
+    "placeholder": "Dein Name",
+    "submit": "Speichern",
+    "saved": "Gespeichert",
+    "failed": "Deine Punkte konnten nicht gespeichert werden.",
+    "practice": "Nur deine erste Tagesjagd des Tages kommt in die Bestenliste.",
+    "row": "{rank}. {name}: {score}"
   },
   "forms": {
     "alola": "Alola-Form",
@@ -55,21 +56,27 @@
   },
   "card": {
     "artAlt": "Offizielles Artwork von {name}",
-    "found": "{n, plural, one {Lebt in # Region} other {Lebt in # Regionen}}",
-    "foundIn": "Lebt in {map}",
-    "dropOne": "Setz eine Nadel, wo du es finden würdest",
-    "dropEach": "Setz in jede Region eine Nadel",
-    "dropUpTo": "Setz bis zu {max} Nadeln"
+    "question": "Wo würdest du <b>{name}</b> fangen?",
+    "onMap": "Auf der Karte von {map}"
+  },
+  "hints": {
+    "label": "Tipps",
+    "cost": "−{cost}",
+    "costLabel": "Kostet {cost} Punkte",
+    "type": "Sein Typ",
+    "place": "Art des Ortes",
+    "games": "Seine Spiele",
+    "kind": {
+      "grass": "Hohes Gras",
+      "cave": "Höhlen",
+      "water": "Wasser",
+      "open": "Im Freien"
+    },
+    "nothing": "Nichts zu sagen",
+    "failed": "Dieser Tipp wurde nicht geladen. Versuch es nochmal.",
+    "spent": "Tipps: −{cost}"
   },
   "pins": {
-    "label": "Deine Nadeln",
-    "count": "{placed} von {max} Nadeln",
-    "select": "Nadel {n} versetzen",
-    "empty": "Nadel {n}: noch nicht gesetzt",
-    "remove": "Nadel {n} entfernen",
-    "hintPlace": "Tippe auf die Karte, um Nadel {n} zu setzen",
-    "hintMove": "Tippe auf die Karte, um Nadel {n} zu versetzen",
-    "hintDone": "Alle gesetzt! Tippe, um Nadel {n} zu versetzen",
     "hintOne": "Tippe auf die Karte, wo du es finden würdest",
     "hintMoveOne": "Tippe erneut, um deine Nadel zu versetzen"
   },
@@ -79,55 +86,37 @@
     "mode": "Pokémon-Jagd"
   },
   "reveal": {
-    "found": "Du hast {found} von {total} Regionen gefunden",
-    "foundAll": "{total, plural, one {Gefunden!} other {Du hast alle {total} Regionen gefunden!}}",
-    "foundNone": "Diesmal keine Region gefunden",
     "timeUp": "Zeit um!",
     "spots": "Wo es wirklich lebt",
+    "nearest": "Der nächste Fundort zu deiner Nadel",
     "moreLabels": "{label} +{n}",
-    "pin": "Nadel {n}",
-    "pinScore": "Nadel {n}: {score}",
     "dex": "Fundorte im Pokédex",
     "skip": "Überspringen",
     "next": "Nächstes Pokémon",
     "summary": "Ergebnis ansehen",
     "space": "Leertaste",
     "pts": "Pkt.",
+    "hintCost": "Tipps: −{cost}",
     "verdict": {
       "perfect": "Meisterfährtenleser!",
       "great": "Starke Jagd!",
       "good": "Auf der richtigen Spur.",
       "near": "Warm, wärmer …",
       "far": "Diesmal ist es entwischt."
-    },
-    "close": {
-      "spotOn": "Genau auf der Spur!",
-      "near": "Nah an einem echten Fundort",
-      "far": "Zu weit von jedem Fundort"
     }
   },
   "results": {
     "title": "Jagd beendet",
-    "total": "Dein Gesamtwert",
-    "outOf": "von {max}",
-    "rounds": "Deine Runden",
-    "regions": "{found} von {total, plural, one {# Region} other {# Regionen}} gefunden",
-    "best": "Beste",
-    "worst": "Schwächste",
-    "again": "Nochmal jagen",
-    "hub": "Alle Jagden",
+    "hub": "Zurück zu PokéGuessr",
     "show": "Runde {n} auf der Karte zeigen"
   },
   "share": {
     "daily": "Pokémon-Jagd Nr. {n}",
-    "legend": "Ein Feld pro Nadel: 🟩 fast alle Punkte, 🟨 die meisten, 🟧 einige, 🟥 keine",
-    "copy": "Teilen",
-    "grid": "Deine Jagd, Feld für Feld"
+    "legend": "Ein Feld pro Runde: 🟩 fast alle Punkte, 🟨 die meisten, 🟧 einige, 🟥 keine"
   },
   "state": {
     "loading": "Ein Pokémon wird aufgespürt …",
     "error": "Die Spur ist kalt. Diese Jagd konnte nicht geladen werden.",
-    "empty": "Hier gibt es noch nichts zu jagen. Versuch eine andere Region.",
     "retry": "Nochmal versuchen",
     "back": "Zurück zu den Jagden",
     "artFailed": "Das Bild wurde nicht geladen, aber der Name steht da."

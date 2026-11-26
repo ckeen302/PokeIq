@@ -1008,11 +1008,11 @@ export function Connections({ customId, initial }: { customId?: string; initial?
                     <Button size="lg" className="h-14 w-full text-base" onClick={() => newPractice()} data-testid="conn-next">
                       <RefreshCw className="h-5 w-5" aria-hidden /> {t("result.next")}
                     </Button>
-                    <ShareButton getText={shareTextNow} label={t("result.share")} kind="connections" variant="outline" className="w-full" />
+                    <ShareButton getText={shareTextNow} kind="connections" variant="outline" className="w-full" />
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    <ShareButton getText={shareTextNow} label={t("result.share")} kind="connections" className="w-full" />
+                    <ShareButton getText={shareTextNow} kind="connections" className="w-full" />
                     <div className="grid gap-2 sm:grid-cols-2">
                       <Button size="lg" variant="success" onClick={() => newPractice()} data-testid="conn-play-unlimited">
                         <InfinityIcon className="h-5 w-5" aria-hidden /> {t("result.unlimited")}

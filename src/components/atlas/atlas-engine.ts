@@ -160,7 +160,8 @@ export interface AtlasOptions {
 export interface AtlasEngine {
   flyTo: (x: number, y: number, zoom: "region" | "place" | "world") => Promise<void>;
   /** Zoom to show a box of the world, never closer than `min` world pixels across; `duration` (ms) eases out instead of the default glide. */
-  fitBox: (box: Box, min?: number, duration?: number) => Promise<void>;
+  /** `room`: how much bigger than the box the view is (1.5 by default; 1, the box fills it). */
+  fitBox: (box: Box, min?: number, duration?: number, room?: number) => Promise<void>;
   /** Back to the whole map (the world, or the region's box). */
   reset: () => void;
   /** Back to where the map started, at once (a new round on the same map). */
@@ -294,6 +295,8 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
   let H = 0;
   let dpr = 1;
   let minS = 0.1;
+  /** The floor an exact whole-map fit has dropped the zoom to (see fitBox), kept through resizes. */
+  let fitFloor = Infinity;
   /** The dock is open (hovered or pinned), and its stretch while it shows the whole world (null: drawn as it is). */
   let open = false;
   let stretch: Stretch | null = null;
@@ -439,7 +442,7 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
     open = !!opts.home?.open?.(W, H);
     stretch = stretchOf(opts.home, W, H);
     // Zoomed right out: the stretched whole world fills the canvas; else the floor box fits it (or a little past the whole map).
-    minS = stretch ? stretch.s0 : opts.home?.floor ? fitTo(opts.home.floor).s * (opts.home.floorZoom ?? 1) : fitWorld().s * 0.8;
+    minS = stretch ? stretch.s0 : opts.home?.floor ? fitTo(opts.home.floor).s * (opts.home.floorZoom ?? 1) : Math.min(fitWorld().s * 0.8, fitFloor);
     // Keep the whole map framed until the viewer starts exploring.
     if (!touched) Object.assign(view, home());
     else Object.assign(view, { tx: W / 2 - cx * view.s, ty: H / 2 - cy * vsc(view.s) });
@@ -759,9 +762,9 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
     return glide(wx, wy, zoom === "world" ? fit : zoom === "region" ? fit * 5 : fit * 9);
   }
 
-  function fitBox(box: Box, min = 0, duration?: number): Promise<void> {
+  function fitBox(box: Box, min = 0, duration?: number, room = 1.5): Promise<void> {
     if (!W || !H) {
-      pending = () => void fitBox(box, min, duration);
+      pending = () => void fitBox(box, min, duration, room);
       return Promise.resolve();
     }
     touched = true;
@@ -770,7 +773,9 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
     const h = Math.max(y1 - y0, min);
     const cx = (x0 + x1) / 2;
     const cy = (y0 + y1) / 2;
-    const target = fitTo([cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2], 1.5);
+    const target = fitTo([cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2], room);
+    // A whole map framed exactly (room 1, the end's breakdown) is never clamped bigger and cut off: the floor drops to it.
+    if (room <= 1) minS = Math.min(minS, (fitFloor = target.s));
     return duration === undefined ? glide(cx, cy, target.s) : glide(cx, cy, target.s, duration, true);
   }
 

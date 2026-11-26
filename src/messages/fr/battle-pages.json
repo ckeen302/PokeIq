@@ -101,7 +101,7 @@
       "description": "De vrais combats Pokémon sur le moteur de Pokémon Showdown : Combat aléatoire, Duo aléatoire ou ta propre équipe OU, contre l’ordi, un Dresseur trouvé par matchmaking ou un ami grâce à un lien d’invitation."
     },
     "crumb": "Jouer",
-    "title": "Lance un",
+    "title": "Lance un ",
     "accent": "combat",
     "intro": "Le moteur de combat même de Pokémon Showdown : chaque attaque, talent et objet fonctionne comme là-bas. Choisis un adversaire, un format et c’est parti."
   },
@@ -111,7 +111,7 @@
     },
     "description": "La Tour de Combat sur le moteur de Pokémon Showdown : amène ton équipe en Flat Rules (niveau 50, six Pokémon, trois choisis) et enchaîne les victoires contre des Dresseurs de l’ordi, avec le Magnat de la Tour tous les sept combats.",
     "name": "Tour de Combat",
-    "title": "Tour de",
+    "title": "Tour de ",
     "accent": "Combat",
     "intro": "Ton équipe, les Flat Rules et une série de Dresseurs de l’ordi de plus en plus coriaces. Tous les sept combats, le Magnat de la Tour t’attend avec sa meilleure équipe."
   },
@@ -121,7 +121,7 @@
     },
     "description": "L’Usine de Combat sur le moteur de Pokémon Showdown : loue six Pokémon parmi les sets Battle Factory de Showdown, gagne sept fois d’affilée contre un ordi de plus en plus fort et échange contre un Pokémon de ton adversaire après chaque victoire.",
     "name": "Usine de Combat",
-    "title": "Usine de",
+    "title": "Usine de ",
     "accent": "Combat",
     "intro": "Pas besoin d’équipe : loue six Pokémon parmi les sets Battle Factory de Pokémon Showdown, gagne sept fois d’affilée et, après chaque victoire, échange un des tiens contre un de ton adversaire. Ou trouve un adversaire qui loue aussi, depuis la préparation du combat."
   }

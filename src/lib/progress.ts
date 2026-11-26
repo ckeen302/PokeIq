@@ -360,9 +360,11 @@ export function geoDailyStreak(p: Progress, today: string): number {
 export function recordGeoGame(
   board: string,
   game: { kind: "game" | "streak"; score: number; rounds: number[]; daily?: string; weekly?: string }
-): { xp: number; best: boolean; newBadges: BadgeDef[] } {
+): { xp: number; best: boolean; previous?: number; newBadges: BadgeDef[] } {
   const p: Progress = structuredClone(read());
   const key = game.daily ? "geo:daily" : game.weekly ? "geo:weekly" : `geo:${board}`;
+  /** The best this game beat or not (none before a first game). */
+  const previous = p.best[key] || undefined;
   // The Weekly Challenge: the week's first score, kept like the Daily's (YYYY-MM-DD of its Monday).
   if (game.weekly && p.best[`geo-weekly:${game.weekly}`] === undefined) p.best[`geo-weekly:${game.weekly}`] = game.score;
   const dailyKey = game.daily ? `geo-daily:${game.daily}` : null;
@@ -389,7 +391,7 @@ export function recordGeoGame(
   if (game.kind === "streak" && game.score >= 10) earned.push("geo-streak-10");
   const newBadges = award(p, earned, Date.now());
   write(p);
-  return { xp, best, newBadges };
+  return { xp, best, previous, newBadges };
 }
 
 /** Keeps the latest Cognitive PokéIQ test; a little XP for finishing one. */

@@ -23,12 +23,16 @@ export interface RevealedRound {
   guess: MapPin | null;
   /** The place's area and pin; a spot-scored shot also has the exact point it was taken, where the flag goes. */
   answer: { pin: [number, number]; mask: [number, number][]; spot?: [number, number] };
-  /** Round number shown on the markers in the end-of-game summary. */
+  /** A name or number over the guess pin (a duel's round, a party's trainer). */
   label?: string;
+  /** The end of a game: the round's number on its answer flag, GeoGuessr's numbered flags. */
+  flag?: string;
   /** Duels: the trainer's colour for their pin and line. */
   color?: string;
   /** The trainer's avatar, shown inside the pin. */
   image?: string;
+  /** The guess pin was already standing there (the result showed it while the answer was on its way): no drop. */
+  still?: boolean;
 }
 
 export interface FitTiming {
@@ -36,6 +40,10 @@ export interface FitTiming {
   delay?: number;
   /** The camera's move, in ms (eased out). */
   duration?: number;
+  /** Screen px along the top and bottom kept clear of the pins (the end screen's tracker and buttons sit there). */
+  pad?: { top: number; bottom: number };
+  /** With no round picked, frame the whole map, centred and uncut (the world, or a region's own crop), as GeoGuessr's breakdown does, not just the pins. */
+  whole?: boolean;
 }
 
 interface Props {
@@ -79,6 +87,8 @@ interface Props {
   spots?: HuntMapSpot[];
   /** Pokémon Hunt's reveal: each pin's dashed line to the spot it scored against (`spot` indexes `spots`). */
   links?: HuntMapLink[];
+  /** The end of a game's breakdown: the camera frames this revealed round alone (the others stay drawn). */
+  focus?: number | null;
 }
 
 export interface HuntMapSpot extends MapPin {
@@ -110,8 +120,8 @@ const CROP_WAIT_MS = 1500;
 const LOCKED_ROOM = 1.04;
 /** A reveal never zooms closer than this many world pixels across (a handful of towns). */
 const REVEAL_MIN_BOX = 260;
-/** The line draws itself over this long before the camera moves. */
-export const LINE_DRAW_MS = 600;
+/** The line draws itself over this long before the camera moves (globals.css's .geo-line: 0.05 s, then 0.45 s). */
+export const LINE_DRAW_MS = 400;
 
 /** Where a revealed round's flag stands: the exact spot when the shot has one, else the place's pin. */
 const flagAt = (answer: RevealedRound["answer"]): [number, number] => answer.spot ?? answer.pin;
@@ -144,7 +154,7 @@ export function mapAspect(region: Pick<GeoRegionInfo, "map">): number {
  * round draws a dashed line from the guess to the answer, then zooms to fit
  * them both.
  */
-export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, controls = true, className, fill, others = [], land = false, density, defer = false, round, picks, activePick, onPickSelect, spots, links }: Props) {
+export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, controls = true, className, fill, others = [], land = false, density, defer = false, round, picks, activePick, onPickSelect, spots, links, focus = null }: Props) {
   const t = useT(geoNs);
   const geoNames = useT(geoNamesNs);
   const mapName = localMap(geoNames, region);
@@ -273,14 +283,17 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
     engine.current?.recenter();
   }, [round]);
 
-  // A revealed round zooms to show the guess and the answer together, once the line has drawn.
-  const revealKey = [...revealed.map((r) => `${r.guess?.x},${r.guess?.y},${flagAt(r.answer)}`), ...(spots ?? []).map((p) => `${p.x},${p.y}`), ...(links ?? []).map((l) => `${l.pin.x},${l.pin.y}`)].join("|");
+  // A revealed round zooms to show the guess and the answer together, once the line has drawn (a focused one, it alone).
+  const framed = focus !== null && revealed[focus] ? [revealed[focus]] : revealed;
+  const fitWhole = !!fit?.whole && framed === revealed;
+  const revealKey = [...framed.map((r) => `${r.guess?.x},${r.guess?.y},${flagAt(r.answer)}`), ...(spots ?? []).map((p) => `${p.x},${p.y}`), ...(links ?? []).map((l) => `${l.pin.x},${l.pin.y}`), `${density?.cells.length ?? ""}`, `${fitWhole}`].join("|");
   const fitDelay = fit?.delay ?? 0;
   const fitDuration = fit?.duration;
+  const fitPad = fit?.pad;
   useEffect(() => {
     const e = engine.current;
     if (!e || !(revealed.length || spots?.length)) return;
-    const pts = revealed.flatMap((r) => [toWorld(...flagAt(r.answer)),...(r.guess ? [toWorld(r.guess.x, r.guess.y)] : [])]);
+    const pts = framed.flatMap((r) => [toWorld(...flagAt(r.answer)),...(r.guess ? [toWorld(r.guess.x, r.guess.y)] : [])]);
     // A hunt's reveal frames every real spot and every pin.
     for (const p of [...(spots ?? []), ...(links ?? []).map((l) => l.pin)]) pts.push(toWorld(p.x, p.y));
     // A crowd map frames the busiest cells too (those holding most of the pins).
@@ -296,8 +309,19 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
     const xs = pts.map((p) => p[0]);
     const ys = pts.map((p) => p[1]);
     const box: Box = [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
+    // GeoGuessr's breakdown: the whole map, centred and none of it cut off (the world, or a region's own crop), not just
+    // the pins, which on one side would push the map off-centre.
+    if (fitWhole && atlas) [box[0], box[1], box[2], box[3]] = locked ? [x0, y0, x1, y1] : [0, 0, atlas.W, atlas.H];
+    // Room kept clear at the top and bottom: the box grows into them, so the pins sit in what's left between.
+    const stageH = stageRef.current?.clientHeight ?? 0;
+    if (fitPad && stageH > fitPad.top + fitPad.bottom + 80) {
+      const h = Math.max(box[3] - box[1], REVEAL_MIN_BOX);
+      const free = stageH - fitPad.top - fitPad.bottom;
+      box[1] -= (h * fitPad.top) / free;
+      box[3] += (h * fitPad.bottom) / free;
+    }
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const id = window.setTimeout(() => void engine.current?.fitBox(box, REVEAL_MIN_BOX, fitDuration), reduced ? 0 : fitDelay);
+    const id = window.setTimeout(() => void engine.current?.fitBox(box, REVEAL_MIN_BOX, fitDuration, fitWhole ? 1 : undefined), reduced ? 0 : fitDelay);
     return () => window.clearTimeout(id);
     // The engine is made once the first paint's crop is in (cropPainted): a reveal that is the page's first map (Region Streak,
     // say) fits then, not before, when there's no engine yet to move.
@@ -380,8 +404,8 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
                     <line mask={`url(#${mask})`} x1={g[0]} y1={g[1]} x2={ax} y2={ay} strokeWidth={2.5} strokeDasharray="5 5" strokeLinecap="round" stroke={r.color ?? "#120f24"} data-testid="geo-reveal-line" />
                   </>
                 )}
-                <Flag x={ax} y={ay} />
-                {g && <GuessPin x={g[0]} y={g[1]} label={r.label} color={r.color} image={r.image} delay={0.12 * i} />}
+                <Flag x={ax} y={ay} n={r.flag} />
+                {g && <GuessPin x={g[0]} y={g[1]} label={r.label} color={r.color} image={r.image} delay={0.12 * i} still={r.still} />}
               </g>
             );
           })}
@@ -505,12 +529,12 @@ function Density({ density, toScreen, cell, id }: { density: NonNullable<Props["
  * The guess marker: a teardrop pin (GeoGuessr's) with the trainer's avatar
  * inside, or a Poké Ball for a guest, dropping in. The tip is the guess.
  */
-export function GuessPin({ x, y, label, color = "#3a8dde", image, delay = 0 }: { x: number; y: number; label?: string; color?: string; image?: string; delay?: number }) {
+export function GuessPin({ x, y, label, color = "#3a8dde", image, delay = 0, still = false }: { x: number; y: number; label?: string; color?: string; image?: string; delay?: number; still?: boolean }) {
   const r = 11;
   const id = useId();
   return (
     <g transform={`translate(${x} ${y})`}>
-      <g className="geo-drop" style={{ animationDelay: `${delay}s` }}>
+      <g className={still ? undefined : "geo-drop"} style={still ? undefined : { animationDelay: `${delay}s` }}>
         <ellipse cy={1} rx={5} ry={2} fill="rgba(0,0,0,0.35)" />
         {/* The teardrop: a circle at the top and a point at the origin. */}
         <path d={`M0 0 L${-r * 0.82} ${-r * 1.35} A${r} ${r} 0 1 1 ${r * 0.82} ${-r * 1.35} Z`} fill={color} stroke="#120f24" strokeWidth={2} strokeLinejoin="round" />
@@ -539,14 +563,22 @@ export function GuessPin({ x, y, label, color = "#3a8dde", image, delay = 0 }: {
   );
 }
 
-/** The true location: a black disc with a white ring and a yellow flag, popping in after the line draws. */
-export function Flag({ x, y }: { x: number; y: number }) {
+/** The true location: a black disc with a white ring and a yellow flag, popping in after the line draws; `n`, the round's number on a badge. */
+export function Flag({ x, y, n }: { x: number; y: number; n?: string }) {
   return (
     <g transform={`translate(${x} ${y})`}>
       <g className="geo-flag">
         <circle r={13} fill="#120f24" stroke="#fff" strokeWidth={2} />
         <path d="M-4 7V-7" stroke="#fff" strokeWidth={2} strokeLinecap="round" />
         <path d="M-3 -7h10l-2.5 3.2L7 -0.6h-10z" fill="#ffd23c" />
+        {n && (
+          <g transform="translate(11 -11)" data-testid="geo-flag-number">
+            <circle r={8} fill="#e5484d" stroke="#fff" strokeWidth={1.75} />
+            <text y={3.6} textAnchor="middle" fontSize={10.5} fontWeight={700} fill="#fff">
+              {n}
+            </text>
+          </g>
+        )}
       </g>
     </g>
   );

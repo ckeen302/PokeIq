@@ -12,20 +12,18 @@ import { useGuessrMusic } from "@/lib/use-guessr-music";
 import { preloadImage } from "@/lib/preload";
 import { useAccount } from "@/lib/account";
 import { avatarSrc } from "@/lib/avatar";
-import { isCleanName } from "@/lib/name-filter";
 import { cn } from "@/lib/utils";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ShareButton } from "@/components/share/ShareButton";
 import { GeoMap, LINE_DRAW_MS } from "./GeoMap";
 import { ConfirmExit, ExitButton, FullscreenButton, GameShell, GuessButton, Notch, RESULT_BAR_GRID, RESULT_BAR_VERDICT, ResultNextButton } from "./GameShell";
 import { ShotCarousel, shotFit } from "./ShotCarousel";
 import { LearnCard } from "./LearnCard";
 import { ReportShot } from "./ReportShot";
 import { GeoResults, type ResultsRound } from "./GeoResults";
+import { EndBoard, EndLines, EndRow, EndShareCard, ShareSquares } from "./EndScreen";
 import { resultPath } from "./ShareResultLink";
 import { useT } from "@/i18n/client";
-import communityNs from "@/messages/community";
 import type { Translator } from "@/i18n/catalog";
 import geoNs from "@/messages/geo";
 import geoStreak from "@/messages/geo-streak";
@@ -48,7 +46,7 @@ interface Played {
 
 /** Each region's generation, for the picker's small label. */
 const GEN_OF: Record<GeoStreakRegion, number> = { Kanto: 1, Johto: 2, Hoenn: 3, Sinnoh: 4, Unova: 5, Kalos: 6, Alola: 7, Galar: 8, Paldea: 9 };
-const FIT_MS = 800;
+const FIT_MS = 650;
 
 async function post<T>(url: string, body: unknown): Promise<T> {
   const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
@@ -256,7 +254,14 @@ export function StreakGame({ world }: { world: GeoRegionInfo }) {
       graded: { score: p.graded.correct ? 1 : 0, hit: p.graded.correct, answer: p.graded.answer, token: "", total: 0, done: true },
     }));
     return (
-      <GeoResults game={{ region: world, kind: "streak", rounds: played.length }} played={rounds} pinImage={pinImage} shareToken={last?.resultToken} onRestart={() => setPhase("setup")}>
+      <GeoResults
+        game={{ region: world, kind: "streak", rounds: played.length }}
+        played={rounds}
+        pinImage={pinImage}
+        mode={t("hud.mode", { world: names.map(world) })}
+        onNext={() => setPhase("setup")}
+        onExit={() => setPhase("setup")}
+      >
         <StreakSummary streak={streak} best={Math.max(best ?? 0, localBest)} newBest={newBest} resultToken={last?.resultToken} t={t} />
       </GeoResults>
     );
@@ -417,79 +422,54 @@ function StreakReveal({ world, current, streak, notch, onNext, onExit, t, names 
   );
 }
 
-/** Under the results map: the best streak, the leaderboard form and sharing. */
+/** The end screen's rows for Region Streak: a new best (or the best so far), sharing, and the streak leaderboard. */
 function StreakSummary({ streak, best, newBest, resultToken, t }: { streak: number; best: number; newBest: boolean; resultToken?: string; t: StreakT }) {
-  const ct = useT(communityNs);
-  const progress = useProgress();
-  const [name, setName] = useState("");
-  const [save, setSave] = useState<"idle" | "saving" | "saved" | "error">("idle");
-  const [saveError, setSaveError] = useState<string | null>(null);
-  useEffect(() => {
-    if (progress?.name && !name) setName(progress.name);
-  }, [progress?.name, name]);
-
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!isCleanName(name)) {
-      setSaveError(ct("nameRejected"));
-      setSave("error");
-      return;
-    }
-    setSave("saving");
-    setSaveError(null);
-    try {
-      await post("/api/geo/streak/leaderboard", { resultToken, playerName: name });
-      setSave("saved");
-    } catch (err) {
-      setSaveError(err instanceof Error ? err.message : t("summary.saveFailed"));
-      setSave("error");
-    }
-  }
-
   const origin = typeof window !== "undefined" ? window.location.origin : "";
-  const shareText = `${t("summary.shareTitle")}\n🔥${t("summary.shareCount", { n: streak })}\n${"✅".repeat(Math.min(streak, 20))}${streak > 20 ? "…" : ""}❌${resultToken ? `\n${origin}${localeHref(resultPath(resultToken), t.locale).href}` : ""}`;
+  const ticks = `${"✅".repeat(Math.min(streak, 20))}${streak > 20 ? "…" : ""}❌`;
+  const text = `${t("summary.shareTitle")}\n🔥${t("summary.shareCount", { n: streak })}\n${ticks}`;
+  const url = resultToken ? `${origin}${localeHref(resultPath(resultToken), t.locale).href}` : undefined;
+  const squares = [...Array<string>(Math.min(streak, 9)).fill("✅"), "❌"];
+  const line = newBest
+    ? { key: "best", icon: <Flame className="h-[1em] w-[1em]" aria-hidden />, text: t("summary.newBest"), testId: "geo-end-best" }
+    : best > 0
+      ? { key: "best", text: <span className="text-[0.8em] text-white/85">{t("summary.best", { n: best })}</span>, testId: "geo-end-best" }
+      : null;
   return (
-    <div className="space-y-4" data-testid="streak-summary">
-      <div className="flex flex-wrap items-center justify-center gap-2">
-        {newBest && <span className="rounded-sm border border-warning/50 px-2 py-1 font-pixel text-[10px] text-warning">{t("summary.newBest")}</span>}
-        {best > 0 && <span className="rounded-sm border px-2 py-1 font-pixel text-[10px] text-muted-foreground">{t("summary.best", { n: best })}</span>}
-      </div>
-      <ShareButton size="lg" variant="outline" kind="guessr" label={t("summary.share")} getText={() => shareText} className="w-full" />
-      {resultToken && streak > 0 ? (
-        <form className="space-y-2" onSubmit={submit}>
-          <label htmlFor="streak-name" className="hud-label">
-            {t("summary.save")}
-          </label>
-          <div className="flex gap-2">
-            <input
-              id="streak-name"
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-                setSaveError(null);
-              }}
-              maxLength={24}
-              required
-              placeholder={t("summary.name")}
-              disabled={save === "saved"}
-              className="h-10 min-w-0 flex-1 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
-            />
-            <Button type="submit" disabled={save === "saving" || save === "saved" || !name.trim()}>
-              {save === "saved" ? t("summary.saved") : t("summary.submit")}
-            </Button>
-          </div>
-          {saveError && (
-            <p role="alert" className="text-sm text-destructive">
-              {saveError}
-            </p>
-          )}
-        </form>
-      ) : (
-        <p className="text-xs text-muted-foreground">{t("summary.needOne")}</p>
+    <>
+      {line && (
+        <EndRow order={0}>
+          <EndLines lines={[line]} />
+        </EndRow>
       )}
-      <Link href={`/leaderboard?board=geo&format=${GEO_REGION_STREAK_BOARD}`} className={cn(buttonVariants({ variant: "outline", size: "lg" }), "w-full")}>
-        <Trophy className="h-4 w-4" aria-hidden />{` ${t("board")}`}
-      </Link>
-    </div>
+      <EndRow order={1}>
+        <EndShareCard
+          title={t("summary.shareTitle")}
+          sub={t("summary.shareCount", { n: streak })}
+          text={text}
+          url={url}
+          kind="guessr"
+          picture={<ShareSquares rows={[squares.slice(0, 5), squares.slice(5)].filter((r) => r.length)} label={t("summary.shareCount", { n: streak })} />}
+        />
+      </EndRow>
+      <EndRow order={2} testId="streak-summary">
+        <EndBoard
+          href={`/leaderboard?board=geo&format=${GEO_REGION_STREAK_BOARD}`}
+          boardLabel={t("board")}
+          save={
+            resultToken && streak > 0
+              ? {
+                  label: t("summary.save"),
+                  placeholder: t("summary.name"),
+                  submit: t("summary.submit"),
+                  saved: t("summary.saved"),
+                  failed: t("summary.saveFailed"),
+                  onSave: (name) => post("/api/geo/streak/leaderboard", { resultToken, playerName: name }).then(() => undefined),
+                }
+              : undefined
+          }
+          note={t("summary.needOne")}
+        />
+      </EndRow>
+    </>
   );
 }

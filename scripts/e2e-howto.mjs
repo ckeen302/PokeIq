@@ -3,7 +3,7 @@
  * tablet it's 448px wide and as tall as the others, 680px at most and never
  * taller than the screen less 64px; on a phone it's the screen's width less
  * 16px each side. Its rules scroll inside it (never sideways), and its
- * buttons are on screen without scrolling the page.
+ * buttons are on screen without scrolling the page, never under the tab bar.
  *
  *   node scripts/e2e-howto.mjs [baseUrl]     # or from e2e-smoke.mjs (E2E_ONLY=howto runs just this)
  */
@@ -13,6 +13,8 @@ export const HOWTO_GAMES = ["/pokedle", "/pokeguessr", "/pikadoku", "/pokeconnec
 const SIZES = [
   [1440, 900, false],
   [1024, 768, false],
+  // A small laptop or tablet: the phone's tab bar shows below 1024px.
+  [1000, 578, false],
   [390, 844, true],
   [360, 740, true],
 ];
@@ -27,6 +29,7 @@ function measureCard(card) {
   if (!body) out.push("has no scrolling body");
   else if (getComputedStyle(body).overflowY !== "auto") out.push("its body doesn't scroll");
   if (!play || play.top < r.top || play.bottom > Math.min(r.bottom, window.innerHeight) + 1) out.push("its Let's play! button isn't on screen");
+  else if (!card.contains(document.elementFromPoint(play.left + play.width / 2, play.bottom - 2))) out.push("something (the tab bar?) covers its Let's play! button");
   if (r.top < 0 || r.bottom > window.innerHeight) out.push(`runs off the screen (${Math.round(r.top)} to ${Math.round(r.bottom)})`);
   else if (Math.abs(r.top - (window.innerHeight - r.height) / 2) > 2) out.push(`isn't centred on the screen (top at ${Math.round(r.top)}px)`);
   for (const el of card.querySelectorAll("*")) {

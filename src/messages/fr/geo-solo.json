@@ -55,6 +55,7 @@
       "blurb": "Les lieux du jour, les mêmes pour tout le monde.",
       "play": "Jouer celle du jour",
       "resume": "Reprendre le Quotidien {num}",
+      "streak": "{n, plural, one {Série de {n} jour} other {Série de {n} jours}}",
       "started": "Tu as déjà commencé le Quotidien du jour dans ce navigateur ou sur ton compte. C'est une partie par jour."
     },
     "weekly": {
@@ -246,6 +247,7 @@
     "everyone": "Les repères de tous",
     "answer": "La réponse",
     "making": "Création de l'image…",
-    "share": "Partager cette carte"
+    "share": "Partager cette carte",
+    "none": "Pas encore assez de repères sur la manche {round}"
   }
 }
