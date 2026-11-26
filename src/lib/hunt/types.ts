@@ -290,7 +290,7 @@ export interface HuntReveal {
   regions: HuntRegionId[];
   /** The pin (empty when time ran out with none down). */
   pins: HuntPinResult[];
-  /** The hints taken this round, and what they cost in all. */
+  /** The hints taken this round, and what they cost in all (taken off the pin's points, which stop at zero). */
   hints: HuntHintKind[];
   hintCost: number;
   fact: string;

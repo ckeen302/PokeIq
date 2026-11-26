@@ -87,9 +87,9 @@ export function HuntSetup({
           </p>
         )}
 
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)]">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)]">
           {/* The Daily Hunt, and today's board when there is one. */}
-          <section className="flex flex-col gap-3 rounded-lg border border-warning/40 bg-warning/[0.06] p-4" data-testid="hunt-daily-card" aria-labelledby={`${id}-daily`}>
+          <section className="flex min-w-0 flex-col gap-3 rounded-lg border border-warning/40 bg-warning/[0.06] p-4" data-testid="hunt-daily-card" aria-labelledby={`${id}-daily`}>
             <div>
               <p className="hud-label flex items-center gap-1.5 text-warning">
                 <CalendarDays className="h-3.5 w-3.5" aria-hidden />
@@ -108,13 +108,13 @@ export function HuntSetup({
           </section>
 
           {/* A free hunt: the map, the difficulty, Play. */}
-          <section className="flex flex-col gap-4 rounded-lg border p-4" aria-labelledby={`${id}-free`} data-testid="hunt-free">
+          <section className="flex min-w-0 flex-col gap-4 rounded-lg border p-4" aria-labelledby={`${id}-free`} data-testid="hunt-free">
             <h4 id={`${id}-free`} className="sr-only">
               {t("setup.free")}
             </h4>
             <div className="space-y-1.5">
               <p className="hud-label">{t("setup.map")}</p>
-              <div className="flex flex-wrap gap-1.5 max-md:-mx-4 max-md:flex-nowrap max-md:overflow-x-auto max-md:px-4 max-md:pb-1 max-md:[scrollbar-width:none] max-md:[&>*]:shrink-0" role="radiogroup" aria-label={t("setup.map")} data-testid="hunt-map-picker">
+              <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={t("setup.map")} data-testid="hunt-map-picker">
                 {maps.map((m) => (
                   <button key={m.id} type="button" role="radio" aria-checked={m.id === picked.id} disabled={hard && m.id !== WORLD_REGION} onClick={() => onMap(m.id)} className={radio(m.id === picked.id)} data-map={m.id}>
                     {m.id === WORLD_REGION && <Globe2 className="h-3.5 w-3.5" aria-hidden />}

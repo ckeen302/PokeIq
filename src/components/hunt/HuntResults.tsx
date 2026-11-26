@@ -10,6 +10,7 @@ import { localeHref } from "@/i18n/href";
 import huntNs from "@/messages/hunt";
 import geoNs from "@/messages/geo";
 import { GeoMap, type HuntMapSpot, type RevealedRound } from "@/components/geo/GeoMap";
+import { usePhone } from "@/components/geo/GameShell";
 import { END_MAP_PAD, END_MAP_PAD_PICKED, EndLines, EndRow, EndScreen, EndShareCard, EndTracker, RoundTag, ShareSquares, type TrackerCell } from "@/components/geo/EndScreen";
 import type { HuntPokemonView } from "./HuntCard";
 import { formTagOf } from "./HuntCard";
@@ -62,7 +63,9 @@ export function HuntResults({ region, rounds, modeLine, newBest, share, daily, o
   const tone = (i: number): "best" | "worst" | undefined => (i === best ? "best" : i === worst ? "worst" : undefined);
 
   // Every round's pin and its nearest spot (numbered flags); a picked round's other spots too.
-  const marks = useMemo(() => rounds.map((r) => revealMarks(r.spots, r.pin, t)), [rounds, t]);
+  // A phone's small map keeps to the flags (the picked round's card says where its pin was).
+  const phone = usePhone();
+  const marks = useMemo(() => rounds.map((r) => revealMarks(r.spots, r.pin, t, undefined, !phone)), [rounds, t, phone]);
   const revealed = useMemo<RevealedRound[]>(
     () =>
       rounds.map((r, i) => {

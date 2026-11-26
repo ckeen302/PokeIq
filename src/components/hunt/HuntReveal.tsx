@@ -72,10 +72,10 @@ export interface HuntRevealProps {
 }
 
 /** The round's spots and pin as the map draws them: the pin's line to its nearest spot (PokéGuessr's flag), and every other spot. */
-export function revealMarks(spots: HuntRevealSpot[], pin: HuntRevealPin | null, t: HuntT, delayOf: (i: number) => number = () => 0): { revealed: RevealedRound[]; others: HuntMapSpot[] } {
+export function revealMarks(spots: HuntRevealSpot[], pin: HuntRevealPin | null, t: HuntT, delayOf: (i: number) => number = () => 0, tags = true): { revealed: RevealedRound[]; others: HuntMapSpot[] } {
   const near = pin ? spots[pin.spot] : undefined;
   const revealed: RevealedRound[] = pin && near ? [{ guess: pin.pin, answer: { pin: [near.x, near.y], mask: near.mask } }] : [];
-  const others: HuntMapSpot[] = spots.flatMap((s, i) => (pin && i === pin.spot ? [] : [{ x: s.x, y: s.y, mask: s.mask, tag: shortLabel(s.labels, t), delay: delayOf(i) }]));
+  const others: HuntMapSpot[] = spots.flatMap((s, i) => (pin && i === pin.spot ? [] : [{ x: s.x, y: s.y, mask: s.mask, tag: tags ? shortLabel(s.labels, t) : undefined, delay: delayOf(i) }]));
   return { revealed, others };
 }
 
@@ -142,7 +142,8 @@ export function HuntReveal(p: HuntRevealProps) {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const { revealed, others } = revealMarks(p.spots, p.pin, t, (i) => regionDelay(p.spots[i].region) + (instant ? 0 : (i % 4) * 0.04));
+  // A phone's small map keeps to the flags: the list under it has every spot's games and methods.
+  const { revealed, others } = revealMarks(p.spots, p.pin, t, (i) => regionDelay(p.spots[i].region) + (instant ? 0 : (i % 4) * 0.04), !phone);
   const shown = useCount(p.score, instant ? 0 : COUNT_MS, countAt * 1000);
   const prev = p.scores.slice(0, -1);
   const after = (s: number) => ({ initial: instant ? false : { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.3, delay: instant ? 0 : s, ease: [0.2, 0.8, 0.2, 1] as const } });

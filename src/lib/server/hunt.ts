@@ -409,7 +409,7 @@ export function gradeHunt(state: HuntState, guess: { pins: HuntPin[]; timeout?: 
     regions: spec.mode === "region" && spec.region ? [spec.region] : loaded.entry.regions,
     pins: pinResults,
     hints,
-    hintCost: scored.score - score,
+    hintCost: hints.reduce((sum, h) => sum + HUNT_HINT_COSTS[h], 0),
     fact: factOf(loaded),
     dex: `/pokemon/${loaded.entry.slug}#encounters`,
   };
