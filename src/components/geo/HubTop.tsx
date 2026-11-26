@@ -77,11 +77,17 @@ export interface HubTopData {
  * Every card's face, the Daily's and each mode's alike: a thick slab of purple, lit along its top edge and with a darker
  * lip along its bottom, a faint dot grain over it.
  */
-const FACE =
-  "bg-[radial-gradient(rgb(255_255_255/0.07)_1px,transparent_1.5px),linear-gradient(180deg,#5444bd_0%,#4334a0_55%,#3a2c8c_100%)] [background-size:9px_9px,100%_100%] shadow-[inset_0_2px_0_rgb(255_255_255/0.22),inset_0_-5px_0_rgb(18_10_60/0.45),0_10px_24px_rgb(0_0_0/0.5)] ring-1 ring-[#2a1f6e]";
+const FACE = cn(
+  // By night: a deep violet slab, a soft sheen across its top, a darker lip along its bottom, a faint dot grain.
+  "bg-[radial-gradient(120%_85%_at_50%_-25%,rgb(255_255_255/0.2),transparent_55%),radial-gradient(rgb(255_255_255/0.06)_1px,transparent_1.5px),linear-gradient(180deg,#5747d2_0%,#4233ab_55%,#31258a_100%)] [background-size:100%_100%,9px_9px,100%_100%]",
+  "shadow-[inset_0_2px_0_rgb(255_255_255/0.24),inset_0_-5px_0_rgb(18_10_60/0.45),0_10px_24px_rgb(0_0_0/0.5)] ring-1 ring-white/10",
+  // By day: the same slab in white and lavender, its lip a soft violet, so it sits on the light page like it belongs.
+  "[.light_&]:bg-[radial-gradient(120%_85%_at_50%_-25%,rgb(255_255_255/0.95),transparent_55%),radial-gradient(rgb(90_70_210/0.08)_1px,transparent_1.5px),linear-gradient(180deg,#ffffff_0%,#f3efff_55%,#e6dfff_100%)]",
+  "[.light_&]:shadow-[inset_0_2px_0_rgb(255_255_255/1),inset_0_-5px_0_rgb(120_100_220/0.24),0_10px_26px_rgb(70_50_170/0.2)] [.light_&]:ring-[#d4c9ff]",
+);
 const CARD = cn("rounded-2xl", FACE);
 /** A section's name as a tab on top of its first card. */
-const TAB = "inline-flex items-center rounded-t-xl bg-[#4a3bb0] px-3.5 pb-1 pt-1.5 font-display text-[11px] font-bold uppercase italic leading-none tracking-[0.08em] text-[#d9d2ff] shadow-[inset_0_2px_0_rgb(255_255_255/0.2)] ring-1 ring-[#2a1f6e] md:text-xs";
+const TAB = "inline-flex items-center rounded-t-xl bg-[#4a3bb0] px-3.5 pb-1 pt-1.5 font-display text-[11px] font-bold uppercase italic leading-none tracking-[0.08em] text-[#d9d2ff] shadow-[inset_0_2px_0_rgb(255_255_255/0.2)] ring-1 ring-white/10 md:text-xs [.light_&]:bg-white [.light_&]:text-[#4a3bb0] [.light_&]:ring-[#d4c9ff] [.light_&]:shadow-[0_-2px_10px_rgb(70_50_170/0.08)]";
 const LABEL = "font-display text-[10px] font-bold uppercase italic leading-none tracking-[0.12em] text-[#c8bfff] md:text-[11px]";
 const TITLE = "font-display font-bold uppercase italic leading-none tracking-wide text-white [text-shadow:0_2px_0_#120f24]";
 const GREEN =
@@ -309,12 +315,12 @@ function StreakDays({ days }: { days: HubTopData["days"] }) {
           <span
             className={cn(
               "flex h-6 w-6 items-center justify-center rounded-md md:h-[clamp(1.2rem,1.4vw,1.6rem)] md:w-[clamp(1.2rem,1.4vw,1.6rem)]",
-              d.played ? "bg-gradient-to-b from-[#ffd23c] to-[#ff9a1f] text-[#3a2200] shadow-[inset_0_-2px_0_rgb(0_0_0/0.18)]" : d.today ? "bg-[#120f24]/70 ring-2 ring-[#ffd23c]/80" : "bg-[#120f24]/60 ring-1 ring-white/10",
+              d.played ? "bg-gradient-to-b from-[#ffd23c] to-[#ff9a1f] text-[#3a2200] shadow-[inset_0_-2px_0_rgb(0_0_0/0.18)]" : d.today ? "bg-[#120f24]/70 ring-2 ring-[#ffd23c]/80 [.light_&]:bg-white [.light_&]:ring-[#f59e0b]" : "bg-[#120f24]/60 ring-1 ring-white/10 [.light_&]:bg-[#e2dbff] [.light_&]:ring-[#cfc4ff]",
             )}
           >
             {d.played && <Check className="h-3.5 w-3.5" strokeWidth={3.5} />}
           </span>
-          <span className={cn("font-display text-[10px] font-bold uppercase leading-none", d.today ? "text-[#ffd23c]" : "text-white/55")}>{fmt.format(new Date(d.date + "T12:00:00Z"))}</span>
+          <span className={cn("font-display text-[10px] font-bold uppercase leading-none", d.today ? "text-[#ffd23c] [.light_&]:text-[#c2410c]" : "text-white/55 [.light_&]:text-[#6b5fb5]")}>{fmt.format(new Date(d.date + "T12:00:00Z"))}</span>
         </li>
       ))}
     </ol>
@@ -329,18 +335,18 @@ function DailyCard({ d, onPlay }: { d: HubTopData; onPlay(): void }) {
     <div className={cn(CARD, "relative p-3 md:p-3.5")} data-testid="geo-daily-card">
       <Backdrop pattern="daily" />
       {/* The Daily's emblem, top right like every mode's. */}
-      <Image src={dailyEmblem} alt="" aria-hidden sizes="96px" className="pointer-events-none absolute -top-5 right-2 h-[3.75rem] w-auto rotate-[6deg] md:-right-3 md:-top-9 md:h-[clamp(3rem,3.6vw,4.75rem)] drop-shadow-[0_10px_10px_rgb(10_5_40/0.55)]" />
+      <Image src={dailyEmblem} alt="" aria-hidden sizes="96px" className="pointer-events-none absolute -top-5 right-2 h-[3.75rem] w-auto rotate-[6deg] md:-right-3 md:-top-9 md:h-[clamp(3rem,3.6vw,4.75rem)] drop-shadow-[0_10px_10px_rgb(10_5_40/0.55)] [.light_&]:drop-shadow-[0_8px_10px_rgb(70_50_170/0.3)]" />
       <div className="relative">
-        <p className={cn(LABEL, "flex items-center gap-1.5 whitespace-nowrap text-[#ffd23c] md:pr-10 md:text-[clamp(9px,0.7vw,11px)]")}>
+        <p className={cn(LABEL, "flex items-center gap-1.5 whitespace-nowrap text-[#ffd23c] [.light_&]:text-[#c2410c] md:pr-10 md:text-[clamp(9px,0.7vw,11px)]")}>
           <Compass className="h-3.5 w-3.5" aria-hidden />
           {t("hub.daily.label", { num: d.dailyNum ?? "" })}
-          {d.dailyMap && <span className="text-[#c8bfff]">· {d.dailyMap}</span>}
+          {d.dailyMap && <span className="text-[#c8bfff] [.light_&]:text-[#6b5fb5]">· {d.dailyMap}</span>}
         </p>
-        <h2 className={cn(TITLE, "mt-1.5 text-[clamp(1.2rem,3.4vh,1.55rem)] normal-case tracking-normal md:text-[clamp(1rem,1.2vw,1.55rem)] [:lang(en)_&]:capitalize")}>{t("hub.daily.title")}</h2>
+        <h2 className={cn(TITLE, "mt-1.5 text-[clamp(1.2rem,3.4vh,1.55rem)] normal-case tracking-normal md:text-[clamp(1rem,1.2vw,1.55rem)] [:lang(en)_&]:capitalize [.light_&]:text-[#1d1552] [.light_&]:[text-shadow:0_1px_0_rgb(255_255_255/0.9)]")}>{t("hub.daily.title")}</h2>
         <div className="mt-2.5 flex flex-wrap items-end justify-between gap-3 max-md:flex-nowrap">
           <StreakDays days={d.days} />
           {d.streak > 0 && (
-            <p className="flex items-center gap-1 pb-0.5 font-display text-xs font-bold uppercase italic leading-none text-white">
+            <p className="flex items-center gap-1 pb-0.5 font-display text-xs font-bold uppercase italic leading-none text-white [.light_&]:text-[#1d1552]">
               <Flame className="h-4 w-4 text-[#ff9a1f]" aria-hidden />
               {t("hub.daily.streak", { n: d.streak })}
             </p>
@@ -348,17 +354,17 @@ function DailyCard({ d, onPlay }: { d: HubTopData; onPlay(): void }) {
         </div>
         <div className="mt-3">
           {d.dailyPlayed ? (
-            <div className="space-y-1.5 rounded-lg bg-[#120f24]/60 px-3 py-2" data-testid="geo-daily-played">
+            <div className="space-y-1.5 rounded-lg bg-[#120f24]/60 px-3 py-2 [.light_&]:bg-white/80 [.light_&]:ring-1 [.light_&]:ring-[#d4c9ff]" data-testid="geo-daily-played">
               <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5">
-                <p className="whitespace-nowrap font-display text-sm font-bold italic text-[#ffd23c]">{d.dailyScore !== undefined ? t("hub.daily.scored", { score: fmt(d.dailyScore) }) : t("hub.played")}</p>
+                <p className="whitespace-nowrap font-display text-sm font-bold italic text-[#ffd23c] [.light_&]:text-[#c2410c]">{d.dailyScore !== undefined ? t("hub.daily.scored", { score: fmt(d.dailyScore) }) : t("hub.played")}</p>
                 {d.onDailyResult && (
-                  <button type="button" onClick={d.onDailyResult} className="flex shrink-0 items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 font-display text-[11px] font-bold uppercase italic tracking-wide text-white ring-1 ring-white/20 transition-colors hover:bg-white/20" data-testid="geo-daily-result">
+                  <button type="button" onClick={d.onDailyResult} className="flex shrink-0 items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 font-display text-[11px] font-bold uppercase italic tracking-wide text-white ring-1 ring-white/20 transition-colors hover:bg-white/20 [.light_&]:bg-[#4a3bb0] [.light_&]:ring-0" data-testid="geo-daily-result">
                     <Trophy className="h-3.5 w-3.5" aria-hidden />
                     {t("hub.result")}
                   </button>
                 )}
               </div>
-              <div className="[&>div]:justify-start [&>div]:text-white/75 [&_span]:text-white">
+              <div className="[&>div]:justify-start [&>div]:text-white/75 [&_span]:text-white [.light_&]:[&>div]:text-[#4b4280] [.light_&]:[&_span]:text-[#1d1552]">
                 <NextDailyCountdown label={g("results.nextDaily")} />
               </div>
             </div>
@@ -385,7 +391,7 @@ function DailyCard({ d, onPlay }: { d: HubTopData; onPlay(): void }) {
 }
 
 const svgUrl = (svg: string) => `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
-const LINE = "fill='none' stroke='white' stroke-opacity='.14' stroke-width='1.4'";
+const LINE = "fill='none' stroke='white' stroke-width='1.4'";
 /**
  * Each card's faint backdrop, after GeoGuessr's: line art in white at a few percent, what the mode is about
  * (a calendar's grid, a globe's lines, speed lines, radar rings, a duel's ring and crossed slashes, rank chevrons under a star, a confetti burst).
@@ -423,7 +429,7 @@ const PATTERNS = {
   },
   party: {
     image: svgUrl(
-      `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 160'><g ${LINE}><path d='M80 80L80 10M80 80L130 30M80 80L150 80M80 80L130 130M80 80L80 150M80 80L30 130M80 80L10 80M80 80L30 30' stroke-dasharray='4 9'/><circle cx='80' cy='80' r='24'/></g><g fill='white' fill-opacity='.15'><rect x='104' y='22' width='12' height='5' rx='2' transform='rotate(30 110 24)'/><rect x='30' y='48' width='12' height='5' rx='2' transform='rotate(-35 36 50)'/><rect x='118' y='104' width='12' height='5' rx='2' transform='rotate(60 124 106)'/><rect x='40' y='118' width='12' height='5' rx='2' transform='rotate(15 46 120)'/><circle cx='56' cy='22' r='3.5'/><circle cx='138' cy='64' r='3'/><circle cx='22' cy='100' r='3'/><circle cx='100' cy='142' r='3.5'/><path d='M126 140l2.5 5 5.5 .8-4 3.9 1 5.5-5-2.6-5 2.6 1-5.5-4-3.9 5.5-.8z'/><path d='M24 16l2.5 5 5.5 .8-4 3.9 1 5.5-5-2.6-5 2.6 1-5.5-4-3.9 5.5-.8z'/></g></svg>`,
+      `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 160'><g ${LINE}><path d='M80 80L80 10M80 80L130 30M80 80L150 80M80 80L130 130M80 80L80 150M80 80L30 130M80 80L10 80M80 80L30 30' stroke-dasharray='4 9'/><circle cx='80' cy='80' r='24'/></g><g fill='white'><rect x='104' y='22' width='12' height='5' rx='2' transform='rotate(30 110 24)'/><rect x='30' y='48' width='12' height='5' rx='2' transform='rotate(-35 36 50)'/><rect x='118' y='104' width='12' height='5' rx='2' transform='rotate(60 124 106)'/><rect x='40' y='118' width='12' height='5' rx='2' transform='rotate(15 46 120)'/><circle cx='56' cy='22' r='3.5'/><circle cx='138' cy='64' r='3'/><circle cx='22' cy='100' r='3'/><circle cx='100' cy='142' r='3.5'/><path d='M126 140l2.5 5 5.5 .8-4 3.9 1 5.5-5-2.6-5 2.6 1-5.5-4-3.9 5.5-.8z'/><path d='M24 16l2.5 5 5.5 .8-4 3.9 1 5.5-5-2.6-5 2.6 1-5.5-4-3.9 5.5-.8z'/></g></svg>`,
     ),
     size: "auto 190%",
     at: "86% 45%",
@@ -431,15 +437,43 @@ const PATTERNS = {
 } as const;
 type Pattern = keyof typeof PATTERNS;
 
-/** A card's backdrop, faint, fading in from its left so the name stays on plain purple. */
+/** Each mode's own colour: a soft light behind its emblem, so no two cards look alike. */
+const GLOW: Record<Pattern, string> = {
+  daily: "#ff5d5d",
+  classic: "#38b6ff",
+  streak: "#ff7a1f",
+  hunt: "#ff4d79",
+  duels: "#ff5470",
+  ranked: "#c25cff",
+  party: "#ffb52e",
+};
+
+/**
+ * A card's backdrop: its mode's colour glowing behind the emblem, and its line drawing (white by night, violet by
+ * day), fading in from the left so the name stays on a plain face. The drawing is a mask, so one picture serves both.
+ */
 function Backdrop({ pattern }: { pattern: Pattern }) {
   const p = PATTERNS[pattern];
+  const tile = p.size.includes("%") ? "no-repeat" : "repeat";
   return (
-    <span
-      className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl [mask-image:linear-gradient(90deg,rgb(0_0_0/.5),black_55%)]"
-      style={{ backgroundImage: p.image, backgroundSize: p.size, backgroundPosition: p.at, backgroundRepeat: p.size.includes("%") ? "no-repeat" : "repeat" }}
-      aria-hidden
-    />
+    <span className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl" aria-hidden>
+      <span className="absolute -right-[6%] -top-[30%] aspect-square h-[150%] rounded-full opacity-50 [.light_&]:opacity-35" style={{ background: `radial-gradient(closest-side, ${GLOW[pattern]}, transparent)` }} />
+      <span
+        className="absolute inset-0 bg-white/[0.16] [.light_&]:bg-[#5a46d0]/[0.2]"
+        style={{
+          maskImage: `${p.image}, linear-gradient(90deg, rgb(0 0 0 / .5), black 55%)`,
+          WebkitMaskImage: `${p.image}, linear-gradient(90deg, rgb(0 0 0 / .5), black 55%)`,
+          maskSize: `${p.size}, 100% 100%`,
+          WebkitMaskSize: `${p.size}, 100% 100%`,
+          maskPosition: `${p.at}, 0 0`,
+          WebkitMaskPosition: `${p.at}, 0 0`,
+          maskRepeat: `${tile}, no-repeat`,
+          WebkitMaskRepeat: `${tile}, no-repeat`,
+          maskComposite: "intersect",
+          WebkitMaskComposite: "source-in",
+        }}
+      />
+    </span>
   );
 }
 
@@ -474,10 +508,10 @@ function ModeTile({
         alt=""
         aria-hidden
         sizes="128px"
-        className="pointer-events-none absolute -top-[12%] right-[4%] h-[94%] w-auto drop-shadow-[0_10px_10px_rgb(10_5_40/0.55)] transition-transform duration-300 ease-out group-hover:-translate-y-1.5 group-hover:rotate-[-4deg] group-hover:scale-105 motion-reduce:transition-none"
+        className="pointer-events-none absolute -top-[12%] right-[4%] h-[94%] w-auto drop-shadow-[0_10px_10px_rgb(10_5_40/0.55)] [.light_&]:drop-shadow-[0_8px_10px_rgb(70_50_170/0.3)] transition-transform duration-300 ease-out group-hover:-translate-y-1.5 group-hover:rotate-[-4deg] group-hover:scale-105 motion-reduce:transition-none"
       />
       <span className="relative block min-w-0 max-w-[58%] px-3.5 pt-3.5">
-        <span className="block font-display text-[1.05rem] font-bold italic leading-[1.05] text-white [text-shadow:0_2px_0_rgb(18_10_60/0.6)] md:text-[clamp(0.95rem,1.1vw,1.45rem)] [:lang(en)_&]:capitalize">{title}</span>
+        <span className="block font-display text-[1.05rem] font-bold italic leading-[1.05] text-white [text-shadow:0_2px_0_rgb(18_10_60/0.6)] md:text-[clamp(0.95rem,1.1vw,1.45rem)] [:lang(en)_&]:capitalize [.light_&]:text-[#1d1552] [.light_&]:[text-shadow:0_1px_0_rgb(255_255_255/0.9)]">{title}</span>
         {sub && <span className="mt-1 block truncate text-[13px] font-semibold text-[#c9c0ff]">{sub}</span>}
       </span>
     </>
@@ -508,13 +542,13 @@ function DropBar({ label, emblems, open, onToggle, controls, testId }: { label: 
       className={cn(CARD, "group relative flex h-[4.25rem] w-full items-center gap-3 overflow-hidden px-4 text-left transition-[filter] active:brightness-110 md:hidden")}
       data-testid={testId}
     >
-      <span className="font-display text-[1.2rem] font-bold italic leading-none text-white [text-shadow:0_2px_0_rgb(18_10_60/0.6)]">{label}</span>
+      <span className="font-display text-[1.2rem] font-bold italic leading-none text-white [text-shadow:0_2px_0_rgb(18_10_60/0.6)] [.light_&]:text-[#1d1552] [.light_&]:[text-shadow:0_1px_0_rgb(255_255_255/0.9)]">{label}</span>
       <span className="ml-auto flex items-center" aria-hidden>
         {emblems.map((e, i) => (
-          <Image key={i} src={e} alt="" sizes="48px" className="-ml-2.5 h-10 w-10 object-contain drop-shadow-[0_4px_6px_rgb(10_5_40/0.5)] first:ml-0" style={{ transform: `rotate(${(i - 1) * 8}deg)` }} />
+          <Image key={i} src={e} alt="" sizes="48px" className="-ml-2.5 h-10 w-10 object-contain drop-shadow-[0_4px_6px_rgb(10_5_40/0.5)] [.light_&]:drop-shadow-[0_4px_6px_rgb(70_50_170/0.3)] first:ml-0" style={{ transform: `rotate(${(i - 1) * 8}deg)` }} />
         ))}
       </span>
-      <ChevronDown className={cn("h-5 w-5 shrink-0 text-white/85 transition-transform duration-300", open && "rotate-180")} aria-hidden />
+      <ChevronDown className={cn("h-5 w-5 shrink-0 text-white/85 transition-transform duration-300 [.light_&]:text-[#4a3bb0]", open && "rotate-180")} aria-hidden />
     </button>
   );
 }
