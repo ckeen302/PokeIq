@@ -1,7 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { previousDate } from "./daily";
+import { localDateString, previousDate } from "./daily";
 import type { DleHint } from "./dle-types";
 import type { DleAssist } from "./dle-assist";
 import { updatePlayerRating } from "./rating";
@@ -356,6 +356,32 @@ export function geoDailyStreak(p: Progress, today: string): number {
   return currentStreak(geoDailyLast(p), p.best["geo:dailyStreak"] ?? 0, today);
 }
 
+/** Whether PokéGuessr was played on `date`, in any mode (the Daily's own record counts too, for days before this was kept). */
+export function geoPlayedOn(p: Progress, date: string): boolean {
+  return !!p.best[`geo-day:${date}`] || p.best[`geo-daily:${date}`] !== undefined;
+}
+
+/** PokéGuessr's play streak as of `today`: days in a row with any game played, alive while today or yesterday was. */
+export function geoPlayStreak(p: Progress, today: string): number {
+  let d = geoPlayedOn(p, today) ? today : previousDate(today);
+  let n = 0;
+  while (geoPlayedOn(p, d) && n < 3660) {
+    n++;
+    d = previousDate(d);
+  }
+  return n;
+}
+
+/** Marks today as a day PokéGuessr was played (any mode: a game, a streak, a hunt, a duel, a party), kept in `best` as geo-day:YYYY-MM-DD. */
+export function markGeoDay(date = localDateString()): void {
+  const p = read();
+  if (p.best[`geo-day:${date}`]) return;
+  const next: Progress = structuredClone(p);
+  next.best[`geo-day:${date}`] = 1;
+  if (!next.modulesPlayed.includes("geo")) next.modulesPlayed.push("geo");
+  write(next);
+}
+
 /** A finished PokéGuessr game or streak: XP, per-mode best, daily record and badges. */
 export function recordGeoGame(
   board: string,
@@ -374,6 +400,7 @@ export function recordGeoGame(
   p.xp += xp;
   p.best[key] = Math.max(p.best[key] ?? 0, game.score);
   p.best["geo:games"] = (p.best["geo:games"] ?? 0) + 1;
+  p.best[`geo-day:${localDateString()}`] = 1;
   if (dailyKey && game.daily && p.best[dailyKey] === undefined) {
     p.best[dailyKey] = game.score;
     // Daily streak, kept in the numeric `best` map: the last date as YYYYMMDD.

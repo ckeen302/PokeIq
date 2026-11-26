@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { markGeoDay } from "@/lib/progress";
 import { createPortal } from "react-dom";
 import { useT } from "@/i18n/client";
 import huntNs from "@/messages/hunt";
@@ -123,6 +124,10 @@ export function HuntGame({ maps, inline = false, onActive }: {
   const regionName = useCallback((id: string) => names.region(id[0].toUpperCase() + id.slice(1)), [names]);
 
   const [phase, setPhase] = useState<Phase>("setup");
+  // A hunt played to its results counts as a day of PokéGuessr (the landing's streak).
+  useEffect(() => {
+    if (phase === "results") markGeoDay();
+  }, [phase]);
   // PokéGuessr's music plays while a hunt is on (from Play, through its rounds and their reveals), not in the menus or on the final results.
   useGuessrMusic(phase === "starting" || phase === "playing" || phase === "grading" || phase === "reveal");
   const [busy, setBusy] = useState<HuntPlay | null>(null);

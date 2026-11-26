@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { markGeoDay } from "@/lib/progress";
 import Link from "@/components/ui/Link";
 import { useRouter } from "@/i18n/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
@@ -175,6 +176,11 @@ export function GeoParty({ code, regions, names }: { code: string; regions: GeoR
 
   const map = view ? regions.find((r) => r.id === view.settings.region) : undefined;
   /** The standings: the game is over and its last reveal (if this trainer saw the game) has been seen. */
+  // A match played to its end counts as a day of PokéGuessr (the landing's streak).
+  const finished = view?.status === "finished" && me !== null && sawPlay;
+  useEffect(() => {
+    if (finished) markGeoDay();
+  }, [finished]);
   const ended = view?.status === "finished" && (summary || !sawPlay || !last || view.end?.reason === "left");
   // The music plays while this trainer's game is on (the line-up, the rounds and their reveals), not in the lobby, for a watcher or on the standings.
   useGuessrMusic(!gone && !!map && me !== null && (view?.status === "playing" || (view?.status === "finished" && !ended)));

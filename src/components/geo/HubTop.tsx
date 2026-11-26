@@ -3,17 +3,15 @@
 import Image, { type StaticImageData } from "next/image";
 import Link from "@/components/ui/Link";
 import { useEffect, useRef, useState } from "react";
-import { Check, ChevronDown, Compass, Flame, Pencil, Play, Trophy } from "lucide-react";
+import { ChevronDown, Flame, Pencil } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAccount } from "@/lib/account";
 import { useGeoNames } from "@/lib/geo-i18n-client";
 import { Avatar3D, type TrainerPose } from "@/components/trainer3d/Avatar3D";
 import { TRAINER_PRESETS, presetTrainer } from "@/lib/trainer/presets";
-import { NextDailyCountdown } from "@/components/NextDailyCountdown";
 import { useT } from "@/i18n/client";
 import { formatNumber } from "@/i18n/format";
 import geoSolo from "@/messages/geo-solo";
-import geoNs from "@/messages/geo";
 import huntNs from "@/messages/hunt";
 import avatarNs from "@/messages/avatar";
 import creatorNs from "@/messages/trainer-creator";
@@ -68,7 +66,8 @@ export interface HubTopData {
   loading: boolean;
   /** The Daily's streak today (0: none) and the last seven days, oldest first. */
   streak: number;
-  days: { date: string; played: boolean; today: boolean }[];
+  /** This week, Monday to Sunday: the days PokéGuessr was played (any mode), today, and the days still to come. */
+  days: { date: string; played: boolean; today: boolean; future: boolean }[];
 }
 
 /**
@@ -86,10 +85,7 @@ const FACE = cn(
 const CARD = cn("rounded-2xl", FACE);
 /** A section's name as a tab on top of its first card. */
 const TAB = "inline-flex items-center rounded-t-xl bg-[#4a3bb0] px-3.5 pb-1 pt-1.5 font-display text-[11px] font-bold uppercase italic leading-none tracking-[0.08em] text-[#d9d2ff] shadow-[inset_0_2px_0_rgb(255_255_255/0.2)] ring-1 ring-white/10 md:text-xs [.light_&]:bg-white [.light_&]:text-[#4a3bb0] [.light_&]:ring-[#d4c9ff] [.light_&]:shadow-[0_-2px_10px_rgb(70_50_170/0.08)]";
-const LABEL = "font-display text-[10px] font-bold uppercase italic leading-none tracking-[0.12em] text-[#c8bfff] md:text-[11px]";
 const TITLE = "font-display font-bold uppercase italic leading-none tracking-wide text-white [text-shadow:0_2px_0_#120f24]";
-const GREEN =
-  "flex items-center justify-center gap-2 whitespace-nowrap rounded-full bg-gradient-to-b from-[#62d42a] to-[#3f9e12] font-display font-bold uppercase italic tracking-wide text-white shadow-[0_4px_16px_rgb(76_187_23/0.4),inset_0_-4px_0_rgb(0_0_0/0.2),inset_0_2px_0_rgb(255_255_255/0.25)] ring-2 ring-[#1e1a3f]/40 transition-[filter,transform] hover:brightness-110 active:scale-[0.98] disabled:opacity-60";
 
 /** What a hovered mode points at on the globe: one region (an atlas name), or the whole world. */
 export type HubFocus = string | "world" | null;
@@ -302,87 +298,43 @@ function Title() {
   );
 }
 
-/** The last seven days of the Daily: played ones ticked, today ringed. */
-function StreakDays({ days }: { days: HubTopData["days"] }) {
+/**
+ * The streak, after GeoGuessr's: its length on a tab, this week Monday to Sunday (a flame on each day PokéGuessr was
+ * played, in any mode; today ringed; the days to come faint), and the flame emblem over its corner.
+ */
+function StreakCard({ streak, days }: { streak: number; days: HubTopData["days"] }) {
   const t = useT(geoSolo);
   const fmt = new Intl.DateTimeFormat(t.locale, { weekday: "narrow", timeZone: "UTC" });
   return (
-    <ol className="flex gap-1 md:gap-[3px]" aria-hidden>
-      {days.map((d) => (
-        <li key={d.date} className="flex flex-col items-center gap-1">
-          <span
-            className={cn(
-              "flex h-6 w-6 items-center justify-center rounded-md md:h-[clamp(1.2rem,1.4vw,1.6rem)] md:w-[clamp(1.2rem,1.4vw,1.6rem)]",
-              d.played ? "bg-gradient-to-b from-[#ffd23c] to-[#ff9a1f] text-[#3a2200] shadow-[inset_0_-2px_0_rgb(0_0_0/0.18)]" : d.today ? "bg-[#120f24]/70 ring-2 ring-[#ffd23c]/80 [.light_&]:bg-white [.light_&]:ring-[#f59e0b]" : "bg-[#120f24]/60 ring-1 ring-white/10 [.light_&]:bg-[#e2dbff] [.light_&]:ring-[#cfc4ff]",
-            )}
-          >
-            {d.played && <Check className="h-3.5 w-3.5" strokeWidth={3.5} />}
-          </span>
-          <span className={cn("font-display text-[10px] font-bold uppercase leading-none", d.today ? "text-[#ffd23c] [.light_&]:text-[#c2410c]" : "text-white/55 [.light_&]:text-[#6b5fb5]")}>{fmt.format(new Date(d.date + "T12:00:00Z"))}</span>
-        </li>
-      ))}
-    </ol>
-  );
-}
-
-function DailyCard({ d, onPlay }: { d: HubTopData; onPlay(): void }) {
-  const t = useT(geoSolo);
-  const g = useT(geoNs);
-  const fmt = (n: number) => formatNumber(n, t.locale);
-  return (
-    <div className={cn(CARD, "relative p-3 md:p-3.5")} data-testid="geo-daily-card">
-      <Backdrop pattern="daily" />
-      {/* The Daily's emblem, top right like every mode's. */}
-      <Image src={dailyEmblem} alt="" aria-hidden sizes="96px" className="pointer-events-none absolute -top-5 right-2 h-[3.75rem] w-auto rotate-[6deg] md:-right-3 md:-top-9 md:h-[clamp(3rem,3.6vw,4.75rem)] drop-shadow-[0_10px_10px_rgb(10_5_40/0.55)] [.light_&]:drop-shadow-[0_8px_10px_rgb(70_50_170/0.3)]" />
-      <div className="relative">
-        <p className={cn(LABEL, "flex items-center gap-1.5 whitespace-nowrap text-[#ffd23c] [.light_&]:text-[#c2410c] md:pr-10 md:text-[clamp(9px,0.7vw,11px)]")}>
-          <Compass className="h-3.5 w-3.5" aria-hidden />
-          {t("hub.daily.label", { num: d.dailyNum ?? "" })}
-          {d.dailyMap && <span className="text-[#c8bfff] [.light_&]:text-[#6b5fb5]">· {d.dailyMap}</span>}
-        </p>
-        <h2 className={cn(TITLE, "mt-1.5 text-[clamp(1.2rem,3.4vh,1.55rem)] normal-case tracking-normal md:text-[clamp(1rem,1.2vw,1.55rem)] [:lang(en)_&]:capitalize [.light_&]:text-[#1d1552] [.light_&]:[text-shadow:0_1px_0_rgb(255_255_255/0.9)]")}>{t("hub.daily.title")}</h2>
-        <div className="mt-2.5 flex flex-wrap items-end justify-between gap-3 max-md:flex-nowrap">
-          <StreakDays days={d.days} />
-          {d.streak > 0 && (
-            <p className="flex items-center gap-1 pb-0.5 font-display text-xs font-bold uppercase italic leading-none text-white [.light_&]:text-[#1d1552]">
-              <Flame className="h-4 w-4 text-[#ff9a1f]" aria-hidden />
-              {t("hub.daily.streak", { n: d.streak })}
-            </p>
-          )}
-        </div>
-        <div className="mt-3">
-          {d.dailyPlayed ? (
-            <div className="space-y-1.5 rounded-lg bg-[#120f24]/60 px-3 py-2 [.light_&]:bg-white/80 [.light_&]:ring-1 [.light_&]:ring-[#d4c9ff]" data-testid="geo-daily-played">
-              <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5">
-                <p className="whitespace-nowrap font-display text-sm font-bold italic text-[#ffd23c] [.light_&]:text-[#c2410c]">{d.dailyScore !== undefined ? t("hub.daily.scored", { score: fmt(d.dailyScore) }) : t("hub.played")}</p>
-                {d.onDailyResult && (
-                  <button type="button" onClick={d.onDailyResult} className="flex shrink-0 items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 font-display text-[11px] font-bold uppercase italic tracking-wide text-white ring-1 ring-white/20 transition-colors hover:bg-white/20 [.light_&]:bg-[#4a3bb0] [.light_&]:ring-0" data-testid="geo-daily-result">
-                    <Trophy className="h-3.5 w-3.5" aria-hidden />
-                    {t("hub.result")}
-                  </button>
+    <div className="relative pt-[1.4rem]" data-testid="geo-streak-card">
+      <span className={cn(TAB, "absolute left-3 top-0")} data-testid="geo-streak-count">
+        {t("hub.daily.streak", { n: streak })}
+      </span>
+      <div className={cn(CARD, "relative px-3 pb-3 pt-2.5")}>
+        <Backdrop pattern="streak" />
+        <Image src={streakEmblem} alt="" aria-hidden sizes="96px" className="pointer-events-none absolute -right-2 -top-12 z-[1] h-[4.25rem] w-auto rotate-[8deg] drop-shadow-[0_10px_10px_rgb(10_5_40/0.55)] [.light_&]:drop-shadow-[0_8px_10px_rgb(70_50_170/0.3)] md:-top-[clamp(2.5rem,3vw,3.25rem)] md:h-[clamp(3.25rem,3.8vw,4.75rem)]" />
+        <ol className="relative grid grid-cols-7 gap-1 md:gap-[clamp(2px,0.3vw,5px)]" aria-label={t("hub.daily.streak", { n: streak })}>
+          {days.map((d) => (
+            <li key={d.date} className="flex flex-col items-center gap-1">
+              <span className={cn("font-display text-[10px] font-bold uppercase leading-none", d.today ? "text-[#ffd23c] [.light_&]:text-[#c2410c]" : "text-[#b9afff] [.light_&]:text-[#6b5fb5]", d.future && "opacity-50")}>
+                {fmt.format(new Date(d.date + "T12:00:00Z"))}
+              </span>
+              <span
+                className={cn(
+                  "flex aspect-square w-full items-center justify-center rounded-md font-display text-[clamp(0.7rem,0.85vw,0.95rem)] font-bold leading-none",
+                  d.played
+                    ? "bg-gradient-to-b from-[#ffb23c] to-[#ff6a1f] text-white shadow-[inset_0_-2px_0_rgb(0_0_0/0.18)]"
+                    : "bg-[#120f24]/55 text-white/80 [.light_&]:bg-[#e2dbff] [.light_&]:text-[#4b4280]",
+                  d.today && "ring-2 ring-[#ffd23c] [.light_&]:ring-[#f59e0b]",
+                  d.future && "opacity-40",
                 )}
-              </div>
-              <div className="[&>div]:justify-start [&>div]:text-white/75 [&_span]:text-white [.light_&]:[&>div]:text-[#4b4280] [.light_&]:[&_span]:text-[#1d1552]">
-                <NextDailyCountdown label={g("results.nextDaily")} />
-              </div>
-            </div>
-          ) : (
-            <button
-              type="button"
-              className={cn(GREEN, "h-10 w-full text-base md:h-[clamp(2.1rem,2.5vw,2.9rem)] md:text-[clamp(0.8rem,0.95vw,1.15rem)]")}
-              disabled={d.loading || !d.dailyNum}
-              onClick={() => {
-                onPlay();
-                d.onDaily();
-              }}
-              {...d.dailyWarm}
-              data-testid="geo-daily-play"
-            >
-              <Play className="h-4 w-4 fill-current" aria-hidden />
-              {d.dailyResume ? t("hub.daily.resume", { num: d.dailyNum ?? "" }) : t("hub.daily.play")}
-            </button>
-          )}
-        </div>
+                title={d.played ? t("hub.played") : undefined}
+              >
+                {d.played ? <Flame className="h-[60%] w-[60%] fill-current" aria-hidden /> : Number(d.date.slice(8))}
+              </span>
+            </li>
+          ))}
+        </ol>
       </div>
     </div>
   );
@@ -510,7 +462,7 @@ function ModeTile({
       />
       <span className="relative block min-w-0 max-w-[58%] px-3.5 pt-3.5">
         <span className="block font-display text-[1.05rem] font-bold italic leading-[1.05] text-white [text-shadow:0_2px_0_rgb(18_10_60/0.6)] md:text-[clamp(0.95rem,1.1vw,1.45rem)] [:lang(en)_&]:capitalize [.light_&]:text-[#1d1552] [.light_&]:[text-shadow:0_1px_0_rgb(255_255_255/0.9)]">{title}</span>
-        {sub && <span className="mt-1 block truncate text-[13px] font-semibold text-[#c9c0ff]">{sub}</span>}
+        {sub && <span className="mt-1 block truncate text-[12px] font-semibold text-[#c9c0ff] [.light_&]:text-[#6b5fb5] md:text-[clamp(11px,0.75vw,13px)]">{sub}</span>}
       </span>
     </>
   );
@@ -580,7 +532,29 @@ export function HubTop({ d }: { d: HubTopData }) {
   // Classic, the Streak and Hunt are played on the whole world (and its regions).
   const tileFocus: HubFocus[] = ["world", "world", "world"];
 
+  const fmt = (n: number) => formatNumber(n, t.locale);
+  const dailyDone = d.dailyPlayed;
   const tiles = [
+    // The Daily: today's game (or picking it up), and once it's played, its result.
+    <div key="daily" data-testid="geo-daily-card">
+      <ModeTile
+        emblem={dailyEmblem}
+        pattern="daily"
+        title={t("hub.daily.title")}
+        sub={dailyDone ? (d.dailyScore !== undefined ? `${t("hub.played")} · ${fmt(d.dailyScore)}` : t("hub.played")) : d.dailyResume ? t("hub.daily.resume", { num: d.dailyNum ?? "" }) : d.dailyNum ? t("hub.daily.label", { num: d.dailyNum }) : null}
+        onClick={
+          dailyDone
+            ? d.onDailyResult
+            : () => {
+                hop(trainer.current);
+                d.onDaily();
+              }
+        }
+        disabled={dailyDone ? !d.onDailyResult : d.loading || !d.dailyNum}
+        button={dailyDone ? undefined : d.dailyWarm}
+        testId={dailyDone ? (d.onDailyResult ? "geo-daily-result" : "geo-daily-played") : "geo-daily-play"}
+      />
+    </div>,
     <div key="classic" data-testid="geo-solo-card">
       <ModeTile
         emblem={classicEmblem}
@@ -589,15 +563,6 @@ export function HubTop({ d }: { d: HubTopData }) {
         onClick={d.onClassic}
         button={{ "aria-expanded": d.soloOpen, "aria-controls": "solo" }}
         testId="geo-solo-setup"
-      />
-    </div>,
-    <div key="streak" data-testid="region-streak-card">
-      <ModeTile
-        emblem={streakEmblem}
-        pattern="streak"
-        title={t("regionStreak.label")}
-        href="/pokeguessr/streak"
-        testId="region-streak-link"
       />
     </div>,
     <div key="hunt">
@@ -625,7 +590,7 @@ export function HubTop({ d }: { d: HubTopData }) {
       <div
         className={cn(
           `pointer-events-none relative z-[1] flex h-full flex-col px-4 pt-3 [&_button]:pointer-events-auto [&_a]:pointer-events-auto ${LAYOUT} [--gap:clamp(0.45rem,0.6vw,0.85rem)]`,
-          "md:grid md:grid-cols-[var(--cw)_1fr_var(--cw)] md:grid-rows-[1fr_auto_auto_1fr] md:gap-x-6",
+          "md:grid md:grid-cols-[var(--cw)_1fr_var(--cw)] md:grid-rows-[minmax(0,0.55fr)_auto_auto_1fr] md:gap-x-6",
           "md:px-[var(--side)] md:pb-[clamp(1rem,4vh,2.5rem)] md:pt-[clamp(0.75rem,3vh,2rem)]",
         )}
       >
@@ -635,12 +600,12 @@ export function HubTop({ d }: { d: HubTopData }) {
         {/* Phone: the trainer and the whole world get this room, clear of every card. */}
         <div className="h-[28rem] shrink-0 md:hidden" aria-hidden />
         <div className="gh-in-s pointer-events-auto mt-3 md:col-start-1 md:row-start-2 md:mb-[calc(var(--gap)*1.6)] md:mt-0" style={delay(1)} {...points("world")}>
-          <DailyCard d={d} onPlay={() => hop(trainer.current)} />
+          <StreakCard streak={d.streak} days={d.days} />
         </div>
         <div className="mt-4 flex flex-col gap-3.5 pb-16 max-md:pointer-events-auto md:contents">
           <div id="hub-solo-modes" className="flex flex-col gap-3.5 md:col-start-1 md:row-start-3 md:gap-[var(--gap)]">
             <div className="gh-in-s md:hidden" style={delay(2)}>
-              <DropBar label={t("hub.play.eyebrow")} emblems={[classicEmblem, streakEmblem, huntEmblem]} open={solo} onToggle={() => setSolo((o) => !o)} controls="hub-solo-modes" testId="hub-drop-solo" />
+              <DropBar label={t("hub.play.eyebrow")} emblems={[dailyEmblem, classicEmblem, huntEmblem]} open={solo} onToggle={() => setSolo((o) => !o)} controls="hub-solo-modes" testId="hub-drop-solo" />
             </div>
             <span className={cn(TAB, "gh-in-s ml-3 -mb-[var(--gap)] self-start max-md:hidden")} style={delay(2)}>
               {t("hub.play.eyebrow")}

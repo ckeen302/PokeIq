@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { markGeoDay } from "@/lib/progress";
 import Link from "@/components/ui/Link";
 import { useRouter } from "@/i18n/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
@@ -161,6 +162,11 @@ export function GeoDuel({ code, regions, names }: GeoDuelProps) {
   const map = view ? regions.find((r) => r.id === view.region) : undefined;
   const race = view?.mode === "race";
   /** The end screen: the match is over and its last reveal (if this trainer saw the match) has been seen. */
+  // A match played to its end counts as a day of PokéGuessr (the landing's streak).
+  const finished = view?.status === "finished" && view.you !== null && sawPlay;
+  useEffect(() => {
+    if (finished) markGeoDay();
+  }, [finished]);
   const ended = view?.status === "finished" && (summary || !sawPlay || view.end?.reason === "left" || !last);
   // The music plays while this trainer's match is on (the versus intro, the rounds and their reveals), not in the lobby, for a visitor or on the end screen.
   useGuessrMusic(!gone && !!map && !!view && view.you !== null && (view.status === "playing" || (view.status === "finished" && !ended)));
