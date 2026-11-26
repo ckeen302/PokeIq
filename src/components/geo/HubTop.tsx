@@ -108,16 +108,16 @@ const WORLD_LABELS: [string, number, number][] = [
 ];
 
 /** Where the still faces, fitted to the atlas's region points: an orthographic view of the globe, its disc this far (% of the square) from the centre. */
-const FACE = { lon: 19.75, lat: 8.5, r: 45.7 };
+const GLOBE_FACE = { lon: 19.75, lat: 8.5, r: 45.7 };
 /** A point of the globe ([longitude, latitude]) on the still (% of the square), or null round the back. */
 function onFace([lon, lat]: [number, number]): [number, number] | null {
   const k = Math.PI / 180;
-  const [l, p, l0, p0] = [lon * k, lat * k, FACE.lon * k, FACE.lat * k];
+  const [l, p, l0, p0] = [lon * k, lat * k, GLOBE_FACE.lon * k, GLOBE_FACE.lat * k];
   const z = Math.sin(p0) * Math.sin(p) + Math.cos(p0) * Math.cos(p) * Math.cos(l - l0);
   if (z < 0.12) return null;
   const x = Math.cos(p) * Math.sin(l - l0);
   const y = Math.cos(p0) * Math.sin(p) - Math.sin(p0) * Math.cos(p) * Math.cos(l - l0);
-  return [50 + x * FACE.r, 50 - y * FACE.r];
+  return [50 + x * GLOBE_FACE.r, 50 - y * GLOBE_FACE.r];
 }
 
 /** What a hovered mode points at on the globe: one region (an atlas name), or the whole world. */
@@ -670,7 +670,7 @@ export function HubTop({ d }: { d: HubTopData }) {
         <p className={cn(LABEL, "gh-in-s mt-1 px-0.5 max-md:hidden md:col-span-2 md:col-start-1 md:row-start-3")} style={delay(2)}>
           {t("hub.play.eyebrow")}
         </p>
-        <div className="-mx-4 mb-4 mt-auto flex snap-x gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] max-md:pointer-events-auto md:contents">
+        <div className="-mx-4 mb-4 mt-auto flex snap-x scroll-px-4 gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] max-md:pointer-events-auto md:contents">
           {tiles.map((tile, i) => (
             <div key={i} className={cn("gh-in-s pointer-events-auto [&>div]:h-full", SLOT, TILE_AT[i])} style={delay(3 + i)} {...points(tileFocus[i])}>
               {tile}
