@@ -46,7 +46,7 @@ interface Played {
 
 /** Each region's generation, for the picker's small label. */
 const GEN_OF: Record<GeoStreakRegion, number> = { Kanto: 1, Johto: 2, Hoenn: 3, Sinnoh: 4, Unova: 5, Kalos: 6, Alola: 7, Galar: 8, Paldea: 9 };
-const FIT_MS = 800;
+const FIT_MS = 650;
 
 async function post<T>(url: string, body: unknown): Promise<T> {
   const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
