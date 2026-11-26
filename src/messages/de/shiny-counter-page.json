@@ -1,6 +1,7 @@
 {
   "title": "Shiny-Hunt-Zähler",
   "subtitle": "Zähle jede Begegnung, sieh deine echten Odds und sammle jedes gefundene Shiny in deiner Vitrine.",
+  "cardSubtitle": "Zähle deine Shiny-Hunts mit den echten Chancen.",
   "metaTitle": "Shiny-Hunt-Zähler: Begegnungen zählen mit echten Shiny-Odds",
   "metaDescription": "Ein kostenloser Shiny-Hunting-Zähler für alle Pokémon-Hauptspiele: Wähle Ziel, Spiel und Methode (Masuda, Pokéradar, Pokédex-Navi, Kettenangeln, SOS-Ketten, Massenausbrüche, Schillerkraft, Schillerpin) und sieh deine echten Odds, deine bisherige Chance und deine Begegnungen pro Stunde. Mit Phasen, Vitrine und Bildern zum Teilen.",
   "metaSharedFound": "Ich habe ein schillerndes {pokemon} nach {n} Begegnungen gefunden",

@@ -81,6 +81,7 @@ export const ROUTES = [
   { label: "tool", path: "/tools/shiny-maker", text: ["shiny"] },
   { label: "tool", path: "/tools/pokeball-maker", text: ["Poké Ball"] },
   { label: "tool", path: "/tools/favorite-pokemon-picker", text: ["favorite Pokémon of every type", "How it works"] },
+  { label: "tool", path: "/tools/catch-rate-calculator", text: ["Catch Rate Calculator", "How catch rate works"] },
   { label: "tool:tier-list", path: "/tools/tier-list", links: ["/tools/tier-list/starters"] },
   { label: "tool:tier-list-template", path: "/tools/tier-list/starters", text: ["starter"] },
   { label: "rooms", path: "/rooms", text: ["room"] },

@@ -1,6 +1,7 @@
 {
   "title": "Contador de caza shiny",
   "subtitle": "Cuenta cada encuentro, mira tu probabilidad real y guarda en una vitrina cada shiny que encuentres.",
+  "cardSubtitle": "Cuenta tus cazas shiny con las probabilidades reales.",
   "metaTitle": "Contador de caza shiny: cuenta encuentros con la probabilidad real",
   "metaDescription": "Un contador gratuito para cazar shinies en todos los juegos principales de Pokémon: elige tu objetivo, el juego y el método (Masuda, Pokéradar, DexNav, pesca en cadena, cadenas de auxilio, apariciones masivas, Poder Brillo, Amuleto Iris) y mira tu probabilidad real, la que llevas acumulada y tus encuentros por hora. Fases, vitrina e imágenes para compartir.",
   "metaSharedFound": "He encontrado un {pokemon} variocolor tras {n} encuentros",

@@ -5,7 +5,7 @@ import tools from "@/messages/tools";
 import { hubData } from "@/components/tools/hub/data";
 import { ToolsHub } from "@/components/tools/hub/ToolsHub";
 
-/** /tools: the Tools tab: the Shiny Pokémon Maker, the Poké Ball Maker, the Pokémon Tier List Maker and the Favorite Pokémon Picker. */
+/** /tools: the Tools tab: the Shiny Pokémon Maker, the Shiny Hunt Counter, the Catch Rate Calculator, the Poké Ball Maker, the Pokémon Tier List Maker and the Favorite Pokémon Picker. */
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT(tools);

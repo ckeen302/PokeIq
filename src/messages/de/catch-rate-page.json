@@ -1,0 +1,33 @@
+{
+  "title": "Fangraten-Rechner",
+  "subtitle": "Deine Chancen, jedes Pokémon mit jedem Pokéball zu fangen, von Rubin und Saphir bis Karmesin und Purpur. Stell Level, KP und Status ein und sieh, welchen Ball du werfen solltest.",
+  "cardSubtitle": "Finde heraus, welcher Pokéball es am besten fängt.",
+  "metaTitle": "Pokémon-Fangraten-Rechner: welchen Ball werfen",
+  "metaDescription": "Berechne deine Chance, jedes Pokémon zu fangen, mit allen Pokébällen auf einmal und nach Rang sortiert: verbleibende KP, Status, Level, Runde, Tageszeit und mehr, in jedem Spiel von Rubin und Saphir bis Karmesin und Purpur. Mit den echten Fangformeln. Kostenlos.",
+  "metaSharedTitle": "{name} fangen: {pct} mit einem {ball}",
+  "metaSharedDescription": "Die Chancen, {name} mit jedem Pokéball zu fangen, nach Rang sortiert, aus dem Fangraten-Rechner auf PokéIQ. Ändere KP, Status oder Spiel und sieh, was du werfen solltest.",
+  "ogAlt": "Fangchancen für ein Pokémon auf PokéIQ",
+  "credit": "Formeln der 3. und 4. Generation aus dem dekompilierten Code der Spiele (den pret-Projekten zu Rubin, Smaragd, Feuerrot, Platin und HeartGold); ab der 5. Generation aus der Fang-Forschung von Dragonfly Cave, abgeglichen mit Bulbapedia und Serebii. Fangraten von PokéAPI und Bulbapedia.",
+  "explain": {
+    "title": "So funktioniert die Fangrate",
+    "intro": "Jede Art hat eine Fangrate von 3 bis 255: 3 für die schwierigsten wie Mewtu, 255 für die leichtesten wie Raupy. Bei jedem Wurf werden diese Zahl, die verbleibenden KP, das Statusproblem und der Ball zu einem Wert verrechnet, der veränderten Fangrate a. Ab Generation 5:",
+    "legend": "MaxHP und HP sind die maximalen und aktuellen KP des wilden Pokémon, Rate die Fangrate seiner Art, Ball der Multiplikator des Balls, Status der Statusbonus und Bonus alles andere, was das Spiel einrechnet: niedrige Level, Orden und Fangkräfte. Die 3. und 4. Generation haben keinen Bonus und runden bei jedem Schritt ab; ab der 5. Generation rechnen die Spiele in 4096steln, und der Rechner rundet jeden Schritt genau wie sie.",
+    "hpTitle": "KP",
+    "hp": "Bei vollen KP ergibt der KP-Teil ein Drittel, bei 1 KP fast eins. Wer ein Pokémon mit Trugschlag auf 1 KP bringt, verdreifacht seine Chancen fast, und rote KP sind beinahe genauso gut.",
+    "statusTitle": "Status",
+    "status": "Schlaf und Einfrieren multiplizieren a mit 2,5 (vor Generation 5 mit 2), Paralyse, Vergiftung und Verbrennung mit 1,5. Schlaf ist der beste Status, und der Traumball wirkt am besten bei einem schlafenden Pokémon.",
+    "levelTitle": "Level und Orden",
+    "level": "In Schwert und Schild ist ein wildes Pokémon unter Level 20 leichter zu fangen: a wird mit (30 − Level) ÷ 10 multipliziert. Bis du den achten Orden hast, ist ein Pokémon mit höherem Level als deins aber ×0,1, und über dem Level, das deine Orden erlauben, kannst du gar keinen Ball werfen. In Karmesin und Purpur gilt der Bonus unter Level 13, mit (36 − 2 × Level) ÷ 10, und ein Pokémon mit zu hohem Level, um dir zu gehorchen, ist ×0,8 für jeden fehlenden Orden.",
+    "shakeTitle": "Das Wackeln",
+    "shake": "Ist a 255 oder mehr, ist das Pokémon gefangen. Sonst berechnet das Spiel einen Wackelwert b und macht Wackelproben: Jede gelingt, wenn eine Zufallszahl von 0 bis 65535 kleiner als b ist. Der Ball wackelt einmal für jede gelungene Probe, und das Pokémon ist nur gefangen, wenn alle gelingen. Ab Generation 6 gibt es vier Proben:",
+    "shakeGens": "Generation 5 machte drei Proben mit b = 65536 ÷ (255 ÷ a)^(1/4). Generation 3 und 4 machten vier mit b = 1048560 ÷ √(√(16711680 ÷ a)), was eine Chance von etwa a ÷ 255 ergibt.",
+    "critTitle": "Kritische Fänge",
+    "crit": "Ab der 5. Generation kann ein Wurf ein kritischer Fang sein: Der Ball zittert in der Luft, wackelt einmal, und eine einzige Wackelprobe entscheidet. Die Chance ist ⌊a × P ÷ 6⌋ von 256, wobei P von den gefangenen Arten abhängt: 0 bis 30, dann 0,5, 1, 1,5, 2 und 2,5 ab über 150, 300, 450 und 600. Der Fangpin in Schwert und Schild und in Karmesin und Purpur verdoppelt sie. Gib ein, wie viele du gefangen hast, und der Rechner rechnet kritische Fänge mit ein.",
+    "ballsTitle": "Die Bälle",
+    "balls": "Ein Superball multipliziert a mit 1,5, ein Hyperball mit 2. Spezielle Bälle schaffen in der richtigen Lage viel mehr, und ihre Multiplikatoren haben sich über die Generationen geändert: Der Rechner nimmt den richtigen Wert für dein Spiel und zeigt, warum jeder Ball gerade stark oder schwach ist. Ab der 7. Generation ist jeder Ball außer dem Ultraball ×0,1 gegen eine Ultrabestie. Auch die Fangraten einiger Arten haben sich von Spiel zu Spiel geändert, und der Rechner nimmt jeweils die des Spiels.",
+    "powerTitle": "Fangkräfte",
+    "power": "Manche Spiele rechnen einen eigenen Multiplikator ein: die Fangkraft der Kontaktebene in Schwarz und Weiß (×1,1, ×1,2 oder ×1,3), die Fang-O-Kraft in X und Y und Omega Rubin und Alpha Saphir (×1,5, ×2 oder ×2,5) und die Fangkraft aus einem Sandwich in Karmesin und Purpur (×1,1, ×1,25 oder ×2), verdoppelt, wenn du das Pokémon überraschst. In Schwarz und Weiß wirkt dunkles Gras umgekehrt: Bis du mehr als 600 Arten gefangen hast, sinkt a auf das 0,3- bis 0,9-Fache.",
+    "leftTitle": "Was nicht drin ist",
+    "left": "Pokémon: Let's Go, Pikachu! und Let's Go, Evoli! und Pokémon-Legenden: Arceus fangen mit anderen Formeln, mit eigenen Fangraten und Eingaben (WP, Würfe, Beeren, Forschungsrang, Verhalten des Pokémon), und die Quellen sind sich bei wichtigen Werten nicht einig: Bulbapedia gibt dem Pokéball in Legenden: Arceus ×0,75, Serebii ×1, und beide schreiben die Formel von Let's Go unterschiedlich. Fang-Rotom aus Ultrasonne und Ultramond fehlt aus demselben Grund: Bulbapedia sagt ×2, Dragonfly Cave ×2,5. Ab der 6. Generation steckt der Malus für dunkles Gras aus Schwarz und Weiß noch in den Spielen, aber niemand hat gefunden, was ihn auslöst, also zählt er als aus. Die maximalen KP sind mit DVs von 15 gerechnet (die eines wilden Pokémon sind zufällig), die angezeigten KP können also ein paar Punkte abweichen; einstellen kannst du den Anteil der verbleibenden KP."
+  }
+}
