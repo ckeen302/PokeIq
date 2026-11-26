@@ -568,9 +568,9 @@ export function HubTop({ d }: { d: HubTopData }) {
 
   return (
     <Space>
-      <WorldRise focus={focus} spots={d.dailyPlayed ? d.dailySpots : undefined} cheer={d.dailyPlayed} covered={d.covered} hopRef={trainer} className={`${LAYOUT} [--ah:9rem] [--gd:min(120vw,34rem)] [--gt:15.5rem] max-md:[--globe-floor:24.5rem] md:[--ah:clamp(8.5rem,26vh,15rem)] md:[--gd:min(44vw,74vh,calc(100vw-2*(var(--side)+var(--cw)+3rem)))] md:[--gt:max(13rem,40%)]`} />
-      {/* Phone: below the trainer's patch of the world, the planet fades into space so the cards sit on a clean sky (by 24.5rem: the globe draws nothing lower, --globe-floor). */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 top-[18.5rem] bg-[linear-gradient(180deg,transparent,#09081a_6rem)] md:hidden [.light_&]:bg-[linear-gradient(180deg,transparent,#e4ddff_6rem)]" aria-hidden />
+      <WorldRise focus={focus} spots={d.dailyPlayed ? d.dailySpots : undefined} cheer={d.dailyPlayed} covered={d.covered} hopRef={trainer} className={`${LAYOUT} [--ah:8rem] [--gd:min(80vw,19.5rem)] [--gt:11rem] max-md:[--globe-floor:33rem] md:[--ah:clamp(8.5rem,26vh,15rem)] md:[--gd:min(44vw,74vh,calc(100vw-2*(var(--side)+var(--cw)+3rem)))] md:[--gt:max(13rem,40%)]`} />
+      {/* Phone: the whole world shows under the trainer; just its glow fades out above the Daily (the globe draws nothing below --globe-floor). */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 top-[30.5rem] bg-[linear-gradient(180deg,transparent,#09081a_2.5rem)] md:hidden [.light_&]:bg-[linear-gradient(180deg,transparent,#e4ddff_2.5rem)]" aria-hidden />
       <HowToHelpButton className="gh-fade absolute right-2 top-2 z-10 text-white max-md:scale-90 md:right-5 md:top-4 [.light_&]:text-[#2a1f6e]" />
 
       {/*
@@ -588,8 +588,8 @@ export function HubTop({ d }: { d: HubTopData }) {
         <div className="md:absolute md:left-1/2 md:top-[clamp(0.75rem,3vh,2rem)] md:-translate-x-1/2">
           <Title />
         </div>
-        {/* Phone: the trainer and the top of the world get this room, clear of every card. */}
-        <div className="h-[14.5rem] shrink-0 md:hidden" aria-hidden />
+        {/* Phone: the trainer and the whole world get this room, clear of every card. */}
+        <div className="h-[28rem] shrink-0 md:hidden" aria-hidden />
         <div className="gh-in-s pointer-events-auto mt-3 md:col-start-1 md:row-start-2 md:mb-[calc(var(--gap)*1.6)] md:mt-0" style={delay(1)} {...points("world")}>
           <DailyCard d={d} onPlay={() => hop(trainer.current)} />
         </div>
