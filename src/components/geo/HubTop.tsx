@@ -25,6 +25,8 @@ import huntEmblem from "@/assets/guessr/emblems/hunt.webp";
 import duelsEmblem from "@/assets/guessr/emblems/duels.webp";
 import rankedEmblem from "@/assets/guessr/emblems/ranked.webp";
 import partyEmblem from "@/assets/guessr/emblems/party.webp";
+// MOCK: Party's trio dancing in birthday hats, a silhouette worn as a mask (it takes each theme's colour).
+import partyTrio from "@/assets/guessr/party-trio.webp";
 
 /** Who stands on the globe until a player makes their own 3D trainer (and for visitors): the creator's first look. */
 const STAND_IN = presetTrainer(TRAINER_PRESETS[0]);
@@ -491,6 +493,13 @@ const HAT = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 28'><path d
 const HAT_SIL = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 28'><path d='M10 1 L19 26 L1 26 Z'/><circle cx='10' cy='2.5' r='2.5'/></svg>";
 function PartyTrio({ pk }: { pk: string }) {
   const sil = pk === "sil";
+  if (pk === "sil")
+    return (
+      <span
+        className="absolute -bottom-[6%] right-[24%] h-[92%] aspect-[900/449] bg-white/[0.14] [.light_&]:bg-[#5a46d0]/[0.18]"
+        style={{ maskImage: `url(${partyTrio.src})`, WebkitMaskImage: `url(${partyTrio.src})`, maskSize: "contain", WebkitMaskSize: "contain", maskRepeat: "no-repeat", WebkitMaskRepeat: "no-repeat", maskPosition: "center bottom", WebkitMaskPosition: "center bottom" }}
+      />
+    );
   return (
     <>
       {TRIO.map((m) => (
