@@ -70,7 +70,8 @@
   0%, 100% { opacity: 0.75; transform: scale(0.97); }
   50% { opacity: 1; transform: scale(1.03); }
 }
-/* The battle platform the shiny stands on. */
+/* The battle platform the shiny stands on: a lit disc in its type's colour, with a glowing rim, an inner ring and a
+   soft contact shadow under the shiny. */
 .sh-platform {
   position: absolute;
   left: 50%;
@@ -78,20 +79,34 @@
   aspect-ratio: 3.4 / 1;
   border-radius: 50%;
   background:
-    radial-gradient(closest-side, color-mix(in srgb, var(--sb) 85%, #fff 15%), color-mix(in srgb, var(--sb) 55%, #0b0918) 58%, color-mix(in srgb, var(--sb) 30%, #0b0918) 100%);
+    radial-gradient(48% 46% at 50% 44%, color-mix(in srgb, var(--sb) 45%, #fff 55%) 0%, transparent 100%),
+    radial-gradient(closest-side, color-mix(in srgb, var(--sb) 92%, #fff 8%) 0%, color-mix(in srgb, var(--sb) 88%, #1a1230) 62%, color-mix(in srgb, var(--sb) 62%, #120c22) 100%);
   box-shadow:
-    inset 0 2px 0 rgb(255 255 255 / 0.28),
-    inset 0 -8px 18px rgb(0 0 0 / 0.45),
-    0 0 40px color-mix(in srgb, var(--sb) 45%, transparent),
-    0 18px 30px -10px rgb(0 0 0 / 0.8);
+    inset 0 0 0 1.5px color-mix(in srgb, var(--sb) 55%, #fff 45%),
+    inset 0 3px 0 rgb(255 255 255 / 0.35),
+    inset 0 -10px 18px rgb(0 0 0 / 0.38),
+    0 0 26px 2px color-mix(in srgb, var(--sb) 65%, transparent),
+    0 0 80px 14px color-mix(in srgb, var(--sb) 28%, transparent),
+    0 16px 26px -10px rgb(0 0 0 / 0.75);
   pointer-events: none;
 }
 .sh-platform::after {
   content: "";
   position: absolute;
-  inset: 16% 14%;
+  inset: 17% 15%;
   border-radius: 50%;
-  border: 1.5px solid rgb(255 255 255 / 0.22);
+  border: 1.5px solid rgb(255 255 255 / 0.5);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--sb) 60%, #fff 40%), inset 0 0 10px color-mix(in srgb, var(--sb) 50%, #fff 50%);
+  opacity: 0.75;
+}
+/* The shiny's shadow on the platform, breathing with its float. */
+.sh-platform::before {
+  content: "";
+  position: absolute;
+  inset: 24% 26% 30%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(0 0 0 / 0.5), transparent);
+  filter: blur(3px);
 }
 /* Motes of light drifting up. */
 .sh-mote {
@@ -130,12 +145,12 @@
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-8px); }
 }
-.sh-shadow {
+.sh-shadow::before {
   animation: sh-shadow 5s ease-in-out infinite;
 }
 @keyframes sh-shadow {
-  0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.7; }
-  50% { transform: translateX(-50%) scale(0.88); opacity: 0.5; }
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(0.82); opacity: 0.65; }
 }
 
 /* ── Game buttons ──────────────────────────────────────────────────────────── */
@@ -367,6 +382,6 @@
   .sh-count::after { animation: none; display: none; }
   .sh-ripple, .sh-flash, .sh-plus, .sh-pulse, .sh-mote { display: none; }
   .sh-star { animation: none; opacity: 0.85; transform: scale(0.8); }
-  .sh-float, .sh-shadow, .sh-glow, .sh-rays, .sh-pop, .sh-rise, .sh-holo, .sh-open { animation: none; }
+  .sh-float, .sh-shadow::before, .sh-glow, .sh-rays, .sh-pop, .sh-rise, .sh-holo, .sh-open { animation: none; }
   .sh-foil, .sh-foil:hover { transition: none; transform: none; }
 }

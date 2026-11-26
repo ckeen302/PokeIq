@@ -79,7 +79,7 @@ export function Setup({ hunt, onChange, prefs, onPref }: { hunt: Hunt; onChange(
       {/* Games: a chip each, in the game's colours, newest first. */}
       <div>
         <p className={LABEL} id="sh-game-label">{t("setup.game")}</p>
-        <div role="radiogroup" aria-labelledby="sh-game-label" className="sh-noscroll mt-2.5 flex flex-wrap gap-1.5 max-sm:-mx-5 max-sm:grid max-sm:grid-flow-col max-sm:grid-rows-3 max-sm:justify-start max-sm:overflow-x-auto max-sm:px-5 max-sm:pb-1" data-testid="sh-game">
+        <div role="radiogroup" aria-labelledby="sh-game-label" className="sh-noscroll mt-2.5 flex flex-wrap gap-1.5 max-sm:-mx-5 max-sm:grid max-sm:grid-flow-col max-sm:grid-rows-3 max-sm:justify-start max-sm:overflow-x-auto max-sm:px-5 max-sm:pb-1 max-sm:[mask-image:linear-gradient(90deg,#000_calc(100%-32px),transparent)]" data-testid="sh-game">
           {GAMES_NEWEST_FIRST.map((g) => {
             const on = g.id === hunt.game;
             const [a] = GAME_COLOURS[g.id];

@@ -204,8 +204,8 @@ export function Counter({ hunt, names, prefs, visit, onChange, onFound, onShare,
           chance={chance}
           pulse={pulse}
           alt={t("counter.shinyAlt", { name })}
-          className="flex flex-col justify-center rounded-[30px] px-4 pb-5 pt-[54px] lg:min-h-[560px] lg:pb-6 lg:pt-[72px]"
-          figureClassName="w-[min(54vw,212px)] sm:w-[340px] lg:w-[min(410px,86%)]"
+          className="flex flex-col justify-center rounded-[30px] px-4 pb-3 pt-[50px] sm:pb-5 sm:pt-[54px] lg:min-h-[560px] lg:pb-6 lg:pt-[72px]"
+          figureClassName="w-[min(50vw,196px)] sm:w-[340px] lg:w-[min(410px,86%)]"
           testId="sh-stage"
         >
           <div className="absolute inset-x-0 top-0 z-10 flex items-start justify-between gap-2 p-3 lg:p-4">
@@ -244,7 +244,7 @@ export function Counter({ hunt, names, prefs, visit, onChange, onFound, onShare,
               {t("counter.encounters", { n })}
               {visit > 0 && <span className="sh-num rounded-full bg-[hsl(var(--success)/0.14)] px-2 py-0.5 text-[11px] tracking-normal text-[hsl(var(--success))]">{t("counter.visit", { n: fmt(visit) })}</span>}
             </p>
-            <div className="relative flex h-[86px] items-center justify-center lg:h-[134px]">
+            <div className="relative flex h-[80px] items-center justify-center lg:h-[134px]">
               {editing ? (
                 <EditCount value={n} onDone={(v) => { if (v !== null) onChange(setCount(hunt, v)); setEditing(false); }} />
               ) : (
