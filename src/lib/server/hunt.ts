@@ -11,6 +11,7 @@ import { isValidDailyDate } from "@/lib/daily";
 import { VERSION_BY_KEY, versionOrder } from "@/lib/pokemon/encounter-types";
 import { dealHunt } from "@/lib/hunt/deal";
 import { scorePin, type Point, type ScoreMap, type ScoreSpot } from "@/lib/hunt/score";
+import { wrapDistance } from "@/lib/geo-wrap";
 import { decryptJson, encryptJson, randomId, signToken, verifyToken } from "./crypto";
 import {
   HUNT_DAILY_FROM,
@@ -66,6 +67,8 @@ const PERFECT_PX = WORLD.map.squarePx * 0.5;
 /** The curve's scale for a spot: its region's own map's diagonal. */
 const SCALES = huntScales(WORLD.crops);
 const SCORE_MAP: ScoreMap = { diagonal: (r) => SCALES[r], perfectPx: PERFECT_PX, squarePx: WORLD.map.squarePx };
+/** The whole world's map wraps sideways (lib/geo-wrap): there, a pin is scored the short way round; a region's map doesn't. */
+const scoreMapOf = (map: { id: string }): ScoreMap => (map.id === "world" ? { ...SCORE_MAP, period: W } : SCORE_MAP);
 const STATE_TTL_MS = 3 * 60 * 60 * 1000;
 /** A guess this long after the round's clock has run out scores nothing (PokéGuessr's grace: a reveal read in between, loading, the network). */
 export const HUNT_TIMER_GRACE_MS = 3 * 60_000;
@@ -79,13 +82,13 @@ const PLACES = new Map(
   WORLD.locations.flatMap((l) => (l.pin && l.mask && l.region && !l.parent ? [[`${l.region}|${l.name}`, { ...l, region: l.region, area: l.mask.map(toPx), at: toPx(l.pin) }] as const] : []))
 );
 
-/** The Hunt region a world point falls in: the nearest place's (as PokéGuessr's streak reads a pin's region). */
-export function huntRegionAt(p: Point): HuntRegionId | null {
+/** The Hunt region a world point falls in: the nearest place's (as PokéGuessr's streak reads a pin's region), the short way round a wrapping map. */
+export function huntRegionAt(p: Point, period?: number): HuntRegionId | null {
   let best: HuntRegionId | null = null;
   let bd = Infinity;
   for (const place of PLACES.values()) {
     for (const q of place.area) {
-      const d = Math.hypot(p[0] - q[0], p[1] - q[1]);
+      const d = wrapDistance(p[0], p[1], q[0], q[1], period);
       if (d < bd) [bd, best] = [d, HUNT_REGION_OF_GEO[place.region] ?? null];
     }
   }
@@ -377,7 +380,8 @@ export function gradeHunt(state: HuntState, guess: { pins: HuntPin[]; timeout?: 
   const late = elapsed > HUNT_TIMER_S * 1000 + HUNT_TIMER_GRACE_MS;
   const pins = (late ? [] : guess.pins).slice(0, 1).filter((p) => Number.isFinite(p.x) && Number.isFinite(p.y) && p.x >= 0 && p.x <= 1 && p.y >= 0 && p.y <= 1);
   const point = pins[0] ? mapToPx(map.box, pins[0]) : null;
-  const scored = scorePin(SCORE_MAP, point, spots);
+  const scoreMap = scoreMapOf(map);
+  const scored = scorePin(scoreMap, point, spots);
   const hints = HUNT_HINTS.filter((h) => round.hints.includes(h) && (state.hints.includes(h) || taken.includes(h)));
   const score = huntAfterHints(scored.score, hints);
   const pinResults = pins.length
@@ -389,7 +393,7 @@ export function gradeHunt(state: HuntState, guess: { pins: HuntPin[]; timeout?: 
           distancePx: Number.isFinite(scored.distancePx) ? scored.distancePx : -1,
           squares: scored.squares,
           score: scored.score,
-          found: scored.region !== null && !!point && huntRegionAt(point) === scored.region,
+          found: scored.region !== null && !!point && huntRegionAt(point, scoreMap.period) === scored.region,
         },
       ]
     : [];

@@ -3,8 +3,9 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { Loader2, Maximize2, Minus, Plus } from "lucide-react";
 import { WORLD_REGION, type GeoRegionInfo } from "@/lib/geo-types";
-import { createAtlas, loadAtlas, screenOf, type AtlasData, type AtlasEngine, type AtlasView, type Box } from "@/components/atlas/atlas-engine";
+import { createAtlas, loadAtlas, screenOf, wrapShifts, type AtlasData, type AtlasEngine, type AtlasView, type Box } from "@/components/atlas/atlas-engine";
 import { preloadImage } from "@/lib/preload";
+import { GEO_WORLD_PERIOD, wrapDelta, wrapNear } from "@/lib/geo-wrap";
 import { cn } from "@/lib/utils";
 import { crowdColor, type GeoCrowdRound } from "@/lib/geo-crowd";
 import { useT } from "@/i18n/client";
@@ -12,7 +13,7 @@ import geoNs from "@/messages/geo";
 import geoNamesNs from "@/messages/geo-names";
 import { localMap } from "@/lib/geo-i18n";
 import { dockHome } from "./dock-size";
-import { HuntPinMark, HuntSpotMark, huntPinColor, spotTagPlacement } from "@/components/hunt/map-marks";
+import { HuntPinMark, HuntSpotMark, MapRepeat, huntPinColor, spotTagPlacement, useMarkId } from "@/components/hunt/map-marks";
 
 export interface MapPin {
   x: number;
@@ -108,6 +109,8 @@ export interface HuntMapLink {
 
 /** A tap this close (screen px) to a placed hunt pin's tip or head picks it up. */
 const PICK_GRAB_PX = 26;
+/** A wrapping world map draws its pins, flags, lines and areas on every copy of the map this close (CSS px) to the screen, or nearer. */
+const WRAP_OVERLAY_MARGIN = 160;
 
 export const WORLD_MAP = "/geo/maps/world.webp";
 /** A small copy of the whole world, shown while the big map loads on the world map itself. */
@@ -174,6 +177,13 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
   // Only a region's own crop is locked (framed, the rest dimmed). The world and every map drawn on the whole world (a themed map,
   // like the Weekly's) are the same whole world: one crop, one zoom, the same names and dots.
   const locked = region.id !== WORLD_REGION && region.map.src !== WORLD_MAP;
+  /** A whole-world map's width in its 0–1 coordinates: it wraps, and a guess is scored (and drawn) the short way round (lib/geo-wrap). */
+  const xPeriod = locked ? undefined : GEO_WORLD_PERIOD;
+  /** A revealed round's answer, on the copy of the map nearest its guess: their line is the short way the server measured. */
+  const answerOf = (r: RevealedRound): [number, number] => {
+    const [fx, fy] = flagAt(r.answer);
+    return [r.guess ? wrapNear(fx, r.guess.x, xPeriod) : fx, fy];
+  };
   /**
    * First paint: the region's own crop of the map (a few dozen KB), or a small
    * copy of the world, drawn over the canvas until the 580 KB world map has
@@ -226,6 +236,8 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
       home: land && wholeWorld ? dockHome(landBox(atlas), land === "fit") : undefined,
       // GeoGuessr's small, thin names: they label a region without covering it.
       quietLabels: true,
+      // GeoGuessr's: a map of the whole world drags left and right forever (a region's map stays framed on it).
+      wrapX: !locked,
       onTap: (wx, wy) => {
         const x = (wx - x0) / (x1 - x0);
         const y = (wy - y0) / (y1 - y0);
@@ -239,7 +251,8 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
           let best = PICK_GRAB_PX;
           h.picks.forEach((p, i) => {
             if (!p) return;
-            const dx = (x0 + p.x * (x1 - x0) - wx) * s;
+            // On a wrapping map the pin's nearest copy to the tap (the tap is on the map itself, its x in [0, W)).
+            const dx = wrapDelta(x0 + p.x * (x1 - x0) - wx, locked ? undefined : atlas.W) * s;
             const dy = (y0 + p.y * (y1 - y0) - wy) * sy;
             const d = Math.min(Math.hypot(dx, dy), Math.hypot(dx, dy + 21));
             if (d < best) {
@@ -293,16 +306,24 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
   useEffect(() => {
     const e = engine.current;
     if (!e || !(revealed.length || spots?.length)) return;
-    const pts = framed.flatMap((r) => [toWorld(...flagAt(r.answer)),...(r.guess ? [toWorld(r.guess.x, r.guess.y)] : [])]);
+    // On a whole-world map everything is framed on the copies nearest the first guess (or Hunt pin), each answer beside its
+    // guess, so a line across the join is framed as drawn, not the whole world the long way round.
+    const first = framed.find((r) => r.guess)?.guess ?? links?.[0]?.pin;
+    const near = (x: number) => (first ? wrapNear(x, first.x, xPeriod) : x);
+    const pts = framed.flatMap((r) => {
+      const [ax, ay] = answerOf(r);
+      const k = r.guess ? near(r.guess.x) - r.guess.x : near(ax) - ax;
+      return [toWorld(ax + k, ay), ...(r.guess ? [toWorld(r.guess.x + k, r.guess.y)] : [])];
+    });
     // A hunt's reveal frames every real spot and every pin.
-    for (const p of [...(spots ?? []), ...(links ?? []).map((l) => l.pin)]) pts.push(toWorld(p.x, p.y));
+    for (const p of [...(spots ?? []), ...(links ?? []).map((l) => l.pin)]) pts.push(toWorld(near(p.x), p.y));
     // A crowd map frames the busiest cells too (those holding most of the pins).
     if (density) {
       const total = density.cells.reduce((s, c) => s + c[2], 0);
       let held = 0;
       for (const [x, y, n] of density.cells) {
         if (held >= total * 0.7) break;
-        pts.push(toWorld(x, y));
+        pts.push(toWorld(near(x), y));
         held += n;
       }
     }
@@ -328,9 +349,22 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
     // eslint-disable-next-line react-hooks/exhaustive-deps -- refit only when the revealed rounds or the map change
   }, [revealKey, atlas, cropPainted]);
 
-  const toScreen = (x: number, y: number): [number, number] => {
+  /**
+   * A map of the whole world wraps sideways: its overlays are drawn on each
+   * copy of the map near the screen (world-px shifts, left to right), always
+   * the map itself and the copy either side, so dragging never mounts (and
+   * replays) one in view. A guess and its answer are always on one copy, so
+   * their line is the straight line the score is measured along.
+   */
+  const period = atlas?.W ?? 0;
+  const wraps = !locked && period > 0;
+  const stageW = stageRef.current?.clientWidth ?? 0;
+  // The map's own copy last, so it's drawn on top (and its pins stay the last in the layer, where the page's checks look).
+  const copies = !wraps || !view ? [0] : [...new Set([-period, 0, period, ...wrapShifts(view, stageW, period, WRAP_OVERLAY_MARGIN)])].sort((a, b) => Number(a === 0) - Number(b === 0) || a - b);
+  /** The map's 0–1 point on screen, on the copy `off` world px to the side. */
+  const toScreenOn = (off: number) => (x: number, y: number): [number, number] => {
     const [wx, wy] = toWorld(x, y);
-    return view ? screenOf(view, wx, wy) : [0, 0];
+    return view ? screenOf(view, wx + off, wy) : [0, 0];
   };
   /** The map's box as drawn now, in px from the map's top-left (left, top, right, bottom): it can run past the edges. */
   const drawnBox = view ? [...screenOf(view, x0, y0), ...screenOf(view, x1, y1)] : null;
@@ -358,18 +392,22 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
       data-pick-area={pickArea}
     >
       <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
-      {cover !== "gone" && !defer && (
-        // Before the engine reports a view, the crop sits where the engine will frame the region (centred, with its room around it).
-        <div
-          className={cn("pointer-events-none absolute transition-opacity duration-300", cover === "fading" ? "opacity-0" : "opacity-100")}
-          style={drawnBox ? { left: drawnBox[0], top: drawnBox[1], width: drawnBox[2] - drawnBox[0], height: drawnBox[3] - drawnBox[1] } : { inset: locked ? `${((1 - 1 / LOCKED_ROOM) / 2) * 100}%` : 0 }}
-          data-testid="geo-map-cover"
-          aria-hidden
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element -- the region's crop of the world map, first paint */}
-          <img src={crop} alt="" className={cn("h-full w-full", view ? "max-w-none" : "object-contain")} draggable={false} />
-        </div>
-      )}
+      {cover !== "gone" &&
+        !defer &&
+        // A wrapping map's first paint covers the copies beside it too.
+        (drawnBox ? copies : [0]).map((off) => (
+          // Before the engine reports a view, the crop sits where the engine will frame the region (centred, with its room around it).
+          <div
+            key={off}
+            className={cn("pointer-events-none absolute transition-opacity duration-300", cover === "fading" ? "opacity-0" : "opacity-100")}
+            style={drawnBox ? { left: drawnBox[0] + off * (view?.s ?? 0), top: drawnBox[1], width: drawnBox[2] - drawnBox[0], height: drawnBox[3] - drawnBox[1] } : { inset: locked ? `${((1 - 1 / LOCKED_ROOM) / 2) * 100}%` : 0 }}
+            data-testid={off ? undefined : "geo-map-cover"}
+            aria-hidden
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element -- the region's crop of the world map, first paint */}
+            <img src={crop} alt="" className={cn("h-full w-full", view ? "max-w-none" : "object-contain")} draggable={false} />
+          </div>
+        ))}
       {!atlas && (
         <div className="absolute inset-0 flex items-center justify-center text-sm text-white/80">
           {failed ? t("map.failed") : <Loader2 className="h-5 w-5 animate-spin" aria-label={t("map.loading")} />}
@@ -377,57 +415,70 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
       )}
       {view && (
         <svg className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden>
-          {density && density.cells.length > 0 && <Density density={density} toScreen={toScreen} cell={Math.max(density.cw * bw, density.ch * bh) * view.s} id={maskId} />}
-          {revealed.map((r, i) => {
-            const [ax, ay] = toScreen(...flagAt(r.answer));
-            const g = r.guess ? toScreen(r.guess.x, r.guess.y) : null;
-            // Duels reveal each trainer's guess as its own round on one shared answer: draw its area once.
-            const again = i > 0 && revealed[i - 1].answer === r.answer;
-            const mask = `${maskId}-${i}`;
+          {copies.map((off) => {
+            const ts = toScreenOn(off);
+            // The map's own copy carries the test ids; each repeat has its own mask and filter ids.
+            const repeat = off !== 0;
+            const cid = repeat ? `${maskId}-c${Math.round(off / period)}` : maskId;
             return (
-              <g key={i}>
-                <g className="geo-area" display={again ? "none" : undefined}>
-                  {/* Faded as one layer, so overlapping dots read as one even patch. */}
-                  <g opacity={0.5}>
-                    {r.answer.mask.map(([x, y], k) => {
-                      const [mx, my] = toScreen(x, y);
-                      return <circle key={k} cx={mx} cy={my} r={areaR} className="fill-success" />;
-                    })}
-                  </g>
-                </g>
-                {g && (
-                  <>
-                    {/* The dashed line is revealed by a solid line drawing itself underneath it. */}
-                    <mask id={mask} maskUnits="userSpaceOnUse" x="0" y="0" width="100%" height="100%">
-                      <line className="geo-line" pathLength={1} x1={g[0]} y1={g[1]} x2={ax} y2={ay} stroke="#fff" strokeWidth={6} strokeLinecap="round" style={{ animationDelay: `${0.1 + i * 0.12}s` }} />
-                    </mask>
-                    <line mask={`url(#${mask})`} x1={g[0]} y1={g[1]} x2={ax} y2={ay} strokeWidth={2.5} strokeDasharray="5 5" strokeLinecap="round" stroke={r.color ?? "#120f24"} data-testid="geo-reveal-line" />
-                  </>
+              <MapRepeat.Provider key={off} value={repeat}>
+                {density && density.cells.length > 0 && <Density density={density} toScreen={ts} cell={Math.max(density.cw * bw, density.ch * bh) * view.s} id={cid} />}
+                {revealed.map((r, i) => {
+                  const [fx, fy] = answerOf(r);
+                  // The answer's shift onto the copy beside the guess (0, or a whole map's width): its area goes with it.
+                  const sh = fx - flagAt(r.answer)[0];
+                  const [ax, ay] = ts(fx, fy);
+                  const g = r.guess ? ts(r.guess.x, r.guess.y) : null;
+                  // Duels reveal each trainer's guess as its own round on one shared answer: draw its area once.
+                  const again = i > 0 && revealed[i - 1].answer === r.answer;
+                  const mask = `${cid}-${i}`;
+                  return (
+                    <g key={i}>
+                      <g className="geo-area" display={again ? "none" : undefined}>
+                        {/* Faded as one layer, so overlapping dots read as one even patch. */}
+                        <g opacity={0.5}>
+                          {r.answer.mask.map(([x, y], k) => {
+                            const [mx, my] = ts(x + sh, y);
+                            return <circle key={k} cx={mx} cy={my} r={areaR} className="fill-success" />;
+                          })}
+                        </g>
+                      </g>
+                      {g && (
+                        <>
+                          {/* The dashed line is revealed by a solid line drawing itself underneath it. */}
+                          <mask id={mask} maskUnits="userSpaceOnUse" x="0" y="0" width="100%" height="100%">
+                            <line className="geo-line" pathLength={1} x1={g[0]} y1={g[1]} x2={ax} y2={ay} stroke="#fff" strokeWidth={6} strokeLinecap="round" style={{ animationDelay: `${0.1 + i * 0.12}s` }} />
+                          </mask>
+                          <line mask={`url(#${mask})`} x1={g[0]} y1={g[1]} x2={ax} y2={ay} strokeWidth={2.5} strokeDasharray="5 5" strokeLinecap="round" stroke={r.color ?? "#120f24"} data-testid={repeat ? undefined : "geo-reveal-line"} />
+                        </>
+                      )}
+                      <Flag x={ax} y={ay} n={r.flag} />
+                      {g && <GuessPin x={g[0]} y={g[1]} label={r.label} color={r.color} image={r.image} delay={0.12 * i} still={r.still} />}
+                    </g>
+                  );
+                })}
+                {others.map((o, i) => {
+                  const [ox, oy] = ts(o.x, o.y);
+                  return (
+                    <g key={`${i}:${o.x},${o.y}`} data-testid={repeat ? undefined : "geo-other-pin"}>
+                      <GuessPin x={ox} y={oy} color={o.color} image={o.image} label={o.label} />
+                    </g>
+                  );
+                })}
+                {/* Pokémon Hunt's reveal: the lines first, then the spots, then the pins on top. */}
+                {spots && (
+                  <HuntSpots spots={spots} links={links ?? []} toScreen={ts} width={stageRef.current?.clientWidth ?? 0} maskId={cid} areaR={areaR} period={xPeriod} />
                 )}
-                <Flag x={ax} y={ay} n={r.flag} />
-                {g && <GuessPin x={g[0]} y={g[1]} label={r.label} color={r.color} image={r.image} delay={0.12 * i} still={r.still} />}
-              </g>
+                {picks?.map((p, i) => {
+                  if (!p) return null;
+                  const [px, py] = ts(p.x, p.y);
+                  return <HuntPinMark key={`${i}:${p.x},${p.y}`} x={px} y={py} n={i + 1} active={i === activePick} />;
+                })}
+                {/* Keyed by position so every new pin replays the drop. */}
+                {pick && !picks && <GuessPin key={`${pick.x},${pick.y}`} x={ts(pick.x, pick.y)[0]} y={ts(pick.x, pick.y)[1]} image={pinImage} />}
+              </MapRepeat.Provider>
             );
           })}
-          {others.map((o, i) => {
-            const [ox, oy] = toScreen(o.x, o.y);
-            return (
-              <g key={`${i}:${o.x},${o.y}`} data-testid="geo-other-pin">
-                <GuessPin x={ox} y={oy} color={o.color} image={o.image} label={o.label} />
-              </g>
-            );
-          })}
-          {/* Pokémon Hunt's reveal: the lines first, then the spots, then the pins on top. */}
-          {spots && (
-            <HuntSpots spots={spots} links={links ?? []} toScreen={toScreen} width={stageRef.current?.clientWidth ?? 0} maskId={maskId} areaR={areaR} />
-          )}
-          {picks?.map((p, i) => {
-            if (!p) return null;
-            const [px, py] = toScreen(p.x, p.y);
-            return <HuntPinMark key={`${i}:${p.x},${p.y}`} x={px} y={py} n={i + 1} active={i === activePick} />;
-          })}
-          {/* Keyed by position so every new pin replays the drop. */}
-          {pick && !picks && <GuessPin key={`${pick.x},${pick.y}`} x={toScreen(pick.x, pick.y)[0]} y={toScreen(pick.x, pick.y)[1]} image={pinImage} />}
         </svg>
       )}
       {controls && (
@@ -455,11 +506,13 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
 }
 
 /** Pokémon Hunt's reveal layer: each pin's line to its spot drawing itself, the spots' flags and tags, and the numbered pins. */
-function HuntSpots({ spots, links, toScreen, width, maskId, areaR }: { spots: HuntMapSpot[]; links: HuntMapLink[]; toScreen: (x: number, y: number) => [number, number]; width: number; maskId: string; areaR: number }) {
+function HuntSpots({ spots, links, toScreen, width, maskId, areaR, period }: { spots: HuntMapSpot[]; links: HuntMapLink[]; toScreen: (x: number, y: number) => [number, number]; width: number; maskId: string; areaR: number; period?: number }) {
   const at = spots.map((p) => toScreen(p.x, p.y));
   const tags = spotTagPlacement(spots.map((p, i) => ({ x: at[i][0], y: at[i][1], tag: p.tag, found: p.found })), width);
+  const layerId = useMarkId("hunt-reveal-layer");
+  const linkId = useMarkId("hunt-link");
   return (
-    <g data-testid="hunt-reveal-layer">
+    <g data-testid={layerId}>
       {/* Each place's area, faint (green where a pin found it), fading in with its flag. */}
       {spots.map((p, i) =>
         p.mask?.length ? (
@@ -474,8 +527,10 @@ function HuntSpots({ spots, links, toScreen, width, maskId, areaR }: { spots: Hu
         ) : null
       )}
       {links.map((l, i) => {
-        const s = at[l.spot];
-        if (!s) return null;
+        const spot = spots[l.spot];
+        if (!spot) return null;
+        // The spot's copy nearest the pin: the short way the server scored it (lib/geo-wrap).
+        const s = toScreen(wrapNear(spot.x, l.pin.x, period), spot.y);
         const [gx, gy] = toScreen(l.pin.x, l.pin.y);
         const mask = `${maskId}-hunt-${i}`;
         return (
@@ -483,7 +538,7 @@ function HuntSpots({ spots, links, toScreen, width, maskId, areaR }: { spots: Hu
             <mask id={mask} maskUnits="userSpaceOnUse" x="0" y="0" width="100%" height="100%">
               <line className="geo-line" pathLength={1} x1={gx} y1={gy} x2={s[0]} y2={s[1]} stroke="#fff" strokeWidth={6} strokeLinecap="round" style={{ animationDelay: `${l.delay ?? 0}s` }} />
             </mask>
-            <line mask={`url(#${mask})`} x1={gx} y1={gy} x2={s[0]} y2={s[1]} strokeWidth={2.5} strokeDasharray="5 5" strokeLinecap="round" stroke={huntPinColor(l.n - 1)} data-testid="hunt-link" />
+            <line mask={`url(#${mask})`} x1={gx} y1={gy} x2={s[0]} y2={s[1]} strokeWidth={2.5} strokeDasharray="5 5" strokeLinecap="round" stroke={huntPinColor(l.n - 1)} data-testid={linkId} />
           </g>
         );
       })}
@@ -508,8 +563,9 @@ function HuntSpots({ spots, links, toScreen, width, maskId, areaR }: { spots: Hu
  */
 function Density({ density, toScreen, cell, id }: { density: NonNullable<Props["density"]>; toScreen: (x: number, y: number) => [number, number]; cell: number; id: string }) {
   const blur = Math.max(2, Math.min(18, cell * 0.45));
+  const testId = useMarkId("geo-crowd-layer");
   return (
-    <g data-testid="geo-crowd-layer">
+    <g data-testid={testId}>
       <filter id={`${id}-heat`} x="-20%" y="-20%" width="140%" height="140%">
         <feGaussianBlur stdDeviation={blur} />
       </filter>
@@ -565,6 +621,7 @@ export function GuessPin({ x, y, label, color = "#3a8dde", image, delay = 0, sti
 
 /** The true location: a black disc with a white ring and a yellow flag, popping in after the line draws; `n`, the round's number on a badge. */
 export function Flag({ x, y, n }: { x: number; y: number; n?: string }) {
+  const numberId = useMarkId("geo-flag-number");
   return (
     <g transform={`translate(${x} ${y})`}>
       <g className="geo-flag">
@@ -572,7 +629,7 @@ export function Flag({ x, y, n }: { x: number; y: number; n?: string }) {
         <path d="M-4 7V-7" stroke="#fff" strokeWidth={2} strokeLinecap="round" />
         <path d="M-3 -7h10l-2.5 3.2L7 -0.6h-10z" fill="#ffd23c" />
         {n && (
-          <g transform="translate(11 -11)" data-testid="geo-flag-number">
+          <g transform="translate(11 -11)" data-testid={numberId}>
             <circle r={8} fill="#e5484d" stroke="#fff" strokeWidth={1.75} />
             <text y={3.6} textAnchor="middle" fontSize={10.5} fontWeight={700} fill="#fff">
               {n}
