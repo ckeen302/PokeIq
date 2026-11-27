@@ -94,7 +94,7 @@ function DailyRow({ info, status, t }: { info: DailyInfo; status: DailyStatus; t
   const done = status.state === "done";
   return (
     <Link href={done ? info.doneHref : info.href} className="flex min-h-[68px] items-center gap-3.5 py-3 active:opacity-70" data-testid={`home-today-${info.id}`} data-state={status.state}>
-      <span className="screen flex h-11 w-11 shrink-0 items-center justify-center rounded-xl" style={{ color: `hsl(${info.accent})`, boxShadow: `0 0 22px -6px hsl(${info.accent} / 0.65)` }}>
+      <span className="screen icon-well flex h-11 w-11 shrink-0 items-center justify-center rounded-xl" style={{ color: `hsl(${info.accent})`, boxShadow: `0 0 22px -6px hsl(${info.accent} / 0.65)` }}>
         <Icon className="relative z-[3] h-5 w-5" aria-hidden />
       </span>
       <span className="min-w-0 flex-1">
@@ -129,7 +129,7 @@ function DailyCard({ info, status, t }: { info: DailyInfo; status: DailyStatus; 
         aria-hidden
       />
       <span className="absolute inset-x-0 top-0 h-[3px]" style={{ background: `hsl(${info.accent})`, boxShadow: `0 0 12px hsl(${info.accent} / 0.8)` }} aria-hidden />
-      <span className="screen flex h-10 w-10 items-center justify-center rounded-md" style={{ color: `hsl(${info.accent})` }}>
+      <span className="screen icon-well flex h-10 w-10 items-center justify-center rounded-md" style={{ color: `hsl(${info.accent})` }}>
         <Icon className="relative z-[3] h-5 w-5" aria-hidden />
       </span>
       <span className="mt-3 font-display text-[15px] font-bold uppercase leading-tight tracking-wide xl:text-base">{t(`games.${info.id}.name`)}</span>

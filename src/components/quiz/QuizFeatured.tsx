@@ -65,7 +65,7 @@ export function QuizFeatured() {
               />
               <span className="flex items-center gap-4 max-md:gap-3">
                 <span
-                  className="screen flex h-14 w-14 shrink-0 items-center justify-center rounded-md max-md:h-11 max-md:w-11"
+                  className="screen icon-well flex h-14 w-14 shrink-0 items-center justify-center rounded-md max-md:h-11 max-md:w-11"
                   style={{ color: `hsl(${f.accent})` }}
                 >
                   <Icon className="relative z-[3] h-6 w-6" aria-hidden />
