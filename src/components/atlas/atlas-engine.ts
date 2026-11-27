@@ -517,7 +517,22 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
     if (levels.length) {
       const lvl = levels.find((l) => l.scale >= need) ?? levels[levels.length - 1];
       // A wrapping map: the same decoded copy again at each width to either side that's on screen (the map's edges are open sea).
-      for (const off of offs) if (!wrap || ((off + atlas.W) * s + tx > 0 && off * s + tx < W)) ctx.drawImage(lvl.img, off, 0, atlas.W, atlas.H);
+      if (!wrap) ctx.drawImage(lvl.img, 0, 0, atlas.W, atlas.H);
+      else {
+        // Each copy draws only its part that's on screen (a couple of the picture's pixels past it, so the edges filter the
+        // same), so two copies across the seam cost what one map does.
+        const { width: iw, height: ih } = lvl.img as ImageBitmap;
+        const kx = iw / atlas.W;
+        const ky = ih / atlas.H;
+        const sy0 = Math.max(0, Math.floor((-ty / vs) * ky) - 2);
+        const sy1 = Math.min(ih, Math.ceil(((H - ty) / vs) * ky) + 2);
+        for (const off of offs) {
+          const sx0 = Math.max(0, Math.floor(((-tx / s) - off) * kx) - 2);
+          const sx1 = Math.min(iw, Math.ceil((((W - tx) / s) - off) * kx) + 2);
+          if (sx1 <= sx0 || sy1 <= sy0) continue;
+          ctx.drawImage(lvl.img, sx0, sy0, sx1 - sx0, sy1 - sy0, off + sx0 / kx, sy0 / ky, (sx1 - sx0) / kx, (sy1 - sy0) / ky);
+        }
+      }
       // Sharp enough for this view (or the biggest copy there is): tell the page once.
       const biggest = copies[copies.length - 1].width ? copies[copies.length - 1].width / atlas.W : 1;
       if (!sharp && sized() && (lvl.scale >= need || lvl.scale >= biggest)) {
