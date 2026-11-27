@@ -28,6 +28,9 @@ type Vars = React.CSSProperties & Record<`--${string}`, string>;
 export function LabPage() {
   const t = serverT(lab);
   const experiences = liveLabExperiences();
+  // The two history films share the last row; with an odd number of cards before them, the one left alone on the row
+  // above sits centred instead of beside a gap.
+  const lone = experiences.length % 2 === 1 ? experiences.length - 3 : -1;
   const shots = experiences.filter((e) => e.image);
   return (
     <div className="mx-auto max-w-6xl space-y-12 sm:space-y-16 max-sm:space-y-6" data-testid="lab-page">
@@ -37,7 +40,7 @@ export function LabPage() {
         {/* One grid of equal cards: the same width, the same picture and the same height in every row. */}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 max-sm:gap-8" data-testid="lab-grid">
           {experiences.map((e, i) => (
-            <LabCard key={e.id} experience={e} priority={i === 0} />
+            <LabCard key={e.id} experience={e} priority={i === 0} lone={i === lone} />
           ))}
         </div>
       </section>
@@ -113,11 +116,11 @@ function LabHero({ shots }: { shots: LabExperience[] }) {
   );
 }
 
-function LabCard({ experience: e, priority }: { experience: LabExperience; priority: boolean }) {
+function LabCard({ experience: e, priority, lone }: { experience: LabExperience; priority: boolean; lone?: boolean }) {
   const t = serverT(lab);
   const title = t(`cards.${e.id}.title`);
   return (
-    <article className="lab-card group relative" style={{ "--lab-accent": e.accent } as Vars} data-testid={`lab-card-${e.id}`}>
+    <article className={cn("lab-card group relative", lone && "md:col-span-2 md:mx-auto md:w-[calc(50%-0.75rem)]")} style={{ "--lab-accent": e.accent } as Vars} data-testid={`lab-card-${e.id}`}>
       <div className="lab-glow flex h-full flex-col overflow-hidden rounded-xl border bg-card max-sm:overflow-visible max-sm:rounded-none max-sm:border-0 max-sm:bg-transparent max-sm:!shadow-none">
         {/* Every card's picture is the same 16:9 box, the screenshots' own shape: nothing is cropped or letterboxed. */}
         <Link

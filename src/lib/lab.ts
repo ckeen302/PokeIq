@@ -93,7 +93,8 @@ const STORY_CARD: LabExperience = {
 /**
  * The hub's order: the experiences that impress most, run best on phones and
  * are easiest to share lead (docs/lab-audit.md): Sizes, Mass Battle, the
- * World Globe. The films and the Professor's Lab follow.
+ * World Globe. The two history films close it, side by side on the last row
+ * (they must stay the last two).
  */
 export const LAB_EXPERIENCES: LabExperience[] = [
   {
@@ -129,7 +130,6 @@ export const LAB_EXPERIENCES: LabExperience[] = [
     accent: "195 92% 64%",
     live: true,
   },
-  POKEMON_STORY_LIVE ? STORY_CARD : TIMELINE_CARD,
   {
     id: "pokedex",
     href: "/lab/pokedex",
@@ -140,17 +140,6 @@ export const LAB_EXPERIENCES: LabExperience[] = [
     image: "/lab/pokedex.webp",
     accent: "190 95% 62%",
     live: LAB_DEX_LIVE,
-  },
-  {
-    id: "world-history",
-    href: "/lab/world-history",
-    title: "The History of the Pokémon World",
-    kicker: "The story, as the games tell it",
-    pitch: "A cinematic museum of the Pokémon world's in-universe history, from Sinnoh's creation myth to the time machine in Area Zero. Scroll through it or press Play, with every line sourced to the games.",
-    tags: ["Told by the games", "Every line sourced", "Make a video"],
-    image: "/lab/world-history.webp",
-    accent: "42 92% 66%",
-    live: WORLD_HISTORY_LIVE,
   },
   {
     id: "race",
@@ -173,6 +162,18 @@ export const LAB_EXPERIENCES: LabExperience[] = [
     image: "/lab/games.webp",
     accent: "48 100% 60%",
     live: GAMES_LIVE,
+  },
+  POKEMON_STORY_LIVE ? STORY_CARD : TIMELINE_CARD,
+  {
+    id: "world-history",
+    href: "/lab/world-history",
+    title: "The History of the Pokémon World",
+    kicker: "The story, as the games tell it",
+    pitch: "A cinematic museum of the Pokémon world's in-universe history, from Sinnoh's creation myth to the time machine in Area Zero. Scroll through it or press Play, with every line sourced to the games.",
+    tags: ["Told by the games", "Every line sourced", "Make a video"],
+    image: "/lab/world-history.webp",
+    accent: "42 92% 66%",
+    live: WORLD_HISTORY_LIVE,
   },
 ];
 
