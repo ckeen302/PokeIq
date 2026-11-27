@@ -158,7 +158,8 @@ const fail = (opts, msg) => opts.fail(`${opts.label}: ${msg}`);
 async function openSetup(page, f) {
   const tile = page.getByTestId("hunt-hub-entry");
   // On a phone the modes sit in dropdowns: open any that are shut.
-  for (const bar of await page.locator('[data-testid^="hub-drop-"][aria-expanded="false"]').all()) if (await bar.isVisible().catch(() => false)) await bar.click();
+  for (const bar of await page.locator('[data-testid^="hub-drop-"]').all())
+    if ((await bar.getAttribute("aria-expanded")) === "false" && (await bar.isVisible().catch(() => false))) await bar.click();
   await tile.waitFor();
   if ((await tile.getAttribute("aria-expanded")) !== "false") f("the Pokémon Hunt tile doesn't say it's closed");
   if ((await tile.getAttribute("aria-controls")) !== "hunt") f("the Pokémon Hunt tile doesn't name the setup it opens");

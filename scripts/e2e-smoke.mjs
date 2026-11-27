@@ -78,7 +78,10 @@ async function closeHowTo(p) {
 /** PokéGuessr's solo setup (maps, games, rounds, difficulty) is folded under "Set up a game": opens it (nothing to do when it's open). A click that lands before hydration does nothing, so it tries again. */
 /** On a phone the landing folds its modes into dropdowns: opens any that are shut, so their cards can be pressed. */
 async function openDrops(p) {
-  for (const bar of await p.locator('[data-testid^="hub-drop-"][aria-expanded="false"]').all()) if (await bar.isVisible().catch(() => false)) await bar.click().catch(() => undefined);
+  // Every bar, then each one's state: a filter on aria-expanded="false" would shift under the clicks (opening the first leaves the
+  // second at index 0, so the second was never opened).
+  for (const bar of await p.locator('[data-testid^="hub-drop-"]').all())
+    if ((await bar.getAttribute("aria-expanded").catch(() => null)) === "false" && (await bar.isVisible().catch(() => false))) await bar.click().catch(() => undefined);
 }
 async function openGeoSetup(p) {
   for (let i = 0; i < 5; i++) {
