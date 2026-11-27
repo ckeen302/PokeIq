@@ -59,6 +59,8 @@ export interface LabExperience {
   tags: string[];
   /** Card art: a screenshot of the experience in /public, 16:9. Without it the card draws an animated preview. */
   image?: string;
+  /** The same picture in light mode, where the experience has a light look of its own (the World Globe). */
+  imageLight?: string;
   /** Accent colour, as an HSL triplet ("258 94% 74%"). */
   accent: string;
   live: boolean;
@@ -127,6 +129,7 @@ export const LAB_EXPERIENCES: LabExperience[] = [
     pitch: "Spin a holographic globe of the whole Pokémon world and zoom from its regions down to every town, route and landmark.",
     tags: ["Generation by generation", "Real screenshots", "From PokéGuessr"],
     image: "/lab/globe.webp",
+    imageLight: "/lab/globe-light.webp",
     accent: "195 92% 64%",
     live: true,
   },

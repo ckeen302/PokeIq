@@ -103,10 +103,16 @@ function LabHero({ shots }: { shots: LabExperience[] }) {
               >
                 {/* The same sizes as the experience's card below, so the browser downloads each screenshot once. */}
                 {/* Hidden on a phone: nothing to download there (an eager, hidden picture would hold up the first card's). */}
-                <picture>
+                <picture className={cn(e.imageLight && "[.light_&]:hidden")}>
                   <source media={PHONE} srcSet={BLANK} />
                   <Image src={e.image!} alt="" width={1280} height={720} sizes={CARD_IMAGE_SIZES} loading="eager" fetchPriority="high" className="block aspect-video h-auto w-full object-cover" />
                 </picture>
+                {e.imageLight && (
+                  <picture className="hidden [.light_&]:block">
+                    <source media={PHONE} srcSet={BLANK} />
+                    <Image src={e.imageLight} alt="" width={1280} height={720} sizes={CARD_IMAGE_SIZES} className="block aspect-video h-auto w-full object-cover" />
+                  </picture>
+                )}
               </div>
             );
           })}
@@ -132,19 +138,28 @@ function LabCard({ experience: e, priority, lone }: { experience: LabExperience;
         >
           {e.image ? (
             // Phones take the screenshot's phone-sized file (no resizing on the server); bigger screens a resized copy.
-            <picture>
-              <source media={PHONE} srcSet={phoneImage(e.image)} />
-              <Image
-                src={e.image}
-                alt=""
-                fill
-                sizes={CARD_IMAGE_SIZES}
-                loading={priority ? "eager" : undefined}
-                fetchPriority={priority ? "high" : undefined}
-                // The Professor's Lab's picture is a screenshot with text to its edges: shown whole, never zoomed by the drift.
-                className={cn("object-cover", e.id !== "pokedex" && "lab-kb")}
-              />
-            </picture>
+            <>
+              <picture className={cn(e.imageLight && "contents [.light_&]:hidden")}>
+                <source media={PHONE} srcSet={phoneImage(e.image)} />
+                <Image
+                  src={e.image}
+                  alt=""
+                  fill
+                  sizes={CARD_IMAGE_SIZES}
+                  loading={priority ? "eager" : undefined}
+                  fetchPriority={priority ? "high" : undefined}
+                  // The Professor's Lab's picture is a screenshot with text to its edges: shown whole, never zoomed by the drift.
+                  className={cn("object-cover", e.id !== "pokedex" && "lab-kb")}
+                />
+              </picture>
+              {/* In light mode, an experience with a light look of its own shows that instead. */}
+              {e.imageLight && (
+                <picture className="hidden [.light_&]:contents">
+                  <source media={PHONE} srcSet={phoneImage(e.imageLight)} />
+                  <Image src={e.imageLight} alt="" fill sizes={CARD_IMAGE_SIZES} className="object-cover lab-kb" />
+                </picture>
+              )}
+            </>
           ) : e.id === "race" ? (
             <RacePreview />
           ) : null}

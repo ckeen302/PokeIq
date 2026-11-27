@@ -16,6 +16,19 @@ export const LAB_CSS = `
 @keyframes lab-floor{to{background-position:0 64px,0 0}}
 @media (max-width:1023px){.lab-floor{height:30%}}
 .lab-title{text-shadow:0 0 28px hsl(var(--screen) / .45)}
+/* By day the hero is a bright lavender stage (the theme's own colours, not the device-dark ones), its floor and glows in violet and pink. */
+:root.light .lab-hero{color-scheme:light;--background:250 40% 97%;--foreground:248 42% 11%;--card:0 0% 100%;--card-foreground:248 42% 11%;
+  --primary:340 80% 48%;--primary-fill:340 80% 48%;--primary-foreground:0 0% 100%;--primary-shadow:338 70% 36%;--secondary:248 32% 91%;
+  --secondary-foreground:248 42% 11%;--secondary-shadow:248 24% 76%;--muted:248 32% 93%;--muted-foreground:248 14% 36%;--accent:248 32% 91%;
+  --accent-foreground:248 42% 11%;--success:154 70% 28%;--screen:262 72% 54%;--border:248 26% 86%;--input:248 26% 80%;--ring:262 72% 54%;
+  --shade:248 32% 78%;--tint-ink:45%;color:hsl(var(--foreground));
+  background:radial-gradient(70% 60% at 78% 30%, hsl(262 85% 72% / .28), transparent 70%),radial-gradient(55% 55% at 8% 100%, hsl(340 85% 66% / .18), transparent 70%),
+  linear-gradient(180deg,#ffffff,#f3efff 62%,#e9e2ff);}
+:root.light .lab-hero .lab-floor{background-image:linear-gradient(hsl(var(--screen) / .3) 1.5px,transparent 1.5px),linear-gradient(90deg,hsl(var(--screen) / .22) 1.5px,transparent 1.5px)}
+:root.light .lab-title{text-shadow:0 2px 18px hsl(var(--screen) / .22)}
+:root.light .lab-title b{text-shadow:0 2px 18px hsl(var(--primary) / .3)}
+:root.light .lab-card .screen::after{display:none}
+:root.light .lab-panel{box-shadow:0 26px 50px rgb(70 50 170 / .22),0 0 28px hsl(var(--lab-accent, var(--screen)) / .2)}
 .lab-title b{color:hsl(var(--primary));text-shadow:0 0 22px hsl(var(--primary) / .75),0 0 60px hsl(var(--primary) / .35)}
 .lab-stack{perspective:1400px}
 .lab-panel{position:absolute;overflow:hidden;border-radius:12px;border:1px solid hsl(var(--screen) / .45);
