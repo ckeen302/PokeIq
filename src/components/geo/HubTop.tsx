@@ -29,6 +29,8 @@ import partyEmblem from "@/assets/guessr/emblems/party.webp";
 import partyTrio from "@/assets/guessr/party-trio.webp";
 // MOCK: Hunt's detective Pikachu, magnifier to its eye, worn the same way.
 import huntDetective from "@/assets/guessr/hunt-detective.webp";
+// MOCK: Classic's explorer Squirtle with its globe and pin.
+import classicExplorer from "@/assets/guessr/classic-explorer.webp";
 
 /** Who stands on the globe until a player makes their own 3D trainer (and for visitors): the creator's first look. */
 const STAND_IN = presetTrainer(TRAINER_PRESETS[0]);
@@ -540,6 +542,12 @@ function Backdrop({ pattern, pulse }: { pattern: Pattern; pulse?: boolean }) {
   return (
     <span className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl" aria-hidden>
       {pk && pattern === "party" && <PartyTrio pk={pk} />}
+      {pk === "sil" && pattern === "classic" && (
+        <span
+          className="absolute bottom-[4%] right-[31%] aspect-[641/640] h-[92%] bg-white/[0.16] [.light_&]:bg-[#5a46d0]/[0.2]"
+          style={{ maskImage: `url(${classicExplorer.src})`, WebkitMaskImage: `url(${classicExplorer.src})`, maskSize: "contain", WebkitMaskSize: "contain", maskRepeat: "no-repeat", WebkitMaskRepeat: "no-repeat", maskPosition: "center bottom", WebkitMaskPosition: "center bottom" }}
+        />
+      )}
       {pk === "sil" && pattern === "hunt" && (
         <span
           className="absolute bottom-[4%] right-[31%] aspect-[597/640] h-[92%] bg-white/[0.16] [.light_&]:bg-[#5a46d0]/[0.2]"
@@ -558,7 +566,7 @@ function Backdrop({ pattern, pulse }: { pattern: Pattern; pulse?: boolean }) {
       )}
       <span className={cn("absolute -right-[6%] -top-[30%] aspect-square h-[150%] rounded-full opacity-50 [.light_&]:opacity-35", pulse && "gh-pulse")} style={{ background: `radial-gradient(closest-side, ${GLOW[pattern]}, transparent)` }} />
       <span
-        className={cn("absolute inset-0 bg-white/[0.16] [.light_&]:bg-[#5a46d0]/[0.2]", pk === "sil" && (pattern === "hunt" || pattern === "party") && "hidden")}
+        className={cn("absolute inset-0 bg-white/[0.16] [.light_&]:bg-[#5a46d0]/[0.2]", pk === "sil" && (pattern === "hunt" || pattern === "party" || pattern === "classic") && "hidden")}
         style={{
           maskImage: `${p.image}, linear-gradient(90deg, rgb(0 0 0 / .5), black 55%)`,
           WebkitMaskImage: `${p.image}, linear-gradient(90deg, rgb(0 0 0 / .5), black 55%)`,
