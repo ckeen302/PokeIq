@@ -1,14 +1,22 @@
 /**
- * The landing globe's geometry, without three.js: where a longitude and latitude sit on the turning, tilted planet,
+ * The landing globe's geometry, without three.js: where a longitude and latitude sit on the turning planet,
  * and where that lands on the canvas. The live scene (scene.ts) draws with exactly this camera and these turns, so
  * the DOM overlays (region names, the Daily's pins) placed with it stay on the land; with no WebGL, the same maths
  * places them on the poster (the scene's own first frame).
  */
 
 export const D2R = Math.PI / 180;
-/** The axis's tilt (Earth's), and how far the view looks down on it, so the north and the south both show. */
-export const TILT = 23.4 * D2R;
-export const LOOK_DOWN = 9 * D2R;
+/**
+ * The axis's lean: none. Upright, every region comes round the front as it turns (leant, as Earth's 23.4°, the far
+ * south stayed under the fold on a laptop). The trainer stands on its top.
+ */
+export const TILT = 0;
+/**
+ * How far the view looks down on the world: a little up, from just under the equator, as the world's lower part is
+ * under the fold on a laptop (1440 × 900), so the far south (Hoenn, the top of Alola) still comes round on screen.
+ * Any further and Sinnoh, the far north, slips behind the trainer.
+ */
+export const LOOK_DOWN = -8 * D2R;
 /** A long lens, so the planet reads as a ball, not a bulge. */
 export const FOV = 26;
 /** Where the world faces when it appears (and on the poster): Johto and Kanto, front and centre. */

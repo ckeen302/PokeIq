@@ -8,7 +8,7 @@ import type { Overlay } from "./overlay";
 
 /**
  * The landing's planet: the World globe's own world (components/globe/world-look.ts: the holographic atlas in the
- * site's theme colours, its atmosphere, clouds and night lights), small, turning about a tilted axis under the
+ * site's theme colours, its atmosphere, clouds and night lights), small, turning about its upright axis under the
  * trainer, lit from up and to the left. The names and pins are DOM (overlay.ts), moved with it every frame.
  *
  * It turns on its own (a turn every 75 seconds); a drag turns it by hand (and, with a mouse, tips it a little), a
@@ -83,7 +83,7 @@ export function createHubGlobe(host: HTMLElement, grab: HTMLElement, o: HubGlobe
   camera.lookAt(0, 0, 0);
   camera.updateMatrixWorld();
   const scene = new THREE.Scene();
-  // The tilted axis (and the view a little from above), then the day's turn about it (as project.ts's turn()).
+  // The axis (upright: TILT and LOOK_DOWN are 0; a mouse drag tips it), then the day's turn about it (as project.ts's turn()).
   const tiltG = new THREE.Group();
   const spinG = new THREE.Group();
   tiltG.add(spinG);
