@@ -6,6 +6,11 @@ import { buttonVariants } from "@/components/ui/button";
 import { liveLabExperiences, type LabExperience } from "@/lib/lab";
 import { cn } from "@/lib/utils";
 import { LAB_CSS } from "./lab-css";
+import { HERO_CSS } from "./hero/hero-css";
+import { HeroPedestal } from "./hero/HeroPedestal";
+import { HeroParade } from "./hero/HeroParade";
+import { HeroPortal } from "./hero/HeroPortal";
+import { PARADE_GIANT, PARADE_KEYS, PEDESTAL_KEYS, PORTAL_KEYS, heroMon } from "./hero/data";
 import { serverT } from "@/i18n/server";
 import lab from "@/messages/lab";
 
@@ -14,8 +19,6 @@ const CARD_IMAGE_SIZES = "(min-width: 1184px) 564px, (min-width: 768px) 50vw, 10
 /** Phones take a pre-sized copy of each screenshot (828 px wide, scripts/lab-phone-sizes.ts), so the server resizes nothing for them. */
 const PHONE = "(max-width: 639px)";
 const phoneImage = (src: string) => src.replace(/^\/lab\//, "/lab/phone/");
-/** A 1×1 transparent GIF: what the hero's floating panels (hidden on a phone) fetch on a phone, so they don't compete with the first card's picture. */
-const BLANK = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
 
 /**
  * /lab: a hero, then a grid of equal cards, one per 3D experience. The previews are
@@ -25,16 +28,18 @@ const BLANK = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAA
 
 type Vars = React.CSSProperties & Record<`--${string}`, string>;
 
-export function LabPage() {
+/** Mock: which hero visual to show (?hero=1|2|3), and for the pedestal, optionally which Pokémon (?mon=charizard). */
+export interface HeroChoice { hero: 1 | 2 | 3; mon?: string }
+
+export function LabPage({ choice = { hero: 1 } }: { choice?: HeroChoice }) {
   const t = serverT(lab);
   const experiences = liveLabExperiences();
   // The two history films share the last row; with an odd number of cards before them, the one left alone on the row
   // above sits centred instead of beside a gap.
   const lone = experiences.length % 2 === 1 ? experiences.length - 3 : -1;
-  const shots = experiences.filter((e) => e.image);
   return (
     <div className="mx-auto max-w-6xl space-y-12 sm:space-y-16 max-sm:space-y-6" data-testid="lab-page">
-      <LabHero shots={shots} />
+      <LabHero choice={choice} />
       <section id="experiences" className="scroll-mt-20 space-y-6 sm:space-y-8" aria-labelledby="lab-experiences">
         <HudHeading index={1} id="lab-experiences" title={t("experiences")} aside={t("experiencesAside")} className="max-sm:sr-only" />
         {/* One grid of equal cards: the same width, the same picture and the same height in every row. */}
@@ -45,27 +50,23 @@ export function LabPage() {
         </div>
       </section>
       {/* Last, so the page's spacing doesn't push the hero down. */}
-      <style>{LAB_CSS}</style>
+      <style>{LAB_CSS + HERO_CSS}</style>
     </div>
   );
 }
 
-/** Where each screenshot floats in the hero (desktop), front to back. */
-const PANEL_POSES = [
-  { className: "left-[6%] top-[30%] z-[3] w-[64%]", transform: "rotateY(-16deg) rotateX(5deg)", delay: "0s" },
-  { className: "right-[2%] top-[6%] z-[2] w-[52%]", transform: "rotateY(-22deg) rotateX(7deg) translateZ(-60px)", delay: "-2.4s" },
-  { className: "right-[4%] bottom-[4%] z-[1] w-[44%] lg:right-[1%]", transform: "rotateY(-24deg) rotateX(4deg) translateZ(-120px)", delay: "-4.8s" },
-];
-
-function LabHero({ shots }: { shots: LabExperience[] }) {
+function LabHero({ choice }: { choice: HeroChoice }) {
   const t = serverT(lab);
+  // A different Pokémon on the pedestal each visit (or the one asked for).
+  const pick = choice.mon && (PEDESTAL_KEYS as readonly string[]).includes(choice.mon) ? choice.mon : PEDESTAL_KEYS[Math.floor(Math.random() * PEDESTAL_KEYS.length)];
   return (
     <section
       className="lab-hero dark-scope relative -mx-4 -mt-8 overflow-hidden border-b border-screen/25 sm:mx-0 sm:mt-0 sm:rounded-2xl sm:border"
       data-testid="lab-hero"
     >
       <div className="lab-floor" aria-hidden />
-      <div className="relative grid gap-8 px-5 pb-10 pt-10 max-sm:px-4 max-sm:pb-14 max-sm:pt-12 sm:px-10 sm:pb-14 sm:pt-14 lg:min-h-[480px] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-center lg:gap-4 lg:py-16 lg:pl-14">
+      {choice.hero === 2 && <HeroParade mons={PARADE_KEYS.map(heroMon)} giant={heroMon(PARADE_GIANT)} />}
+      <div className={cn("relative grid gap-8 px-5 pb-10 pt-10 max-sm:px-4 max-sm:pt-12 sm:px-10 sm:pb-14 sm:pt-14 lg:min-h-[480px] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-center lg:gap-4 lg:py-16 lg:pl-14", choice.hero === 2 ? "max-sm:pb-[104px]" : "max-sm:pb-14")}>
         <div className="relative z-10 space-y-5 max-sm:space-y-3">
           <p className="hud-label flex items-center gap-2 text-screen max-sm:hidden">
             <span className="led h-1.5 w-1.5 text-success" aria-hidden /> {t("kicker")}
@@ -91,31 +92,10 @@ function LabHero({ shots }: { shots: LabExperience[] }) {
           </div>
         </div>
 
-        {/* Screenshots of the experiences, floating in perspective. */}
-        <div className="lab-stack relative h-[230px] sm:h-[340px] lg:h-[400px] max-sm:hidden" aria-hidden>
-          {shots.slice(0, 3).map((e, i) => {
-            const pose = PANEL_POSES[i];
-            return (
-              <div
-                key={e.id}
-                className={cn("lab-panel", pose.className)}
-                style={{ transform: pose.transform, animationDelay: pose.delay, "--lab-accent": e.accent } as Vars}
-              >
-                {/* The same sizes as the experience's card below, so the browser downloads each screenshot once. */}
-                {/* Hidden on a phone: nothing to download there (an eager, hidden picture would hold up the first card's). */}
-                <picture className={cn(e.imageLight && "[.light_&]:hidden")}>
-                  <source media={PHONE} srcSet={BLANK} />
-                  <Image src={e.image!} alt="" width={1280} height={720} sizes={CARD_IMAGE_SIZES} loading="eager" fetchPriority="high" className="block aspect-video h-auto w-full object-cover" />
-                </picture>
-                {e.imageLight && (
-                  <picture className="hidden [.light_&]:block">
-                    <source media={PHONE} srcSet={BLANK} />
-                    <Image src={e.imageLight} alt="" width={1280} height={720} sizes={CARD_IMAGE_SIZES} className="block aspect-video h-auto w-full object-cover" />
-                  </picture>
-                )}
-              </div>
-            );
-          })}
+        {/* Mock: the right-hand visual (?hero=1|2|3). The parade is drawn across the hero itself (above); this keeps its room. */}
+        <div className="lab-visual h-[230px] sm:h-[340px] lg:h-[400px]" aria-hidden>
+          {choice.hero === 1 && <HeroPedestal mon={heroMon(pick)} />}
+          {choice.hero === 3 && <HeroPortal mons={PORTAL_KEYS.map(heroMon)} />}
         </div>
       </div>
     </section>

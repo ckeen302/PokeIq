@@ -15,6 +15,9 @@ export function generateMetadata(): Metadata {
   });
 }
 
-export default function Page() {
-  return <LabPage />;
+/** Mock: ?hero=1|2|3 picks the hero's visual (1 when absent), ?mon= the pedestal's Pokémon. */
+export default async function Page({ searchParams }: { searchParams: Promise<{ hero?: string; mon?: string }> }) {
+  const { hero, mon } = await searchParams;
+  const n = Number(hero);
+  return <LabPage choice={{ hero: n === 2 || n === 3 ? n : 1, mon }} />;
 }
