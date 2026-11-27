@@ -68,6 +68,7 @@ export function createWorldLook(o: WorldLookOptions) {
   const U = {
     map: { value: tex }, gens: { value: blank as THREE.Texture }, hasGens: { value: 0 }, era: { value: LAST_GEN },
     time: { value: 0 }, land: { value: C() }, coast: { value: C() }, grid: { value: C() }, rim: { value: C() }, sea: { value: C() },
+    seaInk: { value: C() }, seaK: { value: 0 }, shoal: { value: C() },
     spec: { value: C() }, dusk: { value: new THREE.Color(1, 0.62, 0.36) }, nightTint: { value: new THREE.Color(0.72, 0.78, 1.15) },
     nightLevel: { value: 0.34 }, light: { value: 0 }, uSun: { value: sunObj }, uCam: { value: camObj },
     uFocus: { value: new THREE.Vector3(0, 1, 0) }, uFocusK: { value: 0 }, uWorldK: { value: 0 }, uHot: { value: C() },
@@ -78,7 +79,7 @@ export function createWorldLook(o: WorldLookOptions) {
     vertexShader: `varying vec2 vUv; varying vec3 vP;
       void main(){ vUv=uv; vP=position; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }`,
     fragmentShader: `uniform sampler2D map; uniform sampler2D gens; uniform float hasGens; uniform float era; uniform float time;
-      uniform vec3 land; uniform vec3 coast; uniform vec3 grid; uniform vec3 rim; uniform vec3 sea; uniform vec3 spec; uniform vec3 dusk; uniform vec3 nightTint;
+      uniform vec3 land; uniform vec3 coast; uniform vec3 grid; uniform vec3 rim; uniform vec3 sea; uniform vec3 seaInk; uniform float seaK; uniform vec3 shoal; uniform vec3 spec; uniform vec3 dusk; uniform vec3 nightTint;
       uniform float nightLevel; uniform float light; uniform vec3 uSun; uniform vec3 uCam;
       #ifdef FOCUS
       uniform vec3 uFocus; uniform float uFocusK; uniform float uWorldK; uniform vec3 uHot;
@@ -96,7 +97,16 @@ export function createWorldLook(o: WorldLookOptions) {
         float g=gridf(vUv, vec2(36.,18.))*(1.-l*.6);
         float f=pow(max(1.-max(dot(N,V),0.),0.),2.2);
         float band=.96+.04*sin(vUv.y*900.+time*2.);
-        vec3 col=sea;
+        // The open sea, so it reads as water: lighter shallows round the coasts (the mask, blurred by its mipmaps) and
+        // faint drifting ripple lines (contours of a slow noise, on the sphere itself, so no seam and no pinch at the
+        // poles). Both fade under the land.
+        float near=texture2D(map,vUv,4.).r;
+        float sh=smoothstep(.0,.3,near);
+        float rn=vnoise(vP*4.2+vec3(0.,time*.015,0.))+.5*vnoise(vP*9.5+vec3(time*.02,0.,0.));
+        float rc=rn*5., rw=fwidth(rc);
+        float lines=1.-smoothstep(rw*.5,rw*1.5+.02,abs(fract(rc+.5)-.5));
+        vec3 col=mix(sea, shoal, sh*.55);
+        col=mix(col, seaInk, seaK*(lines*.9+.25*smoothstep(.25,1.2,rn))*(1.-sh*.5));
         col=mix(col, land*(.55+.75*m)*band, l*.92);
         col=mix(col, coast, c*.9);
         col=mix(col, land, l0*(1.-vis)*.09);
@@ -216,6 +226,12 @@ export function createWorldLook(o: WorldLookOptions) {
     const screen = tokenColor("--screen", C()), primary = tokenColor("--primary", C());
     U.light.value = dark ? 0 : 1;
     tokenColor("--card", U.sea.value); U.land.value.copy(screen); tokenColor("--foreground", U.coast.value); tokenColor("--border", U.grid.value);
+    // The sea's texture: by night a faint lift towards the land's violet, by day a lavender wash on the white card.
+    if (!dark) U.sea.value.lerp(U.grid.value, 0.35);
+    U.seaInk.value.copy(screen);
+    U.seaK.value = 0.045;
+    U.shoal.value.copy(U.sea.value).lerp(screen, dark ? 0.1 : 0.06);
+    if (!dark) U.shoal.value.lerp(new THREE.Color(1, 1, 1), 0.5);
     if (dark) U.rim.value.copy(screen); else hex(U.rim.value, 0xffffff);
     U.spec.value.copy(dark ? new THREE.Color(0.85, 0.82, 1) : new THREE.Color(1, 1, 1));
     // The night side stays readable: an era's new region may lie on it.
