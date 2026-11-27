@@ -25,6 +25,12 @@ import huntEmblem from "@/assets/guessr/emblems/hunt.webp";
 import duelsEmblem from "@/assets/guessr/emblems/duels.webp";
 import rankedEmblem from "@/assets/guessr/emblems/ranked.webp";
 import partyEmblem from "@/assets/guessr/emblems/party.webp";
+import partySil from "@/assets/guessr/party-trio.webp";
+import huntSil from "@/assets/guessr/hunt-detective.webp";
+import classicSil from "@/assets/guessr/classic-explorer.webp";
+import rankedSil from "@/assets/guessr/ranked-podium.webp";
+import dailySil from "@/assets/guessr/daily-jirachi.webp";
+import duelsSil from "@/assets/guessr/duels-clash.webp";
 
 /** Who stands on the globe until a player makes their own 3D trainer (and for visitors): the creator's first look. */
 const STAND_IN = presetTrainer(TRAINER_PRESETS[0]);
@@ -71,25 +77,26 @@ export interface HubTopData {
 }
 
 /**
- * Every card's face, the Daily's and each mode's alike: a thick slab of purple, lit along its top edge and with a darker
- * lip along its bottom, a faint dot grain over it.
+ * Every card's face, the Daily's and each mode's alike: a slab of purple lit along its top edge, a faint dot grain
+ * over it.
  */
 const FACE = cn(
-  // By night: a deep violet slab, a soft sheen across its top, a darker lip along its bottom, a faint dot grain.
+  // By night: a deep violet face, a soft sheen across its top, a faint dot grain.
   "bg-[radial-gradient(120%_85%_at_50%_-25%,rgb(255_255_255/0.2),transparent_55%),radial-gradient(rgb(255_255_255/0.06)_1px,transparent_1.5px),linear-gradient(180deg,#5747d2_0%,#4233ab_55%,#31258a_100%)] [background-size:100%_100%,9px_9px,100%_100%]",
-  "shadow-[inset_0_2px_0_rgb(255_255_255/0.24),inset_0_-5px_0_rgb(18_10_60/0.45),0_10px_24px_rgb(0_0_0/0.5)] ring-1 ring-white/10",
-  // By day: the same slab in white and lavender, its lip a soft violet, so it sits on the light page like it belongs.
+  "shadow-[inset_0_2px_0_rgb(255_255_255/0.24),0_10px_24px_rgb(0_0_0/0.5)] ring-1 ring-white/10",
+  // By day: the same face in white and lavender, so it sits on the light page like it belongs.
   "[.light_&]:bg-[radial-gradient(120%_85%_at_50%_-25%,rgb(255_255_255/0.95),transparent_55%),radial-gradient(rgb(90_70_210/0.08)_1px,transparent_1.5px),linear-gradient(180deg,#ffffff_0%,#f3efff_55%,#e6dfff_100%)]",
-  "[.light_&]:shadow-[inset_0_2px_0_rgb(255_255_255/1),inset_0_-5px_0_rgb(120_100_220/0.24),0_10px_26px_rgb(70_50_170/0.2)] [.light_&]:ring-[#d4c9ff]",
+  "[.light_&]:shadow-[inset_0_2px_0_rgb(255_255_255/1),0_10px_26px_rgb(70_50_170/0.2)] [.light_&]:ring-[#d4c9ff]",
 );
 const CARD = cn("rounded-2xl", FACE);
 /** A section's name as a tab on top of its first card. */
-const TAB = "inline-flex items-center rounded-t-xl bg-[#4a3bb0] px-3.5 pb-1 pt-1.5 font-display text-[11px] font-bold uppercase italic leading-none tracking-[0.08em] text-[#d9d2ff] shadow-[inset_0_2px_0_rgb(255_255_255/0.2)] ring-1 ring-white/10 md:text-xs [.light_&]:bg-white [.light_&]:text-[#4a3bb0] [.light_&]:ring-[#d4c9ff] [.light_&]:shadow-[0_-2px_10px_rgb(70_50_170/0.08)]";
-const TITLE = "font-display font-bold uppercase italic leading-none tracking-wide text-white [text-shadow:0_2px_0_#120f24]";
+const TAB =
+  "inline-flex items-center rounded-t-xl bg-[#4a3bb0] px-3.5 pb-1 pt-1.5 font-display text-[11px] font-bold uppercase italic leading-none tracking-[0.08em] text-[#d9d2ff] shadow-[inset_0_2px_0_rgb(255_255_255/0.2)] ring-1 ring-white/10 md:text-xs [.light_&]:bg-white [.light_&]:text-[#4a3bb0] [.light_&]:ring-[#d4c9ff] [.light_&]:shadow-[0_-2px_10px_rgb(70_50_170/0.08)]";
+const TITLE =
+  "font-display font-bold uppercase italic leading-none tracking-wide text-white [text-shadow:0_2px_0_#120f24]";
 
 /** What a hovered mode points at on the globe: one region (an atlas name), or the whole world. */
 export type HubFocus = string | "world" | null;
-
 
 /** The motion: CSS only, and all of it off for reduced motion (the end states are the resting ones). */
 const MOTION = `
@@ -154,7 +161,13 @@ const MOTION = `
 const TWINKLES = (() => {
   let x = 7;
   const r = () => ((x = (x * 16807) % 2147483647) - 1) / 2147483646;
-  return Array.from({ length: 34 }, () => ({ l: r() * 100, t: r() * 70, s: 1.5 + r() * 2.2, d: r() * 3.2, p: 2.6 + r() * 2.4 }));
+  return Array.from({ length: 34 }, () => ({
+    l: r() * 100,
+    t: r() * 70,
+    s: 1.5 + r() * 2.2,
+    d: r() * 3.2,
+    p: 2.6 + r() * 2.4,
+  }));
 })();
 
 /** Shooting stars by night (where each starts, % across and down; its cycle and head start, s): one every few seconds. */
@@ -209,43 +222,95 @@ function Space({ children }: { children: React.ReactNode }) {
       data-testid="geo-home"
     >
       <style>{MOTION}</style>
-      <div className="gh-px-far pointer-events-none absolute -inset-4" aria-hidden>
-      {/* Light mode: still space, but bright: a pale lavender void lit by nebulae, the sun flaring in from the upper left, ink-dark stars. */}
-      <div className="pointer-events-none absolute inset-0 hidden [.light_&]:block" aria-hidden>
-        <div className="absolute inset-0 bg-[radial-gradient(55%_50%_at_12%_4%,rgb(255_247_224/0.95)_0%,rgb(255_226_240/0.5)_26%,transparent_55%),radial-gradient(45%_40%_at_88%_30%,rgb(196_224_255/0.75)_0%,transparent_70%),radial-gradient(50%_45%_at_22%_78%,rgb(255_205_236/0.55)_0%,transparent_70%),radial-gradient(70%_60%_at_60%_100%,rgb(186_172_255/0.6)_0%,transparent_75%),linear-gradient(180deg,#e6e0ff_0%,#d9d1ff_55%,#ece8ff_100%)]" />
-        <div className="absolute inset-0 opacity-70 [background-image:radial-gradient(circle,rgb(76_60_170/0.55)_0_1px,transparent_1.6px),radial-gradient(circle,rgb(76_60_170/0.35)_0_0.8px,transparent_1.3px)] [background-position:0_0,37px_53px] [background-size:113px_97px,71px_83px]" />
-      </div>
-      {/* Two layers of the starfield, drifting at different speeds (a slow parallax), and a few stars that twinkle (at night only). */}
-      {/* Each layer is a tile wider than the screen, slid along by a transform (moving a background repaints the whole screen every frame). */}
-      <div className="gh-stars pointer-events-none absolute inset-y-0 left-0 w-[calc(100%+1200px)] opacity-90 [.light_&]:hidden [--dx:-1200px] [background-image:url(/geo/hub-stars.svg)] [background-size:1200px_800px]" aria-hidden />
-      <div className="gh-stars pointer-events-none absolute inset-y-0 left-0 w-[calc(100%+900px)] opacity-90 [.light_&]:hidden [--dx:-900px] [background-image:url(/geo/hub-stars.svg)] [background-position:300px_200px] [background-size:900px_600px]" aria-hidden />
-      <div className="pointer-events-none absolute inset-0" aria-hidden>
-        {TWINKLES.map((s, i) => (
-          <span key={i} className="gh-twinkle absolute rounded-full bg-white [.light_&]:bg-[#4c3caa]" style={{ left: `${s.l}%`, top: `${s.t}%`, width: s.s, height: s.s, animationDelay: `${s.d}s`, animationDuration: `${s.p}s` }} />
-        ))}
-      </div>
+      <div
+        className="gh-px-far pointer-events-none absolute -inset-4"
+        aria-hidden
+      >
+        {/* Light mode: still space, but bright: a pale lavender void lit by nebulae, the sun flaring in from the upper left, ink-dark stars. */}
+        <div
+          className="pointer-events-none absolute inset-0 hidden [.light_&]:block"
+          aria-hidden
+        >
+          <div className="absolute inset-0 bg-[radial-gradient(55%_50%_at_12%_4%,rgb(255_247_224/0.95)_0%,rgb(255_226_240/0.5)_26%,transparent_55%),radial-gradient(45%_40%_at_88%_30%,rgb(196_224_255/0.75)_0%,transparent_70%),radial-gradient(50%_45%_at_22%_78%,rgb(255_205_236/0.55)_0%,transparent_70%),radial-gradient(70%_60%_at_60%_100%,rgb(186_172_255/0.6)_0%,transparent_75%),linear-gradient(180deg,#e6e0ff_0%,#d9d1ff_55%,#ece8ff_100%)]" />
+          <div className="absolute inset-0 opacity-70 [background-image:radial-gradient(circle,rgb(76_60_170/0.55)_0_1px,transparent_1.6px),radial-gradient(circle,rgb(76_60_170/0.35)_0_0.8px,transparent_1.3px)] [background-position:0_0,37px_53px] [background-size:113px_97px,71px_83px]" />
+        </div>
+        {/* Two layers of the starfield, drifting at different speeds (a slow parallax), and a few stars that twinkle (at night only). */}
+        {/* Each layer is a tile wider than the screen, slid along by a transform (moving a background repaints the whole screen every frame). */}
+        <div
+          className="gh-stars pointer-events-none absolute inset-y-0 left-0 w-[calc(100%+1200px)] opacity-90 [.light_&]:hidden [--dx:-1200px] [background-image:url(/geo/hub-stars.svg)] [background-size:1200px_800px]"
+          aria-hidden
+        />
+        <div
+          className="gh-stars pointer-events-none absolute inset-y-0 left-0 w-[calc(100%+900px)] opacity-90 [.light_&]:hidden [--dx:-900px] [background-image:url(/geo/hub-stars.svg)] [background-position:300px_200px] [background-size:900px_600px]"
+          aria-hidden
+        />
+        <div className="pointer-events-none absolute inset-0" aria-hidden>
+          {TWINKLES.map((s, i) => (
+            <span
+              key={i}
+              className="gh-twinkle absolute rounded-full bg-white [.light_&]:bg-[#4c3caa]"
+              style={{
+                left: `${s.l}%`,
+                top: `${s.t}%`,
+                width: s.s,
+                height: s.s,
+                animationDelay: `${s.d}s`,
+                animationDuration: `${s.p}s`,
+              }}
+            />
+          ))}
+        </div>
         {/* Shooting stars (by night) and sparkles (by day): now and then, never all at once. */}
         {METEORS.map((m, i) => (
-          <span key={`m${i}`} className="gh-meteor absolute block h-px w-[clamp(5rem,9vw,9rem)] [.light_&]:hidden" style={{ left: `${m.l}%`, top: `${m.t}%`, animationDuration: `${m.p}s`, animationDelay: `${m.d}s` }} />
+          <span
+            key={`m${i}`}
+            className="gh-meteor absolute block h-px w-[clamp(5rem,9vw,9rem)] [.light_&]:hidden"
+            style={{
+              left: `${m.l}%`,
+              top: `${m.t}%`,
+              animationDuration: `${m.p}s`,
+              animationDelay: `${m.d}s`,
+            }}
+          />
         ))}
         {SPARKLES.map((m, i) => (
-          <span key={`s${i}`} className="gh-sparkle absolute hidden h-4 w-4 [.light_&]:block" style={{ left: `${m.l}%`, top: `${m.t}%`, animationDuration: `${m.p}s`, animationDelay: `${m.d}s` }} />
+          <span
+            key={`s${i}`}
+            className="gh-sparkle absolute hidden h-4 w-4 [.light_&]:block"
+            style={{
+              left: `${m.l}%`,
+              top: `${m.t}%`,
+              animationDuration: `${m.p}s`,
+              animationDelay: `${m.d}s`,
+            }}
+          />
         ))}
       </div>
       {children}
       {/* The planet runs on under the fold: the page's own background takes over. */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent to-background" aria-hidden />
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent to-background"
+        aria-hidden
+      />
     </section>
   );
 }
 
-const still = () => typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+const still = () =>
+  typeof matchMedia === "function" &&
+  matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /**
  * The trainer's reactions, from the poses it already has: a wave while you point at them, a cheer once today's Daily
  * is done (as the hub comes back into view, or as it opens), a hop as PLAY is pressed. None under reduced motion.
  */
-function useTrainerMood({ cheer, covered }: { cheer: boolean; covered?: boolean }) {
+function useTrainerMood({
+  cheer,
+  covered,
+}: {
+  cheer: boolean;
+  covered?: boolean;
+}) {
   const [painted, setPainted] = useState(false);
   const mounted = useRef(0);
   useEffect(() => void (mounted.current = performance.now()), []);
@@ -256,11 +321,14 @@ function useTrainerMood({ cheer, covered }: { cheer: boolean; covered?: boolean 
   useEffect(() => {
     if (!cheer || covered || !painted || cheered.current || still()) return;
     // Once the trainer is drawn and has landed (the drop ends 1.8s in); once (the timers below outlive a re-render).
-    const t = setTimeout(() => {
-      cheered.current = true;
-      setCheering(true);
-      setTimeout(() => setCheering(false), 3200);
-    }, Math.max(350, 2100 - (performance.now() - mounted.current)));
+    const t = setTimeout(
+      () => {
+        cheered.current = true;
+        setCheering(true);
+        setTimeout(() => setCheering(false), 3200);
+      },
+      Math.max(350, 2100 - (performance.now() - mounted.current)),
+    );
     return () => clearTimeout(t);
   }, [cheer, covered, painted]);
   useEffect(() => {
@@ -303,7 +371,19 @@ export function hop(el: HTMLElement | null) {
  * The planet is the World globe's own (hub-globe/HubGlobe.tsx): it turns, a drag spins it, the region a hovered mode
  * is played in lights up, and (once today's Daily is played) pins show roughly where its places were.
  */
-function WorldRise({ className, focus, cheer, covered, hopRef }: { className?: string; focus: HubFocus; cheer: boolean; covered?: boolean; hopRef: React.Ref<HTMLDivElement> }) {
+function WorldRise({
+  className,
+  focus,
+  cheer,
+  covered,
+  hopRef,
+}: {
+  className?: string;
+  focus: HubFocus;
+  cheer: boolean;
+  covered?: boolean;
+  hopRef: React.Ref<HTMLDivElement>;
+}) {
   const account = useAccount();
   const a = account.user?.avatar ?? null;
   const ta = useT(avatarNs);
@@ -311,28 +391,60 @@ function WorldRise({ className, focus, cheer, covered, hopRef }: { className?: s
   const names = useGeoNames();
   const mood = useTrainerMood({ cheer, covered });
   return (
-    <div className={cn("gh-px-mid pointer-events-none absolute inset-0 [--gx:50%]", className)}>
+    <div
+      className={cn(
+        "gh-px-mid pointer-events-none absolute inset-0 [--gx:50%]",
+        className,
+      )}
+    >
       <div
         className="absolute aspect-square -translate-x-1/2"
-        style={{ left: "var(--gx)", width: `calc(var(--gd) / ${HUB_GLOBE_FRAC})`, top: `calc(var(--gt) - var(--gd) * ${(1 / HUB_GLOBE_FRAC - 1) / 2})` }}
+        style={{
+          left: "var(--gx)",
+          width: `calc(var(--gd) / ${HUB_GLOBE_FRAC})`,
+          top: `calc(var(--gt) - var(--gd) * ${(1 / HUB_GLOBE_FRAC - 1) / 2})`,
+        }}
         data-testid="geo-home-world"
       >
         <div className="gh-rise absolute inset-0">
           {/* The World globe's own world (hub-globe/), turning, to be spun by hand; its names, pins and lights move with it. */}
-          <HubGlobe focus={focus} paused={covered} label={(n) => names.region(n)} />
+          <HubGlobe
+            focus={focus}
+            paused={covered}
+            label={(n) => names.region(n)}
+          />
         </div>
       </div>
       {/* Their own 3D trainer, else a stand-in, the creator's first look (until everyone can make one). */}
-      <div className="pointer-events-auto absolute -translate-x-1/2" style={{ left: "var(--gx)", top: "calc(var(--gt) - var(--ah) * 0.9)", width: "calc(var(--ah) * 0.8)", height: "var(--ah)" }} {...mood.events}>
-        <span className="gh-shadow absolute inset-x-[18%] bottom-[7%] h-[6%] rounded-[50%] bg-[#05040f]/60 blur-[5px] [.light_&]:bg-[#2a1f6e]/20" aria-hidden />
-        <div className="gh-drop absolute inset-0" data-testid="geo-home-trainer">
+      <div
+        className="pointer-events-auto absolute -translate-x-1/2"
+        style={{
+          left: "var(--gx)",
+          top: "calc(var(--gt) - var(--ah) * 0.9)",
+          width: "calc(var(--ah) * 0.8)",
+          height: "var(--ah)",
+        }}
+        {...mood.events}
+      >
+        <span
+          className="gh-shadow absolute inset-x-[18%] bottom-[7%] h-[6%] rounded-[50%] bg-[#05040f]/60 blur-[5px] [.light_&]:bg-[#2a1f6e]/20"
+          aria-hidden
+        />
+        <div
+          className="gh-drop absolute inset-0"
+          data-testid="geo-home-trainer"
+        >
           <div ref={hopRef} className="absolute inset-0 origin-bottom">
             <Avatar3D
               config={a?.trainer ?? STAND_IN}
               pose={mood.pose}
               onPaint={mood.onPaint}
               facing="front"
-              label={a?.trainer ? tc("trainerOf", { name: account.user!.username }) : TRAINER_PRESETS[0].name}
+              label={
+                a?.trainer
+                  ? tc("trainerOf", { name: account.user!.username })
+                  : TRAINER_PRESETS[0].name
+              }
             />
           </div>
         </div>
@@ -342,7 +454,10 @@ function WorldRise({ className, focus, cheer, covered, hopRef }: { className?: s
           href="/trainer/avatar"
           className="gh-fade pointer-events-auto absolute flex items-center gap-1.5 whitespace-nowrap rounded-full bg-[#120f24]/85 px-3.5 py-1.5 font-display text-[11px] font-bold uppercase italic tracking-[0.08em] text-white shadow-[0_4px_14px_rgb(0_0_0/0.45)] ring-1 ring-[#a99cff]/50 backdrop-blur transition-colors [animation-delay:2s] hover:bg-[#2d2766] md:text-xs"
           // Beside the trainer, at their knees: clear of the planet's labels.
-          style={{ left: "min(calc(var(--gx) + var(--ah) * 0.3), calc(100% - 11rem))", top: "calc(var(--gt) - var(--ah) * 0.3)" }}
+          style={{
+            left: "min(calc(var(--gx) + var(--ah) * 0.3), calc(100% - 11rem))",
+            top: "calc(var(--gt) - var(--ah) * 0.3)",
+          }}
           data-testid="geo-home-edit"
         >
           <Pencil className="h-3 w-3" aria-hidden />
@@ -357,14 +472,25 @@ function Title() {
   const t = useT(geoSolo);
   return (
     <div className="gh-in-d text-center">
-      <h1 className={cn(TITLE, "text-[2.1rem] tracking-tight [text-shadow:0_3px_0_#120f24,0_6px_18px_rgb(0_0_0/0.6)] md:text-[clamp(1.9rem,5.6vh,3.25rem)] [.light_&]:text-[#1d1552] [.light_&]:[text-shadow:0_3px_0_rgb(255_255_255/0.85),0_8px_24px_rgb(120_100_255/0.35)]")}>
+      <h1
+        className={cn(
+          TITLE,
+          "text-[2.1rem] tracking-tight [text-shadow:0_3px_0_#120f24,0_6px_18px_rgb(0_0_0/0.6)] md:text-[clamp(1.9rem,5.6vh,3.25rem)] [.light_&]:text-[#1d1552] [.light_&]:[text-shadow:0_3px_0_rgb(255_255_255/0.85),0_8px_24px_rgb(120_100_255/0.35)]",
+        )}
+      >
         <span className="relative inline-block">
           Poké<span className="gh-glow text-primary">Guessr</span>
           {/* Every few seconds a light sweeps across the name (the same letters again, painted only by the moving light). */}
-          <span className="gh-shine pointer-events-none absolute inset-0 select-none [text-shadow:none]" data-text="PokéGuessr" aria-hidden />
+          <span
+            className="gh-shine pointer-events-none absolute inset-0 select-none [text-shadow:none]"
+            data-text="PokéGuessr"
+            aria-hidden
+          />
         </span>
       </h1>
-      <p className="mt-1.5 text-[clamp(0.8rem,2.2vh,1rem)] text-white/70 max-md:hidden [.light_&]:font-medium [.light_&]:text-[#2a1f6e]/80">{t("hub.tagline")}</p>
+      <p className="mt-1.5 text-[clamp(0.8rem,2.2vh,1rem)] text-white/70 max-md:hidden [.light_&]:font-medium [.light_&]:text-[#2a1f6e]/80">
+        {t("hub.tagline")}
+      </p>
     </div>
   );
 }
@@ -373,21 +499,50 @@ function Title() {
  * The streak, after GeoGuessr's: its length on a tab, this week Monday to Sunday (a flame on each day PokéGuessr was
  * played, in any mode; today ringed; the days to come faint), and the flame emblem over its corner.
  */
-function StreakCard({ streak, days }: { streak: number; days: HubTopData["days"] }) {
+function StreakCard({
+  streak,
+  days,
+}: {
+  streak: number;
+  days: HubTopData["days"];
+}) {
   const t = useT(geoSolo);
-  const fmt = new Intl.DateTimeFormat(t.locale, { weekday: "narrow", timeZone: "UTC" });
+  const fmt = new Intl.DateTimeFormat(t.locale, {
+    weekday: "narrow",
+    timeZone: "UTC",
+  });
   return (
     <div className="relative pt-[1.4rem]" data-testid="geo-streak-card">
-      <span className={cn(TAB, "absolute left-3 top-0")} data-testid="geo-streak-count">
+      <span
+        className={cn(TAB, "absolute left-3 top-0")}
+        data-testid="geo-streak-count"
+      >
         {t("hub.daily.streak", { n: streak })}
       </span>
       <div className={cn(CARD, "relative px-3 pb-3 pt-2.5")}>
         <Backdrop pattern="streak" />
-        <Image src={streakEmblem} alt="" aria-hidden sizes="96px" className="gh-flicker pointer-events-none absolute -right-2 -top-12 z-[1] h-[4.25rem] w-auto rotate-[8deg] drop-shadow-[0_10px_10px_rgb(10_5_40/0.55)] [.light_&]:drop-shadow-[0_8px_10px_rgb(70_50_170/0.3)] md:-top-[clamp(2.5rem,3vw,3.25rem)] md:h-[clamp(3.25rem,3.8vw,4.75rem)]" />
-        <ol className="relative grid grid-cols-7 gap-1 md:gap-[clamp(2px,0.3vw,5px)]" aria-label={t("hub.daily.streak", { n: streak })}>
+        <Image
+          src={streakEmblem}
+          alt=""
+          aria-hidden
+          sizes="96px"
+          className="gh-flicker pointer-events-none absolute -right-2 -top-12 z-[1] h-[4.25rem] w-auto rotate-[8deg] drop-shadow-[0_10px_10px_rgb(10_5_40/0.55)] [.light_&]:drop-shadow-[0_8px_10px_rgb(70_50_170/0.3)] md:-top-[clamp(2.5rem,3vw,3.25rem)] md:h-[clamp(3.25rem,3.8vw,4.75rem)]"
+        />
+        <ol
+          className="relative grid grid-cols-7 gap-1 md:gap-[clamp(2px,0.3vw,5px)]"
+          aria-label={t("hub.daily.streak", { n: streak })}
+        >
           {days.map((d) => (
             <li key={d.date} className="flex flex-col items-center gap-1">
-              <span className={cn("font-display text-[10px] font-bold uppercase leading-none", d.today ? "text-[#ffd23c] [.light_&]:text-[#c2410c]" : "text-[#b9afff] [.light_&]:text-[#6b5fb5]", d.future && "opacity-50")}>
+              <span
+                className={cn(
+                  "font-display text-[10px] font-bold uppercase leading-none",
+                  d.today
+                    ? "text-[#ffd23c] [.light_&]:text-[#c2410c]"
+                    : "text-[#b9afff] [.light_&]:text-[#6b5fb5]",
+                  d.future && "opacity-50",
+                )}
+              >
                 {fmt.format(new Date(d.date + "T12:00:00Z"))}
               </span>
               <span
@@ -401,7 +556,17 @@ function StreakCard({ streak, days }: { streak: number; days: HubTopData["days"]
                 )}
                 title={d.played ? t("hub.played") : undefined}
               >
-                {d.played ? <Flame className={cn("h-[60%] w-[60%] fill-current", d.today && "gh-pop")} aria-hidden /> : Number(d.date.slice(8))}
+                {d.played ? (
+                  <Flame
+                    className={cn(
+                      "h-[60%] w-[60%] fill-current",
+                      d.today && "gh-pop",
+                    )}
+                    aria-hidden
+                  />
+                ) : (
+                  Number(d.date.slice(8))
+                )}
               </span>
             </li>
           ))}
@@ -411,14 +576,21 @@ function StreakCard({ streak, days }: { streak: number; days: HubTopData["days"]
   );
 }
 
-const svgUrl = (svg: string) => `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+const svgUrl = (svg: string) =>
+  `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
 const LINE = "fill='none' stroke='white' stroke-width='1.4'";
 /**
  * Each card's faint backdrop, after GeoGuessr's: line art in white at a few percent, what the mode is about
  * (a calendar's grid, a globe's lines, speed lines, radar rings, a duel's ring and crossed slashes, rank chevrons under a star, a confetti burst).
  */
 const PATTERNS = {
-  daily: { image: svgUrl(`<svg xmlns='http://www.w3.org/2000/svg' width='26' height='26'><path d='M26 0V26H0' ${LINE}/></svg>`), size: "26px 26px", at: "0 0" },
+  daily: {
+    image: svgUrl(
+      `<svg xmlns='http://www.w3.org/2000/svg' width='26' height='26'><path d='M26 0V26H0' ${LINE}/></svg>`,
+    ),
+    size: "26px 26px",
+    at: "0 0",
+  },
   classic: {
     image: svgUrl(
       `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'><g ${LINE}><circle cx='60' cy='60' r='56'/><ellipse cx='60' cy='60' rx='38' ry='56'/><ellipse cx='60' cy='60' rx='16' ry='56'/><path d='M60 4V116M4 60H116M12 32H108M12 88H108'/></g></svg>`,
@@ -426,7 +598,13 @@ const PATTERNS = {
     size: "auto 165%",
     at: "88% 40%",
   },
-  streak: { image: svgUrl(`<svg xmlns='http://www.w3.org/2000/svg' width='30' height='30'><path d='M-4 26L26 -4M11 41L41 11' ${LINE}/></svg>`), size: "30px 30px", at: "0 0" },
+  streak: {
+    image: svgUrl(
+      `<svg xmlns='http://www.w3.org/2000/svg' width='30' height='30'><path d='M-4 26L26 -4M11 41L41 11' ${LINE}/></svg>`,
+    ),
+    size: "30px 30px",
+    at: "0 0",
+  },
   hunt: {
     image: svgUrl(
       `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 160'><g ${LINE}><circle cx='80' cy='80' r='18'/><circle cx='80' cy='80' r='38'/><circle cx='80' cy='80' r='58'/><circle cx='80' cy='80' r='78'/><path d='M80 0V160M0 80H160'/></g></svg>`,
@@ -470,30 +648,78 @@ const GLOW: Record<Pattern, string> = {
 };
 
 /**
- * A card's backdrop: its mode's colour glowing behind the emblem, and its line drawing (white by night, violet by
- * day), fading in from the left so the name stays on a plain face. The drawing is a mask, so one picture serves both.
+ * Each mode's Pokémon, a faint silhouette in its card: worn as a mask, so it takes each theme's colour, and sat in the
+ * face's open space, under the name and clear of the emblem. They all stand the same height.
+ */
+const SILHOUETTES: Partial<
+  Record<Pattern, { src: StaticImageData; box: string }>
+> = {
+  daily: { src: dailySil, box: "right-[47%] aspect-[877/560]" },
+  classic: { src: classicSil, box: "right-[43%] aspect-[641/640]" },
+  hunt: { src: huntSil, box: "right-[43%] aspect-[597/640]" },
+  duels: { src: duelsSil, box: "right-[45%] aspect-[1026/560]" },
+  ranked: { src: rankedSil, box: "right-[45%] aspect-[710/560]" },
+  party: { src: partySil, box: "right-[45%] aspect-[900/449]" },
+};
+
+/**
+ * A card's backdrop: its mode's colour glowing behind the emblem, and its Pokémon's silhouette (or, on a card with
+ * none, its line drawing fading in from the left so the name stays on a plain face). Both are masks, white by night
+ * and violet by day, so one picture serves both themes.
  */
 function Backdrop({ pattern, pulse }: { pattern: Pattern; pulse?: boolean }) {
   const p = PATTERNS[pattern];
+  const sil = SILHOUETTES[pattern];
   const tile = p.size.includes("%") ? "no-repeat" : "repeat";
   return (
-    <span className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl" aria-hidden>
-      <span className={cn("absolute -right-[6%] -top-[30%] aspect-square h-[150%] rounded-full opacity-50 [.light_&]:opacity-35", pulse && "gh-pulse")} style={{ background: `radial-gradient(closest-side, ${GLOW[pattern]}, transparent)` }} />
+    <span
+      className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl"
+      aria-hidden
+    >
+      {sil && (
+        <span
+          className={cn(
+            "absolute bottom-[3%] h-[60%] bg-white/[0.16] [.light_&]:bg-[#5a46d0]/[0.2]",
+            sil.box,
+          )}
+          style={{
+            maskImage: `url(${sil.src.src})`,
+            WebkitMaskImage: `url(${sil.src.src})`,
+            maskSize: "contain",
+            WebkitMaskSize: "contain",
+            maskRepeat: "no-repeat",
+            WebkitMaskRepeat: "no-repeat",
+            maskPosition: "center bottom",
+            WebkitMaskPosition: "center bottom",
+          }}
+        />
+      )}
       <span
-        className="absolute inset-0 bg-white/[0.16] [.light_&]:bg-[#5a46d0]/[0.2]"
+        className={cn(
+          "absolute -right-[6%] -top-[30%] aspect-square h-[150%] rounded-full opacity-50 [.light_&]:opacity-35",
+          pulse && "gh-pulse",
+        )}
         style={{
-          maskImage: `${p.image}, linear-gradient(90deg, rgb(0 0 0 / .5), black 55%)`,
-          WebkitMaskImage: `${p.image}, linear-gradient(90deg, rgb(0 0 0 / .5), black 55%)`,
-          maskSize: `${p.size}, 100% 100%`,
-          WebkitMaskSize: `${p.size}, 100% 100%`,
-          maskPosition: `${p.at}, 0 0`,
-          WebkitMaskPosition: `${p.at}, 0 0`,
-          maskRepeat: `${tile}, no-repeat`,
-          WebkitMaskRepeat: `${tile}, no-repeat`,
-          maskComposite: "intersect",
-          WebkitMaskComposite: "source-in",
+          background: `radial-gradient(closest-side, ${GLOW[pattern]}, transparent)`,
         }}
       />
+      {!sil && (
+        <span
+          className="absolute inset-0 bg-white/[0.16] [.light_&]:bg-[#5a46d0]/[0.2]"
+          style={{
+            maskImage: `${p.image}, linear-gradient(90deg, rgb(0 0 0 / .5), black 55%)`,
+            WebkitMaskImage: `${p.image}, linear-gradient(90deg, rgb(0 0 0 / .5), black 55%)`,
+            maskSize: `${p.size}, 100% 100%`,
+            WebkitMaskSize: `${p.size}, 100% 100%`,
+            maskPosition: `${p.at}, 0 0`,
+            WebkitMaskPosition: `${p.at}, 0 0`,
+            maskRepeat: `${tile}, no-repeat`,
+            WebkitMaskRepeat: `${tile}, no-repeat`,
+            maskComposite: "intersect",
+            WebkitMaskComposite: "source-in",
+          }}
+        />
+      )}
     </span>
   );
 }
@@ -535,8 +761,14 @@ function ModeTile({
         className="pointer-events-none absolute -top-[12%] right-[4%] h-[94%] w-auto drop-shadow-[0_10px_10px_rgb(10_5_40/0.55)] [.light_&]:drop-shadow-[0_8px_10px_rgb(70_50_170/0.3)] transition-transform duration-300 ease-out group-hover:-translate-y-1.5 group-hover:rotate-[-4deg] group-hover:scale-105 motion-reduce:transition-none"
       />
       <span className="relative block min-w-0 max-w-[58%] px-3.5 pt-3.5">
-        <span className="block font-display text-[1.05rem] font-bold italic leading-[1.05] text-white [text-shadow:0_2px_0_rgb(18_10_60/0.6)] md:text-[clamp(0.95rem,1.1vw,1.45rem)] [:lang(en)_&]:capitalize [.light_&]:text-[#1d1552] [.light_&]:[text-shadow:0_1px_0_rgb(255_255_255/0.9)]">{title}</span>
-        {sub && <span className="mt-1 block truncate text-[12px] font-semibold text-[#c9c0ff] [.light_&]:text-[#6b5fb5] md:text-[clamp(11px,0.75vw,13px)]">{sub}</span>}
+        <span className="block font-display text-[1.05rem] font-bold italic leading-[1.05] text-white [text-shadow:0_2px_0_rgb(18_10_60/0.6)] md:text-[clamp(0.95rem,1.1vw,1.45rem)] [:lang(en)_&]:capitalize [.light_&]:text-[#1d1552] [.light_&]:[text-shadow:0_1px_0_rgb(255_255_255/0.9)]">
+          {title}
+        </span>
+        {sub && (
+          <span className="mt-1 block truncate text-[12px] font-semibold text-[#c9c0ff] [.light_&]:text-[#6b5fb5] md:text-[clamp(11px,0.75vw,13px)]">
+            {sub}
+          </span>
+        )}
       </span>
     </>
   );
@@ -549,30 +781,69 @@ function ModeTile({
       {body}
     </Link>
   ) : (
-    <button type="button" onClick={onClick} disabled={disabled} className={cls} data-testid={testId} {...button}>
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={cls}
+      data-testid={testId}
+      {...button}
+    >
       {body}
     </button>
   );
 }
 
 /** A phone's section of modes, folded into one bar: its name, its modes' emblems, a chevron; open, its cards drop below. */
-function DropBar({ label, emblems, open, onToggle, controls, testId }: { label: string; emblems: StaticImageData[]; open: boolean; onToggle(): void; controls: string; testId: string }) {
+function DropBar({
+  label,
+  emblems,
+  open,
+  onToggle,
+  controls,
+  testId,
+}: {
+  label: string;
+  emblems: StaticImageData[];
+  open: boolean;
+  onToggle(): void;
+  controls: string;
+  testId: string;
+}) {
   return (
     <button
       type="button"
       onClick={onToggle}
       aria-expanded={open}
       aria-controls={controls}
-      className={cn(CARD, "group relative flex h-[4.25rem] w-full items-center gap-3 overflow-hidden px-4 text-left transition-[filter] active:brightness-110 md:hidden")}
+      className={cn(
+        CARD,
+        "group relative flex h-[4.25rem] w-full items-center gap-3 overflow-hidden px-4 text-left transition-[filter] active:brightness-110 md:hidden",
+      )}
       data-testid={testId}
     >
-      <span className="font-display text-[1.2rem] font-bold italic leading-none text-white [text-shadow:0_2px_0_rgb(18_10_60/0.6)] [.light_&]:text-[#1d1552] [.light_&]:[text-shadow:0_1px_0_rgb(255_255_255/0.9)]">{label}</span>
+      <span className="font-display text-[1.2rem] font-bold italic leading-none text-white [text-shadow:0_2px_0_rgb(18_10_60/0.6)] [.light_&]:text-[#1d1552] [.light_&]:[text-shadow:0_1px_0_rgb(255_255_255/0.9)]">
+        {label}
+      </span>
       <span className="ml-auto flex items-center" aria-hidden>
         {emblems.map((e, i) => (
-          <Image key={i} src={e} alt="" sizes="48px" className="-ml-2.5 h-10 w-10 object-contain drop-shadow-[0_4px_6px_rgb(10_5_40/0.5)] [.light_&]:drop-shadow-[0_4px_6px_rgb(70_50_170/0.3)] first:ml-0" style={{ transform: `rotate(${(i - 1) * 8}deg)` }} />
+          <Image
+            key={i}
+            src={e}
+            alt=""
+            sizes="48px"
+            className="-ml-2.5 h-10 w-10 object-contain drop-shadow-[0_4px_6px_rgb(10_5_40/0.5)] [.light_&]:drop-shadow-[0_4px_6px_rgb(70_50_170/0.3)] first:ml-0"
+            style={{ transform: `rotate(${(i - 1) * 8}deg)` }}
+          />
         ))}
       </span>
-      <ChevronDown className={cn("h-5 w-5 shrink-0 text-white/85 transition-transform duration-300 [.light_&]:text-[#4a3bb0]", open && "rotate-180")} aria-hidden />
+      <ChevronDown
+        className={cn(
+          "h-5 w-5 shrink-0 text-white/85 transition-transform duration-300 [.light_&]:text-[#4a3bb0]",
+          open && "rotate-180",
+        )}
+        aria-hidden
+      />
     </button>
   );
 }
@@ -582,7 +853,8 @@ function DropBar({ label, emblems, open, onToggle, controls, testId }: { label: 
  * share of the screen), --side the margin at each edge (from 1280px wide, room for a 160px-wide ad beside the cards).
  * The columns sit the same distance from both edges, and the world fits between them with the same gap each side.
  */
-const LAYOUT = "[--cw:min(clamp(12.5rem,13.1vw,17rem),calc((100svh-25rem)/1.8))] [--side:clamp(1rem,calc((100vw-1100px)*0.9),11rem)]";
+const LAYOUT =
+  "[--cw:min(clamp(12.5rem,13.1vw,17rem),calc((100svh-25rem)/1.8))] [--side:clamp(1rem,calc((100vw-1100px)*0.9),11rem)]";
 
 /** A mode's slot: on a phone a row of its section's dropdown; wider, a card of its column, GeoGuessr's shape (2.24 wide to 1 tall). */
 const SLOT = "h-[4.75rem] md:aspect-[2.24/1] md:h-auto md:w-full";
@@ -616,7 +888,15 @@ export function HubTop({ d }: { d: HubTopData }) {
         pattern="daily"
         pulse={!dailyDone && !!d.dailyNum}
         title={t("hub.daily.title")}
-        sub={dailyDone ? (d.dailyScore !== undefined ? `${t("hub.played")} · ${fmt(d.dailyScore)}` : t("hub.played")) : d.dailyResume ? t("hub.daily.resume", { num: d.dailyNum ?? "" }) : d.dailyNum ? t("hub.daily.label", { num: d.dailyNum }) : null}
+        sub={
+          dailyDone
+            ? d.dailyScore !== undefined
+              ? `${t("hub.played")} · ${fmt(d.dailyScore)}`
+              : t("hub.played")
+            : d.dailyResume
+              ? t("hub.daily.resume", { num: "" }).trim()
+              : null
+        }
         onClick={
           dailyDone
             ? d.onDailyResult
@@ -627,7 +907,13 @@ export function HubTop({ d }: { d: HubTopData }) {
         }
         disabled={dailyDone ? !d.onDailyResult : d.loading || !d.dailyNum}
         button={dailyDone ? undefined : d.dailyWarm}
-        testId={dailyDone ? (d.onDailyResult ? "geo-daily-result" : "geo-daily-played") : "geo-daily-play"}
+        testId={
+          dailyDone
+            ? d.onDailyResult
+              ? "geo-daily-result"
+              : "geo-daily-played"
+            : "geo-daily-play"
+        }
       />
     </div>,
     <div key="classic" data-testid="geo-solo-card">
@@ -641,20 +927,54 @@ export function HubTop({ d }: { d: HubTopData }) {
       />
     </div>,
     <div key="hunt">
-      <ModeTile emblem={huntEmblem} pattern="hunt" title={h("tile.title")} onClick={d.onHunt} button={{ "aria-expanded": d.huntOpen, "aria-controls": "hunt" }} testId="hunt-hub-entry" />
+      <ModeTile
+        emblem={huntEmblem}
+        pattern="hunt"
+        title={h("tile.title")}
+        onClick={d.onHunt}
+        button={{ "aria-expanded": d.huntOpen, "aria-controls": "hunt" }}
+        testId="hunt-hub-entry"
+      />
     </div>,
   ];
   const versus = [
-    { emblem: duelsEmblem, pattern: "duels" as const, title: t("hub.multi.duels"), onClick: d.onDuels, testId: "geo-home-duels" },
-    { emblem: rankedEmblem, pattern: "ranked" as const, title: t("hub.multi.ranked"), onClick: d.onRanked, testId: "geo-home-ranked" },
-    { emblem: partyEmblem, pattern: "party" as const, title: t("hub.multi.party"), onClick: d.onParty, testId: "geo-home-party" },
+    {
+      emblem: duelsEmblem,
+      pattern: "duels" as const,
+      title: t("hub.multi.duels"),
+      onClick: d.onDuels,
+      testId: "geo-home-duels",
+    },
+    {
+      emblem: rankedEmblem,
+      pattern: "ranked" as const,
+      title: t("hub.multi.ranked"),
+      onClick: d.onRanked,
+      testId: "geo-home-ranked",
+    },
+    {
+      emblem: partyEmblem,
+      pattern: "party" as const,
+      title: t("hub.multi.party"),
+      onClick: d.onParty,
+      testId: "geo-home-party",
+    },
   ];
 
   return (
     <Space>
-      <WorldRise focus={focus} cheer={d.dailyPlayed} covered={d.covered} hopRef={trainer} className={`${LAYOUT} [--ah:8rem] [--gd:min(80vw,19.5rem)] [--gt:11rem] max-md:[--globe-floor:33rem] md:[--ah:clamp(8.5rem,26vh,15rem)] md:[--gd:min(44vw,74vh,calc(100vw-2*(var(--side)+var(--cw)+3rem)))] md:[--gt:max(13rem,40%)]`} />
+      <WorldRise
+        focus={focus}
+        cheer={d.dailyPlayed}
+        covered={d.covered}
+        hopRef={trainer}
+        className={`${LAYOUT} [--ah:8rem] [--gd:min(80vw,19.5rem)] [--gt:11rem] max-md:[--globe-floor:33rem] md:[--ah:clamp(8.5rem,26vh,15rem)] md:[--gd:min(44vw,74vh,calc(100vw-2*(var(--side)+var(--cw)+3rem)))] md:[--gt:max(13rem,40%)]`}
+      />
       {/* Phone: the whole world shows under the trainer; just its glow fades out above the Daily (the globe draws nothing below --globe-floor). */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 top-[30.5rem] bg-[linear-gradient(180deg,transparent,#09081a_2.5rem)] md:hidden [.light_&]:bg-[linear-gradient(180deg,transparent,#e4ddff_2.5rem)]" aria-hidden />
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 top-[30.5rem] bg-[linear-gradient(180deg,transparent,#09081a_2.5rem)] md:hidden [.light_&]:bg-[linear-gradient(180deg,transparent,#e4ddff_2.5rem)]"
+        aria-hidden
+      />
       <HowToHelpButton className="gh-fade absolute right-2 top-2 z-10 text-white max-md:scale-90 md:right-5 md:top-4 [.light_&]:text-[#2a1f6e]" />
 
       {/*
@@ -674,33 +994,92 @@ export function HubTop({ d }: { d: HubTopData }) {
         </div>
         {/* Phone: the trainer and the whole world get this room, clear of every card. */}
         <div className="h-[28rem] shrink-0 md:hidden" aria-hidden />
-        <div className="gh-in-s pointer-events-auto mt-3 md:col-start-1 md:row-start-2 md:mb-[calc(var(--gap)*1.6)] md:mt-0" style={delay(1)} {...points("world")}>
+        <div
+          className="gh-in-s pointer-events-auto mt-3 md:col-start-1 md:row-start-2 md:mb-[calc(var(--gap)*1.6)] md:mt-0"
+          style={delay(1)}
+          {...points("world")}
+        >
           <StreakCard streak={d.streak} days={d.days} />
         </div>
         <div className="mt-4 flex flex-col gap-3.5 pb-16 max-md:pointer-events-auto md:contents">
-          <div id="hub-solo-modes" className="flex flex-col gap-3.5 md:col-start-1 md:row-start-3 md:gap-[var(--gap)]">
+          <div
+            id="hub-solo-modes"
+            className="flex flex-col gap-3.5 md:col-start-1 md:row-start-3 md:gap-[var(--gap)]"
+          >
             <div className="gh-in-s md:hidden" style={delay(2)}>
-              <DropBar label={t("hub.play.eyebrow")} emblems={[dailyEmblem, classicEmblem, huntEmblem]} open={solo} onToggle={() => setSolo((o) => !o)} controls="hub-solo-modes" testId="hub-drop-solo" />
+              <DropBar
+                label={t("hub.play.eyebrow")}
+                emblems={[dailyEmblem, classicEmblem, huntEmblem]}
+                open={solo}
+                onToggle={() => setSolo((o) => !o)}
+                controls="hub-solo-modes"
+                testId="hub-drop-solo"
+              />
             </div>
-            <span className={cn(TAB, "gh-in-s ml-3 -mb-[var(--gap)] self-start max-md:hidden")} style={delay(2)}>
+            <span
+              className={cn(
+                TAB,
+                "gh-in-s ml-3 -mb-[var(--gap)] self-start max-md:hidden",
+              )}
+              style={delay(2)}
+            >
               {t("hub.play.eyebrow")}
             </span>
             {tiles.map((tile, i) => (
-              <div key={i} className={cn("gh-in-s pointer-events-auto [&>div]:h-full", SLOT, !solo && "max-md:hidden")} style={delay(3 + i)} {...points(tileFocus[i])}>
+              <div
+                key={i}
+                className={cn(
+                  "gh-in-s pointer-events-auto [&>div]:h-full",
+                  SLOT,
+                  !solo && "max-md:hidden",
+                )}
+                style={delay(3 + i)}
+                {...points(tileFocus[i])}
+              >
                 {tile}
               </div>
             ))}
           </div>
-          <div id="hub-multi-modes" className="flex flex-col gap-3.5 md:col-start-3 md:row-start-3 md:gap-[var(--gap)]">
+          <div
+            id="hub-multi-modes"
+            className="flex flex-col gap-3.5 md:col-start-3 md:row-start-3 md:gap-[var(--gap)]"
+          >
             <div className="gh-in-e md:hidden" style={delay(3)}>
-              <DropBar label={t("hub.multi.title")} emblems={[duelsEmblem, rankedEmblem, partyEmblem]} open={multi} onToggle={() => setMulti((o) => !o)} controls="hub-multi-modes" testId="hub-drop-multi" />
+              <DropBar
+                label={t("hub.multi.title")}
+                emblems={[duelsEmblem, rankedEmblem, partyEmblem]}
+                open={multi}
+                onToggle={() => setMulti((o) => !o)}
+                controls="hub-multi-modes"
+                testId="hub-drop-multi"
+              />
             </div>
-            <span className={cn(TAB, "gh-in-e ml-3 -mb-[var(--gap)] self-start max-md:hidden")} style={delay(1)}>
+            <span
+              className={cn(
+                TAB,
+                "gh-in-e ml-3 -mb-[var(--gap)] self-start max-md:hidden",
+              )}
+              style={delay(1)}
+            >
               {t("hub.multi.title")}
             </span>
             {versus.map((v, i) => (
-              <div key={v.testId} className={cn("gh-in-e [&>button]:h-full", SLOT, !multi && "max-md:hidden")} style={delay(2 + i)}>
-                <ModeTile emblem={v.emblem} pattern={v.pattern} title={v.title} onClick={v.onClick} testId={v.testId} />
+              <div
+                key={v.testId}
+                className={cn(
+                  "gh-in-e [&>button]:h-full",
+                  SLOT,
+                  !multi && "max-md:hidden",
+                )}
+                style={delay(2 + i)}
+              >
+                <ModeTile
+                  emblem={v.emblem}
+                  pattern={v.pattern}
+                  title={v.title}
+                  onClick={v.onClick}
+                  testId={v.testId}
+                />
               </div>
             ))}
           </div>
