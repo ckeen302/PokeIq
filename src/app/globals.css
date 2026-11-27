@@ -184,6 +184,25 @@
     mix-blend-mode: multiply;
   }
 
+  /* A mode's icon tile: a device display by night; by day a soft lavender tile (no scanlines), so it sits on the light page
+     instead of a black square on it. The icon keeps its colour, a shade deeper to read on the light tile. */
+  :root.light .screen.icon-well {
+    color-scheme: light;
+    --screen: 258 70% 56%;
+    background:
+      radial-gradient(120% 90% at 50% 0%, hsl(258 90% 74% / 0.2), transparent 70%),
+      hsl(252 72% 96%);
+    box-shadow:
+      inset 0 0 0 1px hsl(258 60% 60% / 0.22),
+      0 1px 2px hsl(250 40% 40% / 0.08);
+  }
+  :root.light .screen.icon-well::after {
+    display: none;
+  }
+  :root.light .screen.icon-well svg {
+    filter: brightness(0.82) saturate(1.25);
+  }
+
   /* Game text box: double border, blinking ▼ when [data-done]. */
   .dialog-box {
     @apply relative rounded-lg border-2 border-foreground/85 bg-card px-5 py-4;

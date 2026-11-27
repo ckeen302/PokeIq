@@ -65,7 +65,7 @@ export default function BattlePage() {
           {live.map(({ href, icon: Icon, title, blurb, points, wide }) => (
             <Link key={href} href={href} className={`menu-item hud group relative block rounded-lg border bg-card p-6 hover:border-screen/50 max-md:p-4${wide ? " md:col-span-2" : ""}`}>
               <div className="flex items-start gap-4 max-md:gap-3">
-                <span className="screen flex h-14 w-14 shrink-0 items-center justify-center rounded-md text-screen max-md:h-11 max-md:w-11">
+                <span className="screen icon-well flex h-14 w-14 shrink-0 items-center justify-center rounded-md text-screen max-md:h-11 max-md:w-11">
                   <Icon className="relative z-[3] h-6 w-6" aria-hidden />
                 </span>
                 <div className="min-w-0 flex-1 space-y-2">
@@ -98,7 +98,7 @@ export default function BattlePage() {
             href ? (
               <Link key={title} href={href} className="menu-item hud group relative block rounded-lg border bg-card p-6 hover:border-screen/50 max-md:p-4">
                 <div className="flex items-start gap-4 max-md:gap-3">
-                  <span className="screen flex h-14 w-14 shrink-0 items-center justify-center rounded-md text-screen max-md:h-11 max-md:w-11">
+                  <span className="screen icon-well flex h-14 w-14 shrink-0 items-center justify-center rounded-md text-screen max-md:h-11 max-md:w-11">
                     <Icon className="relative z-[3] h-6 w-6" aria-hidden />
                   </span>
                   <div className="min-w-0 flex-1 space-y-2">

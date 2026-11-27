@@ -99,7 +99,7 @@ export default async function QuizPage({ params }: PageProps) {
       <BackButton href="/quiz" />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(jsonLd) }} />
       <div className="mx-auto flex max-w-2xl flex-col items-center gap-3 text-center">
-        <span className="screen flex h-14 w-14 items-center justify-center rounded-md" style={{ color: `hsl(${info.accent})` }}>
+        <span className="screen icon-well flex h-14 w-14 items-center justify-center rounded-md" style={{ color: `hsl(${info.accent})` }}>
           <ModeIcon module={preset.module} className="relative z-[3] h-7 w-7" />
         </span>
         <p className="hud-label max-md:hidden text-screen">{t("preset.modeSelect")}</p>

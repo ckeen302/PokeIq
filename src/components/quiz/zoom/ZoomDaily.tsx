@@ -83,7 +83,7 @@ export function ZoomDaily() {
   return (
     <Card className="mx-auto max-w-2xl overflow-hidden" data-testid="zoom-daily">
       <CardContent className="flex flex-col items-center gap-4 p-5 text-center sm:flex-row sm:text-left">
-        <span className="screen flex h-12 w-12 shrink-0 items-center justify-center rounded-md text-screen">
+        <span className="screen icon-well flex h-12 w-12 shrink-0 items-center justify-center rounded-md text-screen">
           <CalendarDays className="relative z-[3] h-6 w-6" aria-hidden />
         </span>
         <div className="min-w-0 flex-1 space-y-1">

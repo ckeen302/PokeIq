@@ -147,7 +147,7 @@ function FreshCard({ number, onStart }: { number: number | null; onStart: () => 
             ] as const
           ).map((mod) => (
             <li key={mod} className="flex items-center gap-3 rounded-md border bg-shade/20 p-3 font-display font-semibold uppercase tracking-wide">
-              <span className="screen flex h-9 w-9 items-center justify-center rounded-sm text-screen">
+              <span className="screen icon-well flex h-9 w-9 items-center justify-center rounded-sm text-screen">
                 <ModeIcon module={mod} className="relative z-[3] h-4 w-4" />
               </span>
               {t(`parts.${mod}`)}
