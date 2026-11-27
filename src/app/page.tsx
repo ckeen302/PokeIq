@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Coffee } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
 import { COFFEE_URL } from "@/lib/support";
 import { Hero } from "@/components/home/Hero";
 import { SocialLinks } from "@/components/home/SocialLinks";
@@ -58,7 +59,7 @@ export default function HomePage() {
           href={COFFEE_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="group inline-flex items-center gap-2 rounded-md border bg-card px-5 py-2.5 font-display text-sm font-bold uppercase tracking-wider text-foreground transition-all hover:-translate-y-0.5 hover:border-primary/60 hover:shadow-[0_0_16px_hsl(var(--primary)/0.25)]"
+          className={buttonVariants({ variant: "secondary", className: "px-5" })}
           data-testid="coffee-button"
         >
           <Coffee className="h-4 w-4 text-primary" aria-hidden />

@@ -50,6 +50,29 @@
     --lab-a: #f1417c;
     --lab-b: #9a74f8;
     --lab-draw: #6e6a86;
+    /* The shared UI kit (src/components/ui): one token per role, each with a light-mode pair below, so a panel
+       never has to hard-code a night colour. Surfaces are the calm cards; "feature" is the PokéGuessr landing's
+       glossy violet face; "select" is the chosen tab or toggle (violet, never the action pink). */
+    --surface: 248 34% 10%;
+    --surface-raised: 249 32% 14%;
+    --surface-line: 250 30% 21%;
+    --sheen: 0.06;
+    --well: 250 42% 6%;
+    --card-drop: 0 14px 34px -18px rgb(0 0 0 / 0.75);
+    --select: 258 94% 74%;
+    --select-ink: 258 100% 86%;
+    --feature-1: 248 61% 55%;
+    --feature-2: 248 54% 44%;
+    --feature-3: 248 57% 34%;
+    --feature-ink: 0 0% 100%;
+    --feature-sub: 250 100% 88%;
+    --feature-ring: 0 0% 100% / 0.1;
+    --feature-sheen: 0.2;
+    --feature-dot: 0 0% 100% / 0.06;
+    --feature-drop: 0 12px 28px -8px rgb(0 0 0 / 0.55);
+    --tab: 247 50% 46%;
+    --tab-ink: 250 100% 91%;
+    --title-shadow: 0 3px 0 #120f24, 0 6px 18px rgb(0 0 0 / 0.55);
   }
   .screen,
   .dark-scope {
@@ -88,6 +111,26 @@
     --lab-a: #d92d6b;
     --lab-b: #6f4bd8;
     --lab-draw: #8a879e;
+    --surface: 0 0% 100%;
+    --surface-raised: 250 60% 99%;
+    --surface-line: 252 50% 89%;
+    --sheen: 1;
+    --well: 252 70% 96%;
+    --card-drop: 0 14px 30px -20px rgb(70 50 170 / 0.32);
+    --select: 262 72% 54%;
+    --select-ink: 262 72% 40%;
+    --feature-1: 0 0% 100%;
+    --feature-2: 255 100% 97%;
+    --feature-3: 253 100% 94%;
+    --feature-ink: 248 58% 20%;
+    --feature-sub: 248 36% 50%;
+    --feature-ring: 253 100% 89% / 1;
+    --feature-sheen: 0.95;
+    --feature-dot: 250 60% 50% / 0.08;
+    --feature-drop: 0 12px 28px -12px rgb(70 50 170 / 0.3);
+    --tab: 0 0% 100%;
+    --tab-ink: 247 50% 46%;
+    --title-shadow: 0 2px 0 rgb(255 255 255 / 0.9), 0 8px 24px rgb(120 100 255 / 0.3);
   }
 }
 
@@ -125,6 +168,159 @@
   ::-webkit-scrollbar-thumb {
     @apply rounded-sm bg-secondary;
     border: 2px solid hsl(var(--background));
+  }
+}
+
+@layer components {
+  /* ---------- The shared UI kit (src/components/ui: page-header, card, button, toggle) ---------- */
+  /* --kit-accent: the section's own colour (an HSL triplet), set on the card or any parent; the violet of a selection when none is set. */
+  /* The calm card: a quiet surface, a hairline ring, a soft light of the section's colour in its top corner. */
+  .kit-card {
+    position: relative;
+    isolation: isolate;
+    border-radius: 1rem;
+    background: linear-gradient(180deg, hsl(var(--surface-raised)), hsl(var(--surface)) 70%);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / var(--sheen)), 0 0 0 1px hsl(var(--surface-line)), var(--card-drop);
+    color: hsl(var(--card-foreground));
+  }
+  .kit-card::before,
+  .kit-feature::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    pointer-events: none;
+    background: radial-gradient(55% 90% at 100% 0%, hsl(var(--kit-accent, var(--select)) / 0.16), transparent 70%);
+    transition: opacity 0.3s;
+  }
+  :root.light .kit-card::before {
+    background: radial-gradient(55% 90% at 100% 0%, hsl(var(--kit-accent, var(--select)) / 0.1), transparent 70%);
+  }
+  /* The feature card: the PokéGuessr landing's face, violet glass by night and white-lavender by day. */
+  .kit-feature {
+    position: relative;
+    isolation: isolate;
+    border-radius: 1rem;
+    color: hsl(var(--feature-ink));
+    background:
+      radial-gradient(120% 85% at 50% -25%, rgb(255 255 255 / var(--feature-sheen)), transparent 55%),
+      radial-gradient(hsl(var(--feature-dot)) 1px, transparent 1.5px) 0 0 / 9px 9px,
+      linear-gradient(180deg, hsl(var(--feature-1)) 0%, hsl(var(--feature-2)) 55%, hsl(var(--feature-3)) 100%);
+    box-shadow: inset 0 2px 0 rgb(255 255 255 / 0.24), 0 0 0 1px hsl(var(--feature-ring)), var(--feature-drop);
+  }
+  .kit-feature::before {
+    background: radial-gradient(50% 95% at 100% 0%, hsl(var(--kit-accent, var(--select)) / 0.45), transparent 70%);
+  }
+  :root.light .kit-feature::before {
+    background: radial-gradient(50% 95% at 100% 0%, hsl(var(--kit-accent, var(--select)) / 0.22), transparent 70%);
+  }
+  :root.light .kit-feature {
+    box-shadow: inset 0 2px 0 rgb(255 255 255), 0 0 0 1px hsl(var(--feature-ring)), var(--feature-drop);
+  }
+  /* Battle's arena: the card's ring and glow in the section's colour, and a duel's ring and crossed slashes faint in its corner. */
+  .kit-card.kit-arena {
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / var(--sheen)), 0 0 0 1px hsl(var(--kit-accent, var(--select)) / 0.38), 0 26px 60px -30px hsl(var(--kit-accent, var(--select)) / 0.6);
+  }
+  .kit-arena::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: -1;
+    width: min(300px, 70%);
+    height: 260px;
+    border-top-right-radius: inherit;
+    pointer-events: none;
+    background: hsl(var(--kit-accent, var(--select)) / 0.22);
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 160'%3E%3Cg fill='none' stroke='black' stroke-width='1.4'%3E%3Ccircle cx='80' cy='80' r='72'/%3E%3Ccircle cx='80' cy='80' r='52'/%3E%3Ccircle cx='80' cy='80' r='14'/%3E%3Cpath d='M22 22L138 138M138 22L22 138M80 8V28M80 132V152M8 80H28M132 80H152'/%3E%3C/g%3E%3C/svg%3E") right -150px top -150px / 300px 300px no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 160'%3E%3Cg fill='none' stroke='black' stroke-width='1.4'%3E%3Ccircle cx='80' cy='80' r='72'/%3E%3Ccircle cx='80' cy='80' r='52'/%3E%3Ccircle cx='80' cy='80' r='14'/%3E%3Cpath d='M22 22L138 138M138 22L22 138M80 8V28M80 132V152M8 80H28M132 80H152'/%3E%3C/g%3E%3C/svg%3E") right -150px top -150px / 300px 300px no-repeat;
+  }
+  :root.light .kit-arena::after {
+    background: hsl(var(--kit-accent, var(--select)) / 0.2);
+  }
+  /* A card that is itself a link: it lifts, and its ring takes the section's colour. */
+  .kit-lift {
+    transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s;
+  }
+  .kit-lift:hover,
+  .kit-lift:focus-visible {
+    transform: translateY(-2px);
+    outline: none;
+  }
+  .kit-card.kit-lift:hover,
+  .kit-card.kit-lift:focus-visible {
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / var(--sheen)), 0 0 0 1px hsl(var(--kit-accent, var(--select)) / 0.6), 0 20px 40px -20px hsl(var(--kit-accent, var(--select)) / 0.55);
+  }
+  .kit-feature.kit-lift:hover,
+  .kit-feature.kit-lift:focus-visible {
+    box-shadow: inset 0 2px 0 rgb(255 255 255 / 0.3), 0 0 0 1px hsl(var(--kit-accent, var(--select)) / 0.7), 0 22px 44px -18px hsl(var(--kit-accent, var(--select)) / 0.6);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .kit-lift,
+    .kit-lift:hover {
+      transition: none;
+      transform: none;
+    }
+  }
+  /* A section's name as a tab (the PokéGuessr landing's): bold italic capitals on a violet chip. */
+  .kit-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    border-radius: 0.6rem;
+    background: hsl(var(--tab));
+    padding: 0.4rem 0.75rem 0.35rem;
+    font-family: var(--font-display), var(--font-body), sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    font-style: italic;
+    line-height: 1;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: hsl(var(--tab-ink));
+    box-shadow: inset 0 2px 0 rgb(255 255 255 / 0.2), 0 0 0 1px rgb(255 255 255 / 0.1);
+  }
+  :root.light .kit-tab {
+    box-shadow: 0 0 0 1px hsl(var(--feature-ring)), 0 4px 12px -4px rgb(70 50 170 / 0.18);
+  }
+  /* Display titles: bold italic capitals with a hard drop shadow, after the PokéGuessr wordmark. */
+  .kit-title {
+    font-family: var(--font-display), var(--font-body), sans-serif;
+    font-weight: 700;
+    font-style: italic;
+    text-transform: uppercase;
+    line-height: 0.95;
+    letter-spacing: -0.01em;
+    text-shadow: var(--title-shadow);
+  }
+  /* An icon's well: tinted with the section's colour (it replaces the always-dark .screen square on cards). */
+  .kit-well {
+    position: relative;
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.8rem;
+    color: hsl(var(--kit-accent, var(--select)));
+    background: radial-gradient(120% 120% at 30% 0%, hsl(var(--kit-accent, var(--select)) / 0.3), hsl(var(--kit-accent, var(--select)) / 0.1));
+    box-shadow: inset 0 0 0 1px hsl(var(--kit-accent, var(--select)) / 0.32), inset 0 1px 0 rgb(255 255 255 / 0.12);
+  }
+  :root.light .kit-well {
+    color: color-mix(in oklab, hsl(var(--kit-accent, var(--select))) 62%, black);
+    background: radial-gradient(120% 120% at 30% 0%, hsl(var(--kit-accent, var(--select)) / 0.2), hsl(var(--kit-accent, var(--select)) / 0.07));
+    box-shadow: inset 0 0 0 1px hsl(var(--kit-accent, var(--select)) / 0.35), inset 0 1px 0 rgb(255 255 255 / 0.8);
+  }
+  /* Text in the section's colour, darkened by day to stay readable on a white card. */
+  .kit-ink {
+    color: hsl(var(--kit-accent, var(--select)));
+  }
+  :root.light .kit-ink {
+    color: color-mix(in oklab, hsl(var(--kit-accent, var(--select))) 60%, black);
+  }
+  /* On the violet feature face by night, lifted toward white so it reads on the violet. */
+  :root:not(.light) .kit-feature .kit-ink {
+    color: color-mix(in oklab, hsl(var(--kit-accent, var(--select))) 55%, white);
   }
 }
 

@@ -4,6 +4,8 @@ import Link from "@/components/ui/Link";
 import type { LucideIcon } from "lucide-react";
 import { ArrowRight, Brain, CalendarDays, Check } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
+import { IconWell, accentStyle, cardVariants } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import { useProgress } from "@/lib/progress";
 import { useToday } from "@/lib/use-today";
 import { useT } from "@/i18n/client";
@@ -54,31 +56,28 @@ export function QuizFeatured() {
           <li key={f.id}>
             <Link
               href={f.href}
-              className="menu-item group relative flex h-full flex-col overflow-hidden rounded-lg border bg-card p-5 hover:border-screen/50"
+              className={cn(cardVariants({ variant: "feature", interactive: true }), "group flex h-full flex-col overflow-hidden p-6 max-md:p-5")}
+              style={accentStyle(f.accent)}
               data-testid={`quiz-featured-${f.id}`}
             >
-              <span className="absolute inset-x-0 top-0 h-1" style={{ background: `hsl(${f.accent})` }} aria-hidden />
+              {/* The pick's art: its icon, big and faint, bursting from the corner. */}
               <Icon
-                className="pointer-events-none absolute -bottom-[22px] -right-[14px] h-[150px] w-[150px] opacity-[0.08]"
+                className="pointer-events-none absolute -bottom-6 -right-4 h-[150px] w-[150px] rotate-[-8deg] opacity-[0.14] transition-transform duration-500 group-hover:rotate-0 group-hover:scale-105 motion-reduce:transition-none [.light_&]:opacity-[0.1]"
                 style={{ color: `hsl(${f.accent})` }}
+                strokeWidth={1.5}
                 aria-hidden
               />
               <span className="flex items-center gap-4 max-md:gap-3">
-                <span
-                  className="screen flex h-14 w-14 shrink-0 items-center justify-center rounded-md max-md:h-11 max-md:w-11"
-                  style={{ color: `hsl(${f.accent})` }}
-                >
-                  <Icon className="relative z-[3] h-6 w-6" aria-hidden />
-                </span>
+                <IconWell size="lg" className="max-md:h-12 max-md:w-12">
+                  <Icon aria-hidden />
+                </IconWell>
                 <span className="min-w-0">
-                  <span className="hud-label block" style={{ color: `hsl(${f.accent})` }}>
-                    {t(`${f.id}.kicker`)}
-                  </span>
-                  <span className="block font-display text-2xl font-bold uppercase tracking-wide max-md:text-xl">{t(`${f.id}.title`)}</span>
+                  <span className="kit-ink block font-display text-[11px] font-bold uppercase tracking-[0.14em]">{t(`${f.id}.kicker`)}</span>
+                  <span className="kit-title mt-1 block text-[1.75rem] max-md:text-2xl">{t(`${f.id}.title`)}</span>
                 </span>
               </span>
-              <span className="mt-3 block text-sm text-muted-foreground">{t(`${f.id}.text`)}</span>
-              <span className="mt-5 flex items-center gap-3">
+              <span className="mt-3 block max-w-md text-[15px] leading-snug text-feature-sub">{t(`${f.id}.text`)}</span>
+              <span className="mt-auto flex items-center gap-3 pt-5">
                 <span className={buttonVariants({ variant: f.variant })}>
                   {t(`${f.id}.cta`)} <ArrowRight className="h-4 w-4" aria-hidden />
                 </span>

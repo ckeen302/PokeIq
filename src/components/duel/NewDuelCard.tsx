@@ -96,10 +96,10 @@ export function NewDuelCard({
   }
 
   return (
-    <Card className="overflow-hidden border-primary/40">
+    <Card variant="base" className="overflow-hidden">
       <form className="grid md:grid-cols-[1fr_auto]" onSubmit={create}>
         <CardContent className="space-y-2 p-6 max-md:p-5">
-          <p className="hud-label flex items-center gap-1.5 text-primary">
+          <p className="hud-label flex items-center gap-1.5 text-select">
             <Swords className="h-3.5 w-3.5" aria-hidden /> {t("card.eyebrow")}
           </p>
           <p className="font-display text-2xl font-bold uppercase max-md:text-xl max-md:leading-tight">{heading}</p>

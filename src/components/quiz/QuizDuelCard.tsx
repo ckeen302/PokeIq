@@ -6,7 +6,7 @@ import { PLAY_MODULES, difficultiesFor, levelKey, playDifficulty } from "@/lib/m
 import { QUIZ_DUEL_QUESTIONS, QUIZ_DUEL_QUESTION_MS, ZOOM_DUEL_QUESTION_MS, pvpHref } from "@/lib/pvp-types";
 import { ZOOM_POINTS, ZOOM_STEPS } from "@/lib/zoom-reveal";
 import { NewDuelCard } from "@/components/duel/NewDuelCard";
-import { cn } from "@/lib/utils";
+import { Toggle, toggleGroupClass } from "@/components/ui/toggle";
 import { useT } from "@/i18n/client";
 import modesNs from "@/messages/quiz-modes";
 import setupNs from "@/messages/quiz-setup";
@@ -55,20 +55,11 @@ export function QuizDuelCard({ module: initial = "whos-that", difficulty: initia
         {choices.length > 0 && (
           <div className="space-y-1">
             <span className="hud-label block">{t("duel.difficulty")}</span>
-            <div className="flex gap-1" role="group" aria-label={t("duel.difficultyLabel")}>
+            <div className={toggleGroupClass} role="group" aria-label={t("duel.difficultyLabel")}>
               {choices.map(({ id: d }) => (
-                <button
-                  key={d}
-                  type="button"
-                  aria-pressed={difficulty === d}
-                  onClick={() => setDifficulty(d)}
-                  className={cn(
-                    "h-9 rounded-sm border px-2.5 font-pixel text-[10px] uppercase tracking-wider transition-colors",
-                    difficulty === d ? "border-primary bg-primary text-primary-foreground" : "border-foreground/10 bg-shade/20 text-muted-foreground hover:border-primary/50 hover:text-foreground"
-                  )}
-                >
+                <Toggle key={d} size="sm" pressed={difficulty === d} onClick={() => setDifficulty(d)}>
                   {mt(`levels.${levelKey(module, d)!}.label`)}
-                </button>
+                </Toggle>
               ))}
             </div>
           </div>

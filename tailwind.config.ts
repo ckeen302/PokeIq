@@ -53,6 +53,21 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // The shared UI kit's tokens (globals.css): each has a dark and a light value.
+        surface: {
+          DEFAULT: "hsl(var(--surface) / <alpha-value>)",
+          raised: "hsl(var(--surface-raised) / <alpha-value>)",
+          line: "hsl(var(--surface-line) / <alpha-value>)",
+        },
+        well: "hsl(var(--well) / <alpha-value>)",
+        select: {
+          DEFAULT: "hsl(var(--select) / <alpha-value>)",
+          ink: "hsl(var(--select-ink) / <alpha-value>)",
+        },
+        feature: {
+          ink: "hsl(var(--feature-ink) / <alpha-value>)",
+          sub: "hsl(var(--feature-sub) / <alpha-value>)",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

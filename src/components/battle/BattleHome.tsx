@@ -21,6 +21,9 @@ import type { LiveCounts } from "@/lib/community";
 import { glickoBadge } from "./GlickoBadge";
 import battleGlicko from "@/messages/battle-glicko";
 import { Button } from "@/components/ui/button";
+import { IconWell, accentStyle } from "@/components/ui/card";
+import { SECTION_ACCENT } from "@/components/ui/accents";
+import { PageHeader } from "@/components/ui/page-header";
 import { clock } from "@/components/duel/clock";
 import { useMatchmaking } from "@/components/duel/use-matchmaking";
 import { cn } from "@/lib/utils";
@@ -98,7 +101,7 @@ function FormatMenu({ value, rules, onChange, disabled, t, tf }: { value: PlayFo
     setOpen(false);
   };
   const item = (active: boolean) =>
-    cn("flex w-full items-baseline justify-between gap-2 whitespace-nowrap rounded px-2 py-1.5 text-left text-sm hover:bg-accent", active && "bg-primary/15 font-semibold text-foreground");
+    cn("flex w-full items-baseline justify-between gap-2 whitespace-nowrap rounded px-2 py-1.5 text-left text-sm hover:bg-accent", active && "bg-select/15 font-semibold text-select-ink ring-1 ring-inset ring-select/60");
   return (
     <div ref={box} className="relative">
       <button
@@ -307,25 +310,22 @@ export function BattleHome() {
 
   return (
     <section className="space-y-5" data-testid="battle-home">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="hud-label flex items-center gap-2 text-screen max-md:hidden">
-            <span className="led h-1.5 w-1.5 animate-blink text-screen" /> {t("unit")}
-          </p>
-          <h1 className="font-display text-5xl font-bold uppercase leading-none tracking-tight">
-            {/* The title ends with its own space where the language wants one (BattleHeader). */}
-            {t("title")}<span className="text-primary [text-shadow:0_0_30px_hsl(var(--primary)/0.45)]">{t("accent")}</span>
-          </h1>
-        </div>
-        <div className="flex gap-2" data-testid="live-counts">
-          <Counter value={counts?.online} label={t("online")} tone="success" locale={t.locale} />
-          <Counter value={counts?.battles} label={t("battles")} tone="primary" locale={t.locale} />
-        </div>
-      </div>
+      {/* The title ends with its own space where the language wants one (BattleHeader). */}
+      <PageHeader
+        kicker={t("unit")}
+        title={t("title")}
+        accent={t("accent")}
+        actions={
+          <div className="flex gap-2" data-testid="live-counts">
+            <Counter value={counts?.online} label={t("online")} tone="success" locale={t.locale} />
+            <Counter value={counts?.battles} label={t("battles")} tone="primary" locale={t.locale} />
+          </div>
+        }
+      />
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
         {/* The main action panel */}
-        <div className="hud relative self-start rounded-xl border-2 border-primary/30 bg-card p-5 shadow-[0_24px_60px_-30px_hsl(var(--primary)/0.6)]">
+        <div className="kit-card kit-arena self-start p-5 max-md:p-4" style={accentStyle(SECTION_ACCENT.battle)}>
           <div className="grid gap-5 md:grid-cols-[minmax(0,1fr)_260px]">
             <div className="min-w-0 space-y-4">
               <div className="space-y-1.5">
@@ -487,13 +487,16 @@ export function BattleHome() {
         </div>
 
         <div className="space-y-4">
-          <nav className="grid grid-cols-2 gap-2" aria-label={t("moreNav")}>
+          <nav className="grid grid-cols-2 gap-2" aria-label={t("moreNav")} style={accentStyle(SECTION_ACCENT.battle)}>
             {SECONDARY.map(({ href, onClick, icon: Icon, label: key, testId }) => {
               const label = t(`secondary.${key}`);
-              const cls = "menu-item flex items-center gap-2 rounded-lg border bg-card px-3 py-3 font-display text-sm font-bold uppercase tracking-wide hover:border-screen/60";
+              const cls = "kit-card kit-lift flex items-center gap-2 rounded-xl px-2 py-2 font-display text-[13px] font-bold uppercase italic leading-tight tracking-wide";
               const inner = (
                 <>
-                  <Icon className="h-4 w-4 shrink-0 text-primary" aria-hidden /> <span className="min-w-0">{label}</span>
+                  <IconWell size="sm" className="h-8 w-8 rounded-lg [&_svg]:h-3.5 [&_svg]:w-3.5">
+                    <Icon aria-hidden />
+                  </IconWell>
+                  <span className="min-w-0">{label}</span>
                 </>
               );
               return href ? (
@@ -518,7 +521,7 @@ export function BattleHome() {
 
 function Counter({ value, label, tone, locale }: { value: number | undefined; label: string; tone: "success" | "primary"; locale: T["locale"] }) {
   return (
-    <div className="flex items-center gap-2 rounded-lg border bg-card px-3 py-2">
+    <div className="kit-card flex items-center gap-2 rounded-xl px-3 py-2">
       <span className={cn("led h-2 w-2", tone === "success" ? "text-success" : "text-primary")} />
       <span className="font-display text-xl font-bold tabular-nums">{value === undefined ? "–" : formatNumber(value, locale)}</span>
       <span className="text-xs text-muted-foreground">{label}</span>

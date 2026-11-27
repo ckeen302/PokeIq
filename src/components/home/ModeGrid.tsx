@@ -11,6 +11,8 @@ import modesNs from "@/messages/quiz-modes";
 import setupNs from "@/messages/quiz-setup";
 import { useProgress } from "@/lib/progress";
 import { ModeIcon } from "@/components/game/ModeIcon";
+import { IconWell, accentStyle, cardVariants } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 /** Each tile slides in a beat after the one before. In CSS, so the tiles paint with the page instead of waiting for the scripts. */
 const ENTER = "animate-in fade-in-0 slide-in-from-left-3 fill-mode-both duration-300 ease-out";
@@ -60,7 +62,7 @@ const rank = (key: string) => {
   return i < 0 ? ORDER.length : i;
 };
 
-/** Game-menu list of modes: ▶ cursor on hover, accent stripe per mode. */
+/** The list of quiz modes: calm cards, each lit by its mode's colour. */
 export function ModeGrid() {
   const progress = useProgress();
   const t = useT(setupNs);
@@ -91,29 +93,19 @@ export function ModeGrid() {
         <div key={tile.key} className={ENTER} style={{ animationDelay: `${50 + i * 50}ms` }}>
           <Link
             href={tile.href}
-            className="menu-item group flex h-full items-center gap-4 overflow-hidden rounded-lg border bg-card p-4 hover:border-screen/50 hover:bg-accent/40 max-md:gap-3"
+            className={cn(cardVariants({ variant: "base", interactive: true }), "group flex h-full items-center gap-4 p-4 max-md:gap-3 max-md:p-3.5")}
+            style={accentStyle(tile.accent)}
             data-testid={tile.testId}
           >
-            <span className="absolute inset-y-0 left-0 w-1" style={{ background: `hsl(${tile.accent})` }} aria-hidden />
-            <span
-              className="screen flex h-14 w-14 shrink-0 items-center justify-center rounded-md max-md:h-11 max-md:w-11"
-              style={{ color: `hsl(${tile.accent})` }}
-            >
-              {tile.icon}
-            </span>
+            <IconWell size="lg" className="max-md:h-11 max-md:w-11 max-md:rounded-xl max-md:[&_svg]:h-5 max-md:[&_svg]:w-5">{tile.icon}</IconWell>
             <span className="min-w-0 flex-1">
-              <span className="flex items-center gap-2">
-                {/* The link's name is its visible text: the title, then the description. */}
-                <span className="hud-label max-md:hidden" aria-hidden>
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <span className="truncate font-display text-lg font-bold uppercase tracking-wide max-md:whitespace-normal max-md:text-base max-md:leading-tight">{tile.title}</span>
-              </span>
+              {/* The link's name is its visible text: the title, then the description. */}
+              <span className="block truncate font-display text-lg font-bold uppercase italic leading-tight tracking-wide max-md:whitespace-normal max-md:text-base">{tile.title}</span>
               <span className="mt-0.5 block text-sm text-muted-foreground max-md:line-clamp-2">{tile.description}</span>
             </span>
             <span className="flex shrink-0 flex-col items-end gap-1">
-              {tile.best ? <span className="hud-label text-screen">{t("grid.best", { score: num(tile.best, t.locale) })}</span> : null}
-              <ChevronRight className="h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-foreground" />
+              {tile.best ? <span className="hud-label text-select">{t("grid.best", { score: num(tile.best, t.locale) })}</span> : null}
+              <ChevronRight className="kit-ink h-5 w-5 opacity-70 transition-[transform,opacity] group-hover:translate-x-1 group-hover:opacity-100" />
             </span>
           </Link>
         </div>
