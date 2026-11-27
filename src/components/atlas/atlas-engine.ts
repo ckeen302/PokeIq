@@ -854,6 +854,8 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
   // ---- pointer, pinch and wheel --------------------------------------------
   const pointers = new Map<number, { x: number; y: number }>();
   let drag: { x: number; y: number; tx: number; ty: number } | null = null;
+  /** A wrapping map's drag: the pointer's last few positions (CSS px, ms), for the fling when it's let go. */
+  const trail: { x: number; y: number; t: number }[] = [];
   let moved = false;
   let pinch: { d: number; s: number; tx: number; ty: number; cx: number; cy: number } | null = null;
 
@@ -866,6 +868,7 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
     zoomGoal = null;
     if (pointers.size === 1) {
       drag = { x: e.offsetX, y: e.offsetY, tx: view.tx, ty: view.ty };
+      trail.length = 0;
       moved = false;
     }
     if (pointers.size === 2) {
@@ -899,16 +902,57 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
       moving();
       view.tx = drag.tx + dx;
       view.ty = drag.ty + dy;
+      if (wrap) {
+        trail.push({ x: e.offsetX, y: e.offsetY, t: e.timeStamp });
+        if (trail.length > 8) trail.shift();
+      }
       clamp();
       requestDraw();
     }
   };
+  /**
+   * A wrapping map, let go mid-drag, carries on the way it was going and eases
+   * to a stop (GeoGuessr's), across the seam like any other pan: each frame is
+   * an ordinary pan, normalised by whole widths. Up and down stop at the edge.
+   */
+  function fling(upAt: number) {
+    const last = trail[trail.length - 1];
+    // Only a drag still moving when it was let go (a pause first, and it stays put).
+    if (reduceMotion || !last || upAt - last.t > 60) return;
+    const first = trail.find((p) => last.t - p.t <= 90) ?? last;
+    const dt = last.t - first.t;
+    if (dt < 8) return;
+    let vx = (last.x - first.x) / dt;
+    let vy = (last.y - first.y) / dt;
+    if (Math.hypot(vx, vy) < 0.25) return;
+    let prev = performance.now();
+    const step = (now: number) => {
+      if (!alive) return;
+      const ms = Math.min(40, now - prev);
+      prev = now;
+      moving();
+      const ty = view.ty;
+      view.tx += vx * ms;
+      view.ty += vy * ms;
+      clamp();
+      // Stopped at the top or bottom: no more drift that way.
+      if (Math.abs(view.ty - (ty + vy * ms)) > 0.5) vy = 0;
+      draw();
+      const decay = Math.exp(-ms / 325);
+      vx *= decay;
+      vy *= decay;
+      if (Math.hypot(vx, vy) > 0.02) anim = requestAnimationFrame(step);
+    };
+    cancelAnimationFrame(anim);
+    anim = requestAnimationFrame(step);
+  }
   const onUp = (e: PointerEvent) => {
     pointers.delete(e.pointerId);
     if (pointers.size < 2) pinch = null;
     if (!pointers.size) {
       canvas.style.cursor = "";
       if (drag && !moved) pick(e.offsetX, e.offsetY);
+      else if (drag && wrap) fling(e.timeStamp);
       drag = null;
     }
   };
