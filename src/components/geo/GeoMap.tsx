@@ -344,7 +344,8 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
   const period = atlas?.W ?? 0;
   const wraps = !locked && period > 0;
   const stageW = stageRef.current?.clientWidth ?? 0;
-  const copies = !wraps || !view ? [0] : [...new Set([-period, 0, period, ...wrapShifts(view, stageW, period, WRAP_OVERLAY_MARGIN)])].sort((a, b) => a - b);
+  // The map's own copy last, so it's drawn on top (and its pins stay the last in the layer, where the page's checks look).
+  const copies = !wraps || !view ? [0] : [...new Set([-period, 0, period, ...wrapShifts(view, stageW, period, WRAP_OVERLAY_MARGIN)])].sort((a, b) => Number(a === 0) - Number(b === 0) || a - b);
   /** The map's 0–1 point on screen, on the copy `off` world px to the side. */
   const toScreenOn = (off: number) => (x: number, y: number): [number, number] => {
     const [wx, wy] = toWorld(x, y);
