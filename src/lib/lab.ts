@@ -48,7 +48,16 @@ export const GAMES_LIVE = false;
 export const LAB_DEX_LIVE = true;
 
 export interface LabExperience {
-  id: "pokedex" | "timeline" | "pokemon-story" | "sizes" | "globe" | "race" | "mass-battle" | "world-history" | "games";
+  id:
+    | "pokedex"
+    | "timeline"
+    | "pokemon-story"
+    | "sizes"
+    | "globe"
+    | "race"
+    | "mass-battle"
+    | "world-history"
+    | "games";
   href: string;
   title: string;
   /** Small HUD label above the title. */
@@ -70,7 +79,8 @@ const TIMELINE_CARD: LabExperience = {
   href: "/pokedex/timeline",
   title: "Pokémon Timeline",
   kicker: "History in 3D",
-  pitch: "Fly through Pokémon history in a time tunnel, from Red and Green in 1996 to today: the games, the anime, the films and the card game.",
+  pitch:
+    "Fly through Pokémon history in a time tunnel, from Red and Green in 1996 to today: the games, the anime, the films and the card game.",
   tags: ["Guided tour", "Era transitions", "Japanese and Western dates"],
   image: "/lab/timeline.webp",
   accent: "258 94% 74%",
@@ -83,7 +93,8 @@ const STORY_CARD: LabExperience = {
   href: "/lab/pokemon-story",
   title: "The Story of Pokémon",
   kicker: "The real history, in 3D",
-  pitch: "A cinematic film of how Pokémon really began, from a boy collecting insects in Machida to thirty years of games, cards and shows. Scroll through it or press Play, with every line sourced.",
+  pitch:
+    "A cinematic film of how Pokémon really began, from a boy collecting insects in Machida to thirty years of games, cards and shows. Scroll through it or press Play, with every line sourced.",
   tags: ["The real history", "Every line sourced", "Make a video"],
   image: "/lab/pokemon-story.webp",
   accent: "42 88% 64%",
@@ -93,7 +104,8 @@ const STORY_CARD: LabExperience = {
 /**
  * The hub's order: the experiences that impress most, run best on phones and
  * are easiest to share lead (docs/lab-audit.md): Sizes, Mass Battle, the
- * World Globe. The films and the Professor's Lab follow.
+ * World Globe. The two history films close it, side by side on the last row
+ * (they must stay the last two).
  */
 export const LAB_EXPERIENCES: LabExperience[] = [
   {
@@ -101,7 +113,8 @@ export const LAB_EXPERIENCES: LabExperience[] = [
     href: "/pokedex/sizes",
     title: "Pokémon Sizes",
     kicker: "Every Pokémon to scale",
-    pitch: "Glide past every Pokémon at its real size in a 3D Lumiose City, then hit Make a video for a size comparison ready for TikTok, Reels and Shorts.",
+    pitch:
+      "Glide past every Pokémon at its real size in a 3D Lumiose City, then hit Make a video for a size comparison ready for TikTok, Reels and Shorts.",
     tags: ["Make a video", "Compare any Pokémon", "Lumiose City"],
     image: "/lab/sizes.webp",
     accent: "45 100% 64%",
@@ -112,7 +125,8 @@ export const LAB_EXPERIENCES: LabExperience[] = [
     href: "/lab/mass-battle",
     title: "Pokémon Mass Battle",
     kicker: "Real battle maths, at scale",
-    pitch: "Thousands of Pokémon clash on a 3D battlefield with the real games' damage maths. How many Magikarp does it take to beat Arceus? Find out, then make a video of it.",
+    pitch:
+      "Thousands of Pokémon clash on a 3D battlefield with the real games' damage maths. How many Magikarp does it take to beat Arceus? Find out, then make a video of it.",
     tags: ["How many?", "Army vs army", "Make a video"],
     image: "/lab/mass-battle.webp",
     accent: "28 100% 58%",
@@ -123,41 +137,32 @@ export const LAB_EXPERIENCES: LabExperience[] = [
     href: "/pokeguessr/globe",
     title: "World Globe",
     kicker: "The Pokémon world",
-    pitch: "Spin a holographic globe of the whole Pokémon world and zoom from its regions down to every town, route and landmark.",
+    pitch:
+      "Spin a holographic globe of the whole Pokémon world and zoom from its regions down to every town, route and landmark.",
     tags: ["Generation by generation", "Real screenshots", "From PokéGuessr"],
     image: "/lab/globe.webp",
     accent: "195 92% 64%",
     live: true,
   },
-  POKEMON_STORY_LIVE ? STORY_CARD : TIMELINE_CARD,
   {
     id: "pokedex",
     href: "/lab/pokedex",
     title: "Professor's Lab",
     kicker: "A 3D Pokédex",
-    pitch: "Spin a ring of lab capsules and bring any Pokémon onto the holo-table in 3D, with its base stats, battle roles, Pokédex entry, evolutions and type matchups.",
+    pitch:
+      "Spin a ring of lab capsules and bring any Pokémon onto the holo-table in 3D, with its base stats, battle roles, Pokédex entry, evolutions and type matchups.",
     tags: ["Every Pokémon in 3D", "Battle roles", "Filter and sort"],
     image: "/lab/pokedex.webp",
     accent: "190 95% 62%",
     live: LAB_DEX_LIVE,
   },
   {
-    id: "world-history",
-    href: "/lab/world-history",
-    title: "The History of the Pokémon World",
-    kicker: "The story, as the games tell it",
-    pitch: "A cinematic museum of the Pokémon world's in-universe history, from Sinnoh's creation myth to the time machine in Area Zero. Scroll through it or press Play, with every line sourced to the games.",
-    tags: ["Told by the games", "Every line sourced", "Make a video"],
-    image: "/lab/world-history.webp",
-    accent: "42 92% 66%",
-    live: WORLD_HISTORY_LIVE,
-  },
-  {
     id: "race",
     href: "/pokedex/race",
     title: "Pokémon Race",
     kicker: "Who is fastest?",
-    pitch: "Line Pokémon up in a 3D stadium at night and watch them sprint, with speeds from their base stats.",
+    pitch:
+      "Line Pokémon up in a 3D stadium at night and watch them sprint, with speeds from their base stats.",
     tags: ["Photo finish", "Pick your own race", "Make a video"],
     image: "/lab/race.webp",
     accent: "340 86% 60%",
@@ -168,11 +173,25 @@ export const LAB_EXPERIENCES: LabExperience[] = [
     href: "/lab/games",
     title: "The PokéIQ Games",
     kicker: "Every Pokémon, real sport",
-    pitch: "Track and field, weightlifting, swimming and wrestling for every Pokémon, scored from their real stats with real physics, then played out in 3D with replays, medals and a medal table.",
+    pitch:
+      "Track and field, weightlifting, swimming and wrestling for every Pokémon, scored from their real stats with real physics, then played out in 3D with replays, medals and a medal table.",
     tags: ["12 events", "Records for all 1,025", "Make a video"],
     image: "/lab/games.webp",
     accent: "48 100% 60%",
     live: GAMES_LIVE,
+  },
+  POKEMON_STORY_LIVE ? STORY_CARD : TIMELINE_CARD,
+  {
+    id: "world-history",
+    href: "/lab/world-history",
+    title: "The History of the Pokémon World",
+    kicker: "The story, as the games tell it",
+    pitch:
+      "A cinematic museum of the Pokémon world's in-universe history, from Sinnoh's creation myth to the time machine in Area Zero. Scroll through it or press Play, with every line sourced to the games.",
+    tags: ["Told by the games", "Every line sourced", "Make a video"],
+    image: "/lab/world-history.webp",
+    accent: "42 92% 66%",
+    live: WORLD_HISTORY_LIVE,
   },
 ];
 
@@ -181,5 +200,9 @@ export const liveLabExperiences = () => LAB_EXPERIENCES.filter((e) => e.live);
 
 /** /lab itself and every experience's pages (the nav's 3D Lab tab is active on all of them). */
 export function isLabPath(pathname: string): boolean {
-  return [LAB_PATH, TIMELINE_CARD.href, ...LAB_EXPERIENCES.map((e) => e.href)].some((p) => pathname === p || pathname.startsWith(`${p}/`));
+  return [
+    LAB_PATH,
+    TIMELINE_CARD.href,
+    ...LAB_EXPERIENCES.map((e) => e.href),
+  ].some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
