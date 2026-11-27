@@ -193,6 +193,9 @@ export interface AtlasEngine {
 }
 
 const SEA = "#165c96";
+/** A wrapping map's loop line (Google Maps' dashed boundaries): dark navy, faint, 6 px dashes with 5 px gaps. */
+const SEAM_COLOR = "rgba(8, 20, 44, 0.4)";
+const SEAM_DASH = [6, 5];
 /** A moving map is redrawn at full quality this long (ms) after it stops. */
 const MOTION_SETTLE_MS = 120;
 /** Spaced dots: a dot shows once its nearest neighbour is at least this many CSS px away on screen. */
@@ -521,6 +524,30 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
         sharp = true;
         if (opts.onSharp) requestAnimationFrame(() => alive && opts.onSharp?.());
       }
+    }
+
+    // Where a wrapping map loops: a thin dashed line down each copy's edge (GeoGuessr's date line), in CSS px so it looks the
+    // same at every zoom, anchored to the map's top so its dashes move with the map. Under the dots, names and pins.
+    if (wrap) {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.save();
+      ctx.strokeStyle = SEAM_COLOR;
+      ctx.lineWidth = 1.25;
+      ctx.setLineDash(SEAM_DASH);
+      ctx.lineDashOffset = 0;
+      // Only the part on screen is stroked, starting a whole number of dashes down so the pattern stays put.
+      const dashStep = SEAM_DASH[0] + SEAM_DASH[1];
+      const y0 = ty < 0 ? ty + Math.floor(-ty / dashStep) * dashStep : ty;
+      const y1 = Math.min(H, atlas.H * vs + ty);
+      ctx.beginPath();
+      for (const off of [...offs, offs[offs.length - 1] + period]) {
+        const x = off * s + tx;
+        if (x < -2 || x > W + 2) continue;
+        ctx.moveTo(x, y0);
+        ctx.lineTo(x, y1);
+      }
+      ctx.stroke();
+      ctx.restore();
     }
 
     const f = s / REF_SCALE;
