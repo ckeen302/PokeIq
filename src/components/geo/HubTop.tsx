@@ -32,6 +32,7 @@ import huntDetective from "@/assets/guessr/hunt-detective.webp";
 // MOCK: Classic's explorer Squirtle with its globe and pin.
 import classicExplorer from "@/assets/guessr/classic-explorer.webp";
 import rankedPodium from "@/assets/guessr/ranked-podium.webp";
+import dailyJirachi from "@/assets/guessr/daily-jirachi.webp";
 
 /** Who stands on the globe until a player makes their own 3D trainer (and for visitors): the creator's first look. */
 const STAND_IN = presetTrainer(TRAINER_PRESETS[0]);
@@ -549,6 +550,12 @@ function Backdrop({ pattern, pulse }: { pattern: Pattern; pulse?: boolean }) {
           style={{ maskImage: `url(${classicExplorer.src})`, WebkitMaskImage: `url(${classicExplorer.src})`, maskSize: "contain", WebkitMaskSize: "contain", maskRepeat: "no-repeat", WebkitMaskRepeat: "no-repeat", maskPosition: "center bottom", WebkitMaskPosition: "center bottom" }}
         />
       )}
+      {pk === "sil" && pattern === "daily" && (
+        <span
+          className="absolute bottom-[4%] right-[26%] aspect-[877/560] h-[86%] bg-white/[0.16] [.light_&]:bg-[#5a46d0]/[0.2]"
+          style={{ maskImage: `url(${dailyJirachi.src})`, WebkitMaskImage: `url(${dailyJirachi.src})`, maskSize: "contain", WebkitMaskSize: "contain", maskRepeat: "no-repeat", WebkitMaskRepeat: "no-repeat", maskPosition: "center bottom", WebkitMaskPosition: "center bottom" }}
+        />
+      )}
       {pk === "sil" && pattern === "ranked" && (
         <span
           className="absolute bottom-[4%] right-[26%] aspect-[710/560] h-[88%] bg-white/[0.16] [.light_&]:bg-[#5a46d0]/[0.2]"
@@ -573,7 +580,7 @@ function Backdrop({ pattern, pulse }: { pattern: Pattern; pulse?: boolean }) {
       )}
       <span className={cn("absolute -right-[6%] -top-[30%] aspect-square h-[150%] rounded-full opacity-50 [.light_&]:opacity-35", pulse && "gh-pulse")} style={{ background: `radial-gradient(closest-side, ${GLOW[pattern]}, transparent)` }} />
       <span
-        className={cn("absolute inset-0 bg-white/[0.16] [.light_&]:bg-[#5a46d0]/[0.2]", pk === "sil" && (pattern === "hunt" || pattern === "party" || pattern === "classic" || pattern === "ranked") && "hidden")}
+        className={cn("absolute inset-0 bg-white/[0.16] [.light_&]:bg-[#5a46d0]/[0.2]", pk === "sil" && (pattern === "hunt" || pattern === "party" || pattern === "classic" || pattern === "ranked" || pattern === "daily") && "hidden")}
         style={{
           maskImage: `${p.image}, linear-gradient(90deg, rgb(0 0 0 / .5), black 55%)`,
           WebkitMaskImage: `${p.image}, linear-gradient(90deg, rgb(0 0 0 / .5), black 55%)`,
