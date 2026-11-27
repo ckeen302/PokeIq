@@ -739,6 +739,19 @@ html[data-dle-cb] .dle-close { background: rgb(133 192 249 / 0.4); border-color:
       letter-spacing: 0.1em;
     }
   }
+  /* Tablets and desktops: HUD labels at 12px (10px was hard to read). A size utility on the element still wins. */
+  @media (min-width: 768px) {
+    .hud-label {
+      font-size: 12px;
+    }
+  }
+}
+/* Tablets and desktops: the pixel face's 10px labels (badges and tabs, the footer's links) at 12px too, like .hud-label.
+   Phones swap them for the display face (below). Opt out with .mp-dense on a tight grid. */
+@media (min-width: 768px) {
+  .font-pixel:is([class^="text-[10px]"], [class*=" text-[10px]"]):not(.mp-dense, .mp-dense *) {
+    font-size: 12px;
+  }
 }
 @media (max-width: 767.98px) {
   /* A long placeholder ends in "…" instead of being cut mid-word. */

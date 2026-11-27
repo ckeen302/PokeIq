@@ -7,6 +7,7 @@ import type { Difficulty, ModuleId, QuizFormat, QuizScope } from "@/engines/type
 import { MODULE_INFO, PLAYABLE_FORMATS, difficultiesFor, filterFor, levelKey, playDifficulty, type QuizFilter } from "@/lib/modes";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { SELECTED_CHIP } from "@/components/ui/badge";
 import { QuizController, type StartRequest } from "./QuizController";
 import { QuizDuelCard } from "./QuizDuelCard";
 import { cn } from "@/lib/utils";
@@ -301,7 +302,7 @@ function Chip({ active, onClick, children, title }: { active: boolean; onClick: 
       aria-pressed={active}
       className={cn(
         "rounded-sm border px-2.5 py-1.5 font-pixel text-[10px] uppercase tracking-wider transition-colors",
-        active ? "border-primary bg-primary text-primary-foreground" : "border-foreground/10 bg-shade/20 text-muted-foreground hover:border-primary/50 hover:text-foreground"
+        active ? SELECTED_CHIP : "border-foreground/10 bg-shade/20 text-muted-foreground hover:border-primary/50 hover:text-foreground"
       )}
     >
       {children}

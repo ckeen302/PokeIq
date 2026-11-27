@@ -6,6 +6,7 @@ import { TimeToNextDaily } from "@/components/NextDailyCountdown";
 import { useProgress } from "@/lib/progress";
 import { useToday } from "@/lib/use-today";
 import { cn } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
 import { HomeHeading } from "./HomeHeading";
 import { DAILIES, allDone, bestStreak, dailyStatuses, localStreakText, type DailyInfo, type DailyStatus } from "./today";
 import { useT } from "@/i18n/client";
@@ -71,7 +72,7 @@ function subline(info: DailyInfo, status: DailyStatus, t: T): string {
   return t(`games.${info.id}.line`);
 }
 
-function PlayPill({ info, status, className, t }: { info: DailyInfo; status: DailyStatus; className?: string; t: T }) {
+function PlayPill({ status, className, t }: { status: DailyStatus; className?: string; t: T }) {
   if (status.state === "done") {
     return (
       <span className={cn("inline-flex h-8 items-center gap-1 text-sm font-semibold text-success", className)}>
@@ -79,14 +80,8 @@ function PlayPill({ info, status, className, t }: { info: DailyInfo; status: Dai
       </span>
     );
   }
-  return (
-    <span
-      className={cn("inline-flex h-9 items-center rounded-full px-4 text-sm font-semibold text-black", className)}
-      style={{ background: `hsl(${info.accent})`, boxShadow: `inset 0 1px 0 rgb(255 255 255 / 0.35), 0 4px 14px -4px hsl(${info.accent} / 0.6)` }}
-    >
-      {status.state === "progress" ? t("today.continue") : t("today.play")}
-    </span>
-  );
+  // The site's primary button (a span: the whole card or row is the link).
+  return <span className={cn(buttonVariants({ size: "sm", className }), className)}>{status.state === "progress" ? t("today.continue") : t("today.play")}</span>;
 }
 
 function DailyRow({ info, status, t }: { info: DailyInfo; status: DailyStatus; t: T }) {
@@ -101,7 +96,7 @@ function DailyRow({ info, status, t }: { info: DailyInfo; status: DailyStatus; t
         <span className="block truncate text-base font-semibold leading-tight">{t(`games.${info.id}.name`)}</span>
         <span className={cn("mt-0.5 line-clamp-2 text-sm", done ? "text-success" : status.state === "progress" ? "text-warning" : "text-muted-foreground")}>{subline(info, status, t)}</span>
       </span>
-      <PlayPill info={info} status={status} className="shrink-0" t={t} />
+      <PlayPill status={status} className="shrink-0" t={t} />
     </Link>
   );
 }
@@ -137,7 +132,7 @@ function DailyCard({ info, status, t }: { info: DailyInfo; status: DailyStatus; 
         {subline(info, status, t)}
       </span>
       <span className="mt-auto flex items-center justify-between pt-3">
-        <PlayPill info={info} status={status} className={done ? undefined : "h-8 px-3.5"} t={t} />
+        <PlayPill status={status} className={done ? undefined : "h-8 px-3.5"} t={t} />
         <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" aria-hidden />
       </span>
     </Link>

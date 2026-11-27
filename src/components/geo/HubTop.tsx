@@ -511,13 +511,15 @@ function StreakCard({
     weekday: "narrow",
     timeZone: "UTC",
   });
+  // No streak yet (a first visit): an invitation instead of "0-day streak".
+  const label = streak > 0 ? t("hub.daily.streak", { n: streak }) : t("hub.daily.streakStart");
   return (
     <div className="relative pt-[1.4rem]" data-testid="geo-streak-card">
       <span
         className={cn(TAB, "absolute left-3 top-0")}
         data-testid="geo-streak-count"
       >
-        {t("hub.daily.streak", { n: streak })}
+        {label}
       </span>
       <div className={cn(CARD, "relative px-3 pb-3 pt-2.5")}>
         <Backdrop pattern="streak" />
@@ -530,7 +532,7 @@ function StreakCard({
         />
         <ol
           className="relative grid grid-cols-7 gap-1 md:gap-[clamp(2px,0.3vw,5px)]"
-          aria-label={t("hub.daily.streak", { n: streak })}
+          aria-label={label}
         >
           {days.map((d) => (
             <li key={d.date} className="flex flex-col items-center gap-1">

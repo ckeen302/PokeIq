@@ -56,6 +56,7 @@
       "play": "Heutiges spielen",
       "resume": "Tagesspiel {num} fortsetzen",
       "streak": "{n}-Tage-Serie",
+      "streakStart": "Starte eine Serie",
       "started": "Du hast das heutige Tagesspiel schon in diesem Browser oder mit deinem Konto begonnen. Es gibt ein Spiel pro Tag."
     },
     "weekly": {

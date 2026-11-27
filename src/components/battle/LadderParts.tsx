@@ -8,6 +8,7 @@ import { LADDER_FORMATS } from "@/lib/battle/ladder";
 import { useLadderStanding } from "@/lib/battle/ladder-client";
 import { glickoBadge } from "./GlickoBadge";
 import { Card, CardContent } from "@/components/ui/card";
+import { SELECTED_CHIP } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { NameAvatar } from "@/components/avatar/Avatar";
 import type { AvatarMap } from "@/lib/avatar";
@@ -28,7 +29,7 @@ export function LadderTabs({ format, hrefBase }: { format: StandardFormatId; hre
           aria-selected={f === format}
           className={cn(
             "rounded-md border px-3 py-1.5 font-display text-xs font-bold uppercase tracking-wider transition-colors max-md:shrink-0 max-md:whitespace-nowrap max-md:py-2.5",
-            f === format ? "border-primary bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:border-screen/60 hover:text-foreground"
+            f === format ? SELECTED_CHIP : "bg-card text-muted-foreground hover:border-screen/60 hover:text-foreground"
           )}
           scroll={false}
         >

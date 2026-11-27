@@ -151,7 +151,7 @@ export function SettingsCard({ children }: { children?: ReactNode }) {
   const t = useT(nav);
   return (
     <section id="settings" aria-labelledby="settings-title" className="hud relative scroll-mt-20 rounded-lg border bg-card p-5 text-card-foreground shadow-[0_8px_30px_-12px_hsl(var(--shade)/0.6)]" data-testid="trainer-settings">
-      <h2 id="settings-title" className="mb-4 font-display text-lg font-bold leading-none tracking-tight">
+      <h2 id="settings-title" className="mb-4 font-display text-lg font-bold uppercase leading-none tracking-tight">
         {t("settings.title")}
       </h2>
       <SettingsControls size="md" testIdPrefix="trainer-settings" />

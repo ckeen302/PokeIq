@@ -56,6 +56,7 @@
       "play": "Gioca quella di oggi",
       "resume": "Riprendi Giornaliera {num}",
       "streak": "{n, plural, one {Serie di {n} giorno} other {Serie di {n} giorni}}",
+      "streakStart": "Inizia una serie",
       "started": "Hai già iniziato la Giornaliera di oggi in questo browser o sul tuo account. È una partita al giorno."
     },
     "weekly": {

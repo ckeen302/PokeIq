@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import { track } from "@vercel/analytics";
-import { BarChart3, CalendarDays, CircleHelp, Dices, Lightbulb, RefreshCw, Settings, Timer, X } from "lucide-react";
+import { BarChart3, CalendarDays, CircleHelp, Dices, Eye, Lightbulb, RefreshCw, Settings, Tag, Timer, X } from "lucide-react";
 import { dailyNumber } from "@/lib/daily";
 import { dleBlock, getProgress, saveDle, useProgress } from "@/lib/progress";
 import { useToday } from "@/lib/use-today";
@@ -34,6 +34,7 @@ import { AssistPicker } from "./AssistPicker";
 import { dexClues } from "@/lib/dle-dex";
 import { DLE_ASSIST_INFO, dleAssistOf, type DleAssist } from "@/lib/dle-assist";
 import { cn } from "@/lib/utils";
+import { SELECTED_SEGMENT } from "@/components/ui/badge";
 import { DailyEmailNudge } from "@/components/email/DailyEmailNudge";
 
 // Loaded when first needed, not with the page: the Pokédex (off by default),
@@ -44,6 +45,13 @@ const SettingsPanel = dynamic(() => import("./SettingsPanel").then((m) => m.Sett
 const HowToSheet = dynamic(() => import("./sheets").then((m) => m.HowToSheet), { ssr: false });
 const StatsSheet = dynamic(() => import("./sheets").then((m) => m.StatsSheet), { ssr: false });
 const ArchiveSheet = dynamic(() => import("./sheets").then((m) => m.ArchiveSheet), { ssr: false });
+
+/** A hint's line icon on its chip (the same as the duel's). */
+const HINT_ICON: Record<DleHint, typeof Tag> = { genus: Tag, silhouette: Eye };
+function HintIcon({ hint }: { hint: DleHint }) {
+  const Icon = HINT_ICON[hint];
+  return <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden />;
+}
 
 /** The daily (in a format), a past Classic daily from the archive (never counted), or a practice puzzle under the player's settings. */
 type Target = { kind: "daily"; date: string; format: DleDailyFormat } | { kind: "archive"; date: string } | { kind: "practice"; seed: string; settings: DleSettings };
@@ -489,7 +497,7 @@ function PokedleGame({ names, community }: { names: NameEntry[]; community?: Com
                   disabled={!today || (f === "squirdle" && !!today && today < DLE_SQUIRDLE_FROM)}
                   className={cn(
                     "min-w-24 rounded px-4 py-1.5 font-display text-sm font-semibold uppercase tracking-wider transition-colors",
-                    mode === "daily" && format === f ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                    mode === "daily" && format === f ? SELECTED_SEGMENT : "text-muted-foreground hover:text-foreground"
                   )}
                 >
                   {bt(`format.${f}`)}
@@ -633,8 +641,8 @@ function PokedleGame({ names, community }: { names: NameEntry[]; community?: Com
                     h === "silhouette" && state?.hints.silhouetteUrl ? (
                       <img key={h} src={state.hints.silhouetteUrl} alt={t("hints.silhouette")} className="spotlight h-12 w-12 rounded-md object-contain p-0.5" />
                     ) : h === "genus" && state?.hints.genus ? (
-                      <span key={h} className="rounded-full border border-screen/40 bg-screen/[0.06] px-3 py-1 text-xs font-semibold">
-                        {DLE_HINT_EMOJI[h]} {genus}
+                      <span key={h} className="inline-flex items-center gap-1.5 rounded-full border border-screen/40 bg-screen/[0.06] px-3 py-1 text-xs font-semibold">
+                        <HintIcon hint={h} /> {genus}
                       </span>
                     ) : null
                   ) : (
@@ -644,9 +652,9 @@ function PokedleGame({ names, community }: { names: NameEntry[]; community?: Com
                       onClick={() => takeHint(h)}
                       disabled={loading || guesses.length === 0 || over}
                       title={guesses.length === 0 ? t("hints.locked") : undefined}
-                      className="rounded-full border border-foreground/15 bg-card px-3 py-1 text-xs font-semibold text-muted-foreground transition-colors max-sm:min-h-10 max-sm:px-4 hover:border-screen/50 hover:text-foreground disabled:opacity-50"
+                      className="inline-flex items-center gap-1.5 rounded-full border border-foreground/15 bg-card px-3 py-1 text-xs font-semibold text-muted-foreground transition-colors max-sm:min-h-10 max-sm:px-4 hover:border-screen/50 hover:text-foreground disabled:opacity-50"
                     >
-                      {DLE_HINT_EMOJI[h]} {bt(`hint.${h}`)} <span className="tabular-nums text-destructive">−{DLE_HINT_COST[h]}</span>
+                      <HintIcon hint={h} /> {bt(`hint.${h}`)} <span className="tabular-nums text-destructive">−{DLE_HINT_COST[h]}</span>
                     </button>
                   )
                 )}

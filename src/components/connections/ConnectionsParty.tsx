@@ -449,13 +449,13 @@ export function ConnectionsParty({ code }: { code: string }) {
             <div className={cn("space-y-4", CONTROLS_WRAP)}>
               <MistakeDots left={CONN_MAX_MISTAKES - (mineRow?.mistakes ?? 0)} max={CONN_MAX_MISTAKES} />
               <div className={cn("flex flex-wrap items-center justify-center gap-2.5", CONTROLS_DOCK)} data-testid="conn-controls">
-                <Button variant="outline" onClick={shuffle} className="rounded-full max-sm:px-3 sm:min-w-28">
+                <Button variant="outline" onClick={shuffle} className="max-sm:px-3 sm:min-w-28">
                   <Shuffle className="h-4 w-4" aria-hidden /> {t("shuffle")}
                 </Button>
-                <Button variant="outline" onClick={() => (setSelected([]), setError(null))} disabled={selected.length === 0} className="rounded-full max-sm:px-3 sm:min-w-28">
+                <Button variant="outline" onClick={() => (setSelected([]), setError(null))} disabled={selected.length === 0} className="max-sm:px-3 sm:min-w-28">
                   {t.rich("deselect", { s: (c) => <span className="max-sm:hidden">{c}</span> })}
                 </Button>
-                <Button onClick={() => void submit()} disabled={busy || selected.length !== CONN_GROUP_SIZE} className="rounded-full max-sm:min-w-[5.25rem] sm:min-w-28" data-testid="conn-submit">
+                <Button onClick={() => void submit()} disabled={busy || selected.length !== CONN_GROUP_SIZE} className="max-sm:min-w-[5.25rem] sm:min-w-28" data-testid="conn-submit">
                   {t("submit")}
                 </Button>
               </div>

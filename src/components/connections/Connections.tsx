@@ -49,6 +49,7 @@ const ConnStatsCard = dynamic(() => import("./stats").then((m) => m.ConnStatsCar
 import { ChallengeBanner, ChallengeResult, FeedbackPanel, GroupStats } from "./social";
 import { ComeBackTomorrow, DailyLeaderboard, KeyHints, NewBadges, PerfectBanner, StreakFlame, useCelebration } from "./results";
 import { cn } from "@/lib/utils";
+import { SELECTED_SEGMENT } from "@/components/ui/badge";
 import { CUSTOM_SEED_RE, customSeed } from "@/lib/connections/custom";
 import { DailyEmailNudge } from "@/components/email/DailyEmailNudge";
 import { useT } from "@/i18n/client";
@@ -737,7 +738,7 @@ export function Connections({ customId, initial }: { customId?: string; initial?
                   disabled={"disabled" in m && m.disabled}
                   className={cn(
                     "min-w-[4.75rem] rounded px-3 py-1.5 font-display text-[13px] font-semibold uppercase tracking-wider transition-colors sm:min-w-24 sm:px-4 sm:text-sm",
-                    mode === m.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                    mode === m.id ? SELECTED_SEGMENT : "text-muted-foreground hover:text-foreground"
                   )}
                 >
                   {m.label}
@@ -852,7 +853,7 @@ export function Connections({ customId, initial }: { customId?: string; initial?
         {newDay && (
           <div className="mx-auto flex max-w-md flex-wrap items-center justify-center gap-x-3 gap-y-1.5 rounded-md border border-success/50 bg-success/[0.08] px-3 py-2 text-center text-sm" role="status" data-testid="conn-new-day">
             <span>{t.rich("banner.newDay", { n: connNumber(today!), b: (c) => <b>{c}</b> })}</span>
-            <Button size="sm" variant="success" className="h-7 rounded-full px-3" onClick={backToDaily}>
+            <Button size="sm" variant="success" className="h-7 px-3" onClick={backToDaily}>
               {t("banner.playIt")}
             </Button>
           </div>
@@ -920,7 +921,7 @@ export function Connections({ customId, initial }: { customId?: string; initial?
           <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-center text-sm text-destructive" role="alert" data-testid="conn-error">
             <span>{error}</span>
             {failed && (
-              <Button size="sm" variant="outline" className="h-7 rounded-full px-3" onClick={() => (failed === "guess" ? void submit() : target && void load(target))}>
+              <Button size="sm" variant="outline" className="h-7 px-3" onClick={() => (failed === "guess" ? void submit() : target && void load(target))}>
                 <RefreshCw className="h-3.5 w-3.5" aria-hidden /> {t("retry")}
               </Button>
             )}
@@ -935,13 +936,13 @@ export function Connections({ customId, initial }: { customId?: string; initial?
           <div className={cn("space-y-3 sm:space-y-4", CONTROLS_WRAP)}>
             <MistakeDots left={mistakesLeft} max={connMaxMistakes(size)} />
             <div className={cn("flex flex-wrap items-center justify-center gap-1.5 sm:gap-2.5", CONTROLS_DOCK)} data-testid="conn-controls">
-              <Button variant="outline" onClick={shuffle} disabled={busy || !puzzle} className="rounded-full px-3 sm:min-w-28 sm:px-4" data-testid="conn-shuffle">
+              <Button variant="outline" onClick={shuffle} disabled={busy || !puzzle} className="px-3 sm:min-w-28 sm:px-4" data-testid="conn-shuffle">
                 <Shuffle className="hidden h-4 w-4 min-[400px]:inline sm:inline" aria-hidden /> {t("controls.shuffle")}
               </Button>
-              <Button variant="outline" onClick={() => setSelected([])} disabled={busy || selected.length === 0} className="rounded-full px-3 sm:min-w-28 sm:px-4" data-testid="conn-deselect">
+              <Button variant="outline" onClick={() => setSelected([])} disabled={busy || selected.length === 0} className="px-3 sm:min-w-28 sm:px-4" data-testid="conn-deselect">
                 {t.rich("controls.deselect", { s: (c) => <span className="hidden sm:inline">{c}</span> })}
               </Button>
-              <Button onClick={() => void submit()} disabled={busy || selected.length !== size} className="min-w-[5.25rem] rounded-full px-3.5 sm:min-w-28 sm:px-4" data-testid="conn-submit">
+              <Button onClick={() => void submit()} disabled={busy || selected.length !== size} className="min-w-[5.25rem] px-3.5 sm:min-w-28 sm:px-4" data-testid="conn-submit">
                 {t("controls.submit")}
               </Button>
               {mode === "daily" && (
@@ -949,7 +950,7 @@ export function Connections({ customId, initial }: { customId?: string; initial?
                   variant="outline"
                   onClick={() => void takeHint()}
                   disabled={busy || hintBusy || usedHint || !puzzle}
-                  className="tap w-10 rounded-full px-0 sm:w-auto sm:min-w-28 sm:px-4"
+                  className="tap w-10 px-0 sm:w-auto sm:min-w-28 sm:px-4"
                   title={t("controls.hintTitle")}
                   aria-label={usedHint ? t("controls.hintUsed") : t("controls.hint")}
                   data-testid="conn-hint"
@@ -1142,7 +1143,7 @@ function RetryCard({ size, message, onRetry }: { size: ConnSize; message: string
           <CardContent className="space-y-3 p-5 text-center">
             <p className="font-display text-xl font-bold uppercase tracking-tight">{t("didntLoad")}</p>
             <p className="text-sm text-muted-foreground">{message}</p>
-            <Button onClick={onRetry} className="rounded-full px-5" data-testid="conn-retry-button">
+            <Button onClick={onRetry} className="px-5" data-testid="conn-retry-button">
               <RefreshCw className="h-4 w-4" aria-hidden /> {t("retry")}
             </Button>
           </CardContent>

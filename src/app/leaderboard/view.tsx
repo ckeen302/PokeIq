@@ -85,11 +85,12 @@ export async function LeaderboardView({ params }: { params: LeaderboardParams })
     { id: "connections", label: t("tabs.connections") },
     { id: "battle", label: t("tabs.battle") },
   ];
+  // Wider screens: the labels are 12px, so the tabs are spaced a little tighter to keep to one row.
   const tabRow = (
     <div className="flex flex-wrap justify-center gap-2 max-md:grid max-md:grid-cols-2" data-testid="leaderboard-tabs">
       {tabs.map((tab) => (
         <Link key={tab.id} href={`/leaderboard?board=${tab.id}`} className="max-md:block">
-          <Badge variant={tab.id === board ? "default" : "outline"} className="px-3 py-1 hover:bg-accent max-md:flex max-md:h-10 max-md:w-full max-md:justify-center max-md:text-[11px]">
+          <Badge variant={tab.id === board ? "selected" : "outline"} className="px-3 py-1 hover:bg-accent md:px-2 md:tracking-normal max-md:flex max-md:h-10 max-md:w-full max-md:justify-center max-md:text-[11px]">
             {tab.label}
           </Badge>
         </Link>

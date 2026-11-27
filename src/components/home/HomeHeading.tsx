@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 export function HomeHeading({ id, title, aside, action, className }: { id: string; title: React.ReactNode; aside?: React.ReactNode; action?: React.ReactNode; className?: string }) {
   return (
     <div className={cn("mb-2 flex flex-wrap items-end justify-between gap-x-4 gap-y-1 md:mb-5 md:border-b md:border-foreground/[0.07] md:pb-2", className)}>
-      <h2 id={id} className="text-xl font-bold leading-tight md:font-display md:text-2xl md:uppercase md:tracking-[0.06em]">
+      <h2 id={id} className="text-xl font-bold uppercase leading-tight md:font-display md:text-2xl md:tracking-[0.06em]">
         {title}
       </h2>
       {(aside || action) && (
