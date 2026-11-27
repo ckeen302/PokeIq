@@ -333,8 +333,13 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
   let stretch: Stretch | null = null;
   /** The vertical scale at scale s (s itself without a stretch). */
   const vsc = (s: number) => verticalScale(s, stretch);
-  /** The box the view stays on: the stretch box while stretched, else the dock's floor. */
-  const floorBox = (): Box | undefined => (stretch ? opts.home?.stretch : opts.home?.floor);
+  /**
+   * The phone's guess card (a wrapping map that opens on a home box, with no dock floor): zoomed right out, the map's own height
+   * fills it, as on GeoGuessr's, and it never pans past the map's top or bottom. The desktop dock keeps its own floor box.
+   */
+  const fillHeight = wrap && !!opts.home && !opts.home.floor;
+  /** The box the view stays on: the stretch box while stretched, else the dock's floor (the phone card's: the whole map). */
+  const floorBox = (): Box | undefined => (stretch ? opts.home?.stretch : opts.home?.floor) ?? (fillHeight ? [0, 0, atlas.W, atlas.H] : undefined);
   let selected: AtlasPlace | null = null;
   let anim = 0;
   let touched = false;
@@ -416,7 +421,12 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
     return lo;
   }
   const fitWorld = () => fitTo([0, 0, atlas.W, atlas.H]);
-  const whole = () => fitTo(bounds, locked ? 1.04 : 1);
+  const whole = (): AtlasView => {
+    const v = fitTo(bounds, locked ? 1.04 : 1);
+    if (!fillHeight || v.s >= minS) return v;
+    // The phone card's whole map is its whole height (the floor), about the map's middle.
+    return { s: minS, tx: W / 2 - ((bounds[0] + bounds[2]) / 2) * minS, ty: H / 2 - ((bounds[1] + bounds[3]) / 2) * vsc(minS) };
+  };
   /** Region names in the order they claim room: the map's own first (a locked region's), then main regions, side areas, islands. */
   const inBounds = (r: AtlasRegion) => r.x >= bounds[0] && r.x <= bounds[2] && r.y >= bounds[1] && r.y <= bounds[3];
   const regionOrder = [...atlas.regions].sort((a, b) => Number(inBounds(b)) - Number(inBounds(a)) || a.tier - b.tier);
@@ -478,9 +488,16 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
     stretch = stretchOf(opts.home, W, H);
     // Zoomed right out: the stretched whole world fills the canvas; else the floor box fits it (or a little past the whole map).
     minS = stretch ? stretch.s0 : opts.home?.floor ? fitTo(opts.home.floor).s * (opts.home.floorZoom ?? 1) : Math.min(fitWorld().s * 0.8, fitFloor);
+    // The phone's card is never zoomed out past the map's own top and bottom (GeoGuessr's): its width would let the world shrink
+    // to a strip in a sea of nothing, so the map's height is the floor, and the rest of the world is a pan away.
+    if (fillHeight) minS = Math.min(Math.max(minS, H / atlas.H), fitFloor);
     // Keep the whole map framed until the viewer starts exploring.
     if (!touched) Object.assign(view, home());
-    else Object.assign(view, { tx: W / 2 - cx * view.s, ty: H / 2 - cy * vsc(view.s) });
+    else {
+      // A floor raised by the resize (the phone card grown taller) zooms in about the middle, not the corner.
+      if (fillHeight) view.s = Math.max(view.s, minS);
+      Object.assign(view, { tx: W / 2 - cx * view.s, ty: H / 2 - cy * vsc(view.s) });
+    }
     clamp();
     draw();
     if (pending && W && H) {
