@@ -1,4 +1,5 @@
 import { geoCurveScore } from "@/lib/geo-curve";
+import { wrapDistance } from "@/lib/geo-wrap";
 import { HUNT_MAX_ROUND_SCORE, type HuntRegionId } from "./types";
 
 /**
@@ -28,12 +29,14 @@ export interface ScoreMap {
   perfectPx: number;
   /** A town-map square, in pixels: the reveal says how far the pin was in squares, as PokéGuessr does. */
   squarePx: number;
+  /** The world map's width in pixels when the map wraps sideways (the whole world's): distances go the short way round. */
+  period?: number;
 }
 
-/** Pixels from a pin to the nearest point of an area. */
-export function areaDistance(pin: Point, area: readonly Point[]): number {
+/** Pixels from a pin to the nearest point of an area (the short way round a map wrapping every `period` px). */
+export function areaDistance(pin: Point, area: readonly Point[], period?: number): number {
   let best = Infinity;
-  for (const [x, y] of area) best = Math.min(best, Math.hypot(pin[0] - x, pin[1] - y));
+  for (const [x, y] of area) best = Math.min(best, wrapDistance(pin[0], pin[1], x, y, period));
   return best;
 }
 
@@ -51,11 +54,11 @@ export interface PinScore {
 }
 
 /** The nearest spot to a pin: its index and the distance to its area (−1 and Infinity with no spots). */
-export function nearestSpot(pin: Point, spots: readonly ScoreSpot[]): { spot: number; px: number } {
+export function nearestSpot(pin: Point, spots: readonly ScoreSpot[], period?: number): { spot: number; px: number } {
   let spot = -1;
   let px = Infinity;
   spots.forEach((s, i) => {
-    const d = areaDistance(pin, s.area);
+    const d = areaDistance(pin, s.area, period);
     if (d < px) [px, spot] = [d, i];
   });
   return { spot, px };
@@ -64,7 +67,7 @@ export function nearestSpot(pin: Point, spots: readonly ScoreSpot[]): { spot: nu
 /** Scores one pin (null: the clock ran out with none down) against a Pokémon's spots. */
 export function scorePin(map: ScoreMap, pin: Point | null, spots: readonly ScoreSpot[]): PinScore {
   if (!pin || !spots.length) return { region: null, spot: null, distancePx: Infinity, squares: 0, score: 0 };
-  const { spot, px } = nearestSpot(pin, spots);
+  const { spot, px } = nearestSpot(pin, spots, map.period);
   const region = spots[spot].region;
   const score = geoCurveScore(px, map.diagonal(region), map.perfectPx, HUNT_MAX_ROUND_SCORE);
   const squares = score === HUNT_MAX_ROUND_SCORE ? 0 : Math.max(0.1, Math.round((px / map.squarePx) * 10) / 10);

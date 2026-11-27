@@ -1,5 +1,7 @@
 "use client";
 
+import { createContext, useContext } from "react";
+
 /**
  * Pokémon Hunt's marks on the PokéGuessr map (drawn inside GeoMap's SVG
  * layer, in screen pixels): the numbered pins a player drops, and the real
@@ -12,14 +14,24 @@ export const HUNT_PIN_COLORS = ["#3a8dde", "#e2306f", "#f39c12"] as const;
 export const huntPinColor = (i: number) => HUNT_PIN_COLORS[i % HUNT_PIN_COLORS.length];
 
 /**
+ * A wrapping world map (GeoMap) draws its marks again on the copies of the map
+ * beside it: those repeats carry no test ids, so each mark is found once (on
+ * the map's own copy).
+ */
+export const MapRepeat = createContext(false);
+/** A mark's test id, or none on a repeat. */
+export const useMarkId = (id: string) => (useContext(MapRepeat) ? undefined : id);
+
+/**
  * A numbered pin: PokéGuessr's teardrop with the pin's number in its head.
  * The pin being moved (`active`) wears a yellow halo; a new position replays the drop.
  */
 export function HuntPinMark({ x, y, n, active, delay = 0, dim }: { x: number; y: number; n: number; active?: boolean; delay?: number; dim?: boolean }) {
   const r = 12;
   const color = huntPinColor(n - 1);
+  const testId = useMarkId(`hunt-pin-${n}`);
   return (
-    <g transform={`translate(${x} ${y})`} opacity={dim ? 0.55 : 1} data-testid={`hunt-pin-${n}`} data-active={active ? "true" : undefined}>
+    <g transform={`translate(${x} ${y})`} opacity={dim ? 0.55 : 1} data-testid={testId} data-active={active ? "true" : undefined}>
       <g className="geo-drop" style={{ animationDelay: `${delay}s` }}>
         <ellipse cy={1} rx={5.5} ry={2.2} fill="rgba(0,0,0,0.35)" />
         {active && <circle cy={-r * 1.75} r={r * 1.25} fill="none" stroke="#ffd23c" strokeWidth={3} className="hunt-halo" />}
@@ -94,8 +106,9 @@ export interface HuntSpotMarkProps {
  */
 export function HuntSpotMark({ x, y, tag, delay = 0, found, showTag = true, tagLeft }: HuntSpotMarkProps) {
   const w = tag ? tagWidth(tag) : 0;
+  const testId = useMarkId("hunt-map-spot");
   return (
-    <g transform={`translate(${x} ${y})`} data-testid="hunt-map-spot" data-found={found ? "true" : undefined}>
+    <g transform={`translate(${x} ${y})`} data-testid={testId} data-found={found ? "true" : undefined}>
       <g className="hunt-pop" style={{ animationDelay: `${delay}s` }}>
         {found && <circle r={15} fill="none" stroke="#9be15d" strokeWidth={3} />}
         <circle r={11} fill="#120f24" stroke="#fff" strokeWidth={2} />

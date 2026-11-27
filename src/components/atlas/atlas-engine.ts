@@ -155,7 +155,28 @@ export interface AtlasOptions {
    * Without it (the atlas page) every dot always shows.
    */
   spacedDots?: boolean;
+  /**
+   * The whole world's guess map (GeoGuessr's): the map repeats sideways, so it
+   * drags left or right forever (up and down stay clamped). Copies of the same
+   * map are drawn at x ± the map's width; the map itself never moves. A tap on
+   * any copy lands on the world point it shows (x back in [0, W)), and camera
+   * moves glide to the nearest copy of their target. Ignored on a region's
+   * map (bounds).
+   */
+  wrapX?: boolean;
 }
+
+/** The copies of a map repeating sideways every `period` world px that lie across screen x 0 to `width` (plus `margin` px either side), as world-px shifts, left to right. */
+export function wrapShifts(v: AtlasView, width: number, period: number, margin = 0): number[] {
+  const step = period * v.s;
+  const a = Math.floor((-margin - v.tx) / step);
+  const b = Math.floor((width + margin - v.tx) / step);
+  const out: number[] = [];
+  for (let n = a; n <= b; n++) out.push(n * period);
+  return out;
+}
+/** x in [0, period). */
+export const wrapMod = (x: number, period: number) => ((x % period) + period) % period;
 
 export interface AtlasEngine {
   flyTo: (x: number, y: number, zoom: "region" | "place" | "world") => Promise<void>;
@@ -172,6 +193,9 @@ export interface AtlasEngine {
 }
 
 const SEA = "#165c96";
+/** A wrapping map's loop line (Google Maps' dashed boundaries): dark navy, faint, 6 px dashes with 5 px gaps. */
+const SEAM_COLOR = "rgba(8, 20, 44, 0.4)";
+const SEAM_DASH = [6, 5];
 /** A moving map is redrawn at full quality this long (ms) after it stops. */
 const MOTION_SETTLE_MS = 120;
 /** Spaced dots: a dot shows once its nearest neighbour is at least this many CSS px away on screen. */
@@ -291,6 +315,13 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
   const ctx = canvas.getContext("2d")!;
   const bounds: Box = opts.bounds ?? [0, 0, atlas.W, atlas.H];
   const locked = !!opts.bounds;
+  /** The map repeats sideways (see AtlasOptions.wrapX): every `period` world px. */
+  const wrap = !!opts.wrapX && !locked;
+  const period = atlas.W;
+  /** Labels and dots of a copy just off screen can still reach onto it: copies this many CSS px past either edge are drawn too. */
+  const WRAP_MARGIN = 160;
+  /** The copies to draw (world-px shifts, left to right): just the map itself unless it wraps. */
+  const shifts = (): number[] => (wrap && W > 0 ? wrapShifts(view, W, period, WRAP_MARGIN) : [0]);
   let W = 0;
   let H = 0;
   let dpr = 1;
@@ -413,7 +444,10 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
   function clamp() {
     view.s = Math.min(MAX_SCALE, Math.max(minS, view.s));
     const vs = vsc(view.s);
-    let cx = Math.min(atlas.W, Math.max(0, (W / 2 - view.tx) / view.s));
+    // A wrapping map pans sideways forever: the middle's x is only brought back onto the map itself (by whole widths, so nothing
+    // drawn moves), keeping tx small.
+    const rawCx = (W / 2 - view.tx) / view.s;
+    let cx = wrap ? wrapMod(rawCx, period) : Math.min(atlas.W, Math.max(0, rawCx));
     let cy = Math.min(atlas.H, Math.max(0, (H / 2 - view.ty) / vs));
     // With a floor (the guess map's dock), the view stays on that box: centred on it where the view is wider or taller than it
     // (zoomed right out, the whole world sits in the middle), never panned past its edges otherwise.
@@ -422,10 +456,11 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
       const [fx0, fy0, fx1, fy1] = floor;
       const hw = W / 2 / view.s;
       const hh = H / 2 / vs;
-      cx = fx1 - fx0 <= 2 * hw ? (fx0 + fx1) / 2 : Math.min(fx1 - hw, Math.max(fx0 + hw, cx));
+      if (!wrap) cx = fx1 - fx0 <= 2 * hw ? (fx0 + fx1) / 2 : Math.min(fx1 - hw, Math.max(fx0 + hw, cx));
       cy = fy1 - fy0 <= 2 * hh ? (fy0 + fy1) / 2 : Math.min(fy1 - hh, Math.max(fy0 + hh, cy));
     }
-    view.tx = W / 2 - cx * view.s;
+    // Normalised by whole widths, the view is drawn exactly as before (to the float): no snap.
+    view.tx = wrap ? view.tx + (rawCx - cx) * view.s : W / 2 - cx * view.s;
     view.ty = H / 2 - cy * vs;
   }
 
@@ -468,6 +503,7 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
   function draw() {
     const { s, tx, ty } = view;
     const vs = vsc(s);
+    const offs = shifts();
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.fillStyle = SEA;
     ctx.fillRect(0, 0, W, H);
@@ -480,13 +516,53 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
     want(ideal < 0 ? copies.length - 1 : ideal);
     if (levels.length) {
       const lvl = levels.find((l) => l.scale >= need) ?? levels[levels.length - 1];
-      ctx.drawImage(lvl.img, 0, 0, atlas.W, atlas.H);
+      // A wrapping map: the same decoded copy again at each width to either side that's on screen (the map's edges are open sea).
+      if (!wrap) ctx.drawImage(lvl.img, 0, 0, atlas.W, atlas.H);
+      else {
+        // Each copy draws only its part that's on screen (a couple of the picture's pixels past it, so the edges filter the
+        // same), so two copies across the seam cost what one map does.
+        const { width: iw, height: ih } = lvl.img as ImageBitmap;
+        const kx = iw / atlas.W;
+        const ky = ih / atlas.H;
+        const sy0 = Math.max(0, Math.floor((-ty / vs) * ky) - 2);
+        const sy1 = Math.min(ih, Math.ceil(((H - ty) / vs) * ky) + 2);
+        for (const off of offs) {
+          const sx0 = Math.max(0, Math.floor(((-tx / s) - off) * kx) - 2);
+          const sx1 = Math.min(iw, Math.ceil((((W - tx) / s) - off) * kx) + 2);
+          if (sx1 <= sx0 || sy1 <= sy0) continue;
+          ctx.drawImage(lvl.img, sx0, sy0, sx1 - sx0, sy1 - sy0, off + sx0 / kx, sy0 / ky, (sx1 - sx0) / kx, (sy1 - sy0) / ky);
+        }
+      }
       // Sharp enough for this view (or the biggest copy there is): tell the page once.
       const biggest = copies[copies.length - 1].width ? copies[copies.length - 1].width / atlas.W : 1;
       if (!sharp && sized() && (lvl.scale >= need || lvl.scale >= biggest)) {
         sharp = true;
         if (opts.onSharp) requestAnimationFrame(() => alive && opts.onSharp?.());
       }
+    }
+
+    // Where a wrapping map loops: a thin dashed line down each copy's edge (GeoGuessr's date line), in CSS px so it looks the
+    // same at every zoom, anchored to the map's top so its dashes move with the map. Under the dots, names and pins.
+    if (wrap) {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.save();
+      ctx.strokeStyle = SEAM_COLOR;
+      ctx.lineWidth = 1.25;
+      ctx.setLineDash(SEAM_DASH);
+      ctx.lineDashOffset = 0;
+      // Only the part on screen is stroked, starting a whole number of dashes down so the pattern stays put.
+      const dashStep = SEAM_DASH[0] + SEAM_DASH[1];
+      const y0 = ty < 0 ? ty + Math.floor(-ty / dashStep) * dashStep : ty;
+      const y1 = Math.min(H, atlas.H * vs + ty);
+      ctx.beginPath();
+      for (const off of [...offs, offs[offs.length - 1] + period]) {
+        const x = off * s + tx;
+        if (x < -2 || x > W + 2) continue;
+        ctx.moveTo(x, y0);
+        ctx.lineTo(x, y1);
+      }
+      ctx.stroke();
+      ctx.restore();
     }
 
     const f = s / REF_SCALE;
@@ -509,17 +585,20 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
         if (alpha <= 0) continue;
         // A round dot with a dark rim: 3 px in radius when it first shows, 5 px zoomed in.
         const r = dotRadius(s);
-        const px = m.x * s + tx;
         const py = m.y * vs + ty;
         ctx.globalAlpha = alpha;
-        ctx.fillStyle = city ? "#6e1626" : "#1d3878";
-        ctx.beginPath();
-        ctx.arc(px, py, r, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = city ? "#e2475b" : "#4d7ee8";
-        ctx.beginPath();
-        ctx.arc(px, py, r - 1.25, 0, Math.PI * 2);
-        ctx.fill();
+        for (const off of offs) {
+          const px = (m.x + off) * s + tx;
+          if (wrap && (px < -r || px > W + r)) continue;
+          ctx.fillStyle = city ? "#6e1626" : "#1d3878";
+          ctx.beginPath();
+          ctx.arc(px, py, r, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = city ? "#e2475b" : "#4d7ee8";
+          ctx.beginPath();
+          ctx.arc(px, py, r - 1.25, 0, Math.PI * 2);
+          ctx.fill();
+        }
         continue;
       }
       // Small dots from afar, full-size buildings up close.
@@ -527,14 +606,17 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
       const w = Math.max(m.w, px / s);
       const h = Math.max(m.h, px / s);
       const e = 2.5 / s;
-      ctx.fillStyle = city ? "#6e1626" : "#1d3878";
-      roundRect(m.x - w / 2 - e, m.y - h / 2 - e, w + 2 * e, h + 2 * e, 3 / s);
-      ctx.fill();
-      ctx.fillStyle = city ? "#e2475b" : "#4d7ee8";
-      roundRect(m.x - w / 2, m.y - h / 2, w, h, 2 / s);
-      ctx.fill();
-      ctx.fillStyle = "rgba(255,255,255,.35)";
-      ctx.fillRect(m.x - w / 2, m.y - h / 2, w, h * 0.32);
+      for (const off of offs) {
+        const x = m.x + off;
+        ctx.fillStyle = city ? "#6e1626" : "#1d3878";
+        roundRect(x - w / 2 - e, m.y - h / 2 - e, w + 2 * e, h + 2 * e, 3 / s);
+        ctx.fill();
+        ctx.fillStyle = city ? "#e2475b" : "#4d7ee8";
+        roundRect(x - w / 2, m.y - h / 2, w, h, 2 / s);
+        ctx.fill();
+        ctx.fillStyle = "rgba(255,255,255,.35)";
+        ctx.fillRect(x - w / 2, m.y - h / 2, w, h * 0.32);
+      }
     }
     ctx.globalAlpha = 1;
     // A dot still fading in or out draws again next frame.
@@ -545,11 +627,13 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.strokeStyle = "#fff";
       ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.arc(selected.x * s + tx, selected.y * vs + ty, 22 + 6 * s, 0, Math.PI * 2);
-      ctx.stroke();
+      for (const off of offs) {
+        ctx.beginPath();
+        ctx.arc((selected.x + off) * s + tx, selected.y * vs + ty, 22 + 6 * s, 0, Math.PI * 2);
+        ctx.stroke();
+      }
     }
-    drawLabels(f);
+    drawLabels(f, offs);
     if (locked) {
       // Everything outside the region's map is dimmed.
       const [x0, y0, x1, y1] = bounds;
@@ -566,7 +650,8 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
   }
 
   const widths = new Map<string, number>();
-  function drawLabels(f: number) {
+  /** `offs`: the copies on screen (world-px shifts, left to right); every label is tried on each, in that order, so a wrapping map's names are the same on every copy. */
+  function drawLabels(f: number, offs: number[]) {
     const { s, tx, ty } = view;
     const vs = vsc(s);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -582,6 +667,8 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
     const label = (text: string, wx: number, wy: number, font: string, size: number, dy: number, color: string, track = 0, dx = 0, keepIn = false, quiet = false): boolean => {
       let x = wx * s + tx + dx;
       const y = wy * vs + ty + dy;
+      // A wrapping map tries each name on every copy: those far off screen are skipped before they're measured.
+      if (wrap && (x < -WRAP_MARGIN || x > W + WRAP_MARGIN)) return false;
       // A quiet name whose place is off the map isn't drawn, rather than showing a sliver of it at the edge.
       if (quiet && (x < 0 || x > W || y < 0 || y > H)) return false;
       ctx.font = font.replace("SIZE", `${size}px`);
@@ -625,7 +712,7 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
     const local = opts.names;
     const nm = (name: string) => (local ? (local[name] ?? name) : name);
 
-    if (selected) label(nm(selected.name), selected.x, selected.y, `700 SIZE ${sans}, system-ui`, 15, -20, "#ffe08a");
+    if (selected) for (const off of offs) label(nm(selected.name), selected.x + off, selected.y, `700 SIZE ${sans}, system-ui`, 15, -20, "#ffe08a");
     if (f < 4.5) {
       for (const r of regionOrder) {
         const quiet = opts.quietLabels;
@@ -647,35 +734,36 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
         const down = quiet ? size * 1.6 : size * 1.35;
         const nudge: [number, number][] = quiet ? [[-size * 0.7, 0], [size * 0.7, 0]] : [];
         const spots: [number, number][] = r.tier === 1 ? [[0, 0], ...nudge, [0, -up], [0, down], [-size * 2.6, 0], [size * 2.6, 0]] : [[0, 0]];
-        spots.some(([dx, dy]) =>
-          label(
-            r.tier === 1 ? nm(r.name).toUpperCase() : nm(r.name),
-            r.x,
-            r.y,
-            `${quiet ? 500 : r.tier === 1 ? 700 : 600} SIZE ${display}, ${sans}, sans-serif`,
-            size,
-            size / 3 + dy,
-            r.tier === 1 ? "#ffffff" : "#d7e6f7",
-            quiet ? (r.tier === 1 ? 0.5 : 0.2) : r.tier === 1 ? 2 : 0.5,
-            dx,
-            true,
-            quiet
-          )
-        );
+        for (const off of offs)
+          spots.some(([dx, dy]) =>
+            label(
+              r.tier === 1 ? nm(r.name).toUpperCase() : nm(r.name),
+              r.x + off,
+              r.y,
+              `${quiet ? 500 : r.tier === 1 ? 700 : 600} SIZE ${display}, ${sans}, sans-serif`,
+              size,
+              size / 3 + dy,
+              r.tier === 1 ? "#ffffff" : "#d7e6f7",
+              quiet ? (r.tier === 1 ? 0.5 : 0.2) : r.tier === 1 ? 2 : 0.5,
+              dx,
+              true,
+              quiet
+            )
+          );
       }
     }
-    if (f >= 2.2) for (const p of atlas.places) if (p.kind === "town") label(nm(p.name), p.x, p.y, `600 SIZE ${sans}, system-ui`, f > 4 ? 13 : 11, -12, "#ffffff");
+    if (f >= 2.2) for (const p of atlas.places) if (p.kind === "town") for (const off of offs) label(nm(p.name), p.x + off, p.y, `600 SIZE ${sans}, system-ui`, f > 4 ? 13 : 11, -12, "#ffffff");
     // Routes before landmarks: where both can't fit, the route keeps its name.
     if (f >= 3.6) {
       for (const p of atlas.places) {
         if (p.kind !== "route") continue;
-        ROUTE_SPOTS.some(([dx, dy]) => label(routeText(nm(p.name)), p.x, p.y, `SIZE ${pixel}, monospace`, 10, dy, "#ffe2b5", 0, dx));
+        for (const off of offs) ROUTE_SPOTS.some(([dx, dy]) => label(routeText(nm(p.name)), p.x + off, p.y, `SIZE ${pixel}, monospace`, 10, dy, "#ffe2b5", 0, dx));
       }
     }
-    if (f >= 3.6) for (const p of atlas.places) if (p.kind === "landmark") label(nm(p.name), p.x, p.y, `600 SIZE ${sans}, system-ui`, 11, -10, "#cfe0ff");
+    if (f >= 3.6) for (const p of atlas.places) if (p.kind === "landmark") for (const off of offs) label(nm(p.name), p.x + off, p.y, `600 SIZE ${sans}, system-ui`, 11, -10, "#cfe0ff");
     if (f >= 6)
       for (const p of atlas.places)
-        p.inside?.forEach((b, i) => label(nm(b), p.x, p.y, `500 SIZE ${sans}, system-ui`, 11, 18 + i * 14, "#c9f2dc"));
+        for (const off of offs) p.inside?.forEach((b, i) => label(nm(b), p.x + off, p.y, `500 SIZE ${sans}, system-ui`, 11, 18 + i * 14, "#c9f2dc"));
   }
 
   /** Zoom by k about screen point (cx, cy): eased over a few frames, so wheel notches glide instead of jumping. */
@@ -726,6 +814,8 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
     zoomGoal = null;
     s2 = Math.min(MAX_SCALE, Math.max(minS, s2));
     const from = { ...view };
+    // A wrapping map glides to the copy of the target nearest where the view is, never back across the world.
+    if (wrap && W) wx += Math.round((W / 2 - from.tx) / from.s / period - wx / period) * period;
     return new Promise((done) => {
       if (reduceMotion || !W) {
         view.s = s2;
@@ -781,7 +871,9 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
 
   function pick(sx: number, sy: number) {
     // The world point drawn under the click, as the map is drawn now (stretched or not).
-    const [wx, wy] = worldOf({ ...view, k: vsc(view.s) / view.s }, sx, sy);
+    const [rx, wy] = worldOf({ ...view, k: vsc(view.s) / view.s }, sx, sy);
+    // A tap on any copy of a wrapping map is a tap on the map itself.
+    const wx = wrap ? wrapMod(rx, period) : rx;
     if (opts.onTap) return opts.onTap(wx, wy);
     if (!opts.onPick) return;
     const f = view.s / REF_SCALE;
@@ -804,6 +896,8 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
   // ---- pointer, pinch and wheel --------------------------------------------
   const pointers = new Map<number, { x: number; y: number }>();
   let drag: { x: number; y: number; tx: number; ty: number } | null = null;
+  /** A wrapping map's drag: the pointer's last few positions (CSS px, ms), for the fling when it's let go. */
+  const trail: { x: number; y: number; t: number }[] = [];
   let moved = false;
   let pinch: { d: number; s: number; tx: number; ty: number; cx: number; cy: number } | null = null;
 
@@ -816,6 +910,7 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
     zoomGoal = null;
     if (pointers.size === 1) {
       drag = { x: e.offsetX, y: e.offsetY, tx: view.tx, ty: view.ty };
+      trail.length = 0;
       moved = false;
     }
     if (pointers.size === 2) {
@@ -849,16 +944,57 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
       moving();
       view.tx = drag.tx + dx;
       view.ty = drag.ty + dy;
+      if (wrap) {
+        trail.push({ x: e.offsetX, y: e.offsetY, t: e.timeStamp });
+        if (trail.length > 8) trail.shift();
+      }
       clamp();
       requestDraw();
     }
   };
+  /**
+   * A wrapping map, let go mid-drag, carries on the way it was going and eases
+   * to a stop (GeoGuessr's), across the seam like any other pan: each frame is
+   * an ordinary pan, normalised by whole widths. Up and down stop at the edge.
+   */
+  function fling(upAt: number) {
+    const last = trail[trail.length - 1];
+    // Only a drag still moving when it was let go (a pause first, and it stays put).
+    if (reduceMotion || !last || upAt - last.t > 60) return;
+    const first = trail.find((p) => last.t - p.t <= 90) ?? last;
+    const dt = last.t - first.t;
+    if (dt < 8) return;
+    let vx = (last.x - first.x) / dt;
+    let vy = (last.y - first.y) / dt;
+    if (Math.hypot(vx, vy) < 0.25) return;
+    let prev = performance.now();
+    const step = (now: number) => {
+      if (!alive) return;
+      const ms = Math.min(40, now - prev);
+      prev = now;
+      moving();
+      const ty = view.ty;
+      view.tx += vx * ms;
+      view.ty += vy * ms;
+      clamp();
+      // Stopped at the top or bottom: no more drift that way.
+      if (Math.abs(view.ty - (ty + vy * ms)) > 0.5) vy = 0;
+      draw();
+      const decay = Math.exp(-ms / 325);
+      vx *= decay;
+      vy *= decay;
+      if (Math.hypot(vx, vy) > 0.02) anim = requestAnimationFrame(step);
+    };
+    cancelAnimationFrame(anim);
+    anim = requestAnimationFrame(step);
+  }
   const onUp = (e: PointerEvent) => {
     pointers.delete(e.pointerId);
     if (pointers.size < 2) pinch = null;
     if (!pointers.size) {
       canvas.style.cursor = "";
       if (drag && !moved) pick(e.offsetX, e.offsetY);
+      else if (drag && wrap) fling(e.timeStamp);
       drag = null;
     }
   };
