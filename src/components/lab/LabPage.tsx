@@ -10,14 +10,12 @@ import { serverT } from "@/i18n/server";
 import lab from "@/messages/lab";
 
 /** How wide an experience's screenshot is drawn on its card: half the page's width from md up (the hero's floating panels reuse the same file). */
-const CARD_IMAGE_SIZES =
-  "(min-width: 1184px) 564px, (min-width: 768px) 50vw, 100vw";
+const CARD_IMAGE_SIZES = "(min-width: 1184px) 564px, (min-width: 768px) 50vw, 100vw";
 /** Phones take a pre-sized copy of each screenshot (828 px wide, scripts/lab-phone-sizes.ts), so the server resizes nothing for them. */
 const PHONE = "(max-width: 639px)";
 const phoneImage = (src: string) => src.replace(/^\/lab\//, "/lab/phone/");
 /** A 1×1 transparent GIF: what the hero's floating panels (hidden on a phone) fetch on a phone, so they don't compete with the first card's picture. */
-const BLANK =
-  "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+const BLANK = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
 
 /**
  * /lab: a hero, then a grid of equal cards, one per 3D experience. The previews are
@@ -35,35 +33,14 @@ export function LabPage() {
   const lone = experiences.length % 2 === 1 ? experiences.length - 3 : -1;
   const shots = experiences.filter((e) => e.image);
   return (
-    <div
-      className="mx-auto max-w-6xl space-y-12 sm:space-y-16 max-sm:space-y-6"
-      data-testid="lab-page"
-    >
+    <div className="mx-auto max-w-6xl space-y-12 sm:space-y-16 max-sm:space-y-6" data-testid="lab-page">
       <LabHero shots={shots} />
-      <section
-        id="experiences"
-        className="scroll-mt-20 space-y-6 sm:space-y-8"
-        aria-labelledby="lab-experiences"
-      >
-        <HudHeading
-          index={1}
-          id="lab-experiences"
-          title={t("experiences")}
-          aside={t("experiencesAside")}
-          className="max-sm:sr-only"
-        />
+      <section id="experiences" className="scroll-mt-20 space-y-6 sm:space-y-8" aria-labelledby="lab-experiences">
+        <HudHeading index={1} id="lab-experiences" title={t("experiences")} aside={t("experiencesAside")} className="max-sm:sr-only" />
         {/* One grid of equal cards: the same width, the same picture and the same height in every row. */}
-        <div
-          className="grid grid-cols-1 gap-6 md:grid-cols-2 max-sm:gap-8"
-          data-testid="lab-grid"
-        >
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 max-sm:gap-8" data-testid="lab-grid">
           {experiences.map((e, i) => (
-            <LabCard
-              key={e.id}
-              experience={e}
-              priority={i === 0}
-              lone={i === lone}
-            />
+            <LabCard key={e.id} experience={e} priority={i === 0} lone={i === lone} />
           ))}
         </div>
       </section>
@@ -75,21 +52,9 @@ export function LabPage() {
 
 /** Where each screenshot floats in the hero (desktop), front to back. */
 const PANEL_POSES = [
-  {
-    className: "left-[6%] top-[30%] z-[3] w-[64%]",
-    transform: "rotateY(-16deg) rotateX(5deg)",
-    delay: "0s",
-  },
-  {
-    className: "right-[2%] top-[6%] z-[2] w-[52%]",
-    transform: "rotateY(-22deg) rotateX(7deg) translateZ(-60px)",
-    delay: "-2.4s",
-  },
-  {
-    className: "right-[4%] bottom-[4%] z-[1] w-[44%] lg:right-[1%]",
-    transform: "rotateY(-24deg) rotateX(4deg) translateZ(-120px)",
-    delay: "-4.8s",
-  },
+  { className: "left-[6%] top-[30%] z-[3] w-[64%]", transform: "rotateY(-16deg) rotateX(5deg)", delay: "0s" },
+  { className: "right-[2%] top-[6%] z-[2] w-[52%]", transform: "rotateY(-22deg) rotateX(7deg) translateZ(-60px)", delay: "-2.4s" },
+  { className: "right-[4%] bottom-[4%] z-[1] w-[44%] lg:right-[1%]", transform: "rotateY(-24deg) rotateX(4deg) translateZ(-120px)", delay: "-4.8s" },
 ];
 
 function LabHero({ shots }: { shots: LabExperience[] }) {
@@ -103,81 +68,44 @@ function LabHero({ shots }: { shots: LabExperience[] }) {
       <div className="relative grid gap-8 px-5 pb-10 pt-10 max-sm:px-4 max-sm:pb-14 max-sm:pt-12 sm:px-10 sm:pb-14 sm:pt-14 lg:min-h-[480px] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-center lg:gap-4 lg:py-16 lg:pl-14">
         <div className="relative z-10 space-y-5 max-sm:space-y-3">
           <p className="hud-label flex items-center gap-2 text-screen max-sm:hidden">
-            <span className="led h-1.5 w-1.5 text-success" aria-hidden />{" "}
-            {t("kicker")}
-            <span
-              className="rounded border border-primary/60 bg-primary/15 px-2 py-1 font-pixel text-[11px] uppercase leading-none tracking-wider text-primary"
-              data-testid="lab-beta"
-              title={t("betaTitle")}
-            >
-              {t("beta")}
-            </span>
+            <span className="led h-1.5 w-1.5 text-success" aria-hidden /> {t("kicker")}
+            <span className="rounded border border-primary/60 bg-primary/15 px-2 py-1 font-pixel text-[11px] uppercase leading-none tracking-wider text-primary" data-testid="lab-beta" title={t("betaTitle")}>{t("beta")}</span>
           </p>
           {/* Phones have no kicker line: the beta tag sits above the title. */}
           <p className="sm:hidden">
-            <span
-              className="rounded border border-primary/60 bg-primary/15 px-1.5 py-0.5 font-pixel text-[10px] uppercase leading-none tracking-wider text-primary"
-              title={t("betaTitle")}
-            >
-              {t("beta")}
-            </span>
+            <span className="rounded border border-primary/60 bg-primary/15 px-1.5 py-0.5 font-pixel text-[10px] uppercase leading-none tracking-wider text-primary" title={t("betaTitle")}>{t("beta")}</span>
           </p>
           <h1 className="lab-title font-display text-6xl font-bold uppercase leading-[0.9] tracking-tight sm:text-8xl">
             {t.rich("title", { b: (c) => <b>{c}</b> })}
           </h1>
           {/* Phones: one short line. */}
-          <p className="text-lg text-foreground/80 sm:hidden">
-            {t("linePhone")}
-          </p>
+          <p className="text-lg text-foreground/80 sm:hidden">{t("linePhone")}</p>
           <p className="max-w-md text-base text-foreground/80 sm:text-lg max-sm:hidden">
             {t("line")}
           </p>
           <div className="flex flex-wrap items-center gap-3 pt-1 max-sm:hidden">
-            <Link
-              href="#experiences"
-              className={buttonVariants({ size: "lg" })}
-            >
+            <Link href="#experiences" className={buttonVariants({ size: "lg" })}>
               {t("explore")} <ArrowDown className="h-4 w-4" aria-hidden />
             </Link>
-            <span className="hud-label text-muted-foreground">
-              {t("sound")}
-            </span>
+            <span className="hud-label text-muted-foreground">{t("sound")}</span>
           </div>
         </div>
 
         {/* Screenshots of the experiences, floating in perspective. */}
-        <div
-          className="lab-stack relative h-[230px] sm:h-[340px] lg:h-[400px] max-sm:hidden"
-          aria-hidden
-        >
+        <div className="lab-stack relative h-[230px] sm:h-[340px] lg:h-[400px] max-sm:hidden" aria-hidden>
           {shots.slice(0, 3).map((e, i) => {
             const pose = PANEL_POSES[i];
             return (
               <div
                 key={e.id}
                 className={cn("lab-panel", pose.className)}
-                style={
-                  {
-                    transform: pose.transform,
-                    animationDelay: pose.delay,
-                    "--lab-accent": e.accent,
-                  } as Vars
-                }
+                style={{ transform: pose.transform, animationDelay: pose.delay, "--lab-accent": e.accent } as Vars}
               >
                 {/* The same sizes as the experience's card below, so the browser downloads each screenshot once. */}
                 {/* Hidden on a phone: nothing to download there (an eager, hidden picture would hold up the first card's). */}
                 <picture>
                   <source media={PHONE} srcSet={BLANK} />
-                  <Image
-                    src={e.image!}
-                    alt=""
-                    width={1280}
-                    height={720}
-                    sizes={CARD_IMAGE_SIZES}
-                    loading="eager"
-                    fetchPriority="high"
-                    className="block aspect-video h-auto w-full object-cover"
-                  />
+                  <Image src={e.image!} alt="" width={1280} height={720} sizes={CARD_IMAGE_SIZES} loading="eager" fetchPriority="high" className="block aspect-video h-auto w-full object-cover" />
                 </picture>
               </div>
             );
@@ -188,26 +116,11 @@ function LabHero({ shots }: { shots: LabExperience[] }) {
   );
 }
 
-function LabCard({
-  experience: e,
-  priority,
-  lone,
-}: {
-  experience: LabExperience;
-  priority: boolean;
-  lone?: boolean;
-}) {
+function LabCard({ experience: e, priority, lone }: { experience: LabExperience; priority: boolean; lone?: boolean }) {
   const t = serverT(lab);
   const title = t(`cards.${e.id}.title`);
   return (
-    <article
-      className={cn(
-        "lab-card group relative",
-        lone && "md:col-span-2 md:mx-auto md:w-[calc(50%-0.75rem)]",
-      )}
-      style={{ "--lab-accent": e.accent } as Vars}
-      data-testid={`lab-card-${e.id}`}
-    >
+    <article className={cn("lab-card group relative", lone && "md:col-span-2 md:mx-auto md:w-[calc(50%-0.75rem)]")} style={{ "--lab-accent": e.accent } as Vars} data-testid={`lab-card-${e.id}`}>
       <div className="lab-glow flex h-full flex-col overflow-hidden rounded-xl border bg-card max-sm:overflow-visible max-sm:rounded-none max-sm:border-0 max-sm:bg-transparent max-sm:!shadow-none">
         {/* Every card's picture is the same 16:9 box, the screenshots' own shape: nothing is cropped or letterboxed. */}
         <Link
@@ -242,35 +155,17 @@ function LabCard({
         </Link>
         {/* The title and pitch share the same room on every card (a title's two lines and a pitch's four), so no card outgrows another. */}
         <div className="lab-card-text flex flex-1 flex-col gap-3 p-6 lg:p-8 max-sm:gap-1 max-sm:px-1 max-sm:pb-0 max-sm:pt-3">
-          <p className="hud-label lab-accent truncate max-sm:order-2 max-sm:font-sans max-sm:text-[15px] max-sm:normal-case max-sm:leading-snug max-sm:tracking-normal max-sm:!text-muted-foreground">
-            {t(`cards.${e.id}.kicker`)}
-          </p>
+          <p className="hud-label lab-accent truncate max-sm:order-2 max-sm:font-sans max-sm:text-[15px] max-sm:normal-case max-sm:leading-snug max-sm:tracking-normal max-sm:!text-muted-foreground">{t(`cards.${e.id}.kicker`)}</p>
           <div className="lab-card-copy flex flex-col gap-3 max-sm:order-1">
             <h2 className="lab-card-title font-display text-2xl font-bold uppercase tracking-tight lg:text-3xl">
               {/* On a phone the whole card is the link. */}
-              <Link
-                href={e.href}
-                className="hover:text-[color:hsl(var(--lab-accent))] max-sm:after:absolute max-sm:after:inset-0 max-sm:after:z-[4]"
-              >
-                {title}
-              </Link>
+              <Link href={e.href} className="hover:text-[color:hsl(var(--lab-accent))] max-sm:after:absolute max-sm:after:inset-0 max-sm:after:z-[4]">{title}</Link>
             </h2>
-            <p className="lab-card-pitch text-muted-foreground max-sm:hidden">
-              {t(`cards.${e.id}.pitch`)}
-            </p>
+            <p className="lab-card-pitch text-muted-foreground max-sm:hidden">{t(`cards.${e.id}.pitch`)}</p>
           </div>
           <div className="mt-auto pt-2 max-sm:hidden">
-            <Link
-              href={e.href}
-              className={buttonVariants({ size: "lg" })}
-              data-testid={`lab-open-${e.id}`}
-              aria-label={t("openLabel", { title })}
-            >
-              {t("open")}{" "}
-              <ArrowRight
-                className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
-                aria-hidden
-              />
+            <Link href={e.href} className={buttonVariants({ size: "lg" })} data-testid={`lab-open-${e.id}`} aria-label={t("openLabel", { title })}>
+              {t("open")} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
             </Link>
           </div>
         </div>
@@ -282,10 +177,7 @@ function LabCard({
 /** Pokémon Race until it has a screenshot: runners streaking down a night track. */
 function RacePreview() {
   return (
-    <span
-      className="lab-track absolute inset-0 block"
-      data-testid="lab-race-preview"
-    >
+    <span className="lab-track absolute inset-0 block" data-testid="lab-race-preview">
       <span className="lab-lanes" />
       <span className="lab-finish" />
       {[
@@ -293,11 +185,7 @@ function RacePreview() {
         ["calc(64% - 5px)", "3.1s", "-0.8s"],
         ["calc(78% - 5px)", "2.8s", "-1.6s"],
       ].map(([top, d, delay]) => (
-        <span
-          key={top}
-          className="lab-runner"
-          style={{ top, "--d": d, animationDelay: delay } as Vars}
-        />
+        <span key={top} className="lab-runner" style={{ top, "--d": d, animationDelay: delay } as Vars} />
       ))}
     </span>
   );
