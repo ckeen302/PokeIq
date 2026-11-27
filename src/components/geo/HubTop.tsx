@@ -502,7 +502,7 @@ function PartyTrio({ pk }: { pk: string }) {
   if (pk === "sil")
     return (
       <span
-        className="absolute bottom-[4%] right-[45%] h-[54%] aspect-[900/449] bg-white/[0.14] [.light_&]:bg-[#5a46d0]/[0.18]"
+        className="absolute bottom-[3%] right-[45%] h-[60%] aspect-[900/449] bg-white/[0.14] [.light_&]:bg-[#5a46d0]/[0.18]"
         style={{ maskImage: `url(${partyTrio.src})`, WebkitMaskImage: `url(${partyTrio.src})`, maskSize: "contain", WebkitMaskSize: "contain", maskRepeat: "no-repeat", WebkitMaskRepeat: "no-repeat", maskPosition: "center bottom", WebkitMaskPosition: "center bottom" }}
       />
     );
@@ -546,25 +546,25 @@ function Backdrop({ pattern, pulse }: { pattern: Pattern; pulse?: boolean }) {
       {pk && pattern === "party" && <PartyTrio pk={pk} />}
       {pk === "sil" && pattern === "classic" && (
         <span
-          className="absolute bottom-[4%] right-[44%] aspect-[641/640] h-[50%] bg-white/[0.16] [.light_&]:bg-[#5a46d0]/[0.2]"
+          className="absolute bottom-[3%] right-[43%] aspect-[641/640] h-[60%] bg-white/[0.16] [.light_&]:bg-[#5a46d0]/[0.2]"
           style={{ maskImage: `url(${classicExplorer.src})`, WebkitMaskImage: `url(${classicExplorer.src})`, maskSize: "contain", WebkitMaskSize: "contain", maskRepeat: "no-repeat", WebkitMaskRepeat: "no-repeat", maskPosition: "center bottom", WebkitMaskPosition: "center bottom" }}
         />
       )}
       {pk === "sil" && pattern === "daily" && (
         <span
-          className="absolute bottom-[4%] right-[47%] aspect-[877/560] h-[54%] bg-white/[0.16] [.light_&]:bg-[#5a46d0]/[0.2]"
+          className="absolute bottom-[3%] right-[47%] aspect-[877/560] h-[60%] bg-white/[0.16] [.light_&]:bg-[#5a46d0]/[0.2]"
           style={{ maskImage: `url(${dailyJirachi.src})`, WebkitMaskImage: `url(${dailyJirachi.src})`, maskSize: "contain", WebkitMaskSize: "contain", maskRepeat: "no-repeat", WebkitMaskRepeat: "no-repeat", maskPosition: "center bottom", WebkitMaskPosition: "center bottom" }}
         />
       )}
       {pk === "sil" && pattern === "ranked" && (
         <span
-          className="absolute bottom-[4%] right-[45%] aspect-[710/560] h-[56%] bg-white/[0.16] [.light_&]:bg-[#5a46d0]/[0.2]"
+          className="absolute bottom-[3%] right-[45%] aspect-[710/560] h-[60%] bg-white/[0.16] [.light_&]:bg-[#5a46d0]/[0.2]"
           style={{ maskImage: `url(${rankedPodium.src})`, WebkitMaskImage: `url(${rankedPodium.src})`, maskSize: "contain", WebkitMaskSize: "contain", maskRepeat: "no-repeat", WebkitMaskRepeat: "no-repeat", maskPosition: "center bottom", WebkitMaskPosition: "center bottom" }}
         />
       )}
       {pk === "sil" && pattern === "hunt" && (
         <span
-          className="absolute bottom-[4%] right-[45%] aspect-[597/640] h-[44%] bg-white/[0.16] [.light_&]:bg-[#5a46d0]/[0.2]"
+          className="absolute bottom-[3%] right-[43%] aspect-[597/640] h-[60%] bg-white/[0.16] [.light_&]:bg-[#5a46d0]/[0.2]"
           style={{ maskImage: `url(${huntDetective.src})`, WebkitMaskImage: `url(${huntDetective.src})`, maskSize: "contain", WebkitMaskSize: "contain", maskRepeat: "no-repeat", WebkitMaskRepeat: "no-repeat", maskPosition: "center bottom", WebkitMaskPosition: "center bottom" }}
         />
       )}
