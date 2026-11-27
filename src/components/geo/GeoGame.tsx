@@ -753,6 +753,7 @@ function GeoGameInner({
   /** The hub's Solo tile: opens the solo game's setup in place (and goes down to it), or folds it away again. */
   function toSolo() {
     if (soloOpen) return setSoloOpen(false);
+    closeSetups();
     setSoloOpen(true);
     window.setTimeout(() => scrollTo("solo"), 50);
   }
@@ -767,6 +768,7 @@ function GeoGameInner({
   }, []);
   function toHunt() {
     if (huntOpen) return setHuntOpen(false);
+    closeSetups();
     setHuntOpen(true);
     window.setTimeout(() => scrollTo("hunt"), 80);
   }
@@ -778,6 +780,7 @@ function GeoGameInner({
     window.setTimeout(() => document.getElementById("party")?.scrollIntoView({ block: "start" }), 300);
   }, []);
   function openParty() {
+    closeSetups();
     setPartyOpen(true);
     window.setTimeout(() => scrollTo("party"), 50);
   }
@@ -787,9 +790,18 @@ function GeoGameInner({
     if (/^#(duels|ranked)$/.test(window.location.hash)) setDuelsOpen(true);
   }, []);
   function openDuels(queue: DuelQueue) {
+    closeSetups();
     setDuelQueue(queue);
     setDuelsOpen(true);
     window.setTimeout(() => scrollTo("duels"), 50);
+  }
+
+  /** Only one mode's setup is open at a time: opening one folds away whichever was open before. */
+  function closeSetups() {
+    setSoloOpen(false);
+    setHuntOpen(false);
+    setPartyOpen(false);
+    setDuelsOpen(false);
   }
 
   useEffect(() => onEnding(phase === "results"), [phase, onEnding]);
