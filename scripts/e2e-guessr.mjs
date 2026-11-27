@@ -68,7 +68,10 @@ async function closeHowTo(p) {
 /** The solo setup (maps, games, rounds, difficulty) is folded under "Set up a game": opens it, trying again if a click lands before hydration. */
 /** On a phone the landing folds its modes into dropdowns: opens any that are shut, so their cards can be pressed. */
 async function openDrops(p) {
-  for (const bar of await p.locator('[data-testid^="hub-drop-"][aria-expanded="false"]').all()) if (await bar.isVisible().catch(() => false)) await bar.click().catch(() => undefined);
+  // Every bar, then each one's state: a filter on aria-expanded="false" would shift under the clicks (opening the first leaves the
+  // second at index 0, so the second was never opened).
+  for (const bar of await p.locator('[data-testid^="hub-drop-"]').all())
+    if ((await bar.getAttribute("aria-expanded").catch(() => null)) === "false" && (await bar.isVisible().catch(() => false))) await bar.click().catch(() => undefined);
 }
 
 async function openGeoSetup(p) {
@@ -645,23 +648,25 @@ async function dailyResume(width, height) {
   await page.waitForTimeout(6000);
   await page.goto(`${BASE}/pokeguessr`, { waitUntil: "networkidle" });
   const play = page.getByTestId("geo-daily-play");
-  await play.filter({ hasText: /Resume Daily #\d+/ }).waitFor({ timeout: 10_000 }).catch(async () => errors.push(`daily: the card doesn't offer to resume it ("${await play.innerText().catch(() => "?")}")`));
+  await play.filter({ hasText: /Resume Daily/ }).waitFor({ timeout: 10_000 }).catch(async () => errors.push(`daily: the card doesn't offer to resume it ("${await play.innerText().catch(() => "?")}")`));
   await play.click();
   after = await onRound2("going to another page and back");
   sameTime("going to another page and back", before, after);
 
   // Exit: the dialog says it's saved; Leave, a while on the hub, Resume: the same round and time again.
-  before = after;
   await page.locator("[data-testid=geo-exit]:visible").first().click();
   const dialog = page.getByTestId("geo-confirm-exit");
   await dialog.waitFor({ timeout: 5_000 });
   const said = await dialog.innerText();
   if (!/saved/i.test(said) || !/today/i.test(said)) errors.push(`daily: the Leave dialog doesn't say the Daily is saved for today ("${said}")`);
   await page.screenshot({ path: `${OUT}/guessr-daily-leave-${width}.png` });
+  // The clock runs on while the dialog is up (it stops on Leave): its time is read just before Leave.
+  const shown = await clock.innerText();
+  before = Number(shown.slice(0, 2)) * 60 + Number(shown.slice(3));
   await page.getByTestId("geo-leave").click();
   await page.getByTestId("geo-shell").waitFor({ state: "detached", timeout: 5_000 });
   await page.waitForTimeout(4000);
-  await play.filter({ hasText: /Resume Daily #\d+/ }).click();
+  await play.filter({ hasText: /Resume Daily/ }).click();
   after = await onRound2("Exit and Resume");
   sameTime("Exit and Resume", before, after);
 
@@ -909,7 +914,6 @@ async function royale(width, height) {
   step(`party: Battle Royale at ${tag}`);
   await red.goto(`${BASE}/pokeguessr?region=kanto`, { waitUntil: "networkidle" });
   await closeHowTo(red);
-  await red.getByTestId("geo-home-party").waitFor();
   await openDrops(red);
   await red.getByTestId("geo-home-party").click();
   await red.getByTestId("geo-party-new").waitFor();
@@ -1142,6 +1146,7 @@ async function crowd(width, height) {
   });
   await page.goto(`${BASE}/pokeguessr`, { waitUntil: "networkidle" });
   await closeHowTo(page);
+  await openDrops(page);
   await page.getByTestId("geo-daily-card").getByRole("button").first().click();
   for (let i = 0; i < 5; i++) {
     await shotLoaded(page);

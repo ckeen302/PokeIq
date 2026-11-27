@@ -74,7 +74,8 @@ async function guessrInput(page) {
   const play = page.getByTestId("geo-daily-card").getByRole("button").first();
   await play.waitFor();
   if (!(await play.isEnabled())) throw new Error("the Daily's Play button is disabled");
-  for (const bar of await page.locator('[data-testid^="hub-drop-"][aria-expanded="false"]').all()) if (await bar.isVisible().catch(() => false)) await bar.click();
+  for (const bar of await page.locator('[data-testid^="hub-drop-"]').all())
+    if ((await bar.getAttribute("aria-expanded")) === "false" && (await bar.isVisible().catch(() => false))) await bar.click();
   await page.getByTestId("geo-solo-setup").click();
   await page.getByRole("button", { name: /-round game/ }).first().waitFor({ timeout: 10_000 });
 }
