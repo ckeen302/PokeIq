@@ -9,13 +9,11 @@ import { LAB_CSS } from "./lab-css";
 import { serverT } from "@/i18n/server";
 import lab from "@/messages/lab";
 
-/** How wide an experience's screenshot is drawn on its card: half the page's width from md up (the hero's floating panels reuse the same file). */
+/** How wide an experience's screenshot is drawn on its card: half the page's width from md up. */
 const CARD_IMAGE_SIZES = "(min-width: 1184px) 564px, (min-width: 768px) 50vw, 100vw";
 /** Phones take a pre-sized copy of each screenshot (828 px wide, scripts/lab-phone-sizes.ts), so the server resizes nothing for them. */
 const PHONE = "(max-width: 639px)";
 const phoneImage = (src: string) => src.replace(/^\/lab\//, "/lab/phone/");
-/** A 1×1 transparent GIF: what the hero's floating panels (hidden on a phone) fetch on a phone, so they don't compete with the first card's picture. */
-const BLANK = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
 
 /**
  * /lab: a hero, then a grid of equal cards, one per 3D experience. The previews are
@@ -31,10 +29,9 @@ export function LabPage() {
   // The two history films share the last row; with an odd number of cards before them, the one left alone on the row
   // above sits centred instead of beside a gap.
   const lone = experiences.length % 2 === 1 ? experiences.length - 3 : -1;
-  const shots = experiences.filter((e) => e.image);
   return (
     <div className="mx-auto max-w-6xl space-y-12 sm:space-y-16 max-sm:space-y-6" data-testid="lab-page">
-      <LabHero shots={shots} />
+      <LabHero />
       <section id="experiences" className="scroll-mt-20 space-y-6 sm:space-y-8" aria-labelledby="lab-experiences">
         <HudHeading index={1} id="lab-experiences" title={t("experiences")} aside={t("experiencesAside")} className="max-sm:sr-only" />
         {/* One grid of equal cards: the same width, the same picture and the same height in every row. */}
@@ -50,23 +47,28 @@ export function LabPage() {
   );
 }
 
-/** Where each screenshot floats in the hero (desktop), front to back. */
-const PANEL_POSES = [
-  { className: "left-[6%] top-[30%] z-[3] w-[64%]", transform: "rotateY(-16deg) rotateX(5deg)", delay: "0s" },
-  { className: "right-[2%] top-[6%] z-[2] w-[52%]", transform: "rotateY(-22deg) rotateX(7deg) translateZ(-60px)", delay: "-2.4s" },
-  { className: "right-[4%] bottom-[4%] z-[1] w-[44%] lg:right-[1%]", transform: "rotateY(-24deg) rotateX(4deg) translateZ(-120px)", delay: "-4.8s" },
-];
+/** The hero's picture: the lab's research team (Gengar taking notes, Alakazam, Porygon scanning) studying a sleeping Mewtwo, by night and by day. */
+const HERO_ART = { dark: "/lab/hero-dark.webp", light: "/lab/hero-light.webp" } as const;
 
-function LabHero({ shots }: { shots: LabExperience[] }) {
+function LabHero() {
   const t = serverT(lab);
   return (
     <section
-      className="lab-hero dark-scope relative -mx-4 -mt-8 overflow-hidden border-b border-screen/25 sm:mx-0 sm:mt-0 sm:rounded-2xl sm:border"
+      className="lab-hero dark-scope relative -mx-4 -mt-8 overflow-hidden border-b border-screen/25 sm:mx-0 sm:mt-0 sm:rounded-2xl sm:border lg:aspect-[2.17/1]"
       data-testid="lab-hero"
     >
-      <div className="lab-floor" aria-hidden />
-      <div className="relative grid gap-8 px-5 pb-10 pt-10 max-sm:px-4 max-sm:pb-14 max-sm:pt-12 sm:px-10 sm:pb-14 sm:pt-14 lg:min-h-[480px] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-center lg:gap-4 lg:py-16 lg:pl-14">
-        <div className="relative z-10 space-y-5 max-sm:space-y-3">
+      {/* The scene: on a phone or tablet its own picture above the title; from lg, the whole card behind it, set a little to the right so the
+          title and copy sit on its calm, faded left side (its left edge feathers into the card). Night or day, as the theme is. */}
+      <div className="lab-hero-art relative w-full max-sm:aspect-video sm:max-lg:aspect-[2.2/1] lg:absolute lg:inset-y-0 lg:left-[8%] lg:w-full" aria-hidden>
+        {(["dark", "light"] as const).map((m) => (
+          <picture key={m} className={m === "dark" ? "contents [.light_&]:hidden" : "hidden [.light_&]:contents"}>
+            <source media={PHONE} srcSet={phoneImage(HERO_ART[m])} />
+            <Image src={HERO_ART[m]} alt="" fill priority={m === "dark"} loading="eager" sizes="(min-width: 1184px) 1152px, 100vw" className="object-cover object-center" />
+          </picture>
+        ))}
+      </div>
+      <div className="relative z-10 flex h-full items-center px-5 pb-10 pt-6 max-sm:px-4 max-sm:pb-8 max-sm:pt-5 sm:px-10 sm:pb-12 sm:pt-8 lg:py-0 lg:pl-12">
+        <div className="space-y-5 max-sm:space-y-3 lg:max-w-[22rem]">
           <p className="hud-label flex items-center gap-2 text-screen max-sm:hidden">
             <span className="led h-1.5 w-1.5 text-success" aria-hidden /> {t("kicker")}
             <span className="rounded border border-primary/60 bg-primary/15 px-2 py-1 font-pixel text-[11px] uppercase leading-none tracking-wider text-primary" data-testid="lab-beta" title={t("betaTitle")}>{t("beta")}</span>
@@ -89,33 +91,6 @@ function LabHero({ shots }: { shots: LabExperience[] }) {
             </Link>
             <span className="hud-label text-muted-foreground">{t("sound")}</span>
           </div>
-        </div>
-
-        {/* Screenshots of the experiences, floating in perspective. */}
-        <div className="lab-stack relative h-[230px] sm:h-[340px] lg:h-[400px] max-sm:hidden" aria-hidden>
-          {shots.slice(0, 3).map((e, i) => {
-            const pose = PANEL_POSES[i];
-            return (
-              <div
-                key={e.id}
-                className={cn("lab-panel", pose.className)}
-                style={{ transform: pose.transform, animationDelay: pose.delay, "--lab-accent": e.accent } as Vars}
-              >
-                {/* The same sizes as the experience's card below, so the browser downloads each screenshot once. */}
-                {/* Hidden on a phone: nothing to download there (an eager, hidden picture would hold up the first card's). */}
-                <picture className={cn(e.imageLight && "[.light_&]:hidden")}>
-                  <source media={PHONE} srcSet={BLANK} />
-                  <Image src={e.image!} alt="" width={1280} height={720} sizes={CARD_IMAGE_SIZES} loading="eager" fetchPriority="high" className="block aspect-video h-auto w-full object-cover" />
-                </picture>
-                {e.imageLight && (
-                  <picture className="hidden [.light_&]:block">
-                    <source media={PHONE} srcSet={BLANK} />
-                    <Image src={e.imageLight} alt="" width={1280} height={720} sizes={CARD_IMAGE_SIZES} className="block aspect-video h-auto w-full object-cover" />
-                  </picture>
-                )}
-              </div>
-            );
-          })}
         </div>
       </div>
     </section>

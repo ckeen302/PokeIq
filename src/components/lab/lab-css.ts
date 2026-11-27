@@ -5,10 +5,9 @@
  * of it stops for prefers-reduced-motion.
  */
 export const LAB_CSS = `
-.lab-hero{background:
-  radial-gradient(70% 60% at 78% 30%, hsl(var(--screen) / .22), transparent 70%),
-  radial-gradient(55% 55% at 8% 100%, hsl(var(--primary) / .18), transparent 70%),
-  linear-gradient(180deg, hsl(250 50% 5%), hsl(252 46% 8%) 62%, hsl(252 50% 5%));}
+.lab-hero{background:#070a17}
+/* From lg the scene sits a little right of the card's edge: its left edge feathers into the card's own colour (the picture's). */
+@media (min-width:1024px){.lab-hero-art{-webkit-mask-image:linear-gradient(90deg,transparent,#000 9%);mask-image:linear-gradient(90deg,transparent,#000 9%)}}
 .lab-floor{position:absolute;left:-60%;right:-60%;bottom:-1px;height:34%;transform-origin:50% 100%;transform:perspective(420px) rotateX(64deg);
   background-image:linear-gradient(hsl(var(--screen) / .42) 1.5px,transparent 1.5px),linear-gradient(90deg,hsl(var(--screen) / .32) 1.5px,transparent 1.5px);
   background-size:64px 64px;animation:lab-floor 2.6s linear infinite;
@@ -21,9 +20,7 @@ export const LAB_CSS = `
   --primary:340 80% 48%;--primary-fill:340 80% 48%;--primary-foreground:0 0% 100%;--primary-shadow:338 70% 36%;--secondary:248 32% 91%;
   --secondary-foreground:248 42% 11%;--secondary-shadow:248 24% 76%;--muted:248 32% 93%;--muted-foreground:248 14% 36%;--accent:248 32% 91%;
   --accent-foreground:248 42% 11%;--success:154 70% 28%;--screen:262 72% 54%;--border:248 26% 86%;--input:248 26% 80%;--ring:262 72% 54%;
-  --shade:248 32% 78%;--tint-ink:45%;color:hsl(var(--foreground));
-  background:radial-gradient(70% 60% at 78% 30%, hsl(262 85% 72% / .28), transparent 70%),radial-gradient(55% 55% at 8% 100%, hsl(340 85% 66% / .18), transparent 70%),
-  linear-gradient(180deg,#ffffff,#f3efff 62%,#e9e2ff);}
+  --shade:248 32% 78%;--tint-ink:45%;color:hsl(var(--foreground));background:#ededfb;}
 :root.light .lab-hero .lab-floor{background-image:linear-gradient(hsl(var(--screen) / .3) 1.5px,transparent 1.5px),linear-gradient(90deg,hsl(var(--screen) / .22) 1.5px,transparent 1.5px)}
 :root.light .lab-title{text-shadow:0 2px 18px hsl(var(--screen) / .22)}
 :root.light .lab-title b{text-shadow:0 2px 18px hsl(var(--primary) / .3)}
