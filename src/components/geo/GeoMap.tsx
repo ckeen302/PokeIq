@@ -3,8 +3,9 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { Loader2, Maximize2, Minus, Plus } from "lucide-react";
 import { WORLD_REGION, type GeoRegionInfo } from "@/lib/geo-types";
-import { createAtlas, loadAtlas, screenOf, wrapMod, wrapShifts, type AtlasData, type AtlasEngine, type AtlasView, type Box } from "@/components/atlas/atlas-engine";
+import { createAtlas, loadAtlas, screenOf, wrapShifts, type AtlasData, type AtlasEngine, type AtlasView, type Box } from "@/components/atlas/atlas-engine";
 import { preloadImage } from "@/lib/preload";
+import { GEO_WORLD_PERIOD, wrapDelta, wrapNear } from "@/lib/geo-wrap";
 import { cn } from "@/lib/utils";
 import { crowdColor, type GeoCrowdRound } from "@/lib/geo-crowd";
 import { useT } from "@/i18n/client";
@@ -176,6 +177,13 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
   // Only a region's own crop is locked (framed, the rest dimmed). The world and every map drawn on the whole world (a themed map,
   // like the Weekly's) are the same whole world: one crop, one zoom, the same names and dots.
   const locked = region.id !== WORLD_REGION && region.map.src !== WORLD_MAP;
+  /** A whole-world map's width in its 0–1 coordinates: it wraps, and a guess is scored (and drawn) the short way round (lib/geo-wrap). */
+  const xPeriod = locked ? undefined : GEO_WORLD_PERIOD;
+  /** A revealed round's answer, on the copy of the map nearest its guess: their line is the short way the server measured. */
+  const answerOf = (r: RevealedRound): [number, number] => {
+    const [fx, fy] = flagAt(r.answer);
+    return [r.guess ? wrapNear(fx, r.guess.x, xPeriod) : fx, fy];
+  };
   /**
    * First paint: the region's own crop of the map (a few dozen KB), or a small
    * copy of the world, drawn over the canvas until the 580 KB world map has
@@ -244,8 +252,7 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
           h.picks.forEach((p, i) => {
             if (!p) return;
             // On a wrapping map the pin's nearest copy to the tap (the tap is on the map itself, its x in [0, W)).
-            const ddx = x0 + p.x * (x1 - x0) - wx;
-            const dx = (locked ? ddx : wrapMod(ddx + atlas.W / 2, atlas.W) - atlas.W / 2) * s;
+            const dx = wrapDelta(x0 + p.x * (x1 - x0) - wx, locked ? undefined : atlas.W) * s;
             const dy = (y0 + p.y * (y1 - y0) - wy) * sy;
             const d = Math.min(Math.hypot(dx, dy), Math.hypot(dx, dy + 21));
             if (d < best) {
@@ -299,16 +306,24 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
   useEffect(() => {
     const e = engine.current;
     if (!e || !(revealed.length || spots?.length)) return;
-    const pts = framed.flatMap((r) => [toWorld(...flagAt(r.answer)),...(r.guess ? [toWorld(r.guess.x, r.guess.y)] : [])]);
+    // On a whole-world map everything is framed on the copies nearest the first guess (or Hunt pin), each answer beside its
+    // guess, so a line across the join is framed as drawn, not the whole world the long way round.
+    const first = framed.find((r) => r.guess)?.guess ?? links?.[0]?.pin;
+    const near = (x: number) => (first ? wrapNear(x, first.x, xPeriod) : x);
+    const pts = framed.flatMap((r) => {
+      const [ax, ay] = answerOf(r);
+      const k = r.guess ? near(r.guess.x) - r.guess.x : near(ax) - ax;
+      return [toWorld(ax + k, ay), ...(r.guess ? [toWorld(r.guess.x + k, r.guess.y)] : [])];
+    });
     // A hunt's reveal frames every real spot and every pin.
-    for (const p of [...(spots ?? []), ...(links ?? []).map((l) => l.pin)]) pts.push(toWorld(p.x, p.y));
+    for (const p of [...(spots ?? []), ...(links ?? []).map((l) => l.pin)]) pts.push(toWorld(near(p.x), p.y));
     // A crowd map frames the busiest cells too (those holding most of the pins).
     if (density) {
       const total = density.cells.reduce((s, c) => s + c[2], 0);
       let held = 0;
       for (const [x, y, n] of density.cells) {
         if (held >= total * 0.7) break;
-        pts.push(toWorld(x, y));
+        pts.push(toWorld(near(x), y));
         held += n;
       }
     }
@@ -409,7 +424,10 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
               <MapRepeat.Provider key={off} value={repeat}>
                 {density && density.cells.length > 0 && <Density density={density} toScreen={ts} cell={Math.max(density.cw * bw, density.ch * bh) * view.s} id={cid} />}
                 {revealed.map((r, i) => {
-                  const [ax, ay] = ts(...flagAt(r.answer));
+                  const [fx, fy] = answerOf(r);
+                  // The answer's shift onto the copy beside the guess (0, or a whole map's width): its area goes with it.
+                  const sh = fx - flagAt(r.answer)[0];
+                  const [ax, ay] = ts(fx, fy);
                   const g = r.guess ? ts(r.guess.x, r.guess.y) : null;
                   // Duels reveal each trainer's guess as its own round on one shared answer: draw its area once.
                   const again = i > 0 && revealed[i - 1].answer === r.answer;
@@ -420,7 +438,7 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
                         {/* Faded as one layer, so overlapping dots read as one even patch. */}
                         <g opacity={0.5}>
                           {r.answer.mask.map(([x, y], k) => {
-                            const [mx, my] = ts(x, y);
+                            const [mx, my] = ts(x + sh, y);
                             return <circle key={k} cx={mx} cy={my} r={areaR} className="fill-success" />;
                           })}
                         </g>
@@ -449,7 +467,7 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
                 })}
                 {/* Pokémon Hunt's reveal: the lines first, then the spots, then the pins on top. */}
                 {spots && (
-                  <HuntSpots spots={spots} links={links ?? []} toScreen={ts} width={stageRef.current?.clientWidth ?? 0} maskId={cid} areaR={areaR} />
+                  <HuntSpots spots={spots} links={links ?? []} toScreen={ts} width={stageRef.current?.clientWidth ?? 0} maskId={cid} areaR={areaR} period={xPeriod} />
                 )}
                 {picks?.map((p, i) => {
                   if (!p) return null;
@@ -488,7 +506,7 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
 }
 
 /** Pokémon Hunt's reveal layer: each pin's line to its spot drawing itself, the spots' flags and tags, and the numbered pins. */
-function HuntSpots({ spots, links, toScreen, width, maskId, areaR }: { spots: HuntMapSpot[]; links: HuntMapLink[]; toScreen: (x: number, y: number) => [number, number]; width: number; maskId: string; areaR: number }) {
+function HuntSpots({ spots, links, toScreen, width, maskId, areaR, period }: { spots: HuntMapSpot[]; links: HuntMapLink[]; toScreen: (x: number, y: number) => [number, number]; width: number; maskId: string; areaR: number; period?: number }) {
   const at = spots.map((p) => toScreen(p.x, p.y));
   const tags = spotTagPlacement(spots.map((p, i) => ({ x: at[i][0], y: at[i][1], tag: p.tag, found: p.found })), width);
   const layerId = useMarkId("hunt-reveal-layer");
@@ -509,8 +527,10 @@ function HuntSpots({ spots, links, toScreen, width, maskId, areaR }: { spots: Hu
         ) : null
       )}
       {links.map((l, i) => {
-        const s = at[l.spot];
-        if (!s) return null;
+        const spot = spots[l.spot];
+        if (!spot) return null;
+        // The spot's copy nearest the pin: the short way the server scored it (lib/geo-wrap).
+        const s = toScreen(wrapNear(spot.x, l.pin.x, period), spot.y);
         const [gx, gy] = toScreen(l.pin.x, l.pin.y);
         const mask = `${maskId}-hunt-${i}`;
         return (

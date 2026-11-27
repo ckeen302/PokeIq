@@ -8,6 +8,7 @@ import geoRetired from "@/data/geo-retired.json";
 import shotSpots2d from "@/data/geo-shot-spots.json";
 import shotSpots3d from "@/data/geo-shot-spots-3d.json";
 import { geoSpotScore } from "@/lib/geo-spot-score";
+import { GEO_WORLD_PERIOD, wrapDistance } from "@/lib/geo-wrap";
 import {
   DEFAULT_DIFFICULTY,
   fitsMode,
@@ -684,11 +685,18 @@ export function worldPointOf(spec: Pick<GeoSpec, "region">, x: number, y: number
   return [r((x0 + x * (x1 - x0)) / W), r((y0 + y * (y1 - y0)) / H)];
 }
 
+/** A whole-world map (the world, a themed map) wraps sideways: its distances go the short way across the join (lib/geo-wrap). */
+const periodOf = (region: Region) => (isWorldwide(region.id) ? GEO_WORLD_PERIOD : undefined);
+
+/** Distance in map pixels between two of a map's 0–1 points (the short way round on a whole-world map). */
+function mapPx(region: Region, x: number, y: number, px: number, py: number): number {
+  return wrapDistance(x, y, px, py, periodOf(region), region.map.width, region.map.height);
+}
+
 /** Distance in map pixels from (x, y) to the nearest point of a location's area. */
 function nearestPx(region: Region, location: Location, x: number, y: number): number {
-  const { width, height } = region.map;
   let px = Infinity;
-  for (const [mx, my] of location.mask) px = Math.min(px, Math.hypot((x - mx) * width, (y - my) * height));
+  for (const [mx, my] of location.mask) px = Math.min(px, mapPx(region, x, y, mx, my));
   return px;
 }
 
@@ -719,11 +727,11 @@ export function measureGuess(spec: Pick<GeoSpec, "region">, round: PlannedRound,
   // Themed maps share the world map, so a pin's region is read from every place on it, not just the theme's.
   const hit = isWorldwide(region.id) ? regionAt(regionOf(WORLD_REGION)!, x, y) === groupOf(location.region) : px / diagonal <= STREAK_RADIUS;
   // For the behaviour flags: how close to the place itself (its pin or its area's edge) the guess was, in map pixels.
-  const toPin = Math.hypot((x - location.pin[0]) * width, (y - location.pin[1]) * height);
+  const toPin = mapPx(region, x, y, location.pin[0], location.pin[1]);
   // A shot with a verified spot: graded by distance to the spot, the area's curve as a floor (lib/geo-spot-score).
   const spot = spotOn(region, shot.id);
   if (spot) {
-    const toSpot = Math.hypot((x - spot[0]) * width, (y - spot[1]) * height);
+    const toSpot = mapPx(region, x, y, spot[0], spot[1]);
     const score = geoSpotScore(toSpot, areaScore);
     const squares = score === GEO_MAX_ROUND_SCORE ? 0 : Math.max(0.1, Math.round((toSpot / region.squarePx) * 10) / 10);
     return { score, hit, squares, px: Math.round(Math.min(toSpot, toPin, px) * 10) / 10 };
