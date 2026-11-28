@@ -3,7 +3,8 @@
  * Violet's index outlines its whole route ("Victory Road, Part 7: Cortondo, South Province (Area Six), Alfornada,
  * Alfornada Gym Test…"), but Bulbapedia has written the pages of its first 15 parts only. Each summary item here names
  * the boss it is and the Bulbapedia page whose {{Party}} has that battle; the cap is that party's highest level, as
- * for a walkthrough's own parties. An item with no page is a boss whose battle data Bulbapedia doesn't give: no cap.
+ * for a walkthrough's own parties. A wild boss (a Noble, a Titan) takes the highest level of the {{Pokémon}} boxes
+ * its page shows that battle with instead. An item with neither is a boss whose battle data Bulbapedia doesn't give: no cap.
  */
 import type { NuzBoss } from "../../../src/lib/nuzlocke/model";
 import { pages, pageUrl, plain, templates } from "./bulbapedia";
@@ -18,19 +19,26 @@ interface Ref {
   under?: RegExp;
   /** Take the badge from the page's infobox (a Gym page). */
   badge?: boolean;
+  /** A wild boss's battle: the page's {{Pokémon}} boxes under this heading (with a caption matching `caption`). */
+  boxes?: { page: string; under: RegExp; caption: RegExp };
 }
 
 export const SUMMARY_BOSSES: Record<string, Record<string, Ref[]>> = {
   // The walkthrough shows Kleavor's, Lilligant's and Arcanine's frenzies with a Pokémon box (their level); Electrode's
-  // and Avalugg's with none.
-  "legends-arceus": Object.fromEntries(["Kleavor", "Lilligant", "Arcanine", "Electrode", "Avalugg"].map((n) => [`Frenzied ${n}`, [{ name: `Noble ${n}` }]])),
+  // and Avalugg's with none, so theirs come from their arena's page (the "Mission" box, not the post-game "Rematch").
+  "legends-arceus": {
+    ...Object.fromEntries(["Kleavor", "Lilligant", "Arcanine"].map((n) => [`Frenzied ${n}`, [{ name: `Noble ${n}` }]])),
+    "Frenzied Electrode": [{ name: "Noble Electrode", boxes: { page: "Moonview Arena", under: /^Noble Pokémon$/, caption: /^Mission$/ } }],
+    "Frenzied Avalugg": [{ name: "Noble Avalugg", boxes: { page: "Icepeak Arena", under: /^Noble Pokémon$/, caption: /^Mission$/ } }],
+  },
   "scarlet-violet": {
     "Montenevera Gym Test": [{ name: "Ryme", page: "Montenevera Gym", trainer: "Ryme", under: /^Gym battle$/, badge: true }],
-    "The Quaking Earth Titan": [{ name: "Titan Great Tusk (Scarlet) / Iron Treads (Violet)" }],
+    // The Titans' battles are on the Titan Pokémon page: the captioned boxes are the Titans (the others, their allies).
+    "The Quaking Earth Titan": [{ name: "Titan Great Tusk (Scarlet) / Iron Treads (Violet)", boxes: { page: "Titan Pokémon", under: /^The Quaking Earth Titan$/, caption: /\S/ } }],
     "Alfornada Gym Test": [{ name: "Tulip", page: "Alfornada Gym", trainer: "Tulip", under: /^Gym battle$/, badge: true }],
     "Glaseado Gym Test": [{ name: "Grusha", page: "Glaseado Gym", trainer: "Grusha", under: /^Gym battle$/, badge: true }],
     "Team Star's Fairy Crew": [{ name: "Team Star Ortega", page: "Ortega", trainer: "Ortega", under: /^First battle$/ }],
-    "The False Dragon Titan": [{ name: "Titan Tatsugiri and Dondozo" }],
+    "The False Dragon Titan": [{ name: "Titan Tatsugiri and Dondozo", boxes: { page: "Titan Pokémon", under: /^The False Dragon Titan$/, caption: /\S/ } }],
     "Team Star's Fighting Crew": [{ name: "Team Star Eri", page: "Eri", trainer: "Eri", under: /^First battle$/ }],
     "Elite Four": ["Rika", "Poppy", "Larry", "Hassel"].map((n) => ({ name: `Elite Four ${n}`, page: "Pokémon League (Paldea)", trainer: n, under: /^Elite Test room$/ })),
     "Top Champion Geeta": [{ name: "Top Champion Geeta", page: "Pokémon League (Paldea)", trainer: "Geeta", under: /^Rooftop$/ }],
@@ -48,13 +56,28 @@ export interface SummaryBosses {
 export async function summaryBosses(game: string): Promise<SummaryBosses> {
   const cfg = SUMMARY_BOSSES[game] ?? {};
   const refs = Object.values(cfg).flat();
-  const got = await pages([...new Set(refs.flatMap((r) => (r.page ? [r.page] : [])))]);
+  const got = await pages([...new Set(refs.flatMap((r) => [...(r.page ? [r.page] : []), ...(r.boxes ? [r.boxes.page] : [])]))]);
   const byItem = new Map<string, NuzBoss[]>();
   const urls = new Set<string>();
   const notes: string[] = [];
   for (const [item, rs] of Object.entries(cfg)) {
     const out: NuzBoss[] = [];
     for (const r of rs) {
+      if (r.boxes) {
+        const { page, under, caption } = r.boxes;
+        const text = got.get(page)?.text;
+        if (!text) throw new Error(`${game}: no Bulbapedia page ${page} for ${r.name}`);
+        const heads = [...text.matchAll(/^(={2,6})\s*(.*?)\s*\1\s*$/gm)].map((h) => ({ at: h.index!, name: plain(h[2]) }));
+        const levels = templates(text)
+          .filter((t) => /^Pokémon$/i.test(t.name) && under.test(heads.filter((h) => h.at < t.start).pop()?.name ?? "") && caption.test(plain(t.named.caption ?? "")))
+          .map((t) => Number(plain(t.named.level ?? "").match(/\d+/)?.[0] ?? NaN))
+          .filter(Number.isFinite);
+        if (!levels.length) throw new Error(`${game}: no boxes for ${r.name} under ${under} on ${page}`);
+        out.push({ name: r.name, cap: Math.max(...levels) });
+        urls.add(pageUrl(page));
+        notes.push(`${r.name}: cap ${Math.max(...levels)} from ${pageUrl(page)} (its battle's boxes under "${under.source.replace(/^\^|\$$/g, "")}")`);
+        continue;
+      }
       if (!r.page) {
         out.push({ name: r.name });
         notes.push(`${r.name}: no cap (Bulbapedia gives no battle data for it)`);

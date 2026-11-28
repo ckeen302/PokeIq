@@ -1,5 +1,5 @@
 {
- "about": "Per game. disagreements: PokéAPI vs Serebii species disagreements per area and version, each settled by the game's table on Bulbapedia's location page (source): keep/drop = a PokéAPI row Bulbapedia lists / doesn't list; add/skip = a Serebii-only row Bulbapedia lists / doesn't list; unresolved = no Bulbapedia table, PokéAPI's data stands. bulbapedia: every other wild row Bulbapedia's table doesn't list for that version: drop = Bulbapedia lists the Pokémon there for no version of the game (e.g. an unreleased event table), keep = not on its table (both other sources list it). rates: per Pokémon and method family, PokéAPI's chances (per time slot, summed over the place's parts) that differ from Bulbapedia's table: replace = Serebii's rows (which match Bulbapedia) are used instead; add = PokéAPI lacks the method there and Serebii's matching rows are added; add-bulbapedia = only Bulbapedia has it, its rows are added; keep = no two sources agree, PokéAPI's stand. serebii (Scarlet/Violet, Legends: Z-A, whose Bulbapedia location tables are the source): every Serebii row its place's Bulbapedia table doesn't have; add = the Pokémon's own Bulbapedia page names that place for the game, skip = it doesn't (the row is left out). visible: every row of Bulbapedia's visible-Pokémon sections (Sword/Shield's Visible encounters, Wanderers, Curry encounters), add = no row of the area has that Pokémon met the same way (water or land) at overlapping levels in that version, duplicate = one does (named). coverageLosses: area|species|version(|water or land) keys the merged sources had and the output lost other than by a logged drop; it must be empty (verify:nuzlocke fails otherwise). conditionFixes: PokéAPI condition values found on rows they can't belong to (a Max Raid den value on Rolling Fields' wild rows), with the value used instead and the evidence. fixes: source rows Bulbapedia shows to be wrong and what was done (drop, levels, method, no chance, copied to the places a moving NPC appears at, kind, condition), each with its evidence (scripts/nuzlocke/lib/fixes.ts, Bulbapedia's notes on unreachable water, PokéAPI's Generation VII ambush rows). sweep: the game's Bulbapedia location pages (its category) that no area's lookup reached and that have its table rows: fold = the page is part of an area (a building in a town, by its infobox location; a part, by its title; or a named rule) and joins that area's pages; new area = a place no other source names, built from its page. nonWild: gifts, statics, Eggs and fossils that their area's Bulbapedia pages don't list but another area's do (the same encounter: kind and levels; trades are left where they are): drop = that area already has it, move = it is moved there. Written by scripts/nuzlocke/build.ts.",
+ "about": "Per game. disagreements: PokéAPI vs Serebii species disagreements per area and version, each settled by the game's table on Bulbapedia's location page (source): keep/drop = a PokéAPI row Bulbapedia lists / doesn't list; add/skip = a Serebii-only row Bulbapedia lists / doesn't list; unresolved = no Bulbapedia table, PokéAPI's data stands. bulbapedia: every other wild row Bulbapedia's table doesn't list for that version: drop = Bulbapedia lists the Pokémon there for no version of the game (e.g. an unreleased event table), keep = not on its table (both other sources list it). rates: per Pokémon and method family, PokéAPI's chances (per time slot, summed over the place's parts) that differ from Bulbapedia's table: replace = Serebii's rows (which match Bulbapedia) are used instead; add = PokéAPI lacks the method there and Serebii's matching rows are added; add-bulbapedia = only Bulbapedia has it, its rows are added; keep = no two sources agree, PokéAPI's stand. serebii (Scarlet/Violet, Legends: Z-A, whose Bulbapedia location tables are the source): every Serebii row its place's Bulbapedia table doesn't have; add = the Pokémon's own Bulbapedia page names that place for the game, skip = it doesn't (the row is left out). visible: every row of Bulbapedia's visible-Pokémon sections (Sword/Shield's Visible encounters, Wanderers, Curry encounters), add = no row of the area has that Pokémon met the same way (water or land) at overlapping levels in that version, duplicate = one does (named). coverageLosses: area|species|version(|water or land) keys the merged sources had and the output lost other than by a logged drop; it must be empty (verify:nuzlocke fails otherwise). conditionFixes: PokéAPI condition values found on rows they can't belong to (a Max Raid den value on Rolling Fields' wild rows), with the value used instead and the evidence. fixes: source rows Bulbapedia shows to be wrong and what was done (drop, levels, method, no chance, copied to the places a moving NPC appears at, kind, condition), each with its evidence (scripts/nuzlocke/lib/fixes.ts, Bulbapedia's notes on unreachable water, PokéAPI's Generation VII ambush rows). sweep: the game's Bulbapedia location pages (its category) that no area's lookup reached and that have its table rows: fold = the page is part of an area (a building in a town, by its infobox location; a part, by its title; or a named rule) and joins that area's pages; new area = a place no other source names, built from its page. nonWild: gifts, statics, Eggs and fossils that their area's Bulbapedia pages don't list but another area's do (the same encounter: kind and levels; trades are left where they are): drop = that area already has it, move = it is moved there. battleOnly (Scarlet/Violet, Legends: Arceus, Legends: Z-A): Special encounters boxes left out because the text above them says the Pokémon is only battled (why: the words that say so, e.g. \"cannot be caught\" or a Rogue Mega Evolution's battle). Written by scripts/nuzlocke/build.ts.",
  "games": {
   "red-blue": {
    "disagreements": [
@@ -177126,6 +177126,63 @@
    "disagreements": [],
    "bulbapedia": [],
    "rates": [],
+   "battleOnly": [
+    {
+     "place": "Crimson Mirelands",
+     "species": 901,
+     "name": "Ursaluna",
+     "levels": [
+      26,
+      26
+     ],
+     "why": "has to defeat",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Sludge_Mound"
+    },
+    {
+     "place": "Coronet Highlands",
+     "species": 483,
+     "name": "Dialga",
+     "levels": [
+      85,
+      85
+     ],
+     "why": "cannot be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Temple_of_Sinnoh"
+    },
+    {
+     "place": "Coronet Highlands",
+     "species": 484,
+     "name": "Palkia",
+     "levels": [
+      85,
+      85
+     ],
+     "why": "cannot be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Temple_of_Sinnoh"
+    },
+    {
+     "place": "Coronet Highlands",
+     "species": 493,
+     "name": "Arceus",
+     "levels": [
+      100,
+      100
+     ],
+     "why": "cannot be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Hall_of_Origin"
+    },
+    {
+     "place": "Alabaster Icelands",
+     "species": 628,
+     "name": "Braviary",
+     "levels": [
+      54,
+      54
+     ],
+     "why": "has to defeat",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Snowpoint_Temple"
+    }
+   ],
    "coverageLosses": []
   },
   "scarlet-violet": {
@@ -177824,26 +177881,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Polar_Biome"
     },
     {
-     "area": "South Province (Area Three)",
-     "version": "scarlet",
-     "species": 39,
-     "name": "Jigglypuff",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Jigglypuff_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "South Province (Area Three)",
-     "version": "violet",
-     "species": 39,
-     "name": "Jigglypuff",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Jigglypuff_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Coastal Biome",
      "version": "scarlet",
      "species": 48,
@@ -177944,26 +177981,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Dugtrio_(Pok%C3%A9mon)"
     },
     {
-     "area": "South Province (Area Two)",
-     "version": "scarlet",
-     "species": 52,
-     "name": "Meowth",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Meowth_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "South Province (Area Two)",
-     "version": "violet",
-     "species": 52,
-     "name": "Meowth",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Meowth_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Casseroya Lake",
      "version": "scarlet",
      "species": 54,
@@ -177982,26 +177999,6 @@
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Psyduck_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "South Province (Area Four)",
-     "version": "scarlet",
-     "species": 55,
-     "name": "Golduck",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Golduck_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "South Province (Area Four)",
-     "version": "violet",
-     "species": 55,
-     "name": "Golduck",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Golduck_(Pok%C3%A9mon)"
     },
     {
      "area": "South Province (Area One)",
@@ -178144,26 +178141,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Mankey_(Pok%C3%A9mon)"
     },
     {
-     "area": "Glaseado Mountain",
-     "version": "scarlet",
-     "species": 57,
-     "name": "Primeape",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Primeape_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Glaseado Mountain",
-     "version": "violet",
-     "species": 57,
-     "name": "Primeape",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Primeape_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Kitakami Wilds",
      "version": "scarlet",
      "species": 57,
@@ -178202,26 +178179,6 @@
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Primeape_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "East Province (Area Two)",
-     "version": "scarlet",
-     "species": 58,
-     "name": "Growlithe",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Growlithe_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "East Province (Area Two)",
-     "version": "violet",
-     "species": 58,
-     "name": "Growlithe",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Growlithe_(Pok%C3%A9mon)"
     },
     {
      "area": "Apple Hills",
@@ -179422,46 +179379,6 @@
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Vaporeon_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "West Province (Area One)",
-     "version": "scarlet",
-     "species": 135,
-     "name": "Jolteon",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Jolteon_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "West Province (Area One)",
-     "version": "violet",
-     "species": 135,
-     "name": "Jolteon",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Jolteon_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "South Province (Area Five)",
-     "version": "scarlet",
-     "species": 136,
-     "name": "Flareon",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Flareon_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "South Province (Area Five)",
-     "version": "violet",
-     "species": 136,
-     "name": "Flareon",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Flareon_(Pok%C3%A9mon)"
     },
     {
      "area": "Canyon Biome",
@@ -180674,26 +180591,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Quagsire_(Pok%C3%A9mon)"
     },
     {
-     "area": "East Province (Area Three)",
-     "version": "scarlet",
-     "species": 196,
-     "name": "Espeon",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Espeon_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "East Province (Area Three)",
-     "version": "violet",
-     "species": 196,
-     "name": "Espeon",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Espeon_(Pok%C3%A9mon)"
-    },
-    {
      "area": "South Province (Area One)",
      "version": "scarlet",
      "species": 198,
@@ -181242,26 +181139,6 @@
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Houndour_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "South Province (Area Six)",
-     "version": "scarlet",
-     "species": 229,
-     "name": "Houndoom",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Houndoom_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "South Province (Area Six)",
-     "version": "violet",
-     "species": 229,
-     "name": "Houndoom",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Houndoom_(Pok%C3%A9mon)"
     },
     {
      "area": "Chilling Waterhead",
@@ -182514,16 +182391,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Kirlia_(Pok%C3%A9mon)"
     },
     {
-     "area": "East Province (Area Three)",
-     "version": "scarlet",
-     "species": 281,
-     "name": "Kirlia",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Kirlia_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Cortondo",
      "version": "violet",
      "species": 281,
@@ -182544,16 +182411,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Kirlia_(Pok%C3%A9mon)"
     },
     {
-     "area": "East Province (Area Three)",
-     "version": "violet",
-     "species": 281,
-     "name": "Kirlia",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Kirlia_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Kitakami Wilds",
      "version": "scarlet",
      "species": 281,
@@ -182952,26 +182809,6 @@
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Vigoroth_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "North Province (Area Two)",
-     "version": "scarlet",
-     "species": 289,
-     "name": "Slaking",
-     "serebii": "Wild",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Slaking_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "North Province (Area Two)",
-     "version": "violet",
-     "species": 289,
-     "name": "Slaking",
-     "serebii": "Wild",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Slaking_(Pok%C3%A9mon)"
     },
     {
      "area": "South Province (Area One)",
@@ -183454,26 +183291,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Camerupt_(Pok%C3%A9mon)"
     },
     {
-     "area": "West Province (Area One)",
-     "version": "scarlet",
-     "species": 324,
-     "name": "Torkoal",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Torkoal_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "West Province (Area One)",
-     "version": "violet",
-     "species": 324,
-     "name": "Torkoal",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Torkoal_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Torchlit Labyrinth",
      "version": "scarlet",
      "species": 324,
@@ -183594,31 +183411,11 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Swablu_(Pok%C3%A9mon)"
     },
     {
-     "area": "West Province (Area Three)",
-     "version": "scarlet",
-     "species": 334,
-     "name": "Altaria",
-     "serebii": "Wild",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Altaria_(Pok%C3%A9mon)"
-    },
-    {
      "area": "West Province (Area One)",
      "version": "scarlet",
      "species": 334,
      "name": "Altaria",
      "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Altaria_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "West Province (Area Three)",
-     "version": "violet",
-     "species": 334,
-     "name": "Altaria",
-     "serebii": "Wild",
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Altaria_(Pok%C3%A9mon)"
@@ -185504,31 +185301,11 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Garchomp_(Pok%C3%A9mon)"
     },
     {
-     "area": "West Province (Area Two)",
-     "version": "scarlet",
-     "species": 445,
-     "name": "Garchomp",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Garchomp_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Great Crater of Paldea",
      "version": "violet",
      "species": 445,
      "name": "Garchomp",
      "serebii": "Wild",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Garchomp_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "West Province (Area Two)",
-     "version": "violet",
-     "species": 445,
-     "name": "Garchomp",
-     "serebii": "Static",
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Garchomp_(Pok%C3%A9mon)"
@@ -185814,26 +185591,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Timeless_Woods"
     },
     {
-     "area": "Dalizapa Passage",
-     "version": "scarlet",
-     "species": 448,
-     "name": "Lucario",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Lucario_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Dalizapa Passage",
-     "version": "violet",
-     "species": 448,
-     "name": "Lucario",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Lucario_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Fellhorn Gorge",
      "version": "scarlet",
      "species": 448,
@@ -185972,26 +185729,6 @@
      "bulbapedia": "neither the place's table nor the Pokémon's page has it there",
      "action": "skip",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Canyon_Biome"
-    },
-    {
-     "area": "South Province (Area Four)",
-     "version": "scarlet",
-     "species": 470,
-     "name": "Leafeon",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Leafeon_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "South Province (Area Four)",
-     "version": "violet",
-     "species": 470,
-     "name": "Leafeon",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Leafeon_(Pok%C3%A9mon)"
     },
     {
      "area": "Alfornada Cavern",
@@ -187154,16 +186891,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/South_Province_(Area_Three)"
     },
     {
-     "area": "West Province (Area One)",
-     "version": "scarlet",
-     "species": 610,
-     "name": "Axew",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Axew_(Pok%C3%A9mon)"
-    },
-    {
      "area": "North Province (Area One)",
      "version": "violet",
      "species": 610,
@@ -187182,16 +186909,6 @@
      "bulbapedia": "neither the place's table nor the Pokémon's page has it there",
      "action": "skip",
      "source": "https://bulbapedia.bulbagarden.net/wiki/South_Province_(Area_Three)"
-    },
-    {
-     "area": "West Province (Area One)",
-     "version": "violet",
-     "species": 610,
-     "name": "Axew",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Axew_(Pok%C3%A9mon)"
     },
     {
      "area": "Dalizapa Passage",
@@ -187794,16 +187511,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/North_Province_(Area_One)"
     },
     {
-     "area": "East Province (Area Three)",
-     "version": "scarlet",
-     "species": 668,
-     "name": "Pyroar",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Pyroar_(Pok%C3%A9mon)"
-    },
-    {
      "area": "North Province (Area One)",
      "version": "violet",
      "species": 668,
@@ -187812,36 +187519,6 @@
      "bulbapedia": "neither the place's table nor the Pokémon's page has it there",
      "action": "skip",
      "source": "https://bulbapedia.bulbagarden.net/wiki/North_Province_(Area_One)"
-    },
-    {
-     "area": "East Province (Area Three)",
-     "version": "violet",
-     "species": 668,
-     "name": "Pyroar",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Pyroar_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "East Province (Area One)",
-     "version": "scarlet",
-     "species": 670,
-     "name": "Floette",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Floette_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "East Province (Area One)",
-     "version": "violet",
-     "species": 670,
-     "name": "Floette",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Floette_(Pok%C3%A9mon)"
     },
     {
      "area": "East Province (Area Three)",
@@ -187974,16 +187651,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Sylveon_(Pok%C3%A9mon)"
     },
     {
-     "area": "North Province (Area Three)",
-     "version": "scarlet",
-     "species": 700,
-     "name": "Sylveon",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Sylveon_(Pok%C3%A9mon)"
-    },
-    {
      "area": "West Province (Area Three)",
      "version": "violet",
      "species": 700,
@@ -187994,16 +187661,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Sylveon_(Pok%C3%A9mon)"
     },
     {
-     "area": "North Province (Area Three)",
-     "version": "violet",
-     "species": 700,
-     "name": "Sylveon",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Sylveon_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Socarrat Trail",
      "version": "scarlet",
      "species": 701,
@@ -188014,31 +187671,11 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Hawlucha_(Pok%C3%A9mon)"
     },
     {
-     "area": "South Province (Area Six)",
-     "version": "scarlet",
-     "species": 701,
-     "name": "Hawlucha",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Hawlucha_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Socarrat Trail",
      "version": "violet",
      "species": 701,
      "name": "Hawlucha",
      "serebii": "Wild",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Hawlucha_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "South Province (Area Six)",
-     "version": "violet",
-     "species": 701,
-     "name": "Hawlucha",
-     "serebii": "Static",
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Hawlucha_(Pok%C3%A9mon)"
@@ -188224,28 +187861,8 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Goomy_(Pok%C3%A9mon)"
     },
     {
-     "area": "South Province (Area Four)",
-     "version": "scarlet",
-     "species": 705,
-     "name": "Sliggoo",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Sliggoo_(Pok%C3%A9mon)"
-    },
-    {
      "area": "West Province (Area Three)",
      "version": "scarlet",
-     "species": 705,
-     "name": "Sliggoo",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Sliggoo_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "South Province (Area Four)",
-     "version": "violet",
      "species": 705,
      "name": "Sliggoo",
      "serebii": "Static",
@@ -189534,31 +189151,11 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Salandit_(Pok%C3%A9mon)"
     },
     {
-     "area": "East Province (Area One)",
-     "version": "scarlet",
-     "species": 757,
-     "name": "Salandit",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Salandit_(Pok%C3%A9mon)"
-    },
-    {
      "area": "East Province (Area Two)",
      "version": "violet",
      "species": 757,
      "name": "Salandit",
      "serebii": "Wild",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Salandit_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "East Province (Area One)",
-     "version": "violet",
-     "species": 757,
-     "name": "Salandit",
-     "serebii": "Static",
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Salandit_(Pok%C3%A9mon)"
@@ -189664,46 +189261,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Steenee_(Pok%C3%A9mon)"
     },
     {
-     "area": "Casseroya Lake",
-     "version": "scarlet",
-     "species": 763,
-     "name": "Tsareena",
-     "serebii": "Static",
-     "bulbapedia": "neither the place's table nor the Pokémon's page has it there",
-     "action": "skip",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Casseroya_Lake"
-    },
-    {
-     "area": "Casseroya Lake",
-     "version": "violet",
-     "species": 763,
-     "name": "Tsareena",
-     "serebii": "Static",
-     "bulbapedia": "neither the place's table nor the Pokémon's page has it there",
-     "action": "skip",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Casseroya_Lake"
-    },
-    {
-     "area": "Asado Desert",
-     "version": "scarlet",
-     "species": 769,
-     "name": "Sandygast",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Sandygast_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Asado Desert",
-     "version": "violet",
-     "species": 769,
-     "name": "Sandygast",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Sandygast_(Pok%C3%A9mon)"
-    },
-    {
      "area": "West Province (Area Two)",
      "version": "scarlet",
      "species": 770,
@@ -189754,16 +189311,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/West_Province_(Area_Three)"
     },
     {
-     "area": "North Province (Area Two)",
-     "version": "scarlet",
-     "species": 778,
-     "name": "Mimikyu",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Mimikyu_(Pok%C3%A9mon)"
-    },
-    {
      "area": "West Province (Area Three)",
      "version": "violet",
      "species": 778,
@@ -189772,16 +189319,6 @@
      "bulbapedia": "neither the place's table nor the Pokémon's page has it there",
      "action": "skip",
      "source": "https://bulbapedia.bulbagarden.net/wiki/West_Province_(Area_Three)"
-    },
-    {
-     "area": "North Province (Area Two)",
-     "version": "violet",
-     "species": 778,
-     "name": "Mimikyu",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Mimikyu_(Pok%C3%A9mon)"
     },
     {
      "area": "Chilling Waterhead",
@@ -190182,26 +189719,6 @@
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Corvisquire_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "North Province (Area Two)",
-     "version": "scarlet",
-     "species": 823,
-     "name": "Corviknight",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Corviknight_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "North Province (Area Two)",
-     "version": "violet",
-     "species": 823,
-     "name": "Corviknight",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Corviknight_(Pok%C3%A9mon)"
     },
     {
      "area": "Timeless Woods",
@@ -190954,16 +190471,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Falinks_(Pok%C3%A9mon)"
     },
     {
-     "area": "East Province (Area Three)",
-     "version": "scarlet",
-     "species": 870,
-     "name": "Falinks",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Falinks_(Pok%C3%A9mon)"
-    },
-    {
      "area": "West Province (Area Two)",
      "version": "violet",
      "species": 870,
@@ -190972,36 +190479,6 @@
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Falinks_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "East Province (Area Three)",
-     "version": "violet",
-     "species": 870,
-     "name": "Falinks",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Falinks_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Glaseado Mountain",
-     "version": "scarlet",
-     "species": 871,
-     "name": "Pincurchin",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Pincurchin_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Glaseado Mountain",
-     "version": "violet",
-     "species": 871,
-     "name": "Pincurchin",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Pincurchin_(Pok%C3%A9mon)"
     },
     {
      "area": "Kitakami Wilds",
@@ -191364,16 +190841,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Lokix_(Pok%C3%A9mon)"
     },
     {
-     "area": "West Province (Area One)",
-     "version": "scarlet",
-     "species": 920,
-     "name": "Lokix",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Lokix_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Alfornada Cavern",
      "version": "violet",
      "species": 920,
@@ -191389,16 +190856,6 @@
      "species": 920,
      "name": "Lokix",
      "serebii": "Wild",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Lokix_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "West Province (Area One)",
-     "version": "violet",
-     "species": 920,
-     "name": "Lokix",
-     "serebii": "Static",
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Lokix_(Pok%C3%A9mon)"
@@ -191594,16 +191051,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Alfornada_Cavern"
     },
     {
-     "area": "West Province (Area Two)",
-     "version": "scarlet",
-     "species": 933,
-     "name": "Naclstack",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Naclstack_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Alfornada Cavern",
      "version": "violet",
      "species": 933,
@@ -191612,16 +191059,6 @@
      "bulbapedia": "neither the place's table nor the Pokémon's page has it there",
      "action": "skip",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Alfornada_Cavern"
-    },
-    {
-     "area": "West Province (Area Two)",
-     "version": "violet",
-     "species": 933,
-     "name": "Naclstack",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Naclstack_(Pok%C3%A9mon)"
     },
     {
      "area": "South Province (Area One)",
@@ -192074,16 +191511,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Tinkatuff_(Pok%C3%A9mon)"
     },
     {
-     "area": "West Province (Area One)",
-     "version": "scarlet",
-     "species": 958,
-     "name": "Tinkatuff",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Tinkatuff_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Dalizapa Passage",
      "version": "violet",
      "species": 958,
@@ -192114,16 +191541,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Tinkatuff_(Pok%C3%A9mon)"
     },
     {
-     "area": "West Province (Area One)",
-     "version": "violet",
-     "species": 958,
-     "name": "Tinkatuff",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Tinkatuff_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Kitakami Wilds",
      "version": "scarlet",
      "species": 962,
@@ -192222,30 +191639,10 @@
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Revavroom_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Asado Desert",
-     "version": "scarlet",
-     "species": 967,
-     "name": "Cyclizar",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Cyclizar_(Pok%C3%A9mon)"
     },
     {
      "area": "West Province (Area Three)",
      "version": "scarlet",
-     "species": 967,
-     "name": "Cyclizar",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Cyclizar_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Asado Desert",
-     "version": "violet",
      "species": 967,
      "name": "Cyclizar",
      "serebii": "Static",
@@ -192444,26 +191841,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Glimmora_(Pok%C3%A9mon)"
     },
     {
-     "area": "South Province (Area Five)",
-     "version": "scarlet",
-     "species": 972,
-     "name": "Houndstone",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Houndstone_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "South Province (Area Five)",
-     "version": "violet",
-     "species": 972,
-     "name": "Houndstone",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Houndstone_(Pok%C3%A9mon)"
-    },
-    {
      "area": "East Province (Area Two)",
      "version": "scarlet",
      "species": 973,
@@ -192524,16 +191901,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Veluza_(Pok%C3%A9mon)"
     },
     {
-     "area": "Glaseado Mountain",
-     "version": "scarlet",
-     "species": 976,
-     "name": "Veluza",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Veluza_(Pok%C3%A9mon)"
-    },
-    {
      "area": "North Paldean Sea",
      "version": "violet",
      "species": 976,
@@ -192545,16 +191912,6 @@
     },
     {
      "area": "East Province (Area One)",
-     "version": "violet",
-     "species": 976,
-     "name": "Veluza",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Veluza_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Glaseado Mountain",
      "version": "violet",
      "species": 976,
      "name": "Veluza",
@@ -192784,6 +192141,181 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Area_Zero"
     }
    ],
+   "fixes": [
+    {
+     "area": "south-province-area-one",
+     "action": "after inlet-grotto",
+     "why": "the walkthrough's \"South Province (Area One)\" heading opens Part 1 with Cabo Poco inside it; Part 2 goes Poco Path, Inlet Grotto, the Poco Path Lighthouse, then the road through Area One to Los Platos and Mesagoza",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Walkthrough:Pok%C3%A9mon_Scarlet_and_Violet/Part_2"
+    }
+   ],
+   "battleOnly": [
+    {
+     "place": "Crystal Pool",
+     "species": 350,
+     "name": "Milotic",
+     "levels": [
+      30,
+      30
+     ],
+     "why": "cannot be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Crystal_Pool"
+    },
+    {
+     "place": "Crystal Pool",
+     "species": 350,
+     "name": "Milotic",
+     "levels": [
+      73,
+      73
+     ],
+     "why": "cannot be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Crystal_Pool"
+    },
+    {
+     "place": "Area Zero",
+     "species": 970,
+     "name": "Glimmora",
+     "levels": [
+      62,
+      62
+     ],
+     "why": "None of them can be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Area_Zero"
+    },
+    {
+     "place": "Area Zero",
+     "species": 985,
+     "name": "Scream Tail",
+     "levels": [
+      62,
+      62
+     ],
+     "why": "None of them can be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Area_Zero"
+    },
+    {
+     "place": "Area Zero",
+     "species": 991,
+     "name": "Iron Bundle",
+     "levels": [
+      62,
+      62
+     ],
+     "why": "None of them can be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Area_Zero"
+    },
+    {
+     "place": "Area Zero",
+     "species": 984,
+     "name": "Great Tusk",
+     "levels": [
+      62,
+      62
+     ],
+     "why": "None of them can be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Area_Zero"
+    },
+    {
+     "place": "Area Zero",
+     "species": 990,
+     "name": "Iron Treads",
+     "levels": [
+      62,
+      62
+     ],
+     "why": "None of them can be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Area_Zero"
+    },
+    {
+     "place": "Area Zero",
+     "species": 984,
+     "name": "Great Tusk",
+     "levels": [
+      64,
+      64
+     ],
+     "why": "None of them can be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Area_Zero"
+    },
+    {
+     "place": "Area Zero",
+     "species": 990,
+     "name": "Iron Treads",
+     "levels": [
+      64,
+      64
+     ],
+     "why": "None of them can be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Area_Zero"
+    },
+    {
+     "place": "Area Zero",
+     "species": 986,
+     "name": "Brute Bonnet",
+     "levels": [
+      64,
+      64
+     ],
+     "why": "None of them can be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Area_Zero"
+    },
+    {
+     "place": "Area Zero",
+     "species": 992,
+     "name": "Iron Hands",
+     "levels": [
+      64,
+      64
+     ],
+     "why": "None of them can be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Area_Zero"
+    },
+    {
+     "place": "Area Zero",
+     "species": 987,
+     "name": "Flutter Mane",
+     "levels": [
+      64,
+      64
+     ],
+     "why": "None of them can be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Area_Zero"
+    },
+    {
+     "place": "Area Zero",
+     "species": 993,
+     "name": "Iron Jugulis",
+     "levels": [
+      64,
+      64
+     ],
+     "why": "None of them can be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Area_Zero"
+    },
+    {
+     "place": "Dreaded Den",
+     "species": 1015,
+     "name": "Munkidori",
+     "levels": [
+      30,
+      30
+     ],
+     "why": "cannot be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Dreaded_Den"
+    },
+    {
+     "place": "Dreaded Den",
+     "species": 1015,
+     "name": "Munkidori",
+     "levels": [
+      70,
+      70
+     ],
+     "why": "cannot be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Dreaded_Den"
+    }
+   ],
    "coverageLosses": []
   },
   "legends-za": {
@@ -192792,96 +192324,6 @@
    "rates": [],
    "serebii": [
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 1,
-     "name": "Bulbasaur",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Bulbasaur_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 2,
-     "name": "Ivysaur",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Ivysaur_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 3,
-     "name": "Venusaur",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Venusaur_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 4,
-     "name": "Charmander",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Charmander_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 5,
-     "name": "Charmeleon",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Charmeleon_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 6,
-     "name": "Charizard",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Charizard_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 7,
-     "name": "Squirtle",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Squirtle_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 8,
-     "name": "Wartortle",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Wartortle_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 9,
-     "name": "Blastoise",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Blastoise_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Bleu District",
      "version": "legends-za",
      "species": 13,
@@ -192907,7 +192349,7 @@
      "species": 13,
      "name": "Weedle",
      "serebii": "Wild",
-     "bulbapedia": "the Pokémon's page names it there (Only one)",
+     "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Weedle_(Pok%C3%A9mon)"
     },
@@ -192927,16 +192369,6 @@
      "species": 13,
      "name": "Weedle",
      "serebii": "Wild",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Weedle_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 13,
-     "name": "Weedle",
-     "serebii": "Hyperspace",
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Weedle_(Pok%C3%A9mon)"
@@ -192982,11 +192414,11 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Kakuna_(Pok%C3%A9mon)"
     },
     {
-     "area": "Hyperspace Lumiose",
+     "area": "Vert District",
      "version": "legends-za",
      "species": 14,
      "name": "Kakuna",
-     "serebii": "Hyperspace",
+     "serebii": "Wild",
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Kakuna_(Pok%C3%A9mon)"
@@ -193032,11 +192464,11 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Beedrill_(Pok%C3%A9mon)"
     },
     {
-     "area": "Hyperspace Lumiose",
+     "area": "Vert District",
      "version": "legends-za",
      "species": 15,
      "name": "Beedrill",
-     "serebii": "Hyperspace",
+     "serebii": "Wild",
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Beedrill_(Pok%C3%A9mon)"
@@ -193092,16 +192524,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Pidgey_(Pok%C3%A9mon)"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 16,
-     "name": "Pidgey",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Pidgey_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Bleu District",
      "version": "legends-za",
      "species": 17,
@@ -193147,16 +192569,6 @@
      "species": 17,
      "name": "Pidgeotto",
      "serebii": "Wild",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Pidgeotto_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 17,
-     "name": "Pidgeotto",
-     "serebii": "Hyperspace",
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Pidgeotto_(Pok%C3%A9mon)"
@@ -193210,16 +192622,6 @@
      "bulbapedia": "neither the place's table nor the Pokémon's page has it there",
      "action": "skip",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Vert_District"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 18,
-     "name": "Pidgeot",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Pidgeot_(Pok%C3%A9mon)"
     },
     {
      "area": "Bleu District",
@@ -193282,16 +192684,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Ekans_(Pok%C3%A9mon)"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 23,
-     "name": "Ekans",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Ekans_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Rouge District",
      "version": "legends-za",
      "species": 24,
@@ -193312,16 +192704,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Arbok_(Pok%C3%A9mon)"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 24,
-     "name": "Arbok",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Arbok_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Vert District",
      "version": "legends-za",
      "species": 25,
@@ -193330,126 +192712,6 @@
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Pikachu_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 25,
-     "name": "Pikachu",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Pikachu_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 26,
-     "name": "Raichu",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Raichu_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 35,
-     "name": "Clefairy",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Clefairy_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 36,
-     "name": "Clefable",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Clefable_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 39,
-     "name": "Jigglypuff",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Jigglypuff_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 40,
-     "name": "Wigglytuff",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Wigglytuff_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 41,
-     "name": "Zubat",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Zubat_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 42,
-     "name": "Golbat",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Golbat_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 52,
-     "name": "Meowth",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Meowth_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 53,
-     "name": "Persian",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Persian_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 56,
-     "name": "Mankey",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Mankey_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 57,
-     "name": "Primeape",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Primeape_(Pok%C3%A9mon)"
     },
     {
      "area": "Bleu District",
@@ -193502,66 +192764,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Abra_(Pok%C3%A9mon)"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 63,
-     "name": "Abra",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Abra_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 64,
-     "name": "Kadabra",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Kadabra_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 65,
-     "name": "Alakazam",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Alakazam_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 66,
-     "name": "Machop",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Machop_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 67,
-     "name": "Machoke",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Machoke_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 68,
-     "name": "Machamp",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Machamp_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Bleu District",
      "version": "legends-za",
      "species": 69,
@@ -193610,66 +192812,6 @@
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Bellsprout_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 69,
-     "name": "Bellsprout",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Bellsprout_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 70,
-     "name": "Weepinbell",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Weepinbell_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 71,
-     "name": "Victreebel",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Victreebel_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 79,
-     "name": "Slowpoke",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Slowpoke_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 80,
-     "name": "Slowbro",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Slowbro_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 83,
-     "name": "Farfetch’d",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Farfetch'd_(Pok%C3%A9mon)"
     },
     {
      "area": "Bleu District",
@@ -193677,7 +192819,7 @@
      "species": 92,
      "name": "Gastly",
      "serebii": "Wild",
-     "bulbapedia": "the Pokémon's page names it there (Only one)",
+     "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Gastly_(Pok%C3%A9mon)"
     },
@@ -193740,16 +192882,6 @@
      "bulbapedia": "neither the place's table nor the Pokémon's page has it there",
      "action": "skip",
      "source": ""
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 92,
-     "name": "Gastly",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Gastly_(Pok%C3%A9mon)"
     },
     {
      "area": "Bleu District",
@@ -193822,16 +192954,6 @@
      "source": ""
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 93,
-     "name": "Haunter",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Haunter_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Old House",
      "version": "legends-za",
      "species": 94,
@@ -193840,56 +192962,6 @@
      "bulbapedia": "neither the place's table nor the Pokémon's page has it there",
      "action": "skip",
      "source": ""
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 94,
-     "name": "Gengar",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Gengar_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 95,
-     "name": "Onix",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Onix_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 104,
-     "name": "Cubone",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Cubone_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 105,
-     "name": "Marowak",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Marowak_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 115,
-     "name": "Kangaskhan",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Kangaskhan_(Pok%C3%A9mon)"
     },
     {
      "area": "Bleu District",
@@ -193910,56 +192982,6 @@
      "bulbapedia": "neither the place's table nor the Pokémon's page has it there",
      "action": "skip",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Magenta_District"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 120,
-     "name": "Staryu",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Staryu_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 121,
-     "name": "Starmie",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Starmie_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 122,
-     "name": "Mr. Mime",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Mr._Mime_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 123,
-     "name": "Scyther",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Scyther_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 127,
-     "name": "Pinsir",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Pinsir_(Pok%C3%A9mon)"
     },
     {
      "area": "Bleu District",
@@ -194012,26 +193034,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Magikarp_(Pok%C3%A9mon)"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 129,
-     "name": "Magikarp",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Magikarp_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 130,
-     "name": "Gyarados",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Gyarados_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Bleu District",
      "version": "legends-za",
      "species": 133,
@@ -194082,66 +193084,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Eevee_(Pok%C3%A9mon)"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 133,
-     "name": "Eevee",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Eevee_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 134,
-     "name": "Vaporeon",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Vaporeon_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 135,
-     "name": "Jolteon",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Jolteon_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 136,
-     "name": "Flareon",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Flareon_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 137,
-     "name": "Porygon",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Porygon_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 142,
-     "name": "Aerodactyl",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Aerodactyl_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Bleu District",
      "version": "legends-za",
      "species": 147,
@@ -194187,16 +193129,6 @@
      "species": 147,
      "name": "Dratini",
      "serebii": "Wild",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Dratini_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 147,
-     "name": "Dratini",
-     "serebii": "Hyperspace",
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Dratini_(Pok%C3%A9mon)"
@@ -194250,76 +193182,6 @@
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Dragonair_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 148,
-     "name": "Dragonair",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Dragonair_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 152,
-     "name": "Chikorita",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Chikorita_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 153,
-     "name": "Bayleef",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Bayleef_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 154,
-     "name": "Meganium",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Meganium_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 158,
-     "name": "Totodile",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Totodile_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 159,
-     "name": "Croconaw",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Croconaw_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 160,
-     "name": "Feraligatr",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Feraligatr_(Pok%C3%A9mon)"
     },
     {
      "area": "Bleu District",
@@ -194367,16 +193229,6 @@
      "species": 167,
      "name": "Spinarak",
      "serebii": "Wild",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Spinarak_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 167,
-     "name": "Spinarak",
-     "serebii": "Hyperspace",
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Spinarak_(Pok%C3%A9mon)"
@@ -194442,26 +193294,6 @@
      "source": ""
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 168,
-     "name": "Ariados",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Ariados_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 169,
-     "name": "Crobat",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Crobat_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Bleu District",
      "version": "legends-za",
      "species": 172,
@@ -194512,16 +193344,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Vert_District"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 172,
-     "name": "Pichu",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Pichu_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Bleu District",
      "version": "legends-za",
      "species": 173,
@@ -194572,161 +193394,11 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Cleffa_(Pok%C3%A9mon)"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 173,
-     "name": "Cleffa",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Cleffa_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 174,
-     "name": "Igglybuff",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Igglybuff_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 179,
-     "name": "Mareep",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Mareep_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 180,
-     "name": "Flaaffy",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Flaaffy_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 181,
-     "name": "Ampharos",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Ampharos_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 196,
-     "name": "Espeon",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Espeon_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 197,
-     "name": "Umbreon",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Umbreon_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 199,
-     "name": "Slowking",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Slowking_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 208,
-     "name": "Steelix",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Steelix_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 211,
-     "name": "Qwilfish",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Qwilfish_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 212,
-     "name": "Scizor",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Scizor_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 214,
-     "name": "Heracross",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Heracross_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 225,
-     "name": "Delibird",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Delibird_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 227,
-     "name": "Skarmory",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Skarmory_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Lysandre Labs",
      "version": "legends-za",
      "species": 228,
      "name": "Houndour",
      "serebii": "Wild",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Houndour_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 228,
-     "name": "Houndour",
-     "serebii": "Hyperspace",
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Houndour_(Pok%C3%A9mon)"
@@ -194740,26 +193412,6 @@
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Houndoom_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 229,
-     "name": "Houndoom",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Houndoom_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 233,
-     "name": "Porygon2",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Porygon2_(Pok%C3%A9mon)"
     },
     {
      "area": "Bleu District",
@@ -194810,126 +193462,6 @@
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Larvitar_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 246,
-     "name": "Larvitar",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Larvitar_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 247,
-     "name": "Pupitar",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Pupitar_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 248,
-     "name": "Tyranitar",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Tyranitar_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 252,
-     "name": "Treecko",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Treecko_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 253,
-     "name": "Grovyle",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Grovyle_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 254,
-     "name": "Sceptile",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Sceptile_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 255,
-     "name": "Torchic",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Torchic_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 256,
-     "name": "Combusken",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Combusken_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 257,
-     "name": "Blaziken",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Blaziken_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 258,
-     "name": "Mudkip",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Mudkip_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 259,
-     "name": "Marshtomp",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Marshtomp_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 260,
-     "name": "Swampert",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Swampert_(Pok%C3%A9mon)"
     },
     {
      "area": "Bleu District",
@@ -194982,46 +193514,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Ralts_(Pok%C3%A9mon)"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 280,
-     "name": "Ralts",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Ralts_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 281,
-     "name": "Kirlia",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Kirlia_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 282,
-     "name": "Gardevoir",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Gardevoir_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 302,
-     "name": "Sableye",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Sableye_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Bleu District",
      "version": "legends-za",
      "species": 303,
@@ -195047,7 +193539,7 @@
      "species": 303,
      "name": "Mawile",
      "serebii": "Wild",
-     "bulbapedia": "the Pokémon's page names it there (Only one)",
+     "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Mawile_(Pok%C3%A9mon)"
     },
@@ -195072,81 +193564,11 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Mawile_(Pok%C3%A9mon)"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 303,
-     "name": "Mawile",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Mawile_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 304,
-     "name": "Aron",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Aron_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 305,
-     "name": "Lairon",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Lairon_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 306,
-     "name": "Aggron",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Aggron_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 307,
-     "name": "Meditite",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Meditite_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 308,
-     "name": "Medicham",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Medicham_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Lysandre Labs",
      "version": "legends-za",
      "species": 309,
      "name": "Electrike",
      "serebii": "Wild",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Electrike_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 309,
-     "name": "Electrike",
-     "serebii": "Hyperspace",
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Electrike_(Pok%C3%A9mon)"
@@ -195162,106 +193584,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Manectric_(Pok%C3%A9mon)"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 310,
-     "name": "Manectric",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Manectric_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 315,
-     "name": "Roselia",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Roselia_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 316,
-     "name": "Gulpin",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Gulpin_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 317,
-     "name": "Swalot",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Swalot_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 318,
-     "name": "Carvanha",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Carvanha_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 319,
-     "name": "Sharpedo",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Sharpedo_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 322,
-     "name": "Numel",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Numel_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 323,
-     "name": "Camerupt",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Camerupt_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 325,
-     "name": "Spoink",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Spoink_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 326,
-     "name": "Grumpig",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Grumpig_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Bleu District",
      "version": "legends-za",
      "species": 333,
@@ -195312,46 +193634,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Swablu_(Pok%C3%A9mon)"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 333,
-     "name": "Swablu",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Swablu_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 334,
-     "name": "Altaria",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Altaria_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 335,
-     "name": "Zangoose",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Zangoose_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 336,
-     "name": "Seviper",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Seviper_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Vert District",
      "version": "legends-za",
      "species": 349,
@@ -195360,26 +193642,6 @@
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Feebas_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 349,
-     "name": "Feebas",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Feebas_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 352,
-     "name": "Kecleon",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Kecleon_(Pok%C3%A9mon)"
     },
     {
      "area": "Bleu District",
@@ -195432,37 +193694,17 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Shuppet_(Pok%C3%A9mon)"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 353,
-     "name": "Shuppet",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Shuppet_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 354,
-     "name": "Banette",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Banette_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 358,
-     "name": "Chimecho",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Chimecho_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Bleu District",
+     "version": "legends-za",
+     "species": 359,
+     "name": "Absol",
+     "serebii": "Wild",
+     "bulbapedia": "the Pokémon's page names it there",
+     "action": "add",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Absol_(Pok%C3%A9mon)"
+    },
+    {
+     "area": "Jaune District",
      "version": "legends-za",
      "species": 359,
      "name": "Absol",
@@ -195502,56 +193744,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Vert_District"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 359,
-     "name": "Absol",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Absol_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 361,
-     "name": "Snorunt",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Snorunt_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 362,
-     "name": "Glalie",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Glalie_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 371,
-     "name": "Bagon",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Bagon_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 372,
-     "name": "Shelgon",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Shelgon_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Lysandre Labs",
      "version": "legends-za",
      "species": 374,
@@ -195562,31 +193754,11 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Beldum_(Pok%C3%A9mon)"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 374,
-     "name": "Beldum",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Beldum_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Lysandre Labs",
      "version": "legends-za",
      "species": 375,
      "name": "Metang",
      "serebii": "Wild",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Metang_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 375,
-     "name": "Metang",
-     "serebii": "Hyperspace",
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Metang_(Pok%C3%A9mon)"
@@ -195612,36 +193784,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Latios_(Pok%C3%A9mon)"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 396,
-     "name": "Starly",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Starly_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 397,
-     "name": "Staravia",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Staravia_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 398,
-     "name": "Staraptor",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Staraptor_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Bleu District",
      "version": "legends-za",
      "species": 406,
@@ -195692,26 +193834,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Budew_(Pok%C3%A9mon)"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 406,
-     "name": "Budew",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Budew_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 407,
-     "name": "Roserade",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Roserade_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Bleu District",
      "version": "legends-za",
      "species": 427,
@@ -195740,66 +193862,6 @@
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Buneary_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 427,
-     "name": "Buneary",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Buneary_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 428,
-     "name": "Lopunny",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Lopunny_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 433,
-     "name": "Chingling",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Chingling_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 439,
-     "name": "Mime Jr.",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Mime_Jr._(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 443,
-     "name": "Gible",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Gible_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 444,
-     "name": "Gabite",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Gabite_(Pok%C3%A9mon)"
     },
     {
      "area": "Bleu District",
@@ -195850,156 +193912,6 @@
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Riolu_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 447,
-     "name": "Riolu",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Riolu_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 448,
-     "name": "Lucario",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Lucario_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 449,
-     "name": "Hippopotas",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Hippopotas_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 450,
-     "name": "Hippowdon",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Hippowdon_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 459,
-     "name": "Snover",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Snover_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 460,
-     "name": "Abomasnow",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Abomasnow_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 470,
-     "name": "Leafeon",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Leafeon_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 471,
-     "name": "Glaceon",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Glaceon_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 474,
-     "name": "Porygon-Z",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Porygon-Z_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 475,
-     "name": "Gallade",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Gallade_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 478,
-     "name": "Froslass",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Froslass_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 479,
-     "name": "Rotom",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Rotom_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 498,
-     "name": "Tepig",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Tepig_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 499,
-     "name": "Pignite",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Pignite_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 500,
-     "name": "Emboar",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Emboar_(Pok%C3%A9mon)"
     },
     {
      "area": "Bleu District",
@@ -196062,46 +193974,6 @@
      "source": ""
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 504,
-     "name": "Patrat",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Patrat_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 505,
-     "name": "Watchog",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Watchog_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 509,
-     "name": "Purrloin",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Purrloin_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 510,
-     "name": "Liepard",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Liepard_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Bleu District",
      "version": "legends-za",
      "species": 511,
@@ -196150,26 +194022,6 @@
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Pansage_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 511,
-     "name": "Pansage",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Pansage_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 512,
-     "name": "Simisage",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Simisage_(Pok%C3%A9mon)"
     },
     {
      "area": "Bleu District",
@@ -196222,26 +194074,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Pansear_(Pok%C3%A9mon)"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 513,
-     "name": "Pansear",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Pansear_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 514,
-     "name": "Simisear",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Simisear_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Bleu District",
      "version": "legends-za",
      "species": 515,
@@ -196290,156 +194122,6 @@
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Panpour_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 515,
-     "name": "Panpour",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Panpour_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 516,
-     "name": "Simipour",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Simipour_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 517,
-     "name": "Munna",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Munna_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 518,
-     "name": "Musharna",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Musharna_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 529,
-     "name": "Drilbur",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Drilbur_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 530,
-     "name": "Excadrill",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Excadrill_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 531,
-     "name": "Audino",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Audino_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 538,
-     "name": "Throh",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Throh_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 539,
-     "name": "Sawk",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Sawk_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 543,
-     "name": "Venipede",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Venipede_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 544,
-     "name": "Whirlipede",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Whirlipede_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 545,
-     "name": "Scolipede",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Scolipede_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 551,
-     "name": "Sandile",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Sandile_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 552,
-     "name": "Krokorok",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Krokorok_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 553,
-     "name": "Krookodile",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Krookodile_(Pok%C3%A9mon)"
     },
     {
      "area": "Bleu District",
@@ -196500,16 +194182,6 @@
      "bulbapedia": "neither the place's table nor the Pokémon's page has it there",
      "action": "skip",
      "source": ""
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 559,
-     "name": "Scraggy",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Scraggy_(Pok%C3%A9mon)"
     },
     {
      "area": "Bleu District",
@@ -196562,36 +194234,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Vert_District"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 560,
-     "name": "Scrafty",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Scrafty_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 562,
-     "name": "Yamask",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Yamask_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 563,
-     "name": "Cofagrigus",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Cofagrigus_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Bleu District",
      "version": "legends-za",
      "species": 568,
@@ -196642,16 +194284,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Trubbish_(Pok%C3%A9mon)"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 568,
-     "name": "Trubbish",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Trubbish_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Jaune District",
      "version": "legends-za",
      "species": 569,
@@ -196660,46 +194292,6 @@
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Garbodor_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 569,
-     "name": "Garbodor",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Garbodor_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 582,
-     "name": "Vanillite",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Vanillite_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 583,
-     "name": "Vanillish",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Vanillish_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 584,
-     "name": "Vanilluxe",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Vanilluxe_(Pok%C3%A9mon)"
     },
     {
      "area": "Bleu District",
@@ -196752,66 +194344,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Emolga_(Pok%C3%A9mon)"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 587,
-     "name": "Emolga",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Emolga_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 590,
-     "name": "Foongus",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Foongus_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 591,
-     "name": "Amoonguss",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Amoonguss_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 602,
-     "name": "Tynamo",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Tynamo_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 603,
-     "name": "Eelektrik",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Eelektrik_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 604,
-     "name": "Eelektross",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Eelektross_(Pok%C3%A9mon)"
-    },
-    {
      "area": "The Sewers - Main Access",
      "version": "legends-za",
      "species": 607,
@@ -196820,76 +194352,6 @@
      "bulbapedia": "neither the place's table nor the Pokémon's page has it there",
      "action": "skip",
      "source": ""
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 607,
-     "name": "Litwick",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Litwick_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 608,
-     "name": "Lampent",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Lampent_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 609,
-     "name": "Chandelure",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Chandelure_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 615,
-     "name": "Cryogonal",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Cryogonal_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 618,
-     "name": "Stunfisk",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Stunfisk_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 622,
-     "name": "Golett",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Golett_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 623,
-     "name": "Golurk",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Golurk_(Pok%C3%A9mon)"
     },
     {
      "area": "Hyperspace Lumiose",
@@ -196952,96 +194414,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Genesect_(Pok%C3%A9mon)"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 650,
-     "name": "Chespin",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Chespin_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 651,
-     "name": "Quilladin",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Quilladin_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 652,
-     "name": "Chesnaught",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Chesnaught_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 653,
-     "name": "Fennekin",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Fennekin_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 654,
-     "name": "Braixen",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Braixen_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 655,
-     "name": "Delphox",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Delphox_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 656,
-     "name": "Froakie",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Froakie_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 657,
-     "name": "Frogadier",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Frogadier_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 658,
-     "name": "Greninja",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Greninja_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Bleu District",
      "version": "legends-za",
      "species": 659,
@@ -197077,7 +194449,7 @@
      "species": 659,
      "name": "Bunnelby",
      "serebii": "Wild",
-     "bulbapedia": "the Pokémon's page names it there (Only one)",
+     "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Bunnelby_(Pok%C3%A9mon)"
     },
@@ -197090,26 +194462,6 @@
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Bunnelby_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 659,
-     "name": "Bunnelby",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Bunnelby_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 660,
-     "name": "Diggersby",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Diggersby_(Pok%C3%A9mon)"
     },
     {
      "area": "Bleu District",
@@ -197157,16 +194509,6 @@
      "species": 661,
      "name": "Fletchling",
      "serebii": "Wild",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Fletchling_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 661,
-     "name": "Fletchling",
-     "serebii": "Hyperspace",
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Fletchling_(Pok%C3%A9mon)"
@@ -197217,16 +194559,6 @@
      "species": 662,
      "name": "Fletchinder",
      "serebii": "Wild",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Fletchinder_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 662,
-     "name": "Fletchinder",
-     "serebii": "Hyperspace",
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Fletchinder_(Pok%C3%A9mon)"
@@ -197282,16 +194614,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Talonflame_(Pok%C3%A9mon)"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 663,
-     "name": "Talonflame",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Talonflame_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Bleu District",
      "version": "legends-za",
      "species": 664,
@@ -197342,16 +194664,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Scatterbug_(Pok%C3%A9mon)"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 664,
-     "name": "Scatterbug",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Scatterbug_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Bleu District",
      "version": "legends-za",
      "species": 665,
@@ -197387,7 +194699,7 @@
      "species": 665,
      "name": "Spewpa",
      "serebii": "Wild",
-     "bulbapedia": "the Pokémon's page names it there (Only one)",
+     "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Spewpa_(Pok%C3%A9mon)"
     },
@@ -197397,16 +194709,6 @@
      "species": 665,
      "name": "Spewpa",
      "serebii": "Wild",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Spewpa_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 665,
-     "name": "Spewpa",
-     "serebii": "Hyperspace",
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Spewpa_(Pok%C3%A9mon)"
@@ -197462,44 +194764,14 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Vert_District"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 666,
-     "name": "Vivillon",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Vivillon_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 667,
-     "name": "Litleo",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Litleo_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 668,
-     "name": "Pyroar",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Pyroar_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Bleu District",
      "version": "legends-za",
      "species": 669,
      "name": "Flabébé",
      "serebii": "Wild",
-     "bulbapedia": "neither the place's table nor the Pokémon's page has it there",
-     "action": "skip",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Bleu_District"
+     "bulbapedia": "the Pokémon's page names it there",
+     "action": "add",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Flab%C3%A9b%C3%A9_(Pok%C3%A9mon)"
     },
     {
      "area": "Jaune District",
@@ -197517,22 +194789,12 @@
      "species": 669,
      "name": "Flabébé",
      "serebii": "Wild",
-     "bulbapedia": "neither the place's table nor the Pokémon's page has it there",
-     "action": "skip",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Magenta_District"
+     "bulbapedia": "the Pokémon's page names it there",
+     "action": "add",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Flab%C3%A9b%C3%A9_(Pok%C3%A9mon)"
     },
     {
      "area": "Rouge District",
-     "version": "legends-za",
-     "species": 669,
-     "name": "Flabébé",
-     "serebii": "Wild",
-     "bulbapedia": "neither the place's table nor the Pokémon's page has it there",
-     "action": "skip",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Rouge_District"
-    },
-    {
-     "area": "Vert District",
      "version": "legends-za",
      "species": 669,
      "name": "Flabébé",
@@ -197542,11 +194804,11 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Flab%C3%A9b%C3%A9_(Pok%C3%A9mon)"
     },
     {
-     "area": "Hyperspace Lumiose",
+     "area": "Vert District",
      "version": "legends-za",
      "species": 669,
      "name": "Flabébé",
-     "serebii": "Hyperspace",
+     "serebii": "Wild",
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Flab%C3%A9b%C3%A9_(Pok%C3%A9mon)"
@@ -197600,76 +194862,6 @@
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Floette_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 670,
-     "name": "Floette",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Floette_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 671,
-     "name": "Florges",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Florges_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 672,
-     "name": "Skiddo",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Skiddo_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 673,
-     "name": "Gogoat",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Gogoat_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 674,
-     "name": "Pancham",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Pancham_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 675,
-     "name": "Pangoro",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Pangoro_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 676,
-     "name": "Furfrou",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Furfrou_(Pok%C3%A9mon)"
     },
     {
      "area": "Bleu District",
@@ -197722,31 +194914,11 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Espurr_(Pok%C3%A9mon)"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 677,
-     "name": "Espurr",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Espurr_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 678,
-     "name": "Meowstic",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Meowstic_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
+     "area": "Lysandre Labs",
      "version": "legends-za",
      "species": 679,
      "name": "Honedge",
-     "serebii": "Hyperspace",
+     "serebii": "Wild",
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Honedge_(Pok%C3%A9mon)"
@@ -197762,26 +194934,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Doublade_(Pok%C3%A9mon)"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 680,
-     "name": "Doublade",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Doublade_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 681,
-     "name": "Aegislash",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Aegislash_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Bleu District",
      "version": "legends-za",
      "species": 682,
@@ -197832,26 +194984,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Vert_District"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 682,
-     "name": "Spritzee",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Spritzee_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 683,
-     "name": "Aromatisse",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Aromatisse_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Bleu District",
      "version": "legends-za",
      "species": 684,
@@ -197900,26 +195032,6 @@
      "bulbapedia": "neither the place's table nor the Pokémon's page has it there",
      "action": "skip",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Vert_District"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 684,
-     "name": "Swirlix",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Swirlix_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 685,
-     "name": "Slurpuff",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Slurpuff_(Pok%C3%A9mon)"
     },
     {
      "area": "The Sewers - Main Access",
@@ -197940,26 +195052,6 @@
      "bulbapedia": "neither the place's table nor the Pokémon's page has it there",
      "action": "skip",
      "source": ""
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 686,
-     "name": "Inkay",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Inkay_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 687,
-     "name": "Malamar",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Malamar_(Pok%C3%A9mon)"
     },
     {
      "area": "Bleu District",
@@ -198012,26 +195104,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Vert_District"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 688,
-     "name": "Binacle",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Binacle_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 689,
-     "name": "Barbaracle",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Barbaracle_(Pok%C3%A9mon)"
-    },
-    {
      "area": "The Sewers - Main Access",
      "version": "legends-za",
      "species": 690,
@@ -198052,16 +195124,6 @@
      "source": ""
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 690,
-     "name": "Skrelp",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Skrelp_(Pok%C3%A9mon)"
-    },
-    {
      "area": "The Sewers - Main Access",
      "version": "legends-za",
      "species": 691,
@@ -198072,106 +195134,6 @@
      "source": ""
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 691,
-     "name": "Dragalge",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Dragalge_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 692,
-     "name": "Clauncher",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Clauncher_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 693,
-     "name": "Clawitzer",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Clawitzer_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 694,
-     "name": "Helioptile",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Helioptile_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 695,
-     "name": "Heliolisk",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Heliolisk_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 696,
-     "name": "Tyrunt",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Tyrunt_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 697,
-     "name": "Tyrantrum",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Tyrantrum_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 698,
-     "name": "Amaura",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Amaura_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 699,
-     "name": "Aurorus",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Aurorus_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 700,
-     "name": "Sylveon",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Sylveon_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Bleu District",
      "version": "legends-za",
      "species": 701,
@@ -198217,16 +195179,6 @@
      "species": 701,
      "name": "Hawlucha",
      "serebii": "Wild",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Hawlucha_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 701,
-     "name": "Hawlucha",
-     "serebii": "Hyperspace",
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Hawlucha_(Pok%C3%A9mon)"
@@ -198280,26 +195232,6 @@
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Dedenne_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 702,
-     "name": "Dedenne",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Dedenne_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 703,
-     "name": "Carbink",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Carbink_(Pok%C3%A9mon)"
     },
     {
      "area": "Bleu District",
@@ -198362,16 +195294,6 @@
      "source": ""
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 704,
-     "name": "Goomy",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Goomy_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Bleu District",
      "version": "legends-za",
      "species": 705,
@@ -198420,26 +195342,6 @@
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Sliggoo_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 705,
-     "name": "Sliggoo",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Sliggoo_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 706,
-     "name": "Goodra",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Goodra_(Pok%C3%A9mon)"
     },
     {
      "area": "The Sewers - Main Access",
@@ -198460,26 +195362,6 @@
      "bulbapedia": "neither the place's table nor the Pokémon's page has it there",
      "action": "skip",
      "source": ""
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 707,
-     "name": "Klefki",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Klefki_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 708,
-     "name": "Phantump",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Phantump_(Pok%C3%A9mon)"
     },
     {
      "area": "Wild Zone 15",
@@ -198490,56 +195372,6 @@
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Trevenant_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 709,
-     "name": "Trevenant",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Trevenant_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 710,
-     "name": "Pumpkaboo",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Pumpkaboo_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 711,
-     "name": "Gourgeist",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Gourgeist_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 712,
-     "name": "Bergmite",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Bergmite_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 713,
-     "name": "Avalugg",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Avalugg_(Pok%C3%A9mon)"
     },
     {
      "area": "Wild Zone 15",
@@ -198632,16 +195464,6 @@
      "source": ""
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 714,
-     "name": "Noibat",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Noibat_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Lysandre Labs",
      "version": "legends-za",
      "species": 715,
@@ -198652,22 +195474,12 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Noivern_(Pok%C3%A9mon)"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 715,
-     "name": "Noivern",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Noivern_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Rouge District",
      "version": "legends-za",
      "species": 717,
      "name": "Yveltal",
      "serebii": "Wild",
-     "bulbapedia": "the Pokémon's page names it there (Only one)",
+     "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Yveltal_(Pok%C3%A9mon)"
     },
@@ -198690,86 +195502,6 @@
      "bulbapedia": "the Pokémon's page names it there (Only one)",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Hoopa_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 739,
-     "name": "Crabrawler",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Crabrawler_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 740,
-     "name": "Crabominable",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Crabominable_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 767,
-     "name": "Wimpod",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Wimpod_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 768,
-     "name": "Golisopod",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Golisopod_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 769,
-     "name": "Sandygast",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Sandygast_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 770,
-     "name": "Palossand",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Palossand_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 778,
-     "name": "Mimikyu",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Mimikyu_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 780,
-     "name": "Drampa",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Drampa_(Pok%C3%A9mon)"
     },
     {
      "area": "Quasartico Inc.",
@@ -198820,446 +195552,272 @@
      "bulbapedia": "the Pokémon's page names it there (Only one)",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Melmetal_(Pok%C3%A9mon)"
+    }
+   ],
+   "battleOnly": [
+    {
+     "place": "Jaune District",
+     "species": 323,
+     "name": "Camerupt",
+     "levels": [
+      34,
+      34
+     ],
+     "why": "Rogue Mega Evolved Camerupt is battled",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Jaune_Sector_3"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 821,
-     "name": "Rookidee",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Rookidee_(Pok%C3%A9mon)"
+     "place": "Jaune District",
+     "species": 306,
+     "name": "Aggron",
+     "levels": [
+      62,
+      62
+     ],
+     "why": "Rogue Mega Evolved Aggron and Salamence are battled",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Jaune_Sector_3"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 822,
-     "name": "Corvisquire",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Corvisquire_(Pok%C3%A9mon)"
+     "place": "Jaune District",
+     "species": 373,
+     "name": "Salamence",
+     "levels": [
+      62,
+      62
+     ],
+     "why": "Rogue Mega Evolved Aggron and Salamence are battled",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Jaune_Sector_3"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 823,
-     "name": "Corviknight",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Corviknight_(Pok%C3%A9mon)"
+     "place": "Jaune District",
+     "species": 248,
+     "name": "Tyranitar",
+     "levels": [
+      59,
+      59
+     ],
+     "why": "Rogue Mega Evolved Tyranitar is battled",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Jaune_Sector_4"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 827,
-     "name": "Nickit",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Nickit_(Pok%C3%A9mon)"
+     "place": "Jaune District",
+     "species": 248,
+     "name": "Tyranitar",
+     "levels": [
+      59,
+      59
+     ],
+     "why": "Rogue Mega Evolved Tyranitar is battled",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Jaune_Sector_4"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 828,
-     "name": "Thievul",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Thievul_(Pok%C3%A9mon)"
+     "place": "Jaune District",
+     "species": 3,
+     "name": "Venusaur",
+     "levels": [
+      53,
+      53
+     ],
+     "why": "Rogue Mega Evolved Venusaur is battled",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Jaune_Sector_8"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 848,
-     "name": "Toxel",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Toxel_(Pok%C3%A9mon)"
+     "place": "Jaune District",
+     "species": 354,
+     "name": "Banette",
+     "levels": [
+      41,
+      41
+     ],
+     "why": "Rogue Mega Evolved Banette is battled",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Jaune_Sector_9"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 849,
-     "name": "Toxtricity",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Toxtricity_(Pok%C3%A9mon)"
+     "place": "Jaune District",
+     "species": 354,
+     "name": "Banette",
+     "levels": [
+      41,
+      41
+     ],
+     "why": "Rogue Mega Evolved Banette is battled",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Jaune_Sector_9"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 852,
-     "name": "Clobbopus",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Clobbopus_(Pok%C3%A9mon)"
+     "place": "Jaune District",
+     "species": 359,
+     "name": "Absol",
+     "levels": [
+      25,
+      25
+     ],
+     "why": "Rogue Mega Evolved Absol is battled",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Jaune_Sector_10"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 853,
-     "name": "Grapploct",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Grapploct_(Pok%C3%A9mon)"
+     "place": "Vert District",
+     "species": 149,
+     "name": "Dragonite",
+     "levels": [
+      59,
+      59
+     ],
+     "why": "Rogue Mega Evolved Dragonite is battled",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Vert_Sector_3"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 863,
-     "name": "Perrserker",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Perrserker_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 866,
-     "name": "Mr. Rime",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Mr._Rime_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 870,
-     "name": "Falinks",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Falinks_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 876,
-     "name": "Indeedee",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Indeedee_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 877,
-     "name": "Morpeko",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Morpeko_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 900,
-     "name": "Kleavor",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Kleavor_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 904,
-     "name": "Overqwil",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Overqwil_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 926,
-     "name": "Fidough",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Fidough_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 927,
-     "name": "Dachsbun",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Dachsbun_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
+     "place": "Vert District",
      "species": 931,
      "name": "Squawkabilly",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Squawkabilly_(Pok%C3%A9mon)"
+     "levels": [
+      75,
+      75
+     ],
+     "why": "None of the four can be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Vert_Sector_3"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 932,
-     "name": "Nacli",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Nacli_(Pok%C3%A9mon)"
+     "place": "Vert District",
+     "species": 931,
+     "name": "Squawkabilly",
+     "levels": [
+      75,
+      75
+     ],
+     "why": "None of the four can be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Vert_Sector_3"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 933,
-     "name": "Naclstack",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Naclstack_(Pok%C3%A9mon)"
+     "place": "Vert District",
+     "species": 931,
+     "name": "Squawkabilly",
+     "levels": [
+      75,
+      75
+     ],
+     "why": "None of the four can be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Vert_Sector_3"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 934,
-     "name": "Garganacl",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Garganacl_(Pok%C3%A9mon)"
+     "place": "Vert District",
+     "species": 931,
+     "name": "Squawkabilly",
+     "levels": [
+      75,
+      75
+     ],
+     "why": "None of the four can be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Vert_Sector_3"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 935,
-     "name": "Charcadet",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Charcadet_(Pok%C3%A9mon)"
+     "place": "Vert District",
+     "species": 15,
+     "name": "Beedrill",
+     "levels": [
+      41,
+      41
+     ],
+     "why": "Rogue Mega Evolved Beedrill is battled",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Vert_Sector_5"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 942,
-     "name": "Maschiff",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Maschiff_(Pok%C3%A9mon)"
+     "place": "Vert District",
+     "species": 14,
+     "name": "Kakuna",
+     "levels": [
+      7,
+      7
+     ],
+     "why": "Rogue Mega Evolved Beedrill is battled",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Vert_Sector_5"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 943,
-     "name": "Mabosstiff",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Mabosstiff_(Pok%C3%A9mon)"
+     "place": "Vert District",
+     "species": 15,
+     "name": "Beedrill",
+     "levels": [
+      10,
+      10
+     ],
+     "why": "Rogue Mega Evolved Beedrill is battled",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Vert_Sector_5"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 944,
-     "name": "Shroodle",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Shroodle_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 945,
-     "name": "Grafaiai",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Grafaiai_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 951,
-     "name": "Capsakid",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Capsakid_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 952,
-     "name": "Scovillain",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Scovillain_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 957,
-     "name": "Tinkatink",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Tinkatink_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 958,
-     "name": "Tinkatuff",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Tinkatuff_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 959,
-     "name": "Tinkaton",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Tinkaton_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 967,
-     "name": "Cyclizar",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Cyclizar_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 969,
-     "name": "Glimmet",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Glimmet_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 970,
-     "name": "Glimmora",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Glimmora_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 971,
-     "name": "Greavard",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Greavard_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
+     "place": "Wild Zone 4",
      "species": 972,
      "name": "Houndstone",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Houndstone_(Pok%C3%A9mon)"
+     "levels": [
+      75,
+      75
+     ],
+     "why": "None of them can be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Wild_Zone_4"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 973,
-     "name": "Flamigo",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Flamigo_(Pok%C3%A9mon)"
+     "place": "Wild Zone 4",
+     "species": 971,
+     "name": "Greavard",
+     "levels": [
+      50,
+      50
+     ],
+     "why": "None of them can be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Wild_Zone_4"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 977,
-     "name": "Dondozo",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Dondozo_(Pok%C3%A9mon)"
+     "place": "Lysandre Labs",
+     "species": 681,
+     "name": "Aegislash",
+     "levels": [
+      50,
+      50
+     ],
+     "why": "None of them can be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Lysandre_Labs"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 978,
-     "name": "Tatsugiri",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Tatsugiri_(Pok%C3%A9mon)"
+     "place": "Lysandre Labs",
+     "species": 679,
+     "name": "Honedge",
+     "levels": [
+      34,
+      34
+     ],
+     "why": "None of them can be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Lysandre_Labs"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 996,
-     "name": "Frigibax",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Frigibax_(Pok%C3%A9mon)"
+     "place": "Lysandre Labs",
+     "species": 679,
+     "name": "Honedge",
+     "levels": [
+      34,
+      34
+     ],
+     "why": "None of them can be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Lysandre_Labs"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 997,
-     "name": "Arctibax",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Arctibax_(Pok%C3%A9mon)"
+     "place": "Wild Zone 6",
+     "species": 979,
+     "name": "Annihilape",
+     "levels": [
+      99,
+      99
+     ],
+     "why": "can not be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Wild_Zone_6"
     },
     {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 998,
-     "name": "Baxcalibur",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Baxcalibur_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Hyperspace Lumiose",
-     "version": "legends-za",
-     "species": 999,
-     "name": "Gimmighoul",
-     "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Gimmighoul_(Pok%C3%A9mon)"
+     "place": "Wild Zone 17",
+     "species": 227,
+     "name": "Skarmory",
+     "levels": [
+      65,
+      65
+     ],
+     "why": "cannot be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Wild_Zone_17"
     }
    ],
    "coverageLosses": []

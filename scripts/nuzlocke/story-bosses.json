@@ -3083,5 +3083,753 @@
    },
    "source": "https://bulbapedia.bulbagarden.net/wiki/Barry_(game)"
   }
+ ],
+ "legends-arceus": [
+  {
+   "after": "jubilife-village",
+   "boss": {
+    "name": "Volo (Jubilife Village)",
+    "kind": "story",
+    "cap": 5
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Volo"
+  },
+  {
+   "after": "obsidian-fieldlands",
+   "boss": {
+    "name": "Rei/Akari (Training grounds)",
+    "kind": "story",
+    "cap": 9
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Akari_(game)"
+  },
+  {
+   "after": "obsidian-fieldlands",
+   "boss": {
+    "name": "Mai (Deertrack Path)",
+    "kind": "story",
+    "cap": 10
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Mai"
+  },
+  {
+   "after": "obsidian-fieldlands",
+   "boss": {
+    "name": "Lian (Grandtree Arena)",
+    "kind": "story",
+    "cap": 15
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Lian"
+  },
+  {
+   "after": "obsidian-fieldlands",
+   "boss": {
+    "name": "Irida (Grandtree Arena)",
+    "kind": "story",
+    "cap": 17
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Irida"
+  },
+  {
+   "afterBoss": "Noble Kleavor",
+   "boss": {
+    "name": "Rei/Akari (Jubilife Village)",
+    "kind": "story",
+    "cap": 20
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Akari_(game)"
+  },
+  {
+   "after": "crimson-mirelands",
+   "boss": {
+    "name": "Volo (Solaceon Ruins)",
+    "kind": "story",
+    "cap": 22
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Volo"
+  },
+  {
+   "after": "crimson-mirelands",
+   "boss": {
+    "name": "Coin (Golden Lowlands)",
+    "kind": "story",
+    "cap": 23
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Walkthrough:Pok%C3%A9mon_Legends:_Arceus/Part_5"
+  },
+  {
+   "after": "crimson-mirelands",
+   "boss": {
+    "name": "Ursaluna (Sludge Mound)",
+    "kind": "story",
+    "cap": 26
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Walkthrough:Pok%C3%A9mon_Legends:_Arceus/Part_5"
+  },
+  {
+   "after": "cobalt-coastlands",
+   "boss": {
+    "name": "Irida (Coastlands Camp)",
+    "kind": "story",
+    "cap": 30
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Irida"
+  },
+  {
+   "after": "coronet-highlands",
+   "boss": {
+    "name": "Melli (Coronet Highlands)",
+    "kind": "story",
+    "cap": 40
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Melli"
+  },
+  {
+   "after": "coronet-highlands",
+   "boss": {
+    "name": "Ingo (Clamberclaw Cliffs)",
+    "kind": "story",
+    "cap": 42
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Ingo"
+  },
+  {
+   "after": "coronet-highlands",
+   "boss": {
+    "name": "Melli (Moonview Arena)",
+    "kind": "story",
+    "cap": 44
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Melli"
+  },
+  {
+   "afterBoss": "Noble Avalugg",
+   "boss": {
+    "name": "Beni (Stone Portal)",
+    "kind": "story",
+    "cap": 60
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Beni"
+  },
+  {
+   "afterBoss": "Noble Avalugg",
+   "boss": {
+    "name": "Kamado (Temple of Sinnoh)",
+    "kind": "story",
+    "cap": 62
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Kamado"
+  },
+  {
+   "afterBoss": "Noble Avalugg",
+   "boss": {
+    "name": "Charm (Primeval Grotto)",
+    "kind": "story",
+    "cap": 62
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Walkthrough:Pok%C3%A9mon_Legends:_Arceus/Part_13"
+  },
+  {
+   "afterBoss": "Noble Avalugg",
+   "boss": {
+    "name": "Origin Forme Dialga or Palkia (Temple of Sinnoh)",
+    "kind": "story",
+    "cap": 65
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Walkthrough:Pok%C3%A9mon_Legends:_Arceus/Part_13"
+  },
+  {
+   "afterBoss": "Noble Avalugg",
+   "boss": {
+    "name": "Volo (Temple of Sinnoh)",
+    "kind": "story",
+    "cap": 68
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Volo"
+  },
+  {
+   "afterBoss": "Noble Avalugg",
+   "boss": {
+    "name": "Giratina (Temple of Sinnoh)",
+    "kind": "story",
+    "cap": 70
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Volo"
+  }
+ ],
+ "scarlet-violet": [
+  {
+   "after": "cabo-poco",
+   "boss": {
+    "name": "Nemona (Cabo Poco)",
+    "kind": "story",
+    "cap": 5
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Nemona"
+  },
+  {
+   "after": "inlet-grotto",
+   "boss": {
+    "name": "Arven (Poco Path)",
+    "kind": "story",
+    "cap": 5
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Arven"
+  },
+  {
+   "after": "south-province-area-one",
+   "boss": {
+    "name": "Nemona (South Province (Area One))",
+    "kind": "story",
+    "cap": 9
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Nemona"
+  },
+  {
+   "afterBoss": "Team Star Giacomo",
+   "boss": {
+    "name": "Nemona (third Gym)",
+    "kind": "story",
+    "cap": 22
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Nemona"
+  },
+  {
+   "afterBoss": "Larry",
+   "boss": {
+    "name": "Nemona (fifth Gym)",
+    "kind": "story",
+    "cap": 37
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Nemona"
+  },
+  {
+   "afterBoss": "Ryme",
+   "boss": {
+    "name": "Nemona (seventh Gym)",
+    "kind": "story",
+    "cap": 43
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Nemona"
+  },
+  {
+   "afterBoss": "Top Champion Geeta",
+   "boss": {
+    "name": "Clavell (Naranja/Uva Academy)",
+    "kind": "story",
+    "cap": 61
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Clavell"
+  },
+  {
+   "afterBoss": "Top Champion Geeta",
+   "boss": {
+    "name": "Penny (Naranja/Uva Academy)",
+    "kind": "story",
+    "cap": 63
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Penny"
+  },
+  {
+   "afterBoss": "Top Champion Geeta",
+   "boss": {
+    "name": "Arven (Poco Path Lighthouse)",
+    "kind": "story",
+    "cap": 63
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Arven"
+  },
+  {
+   "afterBoss": "Top Champion Geeta",
+   "boss": {
+    "name": "Nemona (Mesagoza)",
+    "kind": "story",
+    "cap": 66
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Nemona"
+  },
+  {
+   "after": "area-zero",
+   "boss": {
+    "name": "AI Sada (Zero Lab)",
+    "kind": "story",
+    "cap": 67,
+    "versions": [
+     "scarlet"
+    ]
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Professor_Sada"
+  },
+  {
+   "after": "area-zero",
+   "boss": {
+    "name": "AI Turo (Zero Lab)",
+    "kind": "story",
+    "cap": 67,
+    "versions": [
+     "violet"
+    ]
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Professor_Turo"
+  },
+  {
+   "after": "area-zero",
+   "boss": {
+    "name": "Koraidon (Zero Lab)",
+    "kind": "story",
+    "cap": 72,
+    "versions": [
+     "scarlet"
+    ]
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Professor_Sada"
+  },
+  {
+   "after": "area-zero",
+   "boss": {
+    "name": "Miraidon (Zero Lab)",
+    "kind": "story",
+    "cap": 72,
+    "versions": [
+     "violet"
+    ]
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Professor_Turo"
+  }
+ ],
+ "legends-za": [
+  {
+   "after": "vert-district",
+   "boss": {
+    "name": "Urbain/Taunie (Hotel Z)",
+    "kind": "story",
+    "cap": 5
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Urbain"
+  },
+  {
+   "after": "wild-zone-1",
+   "boss": {
+    "name": "Zach (South Boulevard)",
+    "cap": 9
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Zach"
+  },
+  {
+   "after": "wild-zone-2",
+   "boss": {
+    "name": "Josée (Rouge Plaza)",
+    "kind": "story",
+    "cap": 11
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Jos%C3%A9e"
+  },
+  {
+   "after": "wild-zone-4",
+   "boss": {
+    "name": "Emma (Looker Bureau)",
+    "kind": "story",
+    "cap": 15
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Emma"
+  },
+  {
+   "after": "wild-zone-5",
+   "boss": {
+    "name": "Yvon (Bleu Plaza)",
+    "cap": 16
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Yvon"
+  },
+  {
+   "after": "wild-zone-5",
+   "boss": {
+    "name": "Naveen (Hotel Z)",
+    "kind": "story",
+    "cap": 17
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Naveen"
+  },
+  {
+   "after": "wild-zone-6",
+   "boss": {
+    "name": "Xavi (Académie Étoile)",
+    "cap": 21
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Xavi"
+  },
+  {
+   "after": "wild-zone-6",
+   "boss": {
+    "name": "Lida (Vert District)",
+    "kind": "story",
+    "cap": 23
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Lida"
+  },
+  {
+   "after": "wild-zone-7",
+   "boss": {
+    "name": "Rintaro (Restaurant Le Nah)",
+    "cap": 24
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Rintaro"
+  },
+  {
+   "after": "wild-zone-7",
+   "boss": {
+    "name": "Rogue Mega Absol (Jaune Sector 6)",
+    "cap": 25
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Rogue_Mega_Evolution"
+  },
+  {
+   "after": "wild-zone-7",
+   "boss": {
+    "name": "Urbain/Taunie (Hotel Z, second)",
+    "kind": "story",
+    "cap": 26
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Urbain"
+  },
+  {
+   "after": "wild-zone-10",
+   "boss": {
+    "name": "Vinnie (Quasartico Inc.)",
+    "cap": 32
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Vinnie"
+  },
+  {
+   "after": "wild-zone-10",
+   "boss": {
+    "name": "Rogue Mega Slowbro (Aymlis Park)",
+    "cap": 34
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Rogue_Mega_Evolution"
+  },
+  {
+   "after": "wild-zone-10",
+   "boss": {
+    "name": "Rogue Mega Camerupt (Jaune Sector 3)",
+    "cap": 34
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Rogue_Mega_Evolution"
+  },
+  {
+   "after": "wild-zone-10",
+   "boss": {
+    "name": "Rogue Mega Victreebel (Magenta Sector 9)",
+    "cap": 34
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Rogue_Mega_Evolution"
+  },
+  {
+   "after": "wild-zone-10",
+   "boss": {
+    "name": "Naveen (Hotel Z, second)",
+    "kind": "story",
+    "cap": 33
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Naveen"
+  },
+  {
+   "after": "wild-zone-10",
+   "boss": {
+    "name": "Tarragon (Racine Construction)",
+    "kind": "story",
+    "cap": 37
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Tarragon"
+  },
+  {
+   "after": "wild-zone-10",
+   "boss": {
+    "name": "Canari (Racine Construction)",
+    "cap": 39
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Canari"
+  },
+  {
+   "after": "wild-zone-13",
+   "boss": {
+    "name": "Rogue Mega Beedrill (Vert Sector 5)",
+    "cap": 41
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Rogue_Mega_Evolution"
+  },
+  {
+   "after": "wild-zone-13",
+   "boss": {
+    "name": "Rogue Mega Hawlucha (Magenta Sector 3)",
+    "cap": 41
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Rogue_Mega_Evolution"
+  },
+  {
+   "after": "wild-zone-13",
+   "boss": {
+    "name": "Rogue Mega Banette (Jaune Sector 9)",
+    "cap": 41
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Rogue_Mega_Evolution"
+  },
+  {
+   "after": "wild-zone-13",
+   "boss": {
+    "name": "Josée (Justice Dojo)",
+    "kind": "story",
+    "cap": 43
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Jos%C3%A9e"
+  },
+  {
+   "after": "wild-zone-13",
+   "boss": {
+    "name": "Canari (Racine Construction, second)",
+    "kind": "story",
+    "cap": 44
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Canari"
+  },
+  {
+   "after": "wild-zone-13",
+   "boss": {
+    "name": "Gwynn (Lumiose Sewers)",
+    "kind": "story",
+    "cap": 45
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Gwynn"
+  },
+  {
+   "after": "wild-zone-13",
+   "boss": {
+    "name": "Ivor (Justice Dojo)",
+    "cap": 47
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Ivor"
+  },
+  {
+   "after": "wild-zone-15",
+   "boss": {
+    "name": "Philippe (Rust Syndicate)",
+    "kind": "story",
+    "cap": 47
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Philippe"
+  },
+  {
+   "after": "wild-zone-15",
+   "boss": {
+    "name": "Rogue Mega Mawile (Magenta Sector 6)",
+    "cap": 48
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Rogue_Mega_Evolution"
+  },
+  {
+   "after": "wild-zone-15",
+   "boss": {
+    "name": "Rogue Mega Barbaracle (Bleu Sector 5)",
+    "cap": 48
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Rogue_Mega_Evolution"
+  },
+  {
+   "after": "wild-zone-15",
+   "boss": {
+    "name": "Gwynn (Rouge District)",
+    "kind": "story",
+    "cap": 47
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Gwynn"
+  },
+  {
+   "after": "wild-zone-15",
+   "boss": {
+    "name": "Rogue Mega Ampharos (Rouge Sector 6)",
+    "cap": 48
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Rogue_Mega_Evolution"
+  },
+  {
+   "after": "wild-zone-15",
+   "boss": {
+    "name": "Corbeau (Rust Syndicate Office)",
+    "cap": 52
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Corbeau"
+  },
+  {
+   "after": "wild-zone-17",
+   "boss": {
+    "name": "Lida (Vert District, second)",
+    "kind": "story",
+    "cap": 48
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Lida"
+  },
+  {
+   "after": "wild-zone-17",
+   "boss": {
+    "name": "Naveen (Vert District)",
+    "kind": "story",
+    "cap": 50
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Naveen"
+  },
+  {
+   "after": "wild-zone-17",
+   "boss": {
+    "name": "Asami (Vernal Avenue)",
+    "kind": "story",
+    "cap": 50
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Asami"
+  },
+  {
+   "after": "wild-zone-17",
+   "boss": {
+    "name": "Rogue Mega Froslass (Aymlis Park)",
+    "cap": 53
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Rogue_Mega_Evolution"
+  },
+  {
+   "after": "wild-zone-17",
+   "boss": {
+    "name": "Rogue Mega Altaria (Magenta Sector 4)",
+    "cap": 53
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Rogue_Mega_Evolution"
+  },
+  {
+   "after": "wild-zone-17",
+   "boss": {
+    "name": "Rogue Mega Venusaur (Jaune Sector 8)",
+    "cap": 53
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Rogue_Mega_Evolution"
+  },
+  {
+   "after": "wild-zone-17",
+   "boss": {
+    "name": "Lebanne (Hotel Z)",
+    "kind": "story",
+    "cap": 54
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Lebanne"
+  },
+  {
+   "after": "wild-zone-17",
+   "boss": {
+    "name": "Canari (Hotel Richissime)",
+    "kind": "story",
+    "cap": 55
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Canari"
+  },
+  {
+   "after": "wild-zone-17",
+   "boss": {
+    "name": "Ivor (Hotel Richissime)",
+    "kind": "story",
+    "cap": 55
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Ivor"
+  },
+  {
+   "after": "wild-zone-17",
+   "boss": {
+    "name": "Corbeau (Hotel Richissime)",
+    "kind": "story",
+    "cap": 56
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Corbeau"
+  },
+  {
+   "after": "wild-zone-17",
+   "boss": {
+    "name": "Jacinthe (Hotel Richissime)",
+    "cap": 59
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Jacinthe"
+  },
+  {
+   "after": "wild-zone-19",
+   "boss": {
+    "name": "Rogue Mega Dragonite (Vert Sector 3)",
+    "cap": 59
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Rogue_Mega_Evolution"
+  },
+  {
+   "after": "wild-zone-19",
+   "boss": {
+    "name": "Rogue Mega Tyranitar (Jaune Sector 4)",
+    "cap": 59
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Rogue_Mega_Evolution"
+  },
+  {
+   "after": "wild-zone-19",
+   "boss": {
+    "name": "Rogue Mega Starmie (Bleu Sector 9)",
+    "cap": 59
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Rogue_Mega_Evolution"
+  },
+  {
+   "after": "wild-zone-19",
+   "boss": {
+    "name": "Philippe (Bleu District)",
+    "kind": "story",
+    "cap": 57
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Philippe"
+  },
+  {
+   "after": "wild-zone-19",
+   "boss": {
+    "name": "Emma (Looker Bureau, second)",
+    "kind": "story",
+    "cap": 58
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Emma"
+  },
+  {
+   "after": "wild-zone-19",
+   "boss": {
+    "name": "Griselle (Lysandre Café)",
+    "kind": "story",
+    "cap": 61
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Griselle"
+  },
+  {
+   "after": "wild-zone-19",
+   "boss": {
+    "name": "Grisham (Centrico Plaza)",
+    "cap": 63
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Grisham"
+  },
+  {
+   "after": "wild-zone-19",
+   "boss": {
+    "name": "Urbain/Taunie (Centrico Plaza)",
+    "kind": "story",
+    "cap": 64
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Urbain"
+  },
+  {
+   "after": "wild-zone-19",
+   "boss": {
+    "name": "Rogue Mega Pokémon (Operation Protect Lumiose)",
+    "kind": "story",
+    "cap": 62
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Rogue_Mega_Evolution"
+  }
  ]
 }
