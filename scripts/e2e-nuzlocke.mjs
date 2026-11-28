@@ -112,7 +112,7 @@ export async function runNuzlocke({ browser, BASE, OUT, errors, step }) {
   try {
     await startRun(page, BASE, { name: "E2E Run" });
     if ((await text(page, "nz-run-name")) !== "E2E Run") fail("the run's name isn't shown");
-    if ((await text(page, "nz-version")) !== "FireRed") fail("the run's version isn't FireRed");
+    if ((await page.getByTestId("nz-version").textContent())?.trim() !== "FireRed") fail("the run's version isn't FireRed");
     if ((await page.getByTestId("nz-onboarding").count()) !== 1) fail("no first-run tips");
     await page.getByTestId("nz-onboarding-ok").click();
 

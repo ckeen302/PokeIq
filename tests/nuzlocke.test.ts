@@ -66,9 +66,8 @@ class MemoryStorage {
 }
 
 describe("the game data the screens use", () => {
-  it("reads the dev fixture only until the real data lands", () => {
-    // Once nuzlocke-data is merged, games.ts exists and the fixture must be gone (source.ts re-exports ./games).
-    if (existsSync("src/lib/nuzlocke/games.ts")) expect(existsSync("src/lib/nuzlocke/dev-fixture.ts")).toBe(false);
+  it("is on the real game data, with no dev fixture left", () => {
+    expect(existsSync("src/lib/nuzlocke/dev-fixture.ts")).toBe(false);
     expect(NUZ_GAMES.length).toBeGreaterThan(0);
   });
 
@@ -128,6 +127,10 @@ describe("the game data the screens use", () => {
     expect(g7.mons["rattata-alola"].art).toBe(10091);
     expect(g7.mons["rattata-alola"].name).toBe("Alolan Rattata");
     expect(g7.mons["rattata-alola"].showdown).toBe("Rattata-Alola");
+    // The Team Builder's first pick of ability, from Gen 3 on.
+    expect(g1.mons["35"].ability).toBeUndefined();
+    expect(g6.mons["35"].ability).toBe("Cute Charm");
+    expect(g7.mons["rattata-alola"].ability).toBe("Gluttony");
   });
 
   it("offers each generation's own evolutions", () => {

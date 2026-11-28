@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { ArrowLeftRight, BookOpen, ChevronsUp, Flower2, GripVertical, HeartCrack, MoveLeft, MoveRight, Package, ShieldAlert, Swords, Undo2, Users } from "lucide-react";
+import { ArrowLeftRight, BookOpen, ChevronsUp, Flower2, HeartCrack, MoveDown, MoveUp, Package, ShieldAlert, Swords, Undo2, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { box, displayName, graveyard, team, type Run, type RunMon } from "@/lib/nuzlocke/run";
 import { matchupSummary, teamMatchups, type TypeMatchup } from "@/lib/nuzlocke/matchups";
@@ -59,7 +59,9 @@ function monMenu(t: NuzT, view: GameView, m: RunMon, extra: MenuItem[] = []): Me
 
 function TeamView({ t, run, view, readOnly, act, onTeamBuilder }: { t: NuzT; run: Run; view: GameView; readOnly: boolean; act: Act; onTeamBuilder?: () => void }) {
   const members = team(run);
-  const [drag, setDrag] = useState<{ id: string; from: number; over: number | null } | null>(null);
+  // A drag starts on the press, but only shows (and only moves anything) once the pointer has travelled: a tap or the
+  // start of a scroll leaves the team as it is.
+  const [drag, setDrag] = useState<{ id: string; from: number; over: number | null; x: number; y: number; moved: boolean } | null>(null);
   const list = useRef<HTMLOListElement>(null);
   const overAt = (x: number, y: number) => {
     const el = document.elementFromPoint(x, y)?.closest<HTMLElement>("[data-slot]");
@@ -78,7 +80,7 @@ function TeamView({ t, run, view, readOnly, act, onTeamBuilder }: { t: NuzT; run
           const m = members[i];
           if (!m)
             return (
-              <li key={`empty-${i}`} data-slot={Math.min(i, Math.max(0, members.length - 1))} className="flex min-h-[78px] items-center justify-center rounded-2xl border-2 border-dashed border-foreground/[0.1] text-[13px] font-semibold text-muted-foreground/70" data-testid="nz-slot-empty">
+              <li key={`empty-${i}`} data-slot={Math.min(i, Math.max(0, members.length - 1))} className="flex min-h-[74px] items-center justify-center rounded-2xl border-2 border-dashed border-foreground/[0.1] text-[13px] font-semibold text-muted-foreground/70" data-testid="nz-slot-empty">
                 {t("panel.emptySlot")}
               </li>
             );
@@ -88,63 +90,59 @@ function TeamView({ t, run, view, readOnly, act, onTeamBuilder }: { t: NuzT; run
             <li
               key={m.id}
               data-slot={i}
-              className={cn("relative flex items-center gap-2 rounded-2xl border border-foreground/[0.08] bg-foreground/[0.03] py-2 pl-2 pr-1 transition-shadow", drag?.id === m.id && "nz-dragging", drag && drag.over === i && drag.id !== m.id && "nz-drop")}
+              className={cn("relative flex touch-pan-y items-center gap-2 rounded-2xl border border-foreground/[0.08] bg-foreground/[0.03] p-2 transition-shadow", !readOnly && "cursor-grab active:cursor-grabbing", drag?.moved && drag.id === m.id && "nz-dragging", drag?.moved && drag.over === i && drag.id !== m.id && "nz-drop")}
               data-testid="nz-slot"
               data-mon={m.id}
+              title={readOnly ? undefined : t("mon.drag")}
+              // The card itself is the handle (the menu's button is not); the menu also moves it, for the keyboard.
+              onPointerDown={(e) => {
+                if (readOnly || (e.target as HTMLElement).closest("button, a, [role=menu]") || (e.pointerType === "mouse" && e.button !== 0)) return;
+                e.currentTarget.setPointerCapture(e.pointerId);
+                setDrag({ id: m.id, from: i, over: i, x: e.clientX, y: e.clientY, moved: false });
+              }}
+              onPointerMove={(e) => {
+                if (!drag) return;
+                const moved = drag.moved || Math.hypot(e.clientX - drag.x, e.clientY - drag.y) > 6;
+                if (moved) setDrag({ ...drag, moved, over: overAt(e.clientX, e.clientY) });
+              }}
+              onPointerUp={() => {
+                if (drag?.moved && drag.over !== null && drag.over !== drag.from) act.move(drag.id, drag.over);
+                setDrag(null);
+              }}
+              onPointerCancel={() => setDrag(null)}
             >
-              <Sprite art={v?.art} className="h-[52px] w-[52px] shrink-0 max-sm:h-11 max-sm:w-11" />
+              {/* The level sits under the picture, as on the party screen, so the species' name has the line to itself. */}
+              <span className="flex w-12 shrink-0 flex-col items-center max-sm:w-11">
+                <Sprite art={v?.art} className="h-12 w-12 max-sm:h-11 max-sm:w-11" />
+                {m.level ? <span className="-mt-0.5 text-[11px] font-bold leading-none text-muted-foreground [font-variant-numeric:tabular-nums]">{t("mon.lv", { n: m.level })}</span> : null}
+              </span>
               <div className="min-w-0 flex-1">
-                <p className="truncate font-display text-[15px] font-bold leading-tight" data-testid="nz-slot-name">{name}</p>
-                <p className="truncate text-[12px] leading-snug text-muted-foreground [font-variant-numeric:tabular-nums]">{[m.nickname ? v?.name : null, m.level ? t("mon.lv", { n: m.level }) : null].filter(Boolean).join(" · ")}</p>
-                <p className="mt-1 flex flex-wrap gap-1">
+                <p className="truncate pr-6 font-display text-[15px] font-bold leading-tight" data-testid="nz-slot-name">{name}</p>
+                {m.nickname && <p className="truncate pr-5 text-[12px] leading-snug text-muted-foreground">{v?.name}</p>}
+                <p className="mt-1 flex gap-1">
                   {v?.types.map((ty) => <TypeChip key={ty} t={t} type={ty} size="sm" />)}
                 </p>
               </div>
               {!readOnly && (
-                <span className="flex flex-col items-center self-stretch justify-between">
-                  <Menu
-                    label={t("mon.menu", { name })}
-                    items={monMenu(t, view, m, [
-                      ...(i > 0 ? [{ id: "up", label: t("mon.moveUp"), icon: <MoveLeft /> }] : []),
-                      ...(i < members.length - 1 ? [{ id: "down", label: t("mon.moveDown"), icon: <MoveRight /> }] : []),
-                      { id: "box", label: t("mon.toBox"), icon: <Package /> },
-                      { id: "dead", label: t("mon.markDead"), icon: <HeartCrack />, danger: true },
-                    ])}
-                    onPick={(id) => {
-                      if (id === "up") act.move(m.id, i - 1);
-                      else if (id === "down") act.move(m.id, i + 1);
-                      else if (id === "box") act.status(m.id, "box");
-                      else if (id === "dead") act.status(m.id, "dead");
-                      else if (id.startsWith("evo:")) act.evolve(m.id, id.slice(4));
-                    }}
-                    testId="nz-slot-menu"
-                  />
-                  <button
-                    type="button"
-                    aria-label={`${t("mon.drag")}: ${name}`}
-                    title={t("mon.drag")}
-                    className="flex h-9 w-8 cursor-grab touch-none items-center justify-center rounded-lg text-muted-foreground/70 hover:bg-foreground/[0.06] hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing"
-                    onPointerDown={(e) => {
-                      e.currentTarget.setPointerCapture(e.pointerId);
-                      setDrag({ id: m.id, from: i, over: i });
-                    }}
-                    onPointerMove={(e) => drag && setDrag({ ...drag, over: overAt(e.clientX, e.clientY) })}
-                    onPointerUp={() => {
-                      if (drag && drag.over !== null && drag.over !== drag.from) act.move(drag.id, drag.over);
-                      setDrag(null);
-                    }}
-                    onPointerCancel={() => setDrag(null)}
-                    onKeyDown={(e) => {
-                      const by = e.key === "ArrowLeft" || e.key === "ArrowUp" ? -1 : e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : 0;
-                      if (!by) return;
-                      e.preventDefault();
-                      act.move(m.id, i + by);
-                    }}
-                    data-testid="nz-grip"
-                  >
-                    <GripVertical className="h-4 w-4" aria-hidden />
-                  </button>
-                </span>
+                <Menu
+                  label={t("mon.menu", { name })}
+                  items={monMenu(t, view, m, [
+                    ...(i > 0 ? [{ id: "up", label: t("mon.moveUp"), icon: <MoveUp /> }] : []),
+                    ...(i < members.length - 1 ? [{ id: "down", label: t("mon.moveDown"), icon: <MoveDown /> }] : []),
+                    { id: "box", label: t("mon.toBox"), icon: <Package /> },
+                    { id: "dead", label: t("mon.markDead"), icon: <HeartCrack />, danger: true },
+                  ])}
+                  onPick={(id) => {
+                    if (id === "up") act.move(m.id, i - 1);
+                    else if (id === "down") act.move(m.id, i + 1);
+                    else if (id === "box") act.status(m.id, "box");
+                    else if (id === "dead") act.status(m.id, "dead");
+                    else if (id.startsWith("evo:")) act.evolve(m.id, id.slice(4));
+                  }}
+                  className="absolute right-1 top-1"
+                  compact
+                  testId="nz-slot-menu"
+                />
               )}
             </li>
           );

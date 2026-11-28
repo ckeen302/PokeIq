@@ -18,7 +18,6 @@
     "versionHint": "A run is in one version, so its exclusives are right.",
     "name": "Run name",
     "nameDefault": "{version} Nuzlocke",
-    "rules": "Rules",
     "rulesLead": "You can change these at any time from the run's menu.",
     "start": "Start run",
     "guide": "See the areas and level caps first",

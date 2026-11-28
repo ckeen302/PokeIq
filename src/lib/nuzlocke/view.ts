@@ -28,6 +28,8 @@ export interface ViewMon {
   evos?: string[];
   /** Pokémon Showdown's name for it ("Rattata-Alola"), for the Team Builder. */
   showdown: string;
+  /** Its first ability in this generation (what the Team Builder picks first), from Gen 3 on. */
+  ability?: string;
 }
 
 /** An encounter, pointing at its Pokémon in `mons`. */

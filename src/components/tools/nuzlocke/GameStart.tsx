@@ -13,7 +13,7 @@ import type { GameSummary } from "@/lib/nuzlocke/view";
 import { StartRun, runPath } from "./StartRun";
 
 /** A game page's big "Start a run in …" button (it opens the new-run sheet), and Continue for a run of it saved here. */
-export function GameStart({ game, label }: { game: GameSummary; label: string }) {
+export function GameStart({ game, label, short }: { game: GameSummary; label: string; short: string }) {
   const t = useT(nuz);
   const [open, setOpen] = useState(false);
   const [last, setLast] = useState<Run | null>(null);
@@ -21,7 +21,9 @@ export function GameStart({ game, label }: { game: GameSummary; label: string })
   return (
     <div className="flex flex-wrap items-center gap-3">
       <button type="button" onClick={() => setOpen(true)} className={cn(buttonVariants({ size: "lg" }), "h-14 px-8 text-base max-sm:w-full")} data-testid="nz-game-start">
-        <Play className="h-4 w-4 fill-current" aria-hidden /> {label}
+        {/* A phone has room for the short label only; the sheet then asks for the version. */}
+        <Play className="h-4 w-4 fill-current" aria-hidden /> <span className="sm:hidden">{short}</span>
+        <span className="max-sm:hidden">{label}</span>
       </button>
       {last && (
         <Link href={runPath(last.id)} className="inline-flex h-12 items-center gap-2 rounded-full bg-foreground/[0.07] px-5 text-[14.5px] font-semibold transition-colors hover:bg-foreground/[0.11] max-sm:w-full max-sm:justify-center" data-testid="nz-game-continue">

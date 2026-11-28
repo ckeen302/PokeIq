@@ -116,9 +116,10 @@ export function StartRun({ games, gameId, onClose }: { games: GameSummary[]; gam
                   )}
                 >
                   <Sprite art={VERSION_LOOK[v.id]?.mascot} className="h-11 w-11 shrink-0" eager />
+                  {/* On a phone the picture says which version it is, so the name gets the room (and may wrap: "Alpha Sapphire"). */}
                   <span className="flex min-w-0 items-center gap-2">
-                    <VersionDot id={v.id} />
-                    <span className="truncate text-[15.5px] font-bold">{v.name}</span>
+                    <VersionDot id={v.id} className="max-sm:hidden" />
+                    <span className="text-[15.5px] font-bold leading-tight">{v.name}</span>
                   </span>
                 </button>
               );
@@ -140,7 +141,6 @@ export function StartRun({ games, gameId, onClose }: { games: GameSummary[]; gam
         </label>
 
         <div className="space-y-2">
-          <p className="text-[13px] font-semibold uppercase tracking-wider text-muted-foreground">{t("start.rules")}</p>
           <RulesForm t={t} rules={rules} onChange={setRules} />
           <p className="text-[13px] text-muted-foreground">{t("start.rulesLead")}</p>
         </div>

@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { NICK_MAX, counts, displayName, levelCap, monsIn, type MonStatus, type Run, type RunMon } from "@/lib/nuzlocke/run";
 import type { AreaFilter } from "@/lib/nuzlocke/storage";
 import { capFor, inVersion, type GameView, type ViewArea, type ViewBoss } from "@/lib/nuzlocke/view";
+import { groupByMethod } from "@/lib/nuzlocke/group";
 import { Segmented } from "../tier-list/ui";
 import type { Act } from "./act";
 import { Menu, Sprite, TypeChip, type MenuItem, type NuzT } from "./parts";
@@ -17,7 +18,8 @@ import { Menu, Sprite, TypeChip, type MenuItem, type NuzT } from "./parts";
 
 type Item = { type: "area"; area: ViewArea } | { type: "boss"; boss: ViewBoss };
 
-const areaMons = (area: ViewArea, version: string) => [...new Set(area.encounters.filter((e) => inVersion(e, version)).map((e) => e.mon))];
+/** The Pokémon an area gives in this version, in the picker's order (walking first, then gifts, then the water…). */
+const areaMons = (area: ViewArea, version: string) => [...new Set(groupByMethod(area.encounters.filter((e) => inVersion(e, version))).flatMap((g) => g.rows.map((r) => r.mon)))];
 
 export function RouteList({
   t,
@@ -122,7 +124,7 @@ export function RouteList({
           i.type === "boss" ? (
             <BossDivider key={`${i.boss.key}-${n}`} t={t} run={run} boss={i.boss} current={cap?.boss.key === i.boss.key} readOnly={readOnly} onToggle={() => act.boss(i.boss.key)} />
           ) : (
-            <AreaCard key={i.area.id} t={t} run={run} view={view} area={i.area} readOnly={readOnly} justCaught={justCaught} onCaughtShown={onCaughtShown} act={act} />
+            <AreaCard key={i.area.id} t={t} run={run} view={view} area={i.area} next={i.area.id === next?.id} readOnly={readOnly} justCaught={justCaught} onCaughtShown={onCaughtShown} act={act} />
           )
         )}
       </ol>
@@ -140,7 +142,7 @@ export function RouteList({
           {otherOpen && (
             <ol className="mt-2 space-y-2.5">
               {extraShown.map((a) => (
-                <AreaCard key={a.id} t={t} run={run} view={view} area={a} readOnly={readOnly} justCaught={justCaught} onCaughtShown={onCaughtShown} act={act} />
+                <AreaCard key={a.id} t={t} run={run} view={view} area={a} next={a.id === next?.id} readOnly={readOnly} justCaught={justCaught} onCaughtShown={onCaughtShown} act={act} />
               ))}
             </ol>
           )}
@@ -162,6 +164,7 @@ function FilterLabel({ text, n }: { text: string; n: number }) {
 function BossDivider({ t, run, boss, current, readOnly, onToggle }: { t: NuzT; run: Run; boss: ViewBoss; current: boolean; readOnly: boolean; onToggle(): void }) {
   const beaten = run.beaten.includes(boss.key);
   const cap = capFor(boss, run.version);
+  const showCap = run.rules.caps && cap !== undefined;
   const Icon = beaten ? Check : boss.badge ? Medal : Swords;
   const body = (
     <>
@@ -175,8 +178,15 @@ function BossDivider({ t, run, boss, current, readOnly, onToggle }: { t: NuzT; r
         <Icon className={cn("h-4 w-4 shrink-0", beaten ? "text-success" : "text-[hsl(var(--warning))]")} strokeWidth={beaten ? 3 : 2} aria-hidden />
         <span>{boss.name}</span>
         {boss.badge && <span className="text-muted-foreground">· {boss.badge}</span>}
-        {run.rules.caps && cap !== undefined && <span className={cn(!beaten && "font-bold")}>· {t("routes.cap", { n: cap })}</span>}
-        {beaten && <span className="text-success">· {t("routes.beaten")}</span>}
+        {/* On a phone the cap and "Beaten" take the second line, so no line starts with a dot. */}
+        {(showCap || beaten) && (
+          <span className="max-sm:basis-full">
+            <span className="max-sm:hidden">· </span>
+            {showCap && <span className={cn(!beaten && "font-bold")}>{t("routes.cap", { n: cap })}</span>}
+            {showCap && beaten && " · "}
+            {beaten && <span className="text-success">{t("routes.beaten")}</span>}
+          </span>
+        )}
       </span>
       <span className={cn("h-px flex-1", beaten ? "bg-success/30" : "bg-foreground/[0.12]")} aria-hidden />
     </>
@@ -194,7 +204,8 @@ function BossDivider({ t, run, boss, current, readOnly, onToggle }: { t: NuzT; r
   );
 }
 
-function AreaCard({ t, run, view, area, readOnly, justCaught, onCaughtShown, act }: { t: NuzT; run: Run; view: GameView; area: ViewArea; readOnly: boolean; justCaught: string | null; onCaughtShown(): void; act: Act }) {
+/** An area: its one encounter (or the button to log it: the bright one on the next area in story order), and any extras. */
+function AreaCard({ t, run, view, area, next, readOnly, justCaught, onCaughtShown, act }: { t: NuzT; run: Run; view: GameView; area: ViewArea; next: boolean; readOnly: boolean; justCaught: string | null; onCaughtShown(): void; act: Act }) {
   const result = run.areas[area.id];
   const mons = monsIn(run, area.id);
   const preview = areaMons(area, run.version);
@@ -224,11 +235,19 @@ function AreaCard({ t, run, view, area, readOnly, justCaught, onCaughtShown, act
           type="button"
           onClick={() => act.pick(area.id)}
           aria-label={t("routes.logFor", { area: area.name })}
-          className="group mt-2 flex w-full items-center gap-3 rounded-2xl border-2 border-dashed border-primary/30 bg-primary/[0.035] p-2 pr-3 text-left transition-colors hover:border-primary/55 hover:bg-primary/[0.07] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring max-sm:flex-col max-sm:items-stretch max-sm:gap-2"
+          className={cn(
+            "group mt-2 flex w-full items-center gap-3 rounded-2xl border-2 border-dashed p-2 pr-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring max-sm:flex-col max-sm:items-stretch max-sm:gap-2",
+            next ? "border-primary/35 bg-primary/[0.04] hover:border-primary/60 hover:bg-primary/[0.07]" : "border-foreground/[0.12] hover:border-foreground/25 hover:bg-foreground/[0.03]"
+          )}
           data-testid={`nz-log-${area.id}`}
         >
           <PreviewStrip view={view} mons={preview} className="min-w-0 flex-1" />
-          <span className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-primary px-5 text-[14.5px] font-bold text-primary-foreground shadow-[0_3px_0_hsl(var(--primary-shadow))] transition-[filter] group-hover:brightness-110">
+          <span
+            className={cn(
+              "inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full px-5 text-[14.5px] font-bold transition-[filter,background-color]",
+              next ? "bg-primary text-primary-foreground shadow-[0_3px_0_hsl(var(--primary-shadow))] group-hover:brightness-110" : "bg-foreground/[0.07] text-foreground group-hover:bg-foreground/[0.11]"
+            )}
+          >
             <Plus className="h-4 w-4" strokeWidth={3} aria-hidden /> {t("routes.log")}
           </span>
         </button>

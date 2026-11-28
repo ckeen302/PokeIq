@@ -129,6 +129,7 @@ function viewMon(gen: Generation, species: number, form: string | undefined, art
     types: (specie?.types ?? []).map((t) => t.toLowerCase()),
     family: row.chain,
     showdown: specie?.name ?? row.name,
+    ...(gen.num >= 3 && specie?.abilities[0] && { ability: specie.abilities[0] }),
   };
 }
 

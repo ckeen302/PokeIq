@@ -133,7 +133,13 @@ function BossLine({ t, view, boss }: { t: PageT; view: GameView; boss: ViewBoss 
         <Icon className="h-4 w-4 shrink-0 text-[hsl(var(--warning))]" aria-hidden />
         <span>{boss.name}</span>
         {boss.badge && <span className="text-muted-foreground">· {boss.badge}</span>}
-        {cap && <span className="text-foreground/90">· {cap}</span>}
+        {/* On a phone the cap takes the second line, so no line starts with a dot. */}
+        {cap && (
+          <span className="text-foreground/90 max-sm:basis-full">
+            <span className="max-sm:hidden">· </span>
+            {cap}
+          </span>
+        )}
       </span>
       <span className="h-px flex-1 bg-gradient-to-l from-transparent to-foreground/[0.14]" aria-hidden />
     </li>
@@ -156,7 +162,7 @@ function CapList({ t, view }: { t: PageT; view: GameView }) {
           const same = new Set(caps.map(([, c]) => c)).size <= 1;
           const Icon = b.badge ? Medal : Swords;
           return (
-            <li key={b.key} className="flex items-center gap-3 rounded-2xl border border-foreground/[0.07] bg-card px-3.5 py-2.5">
+            <li key={b.key} className="flex min-h-[60px] items-center gap-3 rounded-2xl border border-foreground/[0.07] bg-card px-3.5 py-2.5">
               <Icon className="h-4 w-4 shrink-0 text-[hsl(var(--warning))]" aria-hidden />
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-[14.5px] font-semibold leading-tight">{b.name}</span>
@@ -207,7 +213,7 @@ export function GameGuide({ view, game }: { view: GameView; game: GameSummary })
         <p className="max-w-3xl text-[17px] text-muted-foreground max-sm:text-[15px]">{t("game.lead")}</p>
         <div className="pt-2">
           <ClientMessages namespaces={[nuz]}>
-            <GameStart game={game} label={t("game.start", { versions })} />
+            <GameStart game={game} label={t("game.start", { versions })} short={t("game.startShort")} />
           </ClientMessages>
         </div>
       </header>

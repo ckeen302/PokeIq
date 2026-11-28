@@ -18,6 +18,7 @@ import { runTierList } from "./e2e-tier-list.mjs";
 import { runPokeballMaker } from "./e2e-pokeball-maker.mjs";
 import { runFavoritePicker } from "./e2e-favorite-picker.mjs";
 import { runCatchRate } from "./e2e-catch-rate.mjs";
+import { runNuzlocke } from "./e2e-nuzlocke.mjs";
 import { runCalc } from "./e2e-calc.mjs";
 import { runHunt } from "./e2e-hunt.mjs";
 import { runVideoGames } from "./e2e-video-games.mjs";
@@ -217,6 +218,11 @@ await runFavoritePicker({ browser, BASE, OUT, errors, step });
 // E2E_ONLY=catch-rate runs just the Catch Rate Calculator (picking, inputs, the ranking, a throw, a share link, the phone layout), then exits.
 if (process.env.E2E_ONLY === "catch-rate") {
   await runCatchRate({ browser, BASE, OUT, errors, step });
+  await finish();
+}
+// E2E_ONLY=nuzlocke runs just the Nuzlocke Tracker (its card on /tools, a run from start to share link, the phone layout), then exits.
+if (process.env.E2E_ONLY === "nuzlocke") {
+  await runNuzlocke({ browser, BASE, OUT, errors, step });
   await finish();
 }
 // E2E_ONLY=favorite-picker runs just the Favorite Pokémon Picker (its card on /tools, a run to the end, the type chart, PNGs, a share link), then exits.

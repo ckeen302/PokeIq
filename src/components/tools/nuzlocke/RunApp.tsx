@@ -270,7 +270,7 @@ function RunScreen({ initial, view, readOnly, shareRaw }: { initial: Run; view: 
   const openTeamBuilder = async () => {
     if (!view.teamFormat) return;
     const [{ createTeam }, { completeSet }] = await Promise.all([import("@/lib/battle/teams"), import("@/lib/battle/sets")]);
-    const sets = team(runRef.current).map((m) => completeSet({ species: view.mons[m.mon]?.showdown ?? m.mon, name: m.nickname, ...(m.level && { level: m.level }), ...(m.shiny && { shiny: true }) }));
+    const sets = team(runRef.current).map((m) => completeSet({ species: view.mons[m.mon]?.showdown ?? m.mon, ability: view.mons[m.mon]?.ability, name: m.nickname, ...(m.level && { level: m.level }), ...(m.shiny && { shiny: true }) }));
     const created = createTeam(view.teamFormat as Parameters<typeof createTeam>[0], runRef.current.name, sets);
     router.push(`/battle/teams?team=${encodeURIComponent(created.id)}`);
   };

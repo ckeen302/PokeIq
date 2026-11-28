@@ -11,5 +11,6 @@ export async function generateStaticParams() {
 export async function GET(_req: Request, { params }: { params: Promise<{ game: string }> }) {
   const view = await gameView((await params).game);
   if (!view) return new Response("Not found", { status: 404 });
-  return Response.json(view, { headers: { "cache-control": "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800" } });
+  // The page lists the sources; the run screen doesn't need them.
+  return Response.json({ ...view, sources: [] }, { headers: { "cache-control": "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800" } });
 }

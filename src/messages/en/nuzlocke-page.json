@@ -19,6 +19,7 @@
     "metaDescription": "Every area of Pokémon {name} in story order, with the Pokémon you can meet there and each boss's level cap. Start a Nuzlocke run and track it as you play.",
     "lead": "Every area in story order, with the Pokémon you can meet there and each boss's level cap.",
     "start": "Start a run in {versions}",
+    "startShort": "Start a run",
     "capsHeading": "Level caps",
     "capsLead": "The level of each boss's strongest Pokémon, in story order: the usual cap for your team.",
     "back": "Nuzlocke Tracker",

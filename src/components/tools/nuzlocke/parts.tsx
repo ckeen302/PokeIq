@@ -153,7 +153,7 @@ export interface MenuItem {
 }
 
 /** A round "more" button and its list: closes on a pick, a click outside or Escape; arrow keys move through it. */
-export function Menu({ label, items, onPick, align = "end", className, testId, trigger }: { label: string; items: MenuItem[]; onPick(id: string): void; align?: "start" | "end"; className?: string; testId?: string; trigger?: ReactNode }) {
+export function Menu({ label, items, onPick, align = "end", className, testId, trigger, compact }: { label: string; items: MenuItem[]; onPick(id: string): void; align?: "start" | "end"; className?: string; testId?: string; trigger?: ReactNode; compact?: boolean }) {
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -188,7 +188,11 @@ export function Menu({ label, items, onPick, align = "end", className, testId, t
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
         data-testid={testId}
-        className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-foreground/[0.07] hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring max-md:h-11 max-md:w-11"
+        className={cn(
+          "flex items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-foreground/[0.07] hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          // A compact trigger keeps a 40px tap area on a phone (.tap).
+          compact ? "tap h-8 w-8" : "h-10 w-10 max-md:h-11 max-md:w-11"
+        )}
       >
         {trigger ?? <MoreHorizontal className="h-5 w-5" aria-hidden />}
       </button>
