@@ -21,7 +21,7 @@ const ACCENT = "#a47efb";
 
 const cache = new Map<string, Promise<string | null>>();
 /** A Pokémon's picture (the site's own render) as a PNG data URI, in grey for the fallen; null if there's none. */
-function picture(art: number, size: number, gray = false): Promise<string | null> {
+function picture(art: number | string, size: number, gray = false): Promise<string | null> {
   const key = `${art}@${size}${gray ? "g" : ""}`;
   let p = cache.get(key);
   if (!p) {

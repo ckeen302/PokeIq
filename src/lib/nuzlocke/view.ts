@@ -18,8 +18,11 @@ export interface ViewMon {
   name: string;
   /** The species' Pokédex page: /pokemon/<slug>. */
   slug: string;
-  /** Its picture: /sizes/art/256/<art>.webp (the form's own when the site has one, else the species'). */
-  art: number;
+  /**
+   * Its picture: a PokéAPI id (/sizes/art/256/<art>.webp; the form's own when the site has one, else the species'), or
+   * the path of one kept with the tracker (a cosmetic form's: East Sea Shellos).
+   */
+  art: number | string;
   /** Its types in this game's generation, lowercase ("normal"). */
   types: string[];
   /** Its evolution family (PokéAPI's evolution chain): one family is one "line" for the dupes clause. */
@@ -148,4 +151,4 @@ export const givesBadge = (b: NuzBoss): boolean => !!b.badge && /badge$/i.test(b
 const ART_PATHS: Record<number, string> = { 10155: "/tools/nuzlocke/10155.webp", 10156: "/tools/nuzlocke/10156.webp" };
 
 /** The picture of a Pokémon (or of any species, by number). */
-export const artSrc = (art: number): string => ART_PATHS[art] ?? `/sizes/art/256/${art}.webp`;
+export const artSrc = (art: number | string): string => (typeof art === "string" ? art : (ART_PATHS[art] ?? `/sizes/art/256/${art}.webp`));

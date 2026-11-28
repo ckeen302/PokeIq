@@ -14,7 +14,7 @@ import { artSrc } from "@/lib/nuzlocke/view";
  * A row: its Pokédex link, picture, name, line ("45% · Lv 2–5"), the version it's only in with that version's colour
  * ("" for none), and its post-game line ("After the Hall of Fame: Lv 60"), shown muted under the story's.
  */
-export type GuideRow = [href: string, art: number, name: string, text: string, only?: string, color?: string, post?: string];
+export type GuideRow = [href: string, art: number | string, name: string, text: string, only?: string, color?: string, post?: string];
 /** A way of meeting: its icon (in the page's icon sheet), its heading, its kind when the heading doesn't say it ("Gift"), its rows. */
 export type GuideGroup = [icon: string, label: string, kind: string | null, rows: GuideRow[]];
 

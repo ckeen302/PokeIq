@@ -1,10 +1,11 @@
 import { existsSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import DETAILS from "@/data/pokedex-details.json";
 import type { NuzEncounter, NuzGame, NuzStep } from "@/lib/nuzlocke/model";
 import { NUZ_GAMES, loadGame } from "@/lib/nuzlocke/games";
 import { buildView, formFor, generation, specieFor } from "@/lib/nuzlocke/view.server";
-import { allAreas, bossKeys, inVersion, type GameView } from "@/lib/nuzlocke/view";
+import { allAreas, artSrc, bossKeys, inVersion, type GameView } from "@/lib/nuzlocke/view";
 import { availableGames, gameSummaries, gameView } from "@/lib/nuzlocke/games.server";
 import { groupByMethod, methodLabel } from "@/lib/nuzlocke/group";
 import { compactEncounters } from "@/lib/nuzlocke/compact";
@@ -147,20 +148,40 @@ describe("the game data the screens use", () => {
     expect(v.mons["diglett-alola"]?.types).toEqual(["ground", "steel"]);
     const route1 = allAreas(v).find((a) => a.id === "route-1")!;
     expect(route1.encounters.some((e) => e.mon === "rattata-alola")).toBe(true);
-    // A form with no picture of its own yet shows the species' picture, under its own name and types.
+    // Pa'u Oricorio, whose picture the tracker added: its own picture, name and types.
     const pau = v.mons["oricorio-pau"];
     if (pau) {
-      expect(pau.art).toBe(741);
+      expect(pau.art).toBe(10124);
       expect(pau.types).toEqual(["psychic", "flying"]);
     }
   });
 
   it("names a form as the games do, and hands the Team Builder Showdown's own", () => {
     const v = buildView(game(8, [{ species: 550, form: "basculin-blue-striped" }, { species: 678, form: "meowstic-female" }, { species: 677 }, { species: 876, form: "indeedee-female" }]));
-    expect(v.mons["basculin-blue-striped"]).toMatchObject({ name: "Blue-Striped Basculin", showdown: "Basculin-Blue-Striped", art: 550 });
+    expect(v.mons["basculin-blue-striped"]).toMatchObject({ name: "Blue-Striped Basculin", showdown: "Basculin-Blue-Striped", art: 10016 });
     expect(v.mons["meowstic-female"]).toMatchObject({ name: "Female Meowstic", showdown: "Meowstic-F" });
     expect(v.mons["677"].evos).toContain("meowstic-female"); // Espurr's evolution is the same key as the data's
     expect(v.mons["indeedee-female"].showdown).toBe("Indeedee-F");
+  });
+
+  it("gives every form its own picture, and every picture is a file", async () => {
+    // Partner Pikachu and Partner Eevee have no HOME render, and look like Pikachu and Eevee.
+    const lookAlike = new Set(["pikachu-starter", "eevee-starter"]);
+    for (const g of NUZ_GAMES) {
+      const game = await loadGame(g.id);
+      if (!game) continue;
+      for (const m of Object.values(buildView(game).mons)) {
+        expect(existsSync(join("public", artSrc(m.art))), `${g.id} ${m.key}: ${artSrc(m.art)}`).toBe(true);
+        if (m.form && !lookAlike.has(m.form)) expect(m.art, `${g.id} ${m.key}`).not.toBe(m.species);
+      }
+    }
+    // A cosmetic form evolves into its own sea's, its own flower's.
+    const v = buildView(game(6, [{ species: 422, form: "shellos-east" }, { species: 669, form: "flabebe-yellow" }]));
+    expect(v.mons["shellos-east"]).toMatchObject({ name: "East Sea Shellos", art: "/tools/nuzlocke/forms/422-east.webp", evos: ["gastrodon-east"] });
+    expect(v.mons["flabebe-yellow"].evos).toEqual(["floette-yellow"]);
+    expect(v.mons["floette-yellow"]).toMatchObject({ name: "Yellow Floette", types: ["fairy"], evos: ["florges-yellow"] });
+    expect(v.mons["florges-yellow"].art).toBe("/tools/nuzlocke/forms/671-yellow.webp");
+    expect(buildView(game(4, [{ species: 479, form: "rotom-heat", art: 10008 }])).mons["rotom-heat"].art).toBe(10008);
   });
 
   it("offers each generation's own evolutions", () => {

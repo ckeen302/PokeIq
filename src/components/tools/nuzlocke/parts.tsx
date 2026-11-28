@@ -16,7 +16,7 @@ import type nuz from "@/messages/nuzlocke";
 export type NuzT = Translator<typeof nuz.en>;
 
 /** A Pokémon's picture; a missing one leaves its box empty rather than a broken image. */
-export function Sprite({ art, className, eager, dim }: { art: number | null | undefined; className?: string; eager?: boolean; dim?: boolean }) {
+export function Sprite({ art, className, eager, dim }: { art: number | string | null | undefined; className?: string; eager?: boolean; dim?: boolean }) {
   const [broken, setBroken] = useState(false);
   if (!art || broken) return <span className={cn("block", className)} aria-hidden />;
   return (

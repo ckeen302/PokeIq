@@ -8,6 +8,7 @@ import { TYPES } from "@/lib/pokemon/type-matrix";
 import type { NuzArea, NuzGame } from "./model";
 import { bossKeys, monKey, type GameView, type ViewArea, type ViewMon, type ViewStep } from "./view";
 import { compactEncounters } from "./compact";
+import { COSMETIC_FORMS, FORM_ART, cosmeticArt } from "./form-art";
 
 /**
  * A game's data made ready for the tracker's screens (lib/nuzlocke/view.ts), on the server: every Pokémon's name,
@@ -35,7 +36,8 @@ const POKEDEX = POKEDEX_DATA as unknown as DexRow[];
 const BY_ID = new Map(POKEDEX.map((p) => [p.id, p]));
 const FORMS = new Map<string, FormRow & { species: number }>();
 for (const [id, d] of Object.entries(DETAILS as unknown as Record<string, { forms?: FormRow[] }>)) for (const f of d.forms ?? []) FORMS.set(f.slug, { ...f, species: Number(id) });
-const HAS_ART = new Set(Object.keys(SIZES_ART as Record<string, unknown>).map(Number));
+/** Pictures the site has: its Pokémon art (made for /pokedex/sizes), and the forms the tracker added to it (form-art.ts). */
+const HAS_ART = new Set([...Object.keys(SIZES_ART as Record<string, unknown>).map(Number), ...Object.values(FORM_ART)]);
 
 /** Real species and formes of the generation, also those no longer in its newest games ("Past"), as the calculators take them. */
 const ALLOWED_NONSTANDARD = new Set(["Past", "Unobtainable"]);
@@ -138,13 +140,16 @@ function viewMon(gen: Generation, species: number, form: string | undefined, art
   if (!row) return null;
   const f = form ? FORMS.get(form) : undefined;
   const specie = specieFor(gen, species, form);
-  // The form's own picture when the site has it (the data's id first, else the Pokédex's), else the species'.
-  const art = form && artId && HAS_ART.has(artId) ? artId : f && HAS_ART.has(f.id) ? f.id : species;
+  const cosmetic = form ? COSMETIC_FORMS[form] : undefined;
+  // The form's own picture: a cosmetic form's (kept with the tracker), else the first id with a picture of the data's,
+  // the Pokédex's and the tracker's own (form-art.ts); the species' only for a form that looks the same (Partner Pikachu).
+  const ids = form ? [artId, f?.id, FORM_ART[form]].filter((id): id is number => !!id && HAS_ART.has(id)) : [];
+  const art = cosmetic ? cosmeticArt(form!) : (ids[0] ?? species);
   return {
     key: form ?? String(species),
     species,
     ...(form && { form }),
-    name: f?.name ?? (form && specie?.forme ? formeName(specie) : row.name),
+    name: cosmetic?.name ?? f?.name ?? (form && specie?.forme ? formeName(specie) : row.name),
     slug: row.slug,
     art,
     types: (specie?.types ?? []).map((t) => t.toLowerCase()),
@@ -165,6 +170,15 @@ function collectMons(gen: Generation, seeds: { species: number; form?: string; a
     const mon = viewMon(gen, species, form, art);
     if (!mon) continue;
     mons[key] = mon;
+    // A cosmetic form evolves into the same sea's, the same flower's (Showdown keeps one evolution for all of them).
+    const cosmetic = form ? COSMETIC_FORMS[form] : undefined;
+    if (cosmetic) {
+      if (cosmetic.evolves && COSMETIC_FORMS[cosmetic.evolves].species && BY_ID.get(COSMETIC_FORMS[cosmetic.evolves].species)!.gen <= gen.num) {
+        mon.evos = [cosmetic.evolves];
+        queue.push({ species: COSMETIC_FORMS[cosmetic.evolves].species, form: cosmetic.evolves });
+      }
+      continue;
+    }
     const specie = specieFor(gen, species, form);
     const evos = (specie?.evos ?? []).map((name) => gen.species.get(name)).filter((s): s is Specie => !!s && BY_ID.has(s.num) && BY_ID.get(s.num)!.gen <= gen.num);
     if (evos.length) {
