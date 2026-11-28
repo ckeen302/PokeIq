@@ -15,10 +15,11 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { NuzArea, NuzBoss, NuzEncounter, NuzGame, NuzStep } from "../../src/lib/nuzlocke/model";
-import { ALIASES, BULBA_PAGES, DATA_ERRORS, NOT_A_PLACE, SEREBII_ERRORS, SUB_RULES, type Alias } from "./lib/aliases";
+import { ALIASES, API_ROW_ERRORS, BULBA_PAGES, DATA_ERRORS, NOT_A_PLACE, SEREBII_ERRORS, SUB_RULES, type Alias } from "./lib/aliases";
 import { placeKey, slug } from "./lib/areas";
 import { bulbaKind, bulbaPages, TERRAIN, type BulbaLoc } from "./lib/bulba-loc";
 import type { BulbaRow } from "./lib/bulba-catch";
+import { plain } from "./lib/bulbapedia";
 import { GAMES, GAME_BY_ID, type GameCfg } from "./lib/config";
 import { STATS } from "./lib/fetch";
 import { pokeapiRows } from "./lib/pokeapi-rows";
@@ -217,9 +218,11 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
     sources.add(SEREBII_URL[cfg.serebii]);
   }
   const bad = DATA_ERRORS[cfg.id] ?? {};
+  const badRows = API_ROW_ERRORS[cfg.id] ?? [];
   api = api.filter((r) => {
-    const why = bad[placeKey(r.place)];
-    if (why && !notes.includes(`PokéAPI data error skipped: ${r.place} (${why})`)) notes.push(`PokéAPI data error skipped: ${r.place} (${why})`);
+    const why = bad[placeKey(r.place)] ?? badRows.find(([pl, sp]) => pl === placeKey(r.place) && sp === r.species)?.[2];
+    const n = `PokéAPI data error skipped: ${bad[placeKey(r.place)] ? r.place : `${speciesName(r.species)} at ${r.place}`} (${why})`;
+    if (why && !notes.includes(n)) notes.push(n);
     return !why;
   });
   for (const r of api) add(r);
@@ -600,27 +603,36 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
       }
     }
 
-  // ---- A place Serebii names but gives no wild Pokémon for (it files Poco Path's under South Province (Area One)):
-  // Bulbapedia's table for the place, as it gives it (its habitat as the method; Scarlet/Violet's numbers are spawn
-  // weights, not chances, so no rate).
+  // ---- Wild Pokémon Bulbapedia's table has at a place and Serebii doesn't (where Serebii is the source; neither lists
+  // every Pokémon of Scarlet/Violet's or Legends: Arceus's big areas, and each row either gives is a sourced encounter):
+  // Bulbapedia's rows are added, with its levels and its note as the condition. Rows of a special table (mass outbreaks,
+  // space-time distortions, alphas, Unown, missions, swarms, radar, honey) are left out. Scarlet/Violet's and the
+  // Legends games' numbers are spawn weights, not chances: no rate. (Serebii files Poco Path's wild Pokémon under South
+  // Province (Area One), so Poco Path's come from here.)
+  const SPECIAL_TABLE = /outbreak|distortion|unown|alpha|only during|mission|request|swarm|radar|honey|special/i;
   if (cfg.serebii && !cfg.pokeapi)
     for (const a of accs.values()) {
       const locs = bulba.get(a.key);
       if (!locs?.length) continue;
+      // A DLC's place (every Serebii row there says "The Teal Mask"): Bulbapedia's rows there need that DLC too.
+      const ser = a.rows.filter((r) => r.src === "serebii");
+      const dlc = ["The Teal Mask", "The Indigo Disk", "Mega Dimension"].find((d) => ser.length && ser.every((r) => (r.cond ?? "").split("; ").includes(d)));
       for (const ver of versions) {
-        if (a.rows.some((r) => r.ver === ver && r.kind === "wild")) continue;
+        const have = new Set(a.rows.filter((r) => r.ver === ver).map((r) => r.species));
         const add: Row[] = [];
         for (const l of locs)
           for (const h of l.rows) {
-            if (!h.versions.includes(ver) || bulbaKind(h.method, h.tpl, h.div)) continue;
+            if (!h.versions.includes(ver) || have.has(h.species) || bulbaKind(h.method, h.tpl, h.div) || SPECIAL_TABLE.test(`${h.div ?? ""} ${h.heads.join(" ")}`)) continue;
             const form = h.form ? await formFor(h.species, h.form) : {};
             const levels = parseLevels(h.levels);
-            const rate = cfg.gen === 9 ? undefined : parseRate(h.rate);
-            add.push({ src: "bulbapedia", ver, place: a.names[0].name, species: h.species, ...(form?.form ? { form: form.form, art: form.art } : {}), kind: "wild", method: h.method, ...(rate !== undefined ? { rate } : {}), ...(levels ? { levels } : {}), url: l.url });
+            const weights = cfg.gen === 9 || /^entry(la|za)$/.test(h.tpl);
+            const rate = weights ? undefined : parseRate(h.rate);
+            const note = [h.named.note ? plain(h.named.note) : "", dlc ?? ""].filter(Boolean).join("; ") || undefined;
+            add.push({ src: "bulbapedia", ver, place: a.names[0].name, species: h.species, ...(form?.form ? { form: form.form, art: form.art } : {}), kind: "wild", method: weights ? "Wild" : h.method, ...(rate !== undefined ? { rate } : {}), ...(levels ? { levels } : {}), ...(note ? { cond: note } : {}), url: l.url });
           }
         if (!add.length) continue;
         a.rows.push(...add);
-        notes.push(`Bulbapedia's table fills ${a.names[0].name} (${ver}), where Serebii lists no wild Pokémon: ${[...new Set(add.map((r) => speciesName(r.species)))].join(", ")} — ${locs.map((l) => l.url).join(", ")}`);
+        notes.push(`Bulbapedia-only wild (${ver}) at ${a.names[0].name}: ${[...new Set(add.map((r) => speciesName(r.species)))].join(", ")} — ${[...new Set(add.map((r) => r.url))].join(", ")}`);
       }
     }
 

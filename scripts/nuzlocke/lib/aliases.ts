@@ -153,3 +153,19 @@ export const SEREBII_ERRORS: Record<string, [string, number, string][]> = {
     ],
   ],
 };
+
+/** PokéAPI rows Bulbapedia shows at another place: per game, [place key, species, why]. */
+export const API_ROW_ERRORS: Record<string, [string, number, string][]> = {
+  "sword-shield": [
+    [
+      "energy plant",
+      888,
+      "PokéAPI files Zacian at the Energy Plant, where it fights beside the player against Eternatus; it is caught in the Slumbering Weald after the main story (https://bulbapedia.bulbagarden.net/wiki/Slumbering_Weald)",
+    ],
+    [
+      "energy plant",
+      889,
+      "PokéAPI files Zamazenta at the Energy Plant, where it fights beside the player against Eternatus; it is caught in the Slumbering Weald after the main story (https://bulbapedia.bulbagarden.net/wiki/Slumbering_Weald)",
+    ],
+  ],
+};
