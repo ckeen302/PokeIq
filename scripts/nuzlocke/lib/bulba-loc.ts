@@ -1,7 +1,7 @@
 /**
  * Each area's Bulbapedia location page(s) and the rows of this game's encounter tables on them.
  */
-import { catchRows, type BulbaRow } from "./bulba-catch";
+import { catchRows, specialBoxes, type BulbaRow } from "./bulba-catch";
 import { pages, pageUrl } from "./bulbapedia";
 import { placeKey } from "./areas";
 
@@ -10,6 +10,8 @@ export interface BulbaLoc {
   url: string;
   /** Rows of this game's templates. */
   rows: BulbaRow[];
+  /** Pokémon shown in the page's "Special encounters" boxes (one-time encounters with no table row). */
+  boxes: number[];
 }
 
 /**
@@ -51,7 +53,7 @@ export async function bulbaPages(
       if (found.some((f) => f.title === p.title)) continue;
       const rows = catchRows(p.text).filter((r) => tpl.has(r.tpl));
       if (!rows.length) continue;
-      found.push({ title: p.title, url: pageUrl(p.title), rows });
+      found.push({ title: p.title, url: pageUrl(p.title), rows, boxes: specialBoxes(p.text) });
       // The first page found by name; or every page an explicit list names.
       if (!explicit) break;
     }
@@ -60,8 +62,9 @@ export async function bulbaPages(
   return out;
 }
 
-/** Map a Bulbapedia method value to a kind (undefined = wild). */
-export function bulbaKind(method: string): "gift" | "static" | "trade" | "egg" | "fossil" | "roaming" | undefined {
+/** Map a Bulbapedia row's method to a kind (undefined = wild). Scarlet/Violet's special-encounter table is all fixed encounters. */
+export function bulbaKind(method: string, tpl?: string): "gift" | "static" | "trade" | "egg" | "fossil" | "roaming" | undefined {
+  if (tpl === "entry9/special") return "static";
   const m = method.trim();
   if (/^(Gift|Starter|Prize|Purchase|Buy)$/i.test(m)) return "gift";
   if (/^Egg$/i.test(m)) return "egg";

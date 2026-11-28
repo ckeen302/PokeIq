@@ -64,6 +64,10 @@ const EXTRA: Record<string, { test: (p: WtParty) => boolean; title: (p: WtParty)
   "black-white": [
     { test: (p) => p.cls === "Team Plasma" && /^(N|Ghetsis)$/.test(p.name) && p.path.some((h) => /Throne Room/.test(h)), title: (p) => p.name, why: "N and Ghetsis at N's Castle end the main story (Alder is fought after it)" },
   ],
+  "scarlet-violet": [
+    { test: (p) => !p.standalone && /^(Giacomo|Mela|Atticus|Ortega|Eri)$/.test(p.name) && (p.cls === "" || /Team Star|Squad Boss/i.test(p.cls)), title: (p) => `Team Star ${p.name}`, why: "Team Star's squad bosses (the walkthrough's major fights)" },
+    { test: (p) => !!p.standalone && (/^VS Titan /.test(p.path[p.path.length - 1] ?? "") || p.path.some((h) => /Titan/.test(h))), title: (p) => `Titan ${p.name}`, why: "the Titan Pokémon (the walkthrough's major fights; its level is the Titan's, from the walkthrough's Pokémon box or text)" },
+  ],
   "sun-moon": [
     { test: (p) => p.cls === "Captain" && p.part < 27, title: (p) => `Captain ${p.name}`, why: "Alola's Trial Captains" },
     { test: (p) => p.cls === "Island Kahuna" && p.part < 27, title: (p) => `Kahuna ${p.name}`, why: "Alola's Kahunas (grand trials)" },
@@ -78,6 +82,7 @@ const EXTRA: Record<string, { test: (p: WtParty) => boolean; title: (p: WtParty)
 
 function kindOf(p: WtParty, game: string): Kind | null {
   if (EXTRA[game]?.some((x) => x.test(p))) return "extra";
+  if (p.standalone) return null;
   if (/^Champion$/i.test(p.cls) || (p.cls === "" || p.cls === "Elite Four") && p.path.some((h) => /^(The )?Champion\b/i.test(h))) return "champion";
   if (/^Elite Four$/i.test(p.cls) || (p.cls === "" && p.path.some((h) => /^(The )?Elite Four$/i.test(h)))) return "e4";
   if (p.gym && p.gym.badge && !/^\?+$/.test(p.name) && (p.cls === "" || /^(Gym )?Leaders?$/i.test(p.cls))) return "leader";
@@ -105,6 +110,8 @@ function generic(game: string): BossCfg {
       const groups: { kind: Kind; key: string; parties: WtParty[] }[] = [];
       for (const p of parties) {
         const kind = kindOf(p, game);
+        // A lone Pokémon box is a boss only by a game's own rule (a Titan); otherwise it is not a battle at all.
+        if (p.standalone && kind !== "extra") continue;
         if (!kind || !p.mons.length) {
           cur = null;
           continue;

@@ -15,7 +15,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { NuzArea, NuzBoss, NuzEncounter, NuzGame, NuzStep } from "../../src/lib/nuzlocke/model";
-import { ALIASES, BULBA_PAGES, DATA_ERRORS, NOT_A_PLACE, SUB_RULES, type Alias } from "./lib/aliases";
+import { ALIASES, BULBA_PAGES, DATA_ERRORS, NOT_A_PLACE, SEREBII_ERRORS, SUB_RULES, type Alias } from "./lib/aliases";
 import { placeKey, slug } from "./lib/areas";
 import { bulbaKind, bulbaPages, TERRAIN, type BulbaLoc } from "./lib/bulba-loc";
 import type { BulbaRow } from "./lib/bulba-catch";
@@ -25,7 +25,9 @@ import { pokeapiRows } from "./lib/pokeapi-rows";
 import { parseLevels, parseRate, type Row } from "./lib/rows";
 import { locRows } from "./lib/serebii";
 import { serebiiToRows } from "./lib/serebii-rows";
-import { walkthrough, type Walkthrough, type WtParty } from "./lib/walkthrough";
+import { noteRow, serebiiGameRows } from "./lib/serebii8";
+import { summaryBosses, type SummaryBosses } from "./lib/summary-bosses";
+import { walkthrough, type Walkthrough, type WtEvent, type WtParty } from "./lib/walkthrough";
 import { BOSSES } from "./lib/bosses";
 import { addVec, famOf, sameVec, slotNames, vecBulba, vecOurs } from "./lib/rates";
 import { formFor, type FormHit } from "./lib/forms";
@@ -95,6 +97,14 @@ interface Acc {
 }
 
 const REGION_NAMES = ["Kanto", "Johto", "Hoenn", "Sinnoh", "Unova", "Kalos", "Alola"];
+const SEREBII_URL: Record<string, string> = {
+  lgpe: "https://www.serebii.net/pokedex-sm/location/",
+  swsh: "https://www.serebii.net/pokedex-swsh/",
+  bdsp: "https://www.serebii.net/pokedex-swsh/",
+  la: "https://www.serebii.net/pokedex-swsh/",
+  sv: "https://www.serebii.net/pokedex-sv/",
+  za: "https://www.serebii.net/pokedex-sv/",
+};
 
 function aliasOf(game: string, place: string, sub?: string): Alias | undefined {
   const al = ALIASES[game] ?? {};
@@ -182,6 +192,30 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
     ser = serebiiToRows((await locRows(cfg.serebiiLoc)).filter((r) => versions.includes(r.ver)), { alola: cfg.gen === 7 });
     sources.add(`https://www.serebii.net/${{ rby: "pokedex", gs: "pokedex-gs", rs: "pokedex-rs", dp: "pokedex-dp", bw: "pokedex-bw", xy: "pokedex-xy", sm: "pokedex-sm" }[cfg.serebiiLoc]}/location/`);
   }
+  // Let's Go and Sword/Shield: Serebii's detail tables are the cross-check of PokéAPI's data.
+  if (cfg.serebii && cfg.pokeapi) {
+    ser = (await serebiiGameRows(cfg.serebii, versions)).rows;
+    sources.add(SEREBII_URL[cfg.serebii]);
+  }
+  // BD/SP, Legends: Arceus, Scarlet/Violet, Legends: Z-A: Serebii is the source (PokéAPI has no encounters for them).
+  if (cfg.serebii && !cfg.pokeapi) {
+    const got = await serebiiGameRows(cfg.serebii, versions);
+    const errs = SEREBII_ERRORS[cfg.id] ?? [];
+    for (const r of got.rows) {
+      const err = errs.find(([place, sp]) => place === placeKey(r.place) && sp === r.species);
+      if (err) {
+        const n = `Serebii data error skipped: ${speciesName(r.species)} at ${r.place} (${err[2]})`;
+        if (!notes.includes(n)) notes.push(n);
+        continue;
+      }
+      if (!NOT_A_PLACE.has(placeKey(r.place))) add(r);
+    }
+    for (const n of got.notes) {
+      const r = await noteRow(n);
+      if (r && !NOT_A_PLACE.has(placeKey(r.place))) add(r);
+    }
+    sources.add(SEREBII_URL[cfg.serebii]);
+  }
   const bad = DATA_ERRORS[cfg.id] ?? {};
   api = api.filter((r) => {
     const why = bad[placeKey(r.place)];
@@ -255,7 +289,7 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
       for (const sp of new Set([...P, ...S])) {
         if (P.has(sp) === S.has(sp)) continue;
         const locs = bulba.get(key);
-        const hits = bulbaHits(locs, ver, sp).filter((h) => !bulbaKind(h.method));
+        const hits = bulbaHits(locs, ver, sp).filter((h) => !bulbaKind(h.method, h.tpl));
         const b: Disagreement["bulbapedia"] = !locs?.length ? "no page" : hits.length ? "yes" : "no";
         let resolution: Disagreement["resolution"];
         if (P.has(sp)) resolution = b === "yes" ? "keep" : b === "no" ? "drop" : "unresolved";
@@ -314,7 +348,7 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
         if (v && f) put(P, `${r.species}|${f}`, `${r.sub ?? ""}|${r.levels}`, v);
       }
       for (const h of locs.flatMap((l) => l.rows)) {
-        if (!h.versions.includes(ver) || bulbaKind(h.method)) continue;
+        if (!h.versions.includes(ver) || bulbaKind(h.method, h.tpl)) continue;
         const f = famOf(h.method);
         if (!f || specialDiv.test(h.div ?? "")) continue;
         const v = vecBulba(h, nSlots);
@@ -350,7 +384,7 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
         if (action === "keep") continue;
         // Bulbapedia's rows also carry forms (Sun/Moon's Midday and Midnight Lycanroc): when they name one, they are
         // the rows used (Serebii's name the species only).
-        const bRows = locs.flatMap((l) => l.rows.filter((h) => h.versions.includes(ver) && h.species === species && famOf(h.method) === fam && !specialDiv.test(h.div ?? "") && !bulbaKind(h.method)).map((h) => ({ h, url: l.url })));
+        const bRows = locs.flatMap((l) => l.rows.filter((h) => h.versions.includes(ver) && h.species === species && famOf(h.method) === fam && !specialDiv.test(h.div ?? "") && !bulbaKind(h.method, h.tpl)).map((h) => ({ h, url: l.url })));
         const useBulba = action === "add-bulbapedia" || bRows.some(({ h }) => formOfBulba(h).form);
         if (useBulba) {
           a.rows = a.rows.filter((r) => !(r.src === "pokeapi" && r.ver === ver && r.kind === "wild" && r.species === species && famOf(r.method) === fam && vecOurs(r, slots)));
@@ -384,7 +418,7 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
     const firstSeen: string[] = [];
     for (const e of wt.events) {
       if (e.type !== "head") continue;
-      const k = keyOfHead(e.name, accs, cfg.id);
+      const k = [e.name, ...e.linked].map((n) => keyOfHead(n, accs, cfg.id)).find(Boolean);
       if (k && !firstSeen.includes(k)) firstSeen.push(k);
     }
     for (const sp of chosen) {
@@ -404,11 +438,11 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
   for (const a of accs.values()) {
     const locs = bulba.get(a.key);
     if (!locs?.length) continue;
-    const areaTerrains = new Set(locs.flatMap((l) => l.rows).filter((r) => !bulbaKind(r.method) && BULBA_FAMILY(r.method) === "walk").map((r) => TERRAIN[r.method.toLowerCase()]).filter(Boolean));
+    const areaTerrains = new Set(locs.flatMap((l) => l.rows).filter((r) => !bulbaKind(r.method, r.tpl) && BULBA_FAMILY(r.method) === "walk").map((r) => TERRAIN[r.method.toLowerCase()]).filter(Boolean));
     for (const r of a.rows) {
       if (r.kind !== "wild" || r.method !== "Walking") continue;
       // The terrain of Bulbapedia's matching row: same rate and levels first (the same table slot), then any of its rows.
-      const walk = bulbaHits(locs, r.ver, r.species).filter((h) => !bulbaKind(h.method) && BULBA_FAMILY(h.method) === "walk" && TERRAIN[h.method.toLowerCase()]);
+      const walk = bulbaHits(locs, r.ver, r.species).filter((h) => !bulbaKind(h.method, h.tpl) && BULBA_FAMILY(h.method) === "walk" && TERRAIN[h.method.toLowerCase()]);
       const lv = (h: BulbaRow) => JSON.stringify(parseLevels(h.levels));
       const tiers = [
         walk.filter((h) => parseRate(h.rate) === r.rate && lv(h) === JSON.stringify(r.levels)),
@@ -429,7 +463,7 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
     // Non-wild encounters on Bulbapedia's table that neither PokéAPI nor Serebii has here.
     for (const l of locs)
       for (const h of l.rows) {
-        const kind = bulbaKind(h.method);
+        const kind = bulbaKind(h.method, h.tpl);
         if (!kind) continue;
         for (const ver of h.versions) {
           if (!versions.includes(ver)) continue;
@@ -450,6 +484,76 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
         }
       }
   }
+
+  // ---- One-time encounters that Serebii files as "Wild" (where Serebii is the source): a Pokémon Bulbapedia's page has
+  // only as a one-time encounter there (a fixed "Only One" row, or a Special encounters box), never on its wild table.
+  // A Pokémon Bulbapedia never lists as wild anywhere in the game but shows as a one-time encounter somewhere counts too
+  // (Serebii files Snacksworth's Zapdos under Poco Path; Bulbapedia under South Province (Area One), around it).
+  const allLocs = [...bulba.values()].flat();
+  const onceRow = (l: (typeof allLocs)[number], ver: string, sp: number) => l.rows.some((h) => h.tpl === "entry9/special" && h.versions.includes(ver) && h.species === sp && /^Only One$/i.test(h.rate ?? "")) || l.boxes.includes(sp);
+  const wildIn = (ls: typeof allLocs, ver: string, sp: number) => ls.some((l) => l.rows.some((h) => h.versions.includes(ver) && h.species === sp && !bulbaKind(h.method, h.tpl)));
+  if (cfg.serebii && !cfg.pokeapi)
+    for (const a of accs.values()) {
+      const locs = bulba.get(a.key) ?? [];
+      const wildHere = (ver: string, sp: number) => wildIn(locs, ver, sp);
+      const once = (ver: string, sp: number) => locs.find((l) => onceRow(l, ver, sp)) ?? (wildIn(allLocs, ver, sp) ? undefined : allLocs.find((l) => onceRow(l, ver, sp)));
+      const drop = new Set<Row>();
+      for (const r of a.rows) {
+        if (r.src !== "serebii" || r.kind !== "wild" || wildHere(r.ver, r.species)) continue;
+        const l = once(r.ver, r.species);
+        if (!l) continue;
+        if (a.rows.some((x) => x !== r && x.ver === r.ver && x.species === r.species && x.kind === "static")) drop.add(r);
+        else {
+          r.kind = "static";
+          r.method = "Static";
+        }
+        notes.push(`one-time encounter, not wild: ${speciesName(r.species)} at ${a.names[0].name} (${r.ver}) — Serebii "Wild", ${l.url} ${drop.has(r) ? "(its static row kept)" : "(made static)"}`);
+      }
+      a.rows = a.rows.filter((x) => !drop.has(x));
+    }
+
+  // ---- Serebii's form-less rows (its "Fixed:" lines name no form): the form Bulbapedia's table gives that Pokémon
+  // there, when it gives one form for it (Paldea's fixed Tauros is a Combat Breed).
+  if (cfg.serebii && !cfg.pokeapi)
+    for (const a of accs.values()) {
+      const locs = bulba.get(a.key);
+      if (!locs?.length) continue;
+      for (const r of a.rows) {
+        if (r.src !== "serebii" || r.form) continue;
+        const hs = locs.flatMap((l) => l.rows).filter((h) => h.versions.includes(r.ver) && h.species === r.species && !bulbaKind(h.method, h.tpl) === (r.kind === "wild"));
+        const labels = [...new Set(hs.map((h) => h.form ?? ""))];
+        if (labels.length !== 1 || !labels[0]) continue;
+        const f = await formFor(r.species, labels[0]);
+        if (!f?.form) continue;
+        r.form = f.form;
+        r.art = f.art;
+        notes.push(`form from Bulbapedia's table: ${speciesName(r.species)} at ${a.names[0].name} (${r.ver}, ${r.kind}) is ${f.form} — ${locs[0].url}`);
+      }
+    }
+
+  // ---- A place Serebii names but gives no wild Pokémon for (it files Poco Path's under South Province (Area One)):
+  // Bulbapedia's table for the place, as it gives it (its habitat as the method; Scarlet/Violet's numbers are spawn
+  // weights, not chances, so no rate).
+  if (cfg.serebii && !cfg.pokeapi)
+    for (const a of accs.values()) {
+      const locs = bulba.get(a.key);
+      if (!locs?.length) continue;
+      for (const ver of versions) {
+        if (a.rows.some((r) => r.ver === ver && r.kind === "wild")) continue;
+        const add: Row[] = [];
+        for (const l of locs)
+          for (const h of l.rows) {
+            if (!h.versions.includes(ver) || bulbaKind(h.method, h.tpl)) continue;
+            const form = h.form ? await formFor(h.species, h.form) : {};
+            const levels = parseLevels(h.levels);
+            const rate = cfg.gen === 9 ? undefined : parseRate(h.rate);
+            add.push({ src: "bulbapedia", ver, place: a.names[0].name, species: h.species, ...(form?.form ? { form: form.form, art: form.art } : {}), kind: "wild", method: h.method, ...(rate !== undefined ? { rate } : {}), ...(levels ? { levels } : {}), url: l.url });
+          }
+        if (!add.length) continue;
+        a.rows.push(...add);
+        notes.push(`Bulbapedia's table fills ${a.names[0].name} (${ver}), where Serebii lists no wild Pokémon: ${[...new Set(add.map((r) => speciesName(r.species)))].join(", ")} — ${locs.map((l) => l.url).join(", ")}`);
+      }
+    }
 
   // ---- Bulbapedia audit of every wild row: drop what its table marks unavailable in every version; list what it lacks
   const audit: Audit[] = [];
@@ -495,7 +599,11 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
   }
 
   // ---- story order and bosses
-  const { steps, extra, bossReport, unplaced } = order(cfg, wt, areas);
+  const sb = await summaryBosses(cfg.id);
+  for (const u of sb.urls) sources.add(u);
+  notes.push(...sb.notes);
+  const { steps, extra, bossReport, unplaced, fromSummary } = order(cfg, wt, areas, sb);
+  if (fromSummary.length) notes.push(`placed by the walkthrough index's part summaries: ${fromSummary.join("; ")}`);
   const game: NuzGame = {
     id: cfg.id,
     name: cfg.name,
@@ -604,7 +712,41 @@ function encountersOf(rows: Row[], versions: string[]): NuzEncounter[] {
 
 /* ------------------------------------------------------------------------------------------- order and bosses -- */
 
-function order(cfg: GameCfg, wt: Walkthrough, areas: Map<string, NuzArea>) {
+/**
+ * A walkthrough index's summary of a part -> its items, in order: "Victory Road, Part 7: Cortondo, South Province (Area
+ * Six), Alfornada, Optional: Alfornada Cavern" -> Cortondo, South Province (Area Six), Alfornada, Alfornada Cavern.
+ * "X (A & B)" and "X (A, B)" name several places: X (A) or A X.
+ */
+function summaryItems(summary: string): string[][] {
+  // "Routes 17 & 18", "Routes 132, 133, and 134": one item per route.
+  summary = summary.replace(/\bRoutes (\d+(?:, \d+)*,? (?:and|&) \d+)\b/g, (_, ns: string) => ns.split(/,? (?:and|&) |, /).map((n) => `Route ${n}`).join(", "));
+  const items: string[] = [];
+  let depth = 0;
+  let cur = "";
+  for (const ch of summary) {
+    if (ch === "(") depth++;
+    if (ch === ")") depth--;
+    if (ch === "," && depth === 0) {
+      items.push(cur);
+      cur = "";
+    } else cur += ch;
+  }
+  items.push(cur);
+  return items
+    // "Lake of the Moone / Lake of the Sunne", "Naranja Academy/Uva Academy": one place per version, each its own item.
+    .flatMap((x) => x.split(/\s*\/\s*/))
+    .map((x) => x.trim().replace(/^(?:Part \d+:\s*)?(?:Optional:\s*)?/, "").trim())
+    .filter(Boolean)
+    .map((x) => {
+      const m = x.match(/^(.+?) \(([^()]*(?:,|&)[^()]*)\)$/);
+      if (!m) return [x];
+      return m[2].split(/\s*(?:,|&)\s*/).map((a) => `${m[1]} (${a})|${a} ${m[1]}`);
+    })
+    .flat()
+    .map((x) => x.split("|"));
+}
+
+function order(cfg: GameCfg, wt: Walkthrough, areas: Map<string, NuzArea>, sb: SummaryBosses) {
   const steps: NuzStep[] = [];
   const placed = new Set<string>();
   const bossCfg = BOSSES[cfg.id];
@@ -612,23 +754,69 @@ function order(cfg: GameCfg, wt: Walkthrough, areas: Map<string, NuzArea>) {
   const parties = wt.events.filter((e): e is WtParty => e.type === "party");
   const picked = bossCfg.pick(parties);
   const pickedSet = new Map(picked.map((b) => [b.first, b]));
-  const bossReport: { name: string; cap?: number; capByVersion?: Record<string, number>; note?: string }[] = [];
-  for (const e of wt.events) {
-    if (e.type === "head") {
-      const k = keyOfHead(e.name, areas, cfg.id);
-      if (k && !placed.has(k)) {
-        placed.add(k);
-        steps.push({ type: "area", area: areas.get(k)! });
+  const bossNote = new Map<NuzBoss, string | undefined>();
+  const fromSummary: string[] = [];
+  const headKey = (e: WtEvent) => (e.type === "head" ? [e.name, ...e.linked].map((n) => keyOfHead(n, areas, cfg.id)).find(Boolean) : undefined);
+  // Places some part's headings reach: those headings place them (a summary may name a place the story only passes,
+  // e.g. on Mr. Briney's boat); the summaries place the rest.
+  const byHeading = new Set(wt.events.map(headKey).filter(Boolean) as string[]);
+  for (const part of wt.parts) {
+    const start = steps.length;
+    // 1. The part's page: places as its headings reach them, bosses as its parties meet them.
+    for (const e of wt.events) {
+      if (e.part !== part.idx) continue;
+      if (e.type === "head") {
+        const k = headKey(e);
+        if (k && !placed.has(k)) {
+          placed.add(k);
+          steps.push({ type: "area", area: areas.get(k)! });
+        }
+      } else {
+        const b = pickedSet.get(e);
+        if (!b) continue;
+        steps.push({ type: "boss", boss: b.boss });
+        bossNote.set(b.boss, b.note);
       }
-    } else {
-      const b = pickedSet.get(e);
-      if (!b) continue;
-      steps.push({ type: "boss", boss: b.boss });
-      bossReport.push({ name: b.boss.name, ...(b.boss.cap !== undefined ? { cap: b.boss.cap } : {}), ...(b.boss.capByVersion ? { capByVersion: b.boss.capByVersion } : {}), ...(b.note ? { note: b.note } : {}) });
+    }
+    // 2. The index's summary of the part: a place (or boss) its page doesn't reach (or has no page yet) goes in the
+    // summary's order, after the summary item before it that this part has already placed.
+    let at = start;
+    const indexOf = (pred: (s: NuzStep) => boolean) => steps.findIndex((s, i) => i >= start && pred(s));
+    for (const alts of summaryItems(part.summary)) {
+      const bosses = sb.byItem.get(alts[0]);
+      if (bosses) {
+        for (const boss of bosses) {
+          const i = indexOf((s) => s.type === "boss" && s.boss.name === boss.name);
+          if (i >= 0) {
+            at = Math.max(at, i + 1);
+            continue;
+          }
+          steps.splice(at++, 0, { type: "boss", boss });
+          bossNote.set(boss, `placed by the walkthrough index's summary of ${part.title}`);
+        }
+        continue;
+      }
+      const k = alts.map((n) => keyOfHead(n, areas, cfg.id)).find(Boolean);
+      if (!k) continue;
+      if (placed.has(k)) {
+        const i = indexOf((s) => s.type === "area" && s.area === areas.get(k));
+        if (i >= 0) at = Math.max(at, i + 1);
+        continue;
+      }
+      if (byHeading.has(k)) continue;
+      placed.add(k);
+      steps.splice(at++, 0, { type: "area", area: areas.get(k)! });
+      fromSummary.push(`${areas.get(k)!.name} (${part.title})`);
     }
   }
   const extra = [...areas.entries()].filter(([k]) => !placed.has(k)).map(([, a]) => a);
-  return { steps, extra, bossReport, unplaced: extra.map((a) => a.name) };
+  const bossReport = steps.flatMap((s) => {
+    if (s.type !== "boss") return [];
+    const b = s.boss;
+    const note = bossNote.get(b);
+    return [{ name: b.name, ...(b.cap !== undefined ? { cap: b.cap } : {}), ...(b.capByVersion ? { capByVersion: b.capByVersion } : {}), ...(note ? { note } : {}) }];
+  });
+  return { steps, extra, bossReport, unplaced: extra.map((a) => a.name), fromSummary };
 }
 
 /* -------------------------------------------------------------------------------------------------------- main -- */

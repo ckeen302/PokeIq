@@ -55,6 +55,7 @@ export const ALIASES: Record<string, Record<string, Alias>> = {
     "glacier room": { area: "Underground Ruins", sub: "Glacier Room", why: "Regice's room is in the Underground Ruins (Bulbapedia's Underground Ruins page)" },
     "iron room": { area: "Underground Ruins", sub: "Iron Room", why: "Registeel's room is in the Underground Ruins (Bulbapedia's Underground Ruins page)" },
   },
+  "scarlet-violet": { "alfornado cavern": { area: "Alfornada Cavern", why: "Serebii's misspelling of Alfornada Cavern" } },
   "x-y": { roaming: { area: "Roaming Kalos", why: "PokéAPI's '(Roaming)' location: the roaming legendary bird" } },
   "sun-moon": ALOLA7,
   "ultra-sun-ultra-moon": ALOLA7,
@@ -107,7 +108,7 @@ export const API_NAMES: Record<string, { name: string; why: string }> = {
 };
 
 /** Serebii labels that are not one place (they list a method across many places). */
-export const NOT_A_PLACE = new Set(["honey trees"]);
+export const NOT_A_PLACE = new Set(["honey trees", "tera raid battles", "all over paldea", "dynamax adventures", "everywhere"]);
 /** PokéAPI's placeholder locations ("Unknown; all bugs"). */
 export const PLACEHOLDER = /^Unknown; /;
 
@@ -116,4 +117,18 @@ export const DATA_ERRORS: Record<string, Record<string, string>> = {
   "black-white": { "team flare secret hq": "a Kalos place: PokéAPI files Black/White's Tornadus and Thundurus there (they roam Unova: Serebii, Bulbapedia)" },
   "sun-moon": { "new mauville": "a Hoenn place: PokéAPI lists Voltorb and Electrode there for Sun" },
   "ultra-sun-ultra-moon": { "new mauville": "a Hoenn place: PokéAPI lists Voltorb and Electrode there" },
+};
+
+/**
+ * Serebii rows (where Serebii is a game's only encounter source) that Bulbapedia contradicts twice over: the place's
+ * table and the Pokémon's own availability list both leave the Pokémon out there. Per game: [place key, species, why].
+ */
+export const SEREBII_ERRORS: Record<string, [string, number, string][]> = {
+  "brilliant-diamond-shining-pearl": [
+    [
+      "victory road",
+      223,
+      "Serebii lists Remoraid for Victory Road's Good Rod; Bulbapedia's Victory Road table has Magikarp only (https://bulbapedia.bulbagarden.net/wiki/Sinnoh_Victory_Road) and Remoraid's availability names Routes 213, 222, 223, 224 and 230, Pastoria City, Sunyshore City and the Pokémon League, not Victory Road (https://bulbapedia.bulbagarden.net/wiki/Remoraid_(Pok%C3%A9mon))",
+    ],
+  ],
 };
