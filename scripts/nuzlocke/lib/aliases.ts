@@ -9,6 +9,8 @@ export interface Alias {
   sub?: string;
   /** Why: which source names it so. */
   why: string;
+  /** Only the sources' rows use this name for the area; the walkthrough's place of that name is another one. */
+  rowsOnly?: true;
 }
 
 const tanoby = (c: string, serebii?: string): [string, Alias][] => [
@@ -34,7 +36,14 @@ const SINNOH4: Record<string, Alias> = {
   "ruins maniacs cave": { area: "Ruin Maniac Cave", why: "Serebii's spelling of PokéAPI's Ruin Maniac Cave" },
   "ruins maniacs tunnel": { area: "Maniac Tunnel", why: "Serebii's spelling of PokéAPI's Maniac Tunnel" },
 };
-const ALOLA7: Record<string, Alias> = {};
+const ALOLA7: Record<string, Alias> = {
+  "thrifty megamart": {
+    area: "Thrifty Megamart (Abandoned Site)",
+    rowsOnly: true,
+    why: "the Pokémon PokéAPI and Serebii file under Thrifty Megamart are the abandoned site's on Ula'ula Island, north of Route 14 (Bulbapedia's Thrifty Megamart (Abandoned Site) page), not the working store on Akala's Royal Avenue, which the walkthrough's Akala part names",
+  },
+  "trial 6 abandoned megamart": { area: "Thrifty Megamart (Abandoned Site)", why: "the walkthrough index's name for it (\"Tapu Village, Aether House, Route 14, Trial 6: Abandoned Megamart\")" },
+};
 
 export const ALIASES: Record<string, Record<string, Alias>> = {
   emerald: HOENN3,
@@ -72,6 +81,7 @@ export const ALIASES: Record<string, Record<string, Alias>> = {
     "wild zones 18": { area: "Wild Zone 18", why: "the walkthrough's heading for Wild Zone 18" },
   },
   "sword-shield": {
+    "energy plant": { area: "Tower Summit", why: "the Tower summit is reached through the Energy Plant, which the walkthrough names; Eternatus, Zacian and Zamazenta are caught at its top (Bulbapedia's Tower summit page), and the Energy Plant has no encounters of its own" },
     "isle of armor": { area: "Roaming the Isle of Armor", why: "Serebii's place for Galarian Moltres, PokéAPI's roaming-isle-of-armor" },
     "crown tundra": { area: "Roaming the Crown Tundra", why: "Serebii's place for Galarian Articuno, PokéAPI's roaming-crown-tundra" },
     "wild area": { area: "Roaming Galar Wild Areas", why: "Serebii's place for Galarian Zapdos, PokéAPI's roaming-galar-wild-area" },
@@ -155,17 +165,4 @@ export const SEREBII_ERRORS: Record<string, [string, number, string][]> = {
 };
 
 /** PokéAPI rows Bulbapedia shows at another place: per game, [place key, species, why]. */
-export const API_ROW_ERRORS: Record<string, [string, number, string][]> = {
-  "sword-shield": [
-    [
-      "energy plant",
-      888,
-      "PokéAPI files Zacian at the Energy Plant, where it fights beside the player against Eternatus; it is caught in the Slumbering Weald after the main story (https://bulbapedia.bulbagarden.net/wiki/Slumbering_Weald)",
-    ],
-    [
-      "energy plant",
-      889,
-      "PokéAPI files Zamazenta at the Energy Plant, where it fights beside the player against Eternatus; it is caught in the Slumbering Weald after the main story (https://bulbapedia.bulbagarden.net/wiki/Slumbering_Weald)",
-    ],
-  ],
-};
+export const API_ROW_ERRORS: Record<string, [string, number, string][]> = {};
