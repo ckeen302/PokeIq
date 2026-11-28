@@ -1,5 +1,5 @@
 {
- "about": "Per game. disagreements: PokéAPI vs Serebii species disagreements per area and version, each settled by the game's table on Bulbapedia's location page (source): keep/drop = a PokéAPI row Bulbapedia lists / doesn't list; add/skip = a Serebii-only row Bulbapedia lists / doesn't list; unresolved = no Bulbapedia table, PokéAPI's data stands. bulbapedia: every other wild row Bulbapedia's table doesn't list for that version: drop = Bulbapedia lists the Pokémon there for no version of the game (e.g. an unreleased event table), keep = not on its table (both other sources list it). rates: per Pokémon and method family, PokéAPI's chances (per time slot, summed over the place's parts) that differ from Bulbapedia's table: replace = Serebii's rows (which match Bulbapedia) are used instead; add = PokéAPI lacks the method there and Serebii's matching rows are added; add-bulbapedia = only Bulbapedia has it, its rows are added; keep = no two sources agree, PokéAPI's stand. serebii (Scarlet/Violet, Legends: Z-A, whose Bulbapedia location tables are the source): every Serebii row its place's Bulbapedia table doesn't have; add = the Pokémon's own Bulbapedia page names that place for the game, skip = it doesn't (the row is left out). visible: every row of Bulbapedia's visible-Pokémon sections (Sword/Shield's Visible encounters, Wanderers, Curry encounters), add = no row of the area has that Pokémon met the same way (water or land) at overlapping levels in that version, duplicate = one does (named). coverageLosses: area|species|version(|water or land) keys the merged sources had and the output lost other than by a logged drop; it must be empty (verify:nuzlocke fails otherwise). conditionFixes: PokéAPI condition values found on rows they can't belong to (a Max Raid den value on Rolling Fields' wild rows), with the value used instead and the evidence. fixes: source rows Bulbapedia shows to be wrong and what was done (drop, levels, method, no chance, copied to the places a moving NPC appears at, kind, condition), each with its evidence (scripts/nuzlocke/lib/fixes.ts, Bulbapedia's notes on unreachable water, PokéAPI's Generation VII ambush rows). sweep: the game's Bulbapedia location pages (its category) that no area's lookup reached and that have its table rows: fold = the page is part of an area (a building in a town, by its infobox location; a part, by its title; or a named rule) and joins that area's pages; new area = a place no other source names, built from its page. nonWild: gifts, statics, Eggs and fossils that their area's Bulbapedia pages don't list but another area's do (the same encounter: kind and levels; trades are left where they are): drop = that area already has it, move = it is moved there. Written by scripts/nuzlocke/build.ts.",
+ "about": "Per game. disagreements: PokéAPI vs Serebii species disagreements per area and version, each settled by the game's table on Bulbapedia's location page (source): keep/drop = a PokéAPI row Bulbapedia lists / doesn't list; add/skip = a Serebii-only row Bulbapedia lists / doesn't list; unresolved = no Bulbapedia table, PokéAPI's data stands. bulbapedia: every other wild row Bulbapedia's table doesn't list for that version: drop = Bulbapedia lists the Pokémon there for no version of the game (e.g. an unreleased event table), keep = not on its table (both other sources list it). rates: per Pokémon and method family, PokéAPI's chances (per time slot, summed over the place's parts) that differ from Bulbapedia's table: replace = Serebii's rows (which match Bulbapedia) are used instead; add = PokéAPI lacks the method there and Serebii's matching rows are added; add-bulbapedia = only Bulbapedia has it, its rows are added; keep = no two sources agree, PokéAPI's stand. serebii (Scarlet/Violet, Legends: Z-A, whose Bulbapedia location tables are the source): every Serebii row its place's Bulbapedia table doesn't have; add = the Pokémon's own Bulbapedia page names that place for the game, skip = it doesn't (the row is left out). visible: every row of Bulbapedia's visible-Pokémon sections (Sword/Shield's Visible encounters, Wanderers, Curry encounters), add = no row of the area has that Pokémon met the same way (water or land) at overlapping levels in that version, duplicate = one does (named). coverageLosses: area|species|version(|water or land) keys the merged sources had and the output lost other than by a logged drop; it must be empty (verify:nuzlocke fails otherwise). conditionFixes: PokéAPI condition values found on rows they can't belong to (a Max Raid den value on Rolling Fields' wild rows), with the value used instead and the evidence. fixes: source rows Bulbapedia shows to be wrong and what was done (drop, levels, method, no chance, copied to the places a moving NPC appears at, kind, condition), each with its evidence (scripts/nuzlocke/lib/fixes.ts, Bulbapedia's notes on unreachable water, PokéAPI's Generation VII ambush rows). sweep: the game's Bulbapedia location pages (its category) that no area's lookup reached and that have its table rows: fold = the page is part of an area (a building in a town, by its infobox location; a part, by its title; or a named rule) and joins that area's pages; new area = a place no other source names, built from its page. nonWild: gifts, statics, Eggs and fossils that their area's Bulbapedia pages don't list but another area's do (the same encounter: kind and levels; trades are left where they are): drop = that area already has it, move = it is moved there. battleOnly (Scarlet/Violet, Legends: Arceus, Legends: Z-A): Special encounters boxes left out because the text above them says the Pokémon is only battled (why: the words that say so, e.g. \"cannot be caught\" or a Rogue Mega Evolution's battle). Written by scripts/nuzlocke/build.ts.",
  "games": {
   "red-blue": {
    "disagreements": [
@@ -177126,6 +177126,63 @@
    "disagreements": [],
    "bulbapedia": [],
    "rates": [],
+   "battleOnly": [
+    {
+     "place": "Crimson Mirelands",
+     "species": 901,
+     "name": "Ursaluna",
+     "levels": [
+      26,
+      26
+     ],
+     "why": "has to defeat",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Sludge_Mound"
+    },
+    {
+     "place": "Coronet Highlands",
+     "species": 483,
+     "name": "Dialga",
+     "levels": [
+      85,
+      85
+     ],
+     "why": "cannot be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Temple_of_Sinnoh"
+    },
+    {
+     "place": "Coronet Highlands",
+     "species": 484,
+     "name": "Palkia",
+     "levels": [
+      85,
+      85
+     ],
+     "why": "cannot be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Temple_of_Sinnoh"
+    },
+    {
+     "place": "Coronet Highlands",
+     "species": 493,
+     "name": "Arceus",
+     "levels": [
+      100,
+      100
+     ],
+     "why": "cannot be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Hall_of_Origin"
+    },
+    {
+     "place": "Alabaster Icelands",
+     "species": 628,
+     "name": "Braviary",
+     "levels": [
+      54,
+      54
+     ],
+     "why": "has to defeat",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Snowpoint_Temple"
+    }
+   ],
    "coverageLosses": []
   },
   "scarlet-violet": {
@@ -177824,26 +177881,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Polar_Biome"
     },
     {
-     "area": "South Province (Area Three)",
-     "version": "scarlet",
-     "species": 39,
-     "name": "Jigglypuff",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Jigglypuff_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "South Province (Area Three)",
-     "version": "violet",
-     "species": 39,
-     "name": "Jigglypuff",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Jigglypuff_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Coastal Biome",
      "version": "scarlet",
      "species": 48,
@@ -177944,26 +177981,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Dugtrio_(Pok%C3%A9mon)"
     },
     {
-     "area": "South Province (Area Two)",
-     "version": "scarlet",
-     "species": 52,
-     "name": "Meowth",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Meowth_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "South Province (Area Two)",
-     "version": "violet",
-     "species": 52,
-     "name": "Meowth",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Meowth_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Casseroya Lake",
      "version": "scarlet",
      "species": 54,
@@ -177982,26 +177999,6 @@
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Psyduck_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "South Province (Area Four)",
-     "version": "scarlet",
-     "species": 55,
-     "name": "Golduck",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Golduck_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "South Province (Area Four)",
-     "version": "violet",
-     "species": 55,
-     "name": "Golduck",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Golduck_(Pok%C3%A9mon)"
     },
     {
      "area": "South Province (Area One)",
@@ -178144,26 +178141,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Mankey_(Pok%C3%A9mon)"
     },
     {
-     "area": "Glaseado Mountain",
-     "version": "scarlet",
-     "species": 57,
-     "name": "Primeape",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Primeape_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Glaseado Mountain",
-     "version": "violet",
-     "species": 57,
-     "name": "Primeape",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Primeape_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Kitakami Wilds",
      "version": "scarlet",
      "species": 57,
@@ -178202,26 +178179,6 @@
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Primeape_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "East Province (Area Two)",
-     "version": "scarlet",
-     "species": 58,
-     "name": "Growlithe",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Growlithe_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "East Province (Area Two)",
-     "version": "violet",
-     "species": 58,
-     "name": "Growlithe",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Growlithe_(Pok%C3%A9mon)"
     },
     {
      "area": "Apple Hills",
@@ -179422,46 +179379,6 @@
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Vaporeon_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "West Province (Area One)",
-     "version": "scarlet",
-     "species": 135,
-     "name": "Jolteon",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Jolteon_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "West Province (Area One)",
-     "version": "violet",
-     "species": 135,
-     "name": "Jolteon",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Jolteon_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "South Province (Area Five)",
-     "version": "scarlet",
-     "species": 136,
-     "name": "Flareon",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Flareon_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "South Province (Area Five)",
-     "version": "violet",
-     "species": 136,
-     "name": "Flareon",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Flareon_(Pok%C3%A9mon)"
     },
     {
      "area": "Canyon Biome",
@@ -180674,26 +180591,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Quagsire_(Pok%C3%A9mon)"
     },
     {
-     "area": "East Province (Area Three)",
-     "version": "scarlet",
-     "species": 196,
-     "name": "Espeon",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Espeon_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "East Province (Area Three)",
-     "version": "violet",
-     "species": 196,
-     "name": "Espeon",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Espeon_(Pok%C3%A9mon)"
-    },
-    {
      "area": "South Province (Area One)",
      "version": "scarlet",
      "species": 198,
@@ -181242,26 +181139,6 @@
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Houndour_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "South Province (Area Six)",
-     "version": "scarlet",
-     "species": 229,
-     "name": "Houndoom",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Houndoom_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "South Province (Area Six)",
-     "version": "violet",
-     "species": 229,
-     "name": "Houndoom",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Houndoom_(Pok%C3%A9mon)"
     },
     {
      "area": "Chilling Waterhead",
@@ -182514,16 +182391,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Kirlia_(Pok%C3%A9mon)"
     },
     {
-     "area": "East Province (Area Three)",
-     "version": "scarlet",
-     "species": 281,
-     "name": "Kirlia",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Kirlia_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Cortondo",
      "version": "violet",
      "species": 281,
@@ -182544,16 +182411,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Kirlia_(Pok%C3%A9mon)"
     },
     {
-     "area": "East Province (Area Three)",
-     "version": "violet",
-     "species": 281,
-     "name": "Kirlia",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Kirlia_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Kitakami Wilds",
      "version": "scarlet",
      "species": 281,
@@ -182952,26 +182809,6 @@
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Vigoroth_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "North Province (Area Two)",
-     "version": "scarlet",
-     "species": 289,
-     "name": "Slaking",
-     "serebii": "Wild",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Slaking_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "North Province (Area Two)",
-     "version": "violet",
-     "species": 289,
-     "name": "Slaking",
-     "serebii": "Wild",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Slaking_(Pok%C3%A9mon)"
     },
     {
      "area": "South Province (Area One)",
@@ -183454,26 +183291,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Camerupt_(Pok%C3%A9mon)"
     },
     {
-     "area": "West Province (Area One)",
-     "version": "scarlet",
-     "species": 324,
-     "name": "Torkoal",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Torkoal_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "West Province (Area One)",
-     "version": "violet",
-     "species": 324,
-     "name": "Torkoal",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Torkoal_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Torchlit Labyrinth",
      "version": "scarlet",
      "species": 324,
@@ -183594,31 +183411,11 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Swablu_(Pok%C3%A9mon)"
     },
     {
-     "area": "West Province (Area Three)",
-     "version": "scarlet",
-     "species": 334,
-     "name": "Altaria",
-     "serebii": "Wild",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Altaria_(Pok%C3%A9mon)"
-    },
-    {
      "area": "West Province (Area One)",
      "version": "scarlet",
      "species": 334,
      "name": "Altaria",
      "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Altaria_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "West Province (Area Three)",
-     "version": "violet",
-     "species": 334,
-     "name": "Altaria",
-     "serebii": "Wild",
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Altaria_(Pok%C3%A9mon)"
@@ -185504,31 +185301,11 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Garchomp_(Pok%C3%A9mon)"
     },
     {
-     "area": "West Province (Area Two)",
-     "version": "scarlet",
-     "species": 445,
-     "name": "Garchomp",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Garchomp_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Great Crater of Paldea",
      "version": "violet",
      "species": 445,
      "name": "Garchomp",
      "serebii": "Wild",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Garchomp_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "West Province (Area Two)",
-     "version": "violet",
-     "species": 445,
-     "name": "Garchomp",
-     "serebii": "Static",
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Garchomp_(Pok%C3%A9mon)"
@@ -185814,26 +185591,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Timeless_Woods"
     },
     {
-     "area": "Dalizapa Passage",
-     "version": "scarlet",
-     "species": 448,
-     "name": "Lucario",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Lucario_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Dalizapa Passage",
-     "version": "violet",
-     "species": 448,
-     "name": "Lucario",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Lucario_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Fellhorn Gorge",
      "version": "scarlet",
      "species": 448,
@@ -185972,26 +185729,6 @@
      "bulbapedia": "neither the place's table nor the Pokémon's page has it there",
      "action": "skip",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Canyon_Biome"
-    },
-    {
-     "area": "South Province (Area Four)",
-     "version": "scarlet",
-     "species": 470,
-     "name": "Leafeon",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Leafeon_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "South Province (Area Four)",
-     "version": "violet",
-     "species": 470,
-     "name": "Leafeon",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Leafeon_(Pok%C3%A9mon)"
     },
     {
      "area": "Alfornada Cavern",
@@ -187154,16 +186891,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/South_Province_(Area_Three)"
     },
     {
-     "area": "West Province (Area One)",
-     "version": "scarlet",
-     "species": 610,
-     "name": "Axew",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Axew_(Pok%C3%A9mon)"
-    },
-    {
      "area": "North Province (Area One)",
      "version": "violet",
      "species": 610,
@@ -187182,16 +186909,6 @@
      "bulbapedia": "neither the place's table nor the Pokémon's page has it there",
      "action": "skip",
      "source": "https://bulbapedia.bulbagarden.net/wiki/South_Province_(Area_Three)"
-    },
-    {
-     "area": "West Province (Area One)",
-     "version": "violet",
-     "species": 610,
-     "name": "Axew",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Axew_(Pok%C3%A9mon)"
     },
     {
      "area": "Dalizapa Passage",
@@ -187794,16 +187511,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/North_Province_(Area_One)"
     },
     {
-     "area": "East Province (Area Three)",
-     "version": "scarlet",
-     "species": 668,
-     "name": "Pyroar",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Pyroar_(Pok%C3%A9mon)"
-    },
-    {
      "area": "North Province (Area One)",
      "version": "violet",
      "species": 668,
@@ -187812,36 +187519,6 @@
      "bulbapedia": "neither the place's table nor the Pokémon's page has it there",
      "action": "skip",
      "source": "https://bulbapedia.bulbagarden.net/wiki/North_Province_(Area_One)"
-    },
-    {
-     "area": "East Province (Area Three)",
-     "version": "violet",
-     "species": 668,
-     "name": "Pyroar",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Pyroar_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "East Province (Area One)",
-     "version": "scarlet",
-     "species": 670,
-     "name": "Floette",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Floette_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "East Province (Area One)",
-     "version": "violet",
-     "species": 670,
-     "name": "Floette",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Floette_(Pok%C3%A9mon)"
     },
     {
      "area": "East Province (Area Three)",
@@ -187974,16 +187651,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Sylveon_(Pok%C3%A9mon)"
     },
     {
-     "area": "North Province (Area Three)",
-     "version": "scarlet",
-     "species": 700,
-     "name": "Sylveon",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Sylveon_(Pok%C3%A9mon)"
-    },
-    {
      "area": "West Province (Area Three)",
      "version": "violet",
      "species": 700,
@@ -187994,16 +187661,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Sylveon_(Pok%C3%A9mon)"
     },
     {
-     "area": "North Province (Area Three)",
-     "version": "violet",
-     "species": 700,
-     "name": "Sylveon",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Sylveon_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Socarrat Trail",
      "version": "scarlet",
      "species": 701,
@@ -188014,31 +187671,11 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Hawlucha_(Pok%C3%A9mon)"
     },
     {
-     "area": "South Province (Area Six)",
-     "version": "scarlet",
-     "species": 701,
-     "name": "Hawlucha",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Hawlucha_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Socarrat Trail",
      "version": "violet",
      "species": 701,
      "name": "Hawlucha",
      "serebii": "Wild",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Hawlucha_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "South Province (Area Six)",
-     "version": "violet",
-     "species": 701,
-     "name": "Hawlucha",
-     "serebii": "Static",
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Hawlucha_(Pok%C3%A9mon)"
@@ -188224,28 +187861,8 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Goomy_(Pok%C3%A9mon)"
     },
     {
-     "area": "South Province (Area Four)",
-     "version": "scarlet",
-     "species": 705,
-     "name": "Sliggoo",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Sliggoo_(Pok%C3%A9mon)"
-    },
-    {
      "area": "West Province (Area Three)",
      "version": "scarlet",
-     "species": 705,
-     "name": "Sliggoo",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Sliggoo_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "South Province (Area Four)",
-     "version": "violet",
      "species": 705,
      "name": "Sliggoo",
      "serebii": "Static",
@@ -189534,31 +189151,11 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Salandit_(Pok%C3%A9mon)"
     },
     {
-     "area": "East Province (Area One)",
-     "version": "scarlet",
-     "species": 757,
-     "name": "Salandit",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Salandit_(Pok%C3%A9mon)"
-    },
-    {
      "area": "East Province (Area Two)",
      "version": "violet",
      "species": 757,
      "name": "Salandit",
      "serebii": "Wild",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Salandit_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "East Province (Area One)",
-     "version": "violet",
-     "species": 757,
-     "name": "Salandit",
-     "serebii": "Static",
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Salandit_(Pok%C3%A9mon)"
@@ -189664,46 +189261,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Steenee_(Pok%C3%A9mon)"
     },
     {
-     "area": "Casseroya Lake",
-     "version": "scarlet",
-     "species": 763,
-     "name": "Tsareena",
-     "serebii": "Static",
-     "bulbapedia": "neither the place's table nor the Pokémon's page has it there",
-     "action": "skip",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Casseroya_Lake"
-    },
-    {
-     "area": "Casseroya Lake",
-     "version": "violet",
-     "species": 763,
-     "name": "Tsareena",
-     "serebii": "Static",
-     "bulbapedia": "neither the place's table nor the Pokémon's page has it there",
-     "action": "skip",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Casseroya_Lake"
-    },
-    {
-     "area": "Asado Desert",
-     "version": "scarlet",
-     "species": 769,
-     "name": "Sandygast",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Sandygast_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Asado Desert",
-     "version": "violet",
-     "species": 769,
-     "name": "Sandygast",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Sandygast_(Pok%C3%A9mon)"
-    },
-    {
      "area": "West Province (Area Two)",
      "version": "scarlet",
      "species": 770,
@@ -189754,16 +189311,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/West_Province_(Area_Three)"
     },
     {
-     "area": "North Province (Area Two)",
-     "version": "scarlet",
-     "species": 778,
-     "name": "Mimikyu",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Mimikyu_(Pok%C3%A9mon)"
-    },
-    {
      "area": "West Province (Area Three)",
      "version": "violet",
      "species": 778,
@@ -189772,16 +189319,6 @@
      "bulbapedia": "neither the place's table nor the Pokémon's page has it there",
      "action": "skip",
      "source": "https://bulbapedia.bulbagarden.net/wiki/West_Province_(Area_Three)"
-    },
-    {
-     "area": "North Province (Area Two)",
-     "version": "violet",
-     "species": 778,
-     "name": "Mimikyu",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Mimikyu_(Pok%C3%A9mon)"
     },
     {
      "area": "Chilling Waterhead",
@@ -190182,26 +189719,6 @@
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Corvisquire_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "North Province (Area Two)",
-     "version": "scarlet",
-     "species": 823,
-     "name": "Corviknight",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Corviknight_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "North Province (Area Two)",
-     "version": "violet",
-     "species": 823,
-     "name": "Corviknight",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Corviknight_(Pok%C3%A9mon)"
     },
     {
      "area": "Timeless Woods",
@@ -190954,16 +190471,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Falinks_(Pok%C3%A9mon)"
     },
     {
-     "area": "East Province (Area Three)",
-     "version": "scarlet",
-     "species": 870,
-     "name": "Falinks",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Falinks_(Pok%C3%A9mon)"
-    },
-    {
      "area": "West Province (Area Two)",
      "version": "violet",
      "species": 870,
@@ -190972,36 +190479,6 @@
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Falinks_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "East Province (Area Three)",
-     "version": "violet",
-     "species": 870,
-     "name": "Falinks",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Falinks_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Glaseado Mountain",
-     "version": "scarlet",
-     "species": 871,
-     "name": "Pincurchin",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Pincurchin_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Glaseado Mountain",
-     "version": "violet",
-     "species": 871,
-     "name": "Pincurchin",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Pincurchin_(Pok%C3%A9mon)"
     },
     {
      "area": "Kitakami Wilds",
@@ -191364,16 +190841,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Lokix_(Pok%C3%A9mon)"
     },
     {
-     "area": "West Province (Area One)",
-     "version": "scarlet",
-     "species": 920,
-     "name": "Lokix",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Lokix_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Alfornada Cavern",
      "version": "violet",
      "species": 920,
@@ -191389,16 +190856,6 @@
      "species": 920,
      "name": "Lokix",
      "serebii": "Wild",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Lokix_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "West Province (Area One)",
-     "version": "violet",
-     "species": 920,
-     "name": "Lokix",
-     "serebii": "Static",
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Lokix_(Pok%C3%A9mon)"
@@ -191594,16 +191051,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Alfornada_Cavern"
     },
     {
-     "area": "West Province (Area Two)",
-     "version": "scarlet",
-     "species": 933,
-     "name": "Naclstack",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Naclstack_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Alfornada Cavern",
      "version": "violet",
      "species": 933,
@@ -191612,16 +191059,6 @@
      "bulbapedia": "neither the place's table nor the Pokémon's page has it there",
      "action": "skip",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Alfornada_Cavern"
-    },
-    {
-     "area": "West Province (Area Two)",
-     "version": "violet",
-     "species": 933,
-     "name": "Naclstack",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Naclstack_(Pok%C3%A9mon)"
     },
     {
      "area": "South Province (Area One)",
@@ -192074,16 +191511,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Tinkatuff_(Pok%C3%A9mon)"
     },
     {
-     "area": "West Province (Area One)",
-     "version": "scarlet",
-     "species": 958,
-     "name": "Tinkatuff",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Tinkatuff_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Dalizapa Passage",
      "version": "violet",
      "species": 958,
@@ -192114,16 +191541,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Tinkatuff_(Pok%C3%A9mon)"
     },
     {
-     "area": "West Province (Area One)",
-     "version": "violet",
-     "species": 958,
-     "name": "Tinkatuff",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Tinkatuff_(Pok%C3%A9mon)"
-    },
-    {
      "area": "Kitakami Wilds",
      "version": "scarlet",
      "species": 962,
@@ -192222,30 +191639,10 @@
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Revavroom_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Asado Desert",
-     "version": "scarlet",
-     "species": 967,
-     "name": "Cyclizar",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Cyclizar_(Pok%C3%A9mon)"
     },
     {
      "area": "West Province (Area Three)",
      "version": "scarlet",
-     "species": 967,
-     "name": "Cyclizar",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Cyclizar_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Asado Desert",
-     "version": "violet",
      "species": 967,
      "name": "Cyclizar",
      "serebii": "Static",
@@ -192444,26 +191841,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Glimmora_(Pok%C3%A9mon)"
     },
     {
-     "area": "South Province (Area Five)",
-     "version": "scarlet",
-     "species": 972,
-     "name": "Houndstone",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Houndstone_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "South Province (Area Five)",
-     "version": "violet",
-     "species": 972,
-     "name": "Houndstone",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Houndstone_(Pok%C3%A9mon)"
-    },
-    {
      "area": "East Province (Area Two)",
      "version": "scarlet",
      "species": 973,
@@ -192524,16 +191901,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Veluza_(Pok%C3%A9mon)"
     },
     {
-     "area": "Glaseado Mountain",
-     "version": "scarlet",
-     "species": 976,
-     "name": "Veluza",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Veluza_(Pok%C3%A9mon)"
-    },
-    {
      "area": "North Paldean Sea",
      "version": "violet",
      "species": 976,
@@ -192545,16 +191912,6 @@
     },
     {
      "area": "East Province (Area One)",
-     "version": "violet",
-     "species": 976,
-     "name": "Veluza",
-     "serebii": "Static",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Veluza_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Glaseado Mountain",
      "version": "violet",
      "species": 976,
      "name": "Veluza",
@@ -192784,6 +192141,173 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Area_Zero"
     }
    ],
+   "battleOnly": [
+    {
+     "place": "Crystal Pool",
+     "species": 350,
+     "name": "Milotic",
+     "levels": [
+      30,
+      30
+     ],
+     "why": "cannot be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Crystal_Pool"
+    },
+    {
+     "place": "Crystal Pool",
+     "species": 350,
+     "name": "Milotic",
+     "levels": [
+      73,
+      73
+     ],
+     "why": "cannot be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Crystal_Pool"
+    },
+    {
+     "place": "Area Zero",
+     "species": 970,
+     "name": "Glimmora",
+     "levels": [
+      62,
+      62
+     ],
+     "why": "None of them can be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Area_Zero"
+    },
+    {
+     "place": "Area Zero",
+     "species": 985,
+     "name": "Scream Tail",
+     "levels": [
+      62,
+      62
+     ],
+     "why": "None of them can be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Area_Zero"
+    },
+    {
+     "place": "Area Zero",
+     "species": 991,
+     "name": "Iron Bundle",
+     "levels": [
+      62,
+      62
+     ],
+     "why": "None of them can be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Area_Zero"
+    },
+    {
+     "place": "Area Zero",
+     "species": 984,
+     "name": "Great Tusk",
+     "levels": [
+      62,
+      62
+     ],
+     "why": "None of them can be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Area_Zero"
+    },
+    {
+     "place": "Area Zero",
+     "species": 990,
+     "name": "Iron Treads",
+     "levels": [
+      62,
+      62
+     ],
+     "why": "None of them can be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Area_Zero"
+    },
+    {
+     "place": "Area Zero",
+     "species": 984,
+     "name": "Great Tusk",
+     "levels": [
+      64,
+      64
+     ],
+     "why": "None of them can be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Area_Zero"
+    },
+    {
+     "place": "Area Zero",
+     "species": 990,
+     "name": "Iron Treads",
+     "levels": [
+      64,
+      64
+     ],
+     "why": "None of them can be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Area_Zero"
+    },
+    {
+     "place": "Area Zero",
+     "species": 986,
+     "name": "Brute Bonnet",
+     "levels": [
+      64,
+      64
+     ],
+     "why": "None of them can be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Area_Zero"
+    },
+    {
+     "place": "Area Zero",
+     "species": 992,
+     "name": "Iron Hands",
+     "levels": [
+      64,
+      64
+     ],
+     "why": "None of them can be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Area_Zero"
+    },
+    {
+     "place": "Area Zero",
+     "species": 987,
+     "name": "Flutter Mane",
+     "levels": [
+      64,
+      64
+     ],
+     "why": "None of them can be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Area_Zero"
+    },
+    {
+     "place": "Area Zero",
+     "species": 993,
+     "name": "Iron Jugulis",
+     "levels": [
+      64,
+      64
+     ],
+     "why": "None of them can be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Area_Zero"
+    },
+    {
+     "place": "Dreaded Den",
+     "species": 1015,
+     "name": "Munkidori",
+     "levels": [
+      30,
+      30
+     ],
+     "why": "cannot be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Dreaded_Den"
+    },
+    {
+     "place": "Dreaded Den",
+     "species": 1015,
+     "name": "Munkidori",
+     "levels": [
+      70,
+      70
+     ],
+     "why": "cannot be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Dreaded_Den"
+    }
+   ],
    "coverageLosses": []
   },
   "legends-za": {
@@ -192982,6 +192506,16 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Kakuna_(Pok%C3%A9mon)"
     },
     {
+     "area": "Vert District",
+     "version": "legends-za",
+     "species": 14,
+     "name": "Kakuna",
+     "serebii": "Wild",
+     "bulbapedia": "the Pokémon's page names it there",
+     "action": "add",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Kakuna_(Pok%C3%A9mon)"
+    },
+    {
      "area": "Hyperspace Lumiose",
      "version": "legends-za",
      "species": 14,
@@ -193023,6 +192557,16 @@
     },
     {
      "area": "Rouge District",
+     "version": "legends-za",
+     "species": 15,
+     "name": "Beedrill",
+     "serebii": "Wild",
+     "bulbapedia": "the Pokémon's page names it there",
+     "action": "add",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Beedrill_(Pok%C3%A9mon)"
+    },
+    {
+     "area": "Vert District",
      "version": "legends-za",
      "species": 15,
      "name": "Beedrill",
@@ -195472,6 +195016,16 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Absol_(Pok%C3%A9mon)"
     },
     {
+     "area": "Jaune District",
+     "version": "legends-za",
+     "species": 359,
+     "name": "Absol",
+     "serebii": "Wild",
+     "bulbapedia": "the Pokémon's page names it there",
+     "action": "add",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Absol_(Pok%C3%A9mon)"
+    },
+    {
      "area": "Magenta District",
      "version": "legends-za",
      "species": 359,
@@ -197497,9 +197051,9 @@
      "species": 669,
      "name": "Flabébé",
      "serebii": "Wild",
-     "bulbapedia": "neither the place's table nor the Pokémon's page has it there",
-     "action": "skip",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Bleu_District"
+     "bulbapedia": "the Pokémon's page names it there",
+     "action": "add",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Flab%C3%A9b%C3%A9_(Pok%C3%A9mon)"
     },
     {
      "area": "Jaune District",
@@ -197517,9 +197071,9 @@
      "species": 669,
      "name": "Flabébé",
      "serebii": "Wild",
-     "bulbapedia": "neither the place's table nor the Pokémon's page has it there",
-     "action": "skip",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Magenta_District"
+     "bulbapedia": "the Pokémon's page names it there",
+     "action": "add",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Flab%C3%A9b%C3%A9_(Pok%C3%A9mon)"
     },
     {
      "area": "Rouge District",
@@ -197527,9 +197081,9 @@
      "species": 669,
      "name": "Flabébé",
      "serebii": "Wild",
-     "bulbapedia": "neither the place's table nor the Pokémon's page has it there",
-     "action": "skip",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Rouge_District"
+     "bulbapedia": "the Pokémon's page names it there",
+     "action": "add",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Flab%C3%A9b%C3%A9_(Pok%C3%A9mon)"
     },
     {
      "area": "Vert District",
@@ -197740,6 +197294,16 @@
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Meowstic_(Pok%C3%A9mon)"
+    },
+    {
+     "area": "Lysandre Labs",
+     "version": "legends-za",
+     "species": 679,
+     "name": "Honedge",
+     "serebii": "Wild",
+     "bulbapedia": "the Pokémon's page names it there",
+     "action": "add",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Honedge_(Pok%C3%A9mon)"
     },
     {
      "area": "Hyperspace Lumiose",
@@ -199260,6 +198824,272 @@
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Gimmighoul_(Pok%C3%A9mon)"
+    }
+   ],
+   "battleOnly": [
+    {
+     "place": "Jaune District",
+     "species": 323,
+     "name": "Camerupt",
+     "levels": [
+      34,
+      34
+     ],
+     "why": "Rogue Mega Evolved Camerupt is battled",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Jaune_Sector_3"
+    },
+    {
+     "place": "Jaune District",
+     "species": 306,
+     "name": "Aggron",
+     "levels": [
+      62,
+      62
+     ],
+     "why": "Rogue Mega Evolved Aggron and Salamence are battled",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Jaune_Sector_3"
+    },
+    {
+     "place": "Jaune District",
+     "species": 373,
+     "name": "Salamence",
+     "levels": [
+      62,
+      62
+     ],
+     "why": "Rogue Mega Evolved Aggron and Salamence are battled",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Jaune_Sector_3"
+    },
+    {
+     "place": "Jaune District",
+     "species": 248,
+     "name": "Tyranitar",
+     "levels": [
+      59,
+      59
+     ],
+     "why": "Rogue Mega Evolved Tyranitar is battled",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Jaune_Sector_4"
+    },
+    {
+     "place": "Jaune District",
+     "species": 248,
+     "name": "Tyranitar",
+     "levels": [
+      59,
+      59
+     ],
+     "why": "Rogue Mega Evolved Tyranitar is battled",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Jaune_Sector_4"
+    },
+    {
+     "place": "Jaune District",
+     "species": 3,
+     "name": "Venusaur",
+     "levels": [
+      53,
+      53
+     ],
+     "why": "Rogue Mega Evolved Venusaur is battled",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Jaune_Sector_8"
+    },
+    {
+     "place": "Jaune District",
+     "species": 354,
+     "name": "Banette",
+     "levels": [
+      41,
+      41
+     ],
+     "why": "Rogue Mega Evolved Banette is battled",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Jaune_Sector_9"
+    },
+    {
+     "place": "Jaune District",
+     "species": 354,
+     "name": "Banette",
+     "levels": [
+      41,
+      41
+     ],
+     "why": "Rogue Mega Evolved Banette is battled",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Jaune_Sector_9"
+    },
+    {
+     "place": "Jaune District",
+     "species": 359,
+     "name": "Absol",
+     "levels": [
+      25,
+      25
+     ],
+     "why": "Rogue Mega Evolved Absol is battled",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Jaune_Sector_10"
+    },
+    {
+     "place": "Vert District",
+     "species": 149,
+     "name": "Dragonite",
+     "levels": [
+      59,
+      59
+     ],
+     "why": "Rogue Mega Evolved Dragonite is battled",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Vert_Sector_3"
+    },
+    {
+     "place": "Vert District",
+     "species": 931,
+     "name": "Squawkabilly",
+     "levels": [
+      75,
+      75
+     ],
+     "why": "None of the four can be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Vert_Sector_3"
+    },
+    {
+     "place": "Vert District",
+     "species": 931,
+     "name": "Squawkabilly",
+     "levels": [
+      75,
+      75
+     ],
+     "why": "None of the four can be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Vert_Sector_3"
+    },
+    {
+     "place": "Vert District",
+     "species": 931,
+     "name": "Squawkabilly",
+     "levels": [
+      75,
+      75
+     ],
+     "why": "None of the four can be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Vert_Sector_3"
+    },
+    {
+     "place": "Vert District",
+     "species": 931,
+     "name": "Squawkabilly",
+     "levels": [
+      75,
+      75
+     ],
+     "why": "None of the four can be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Vert_Sector_3"
+    },
+    {
+     "place": "Vert District",
+     "species": 15,
+     "name": "Beedrill",
+     "levels": [
+      41,
+      41
+     ],
+     "why": "Rogue Mega Evolved Beedrill is battled",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Vert_Sector_5"
+    },
+    {
+     "place": "Vert District",
+     "species": 14,
+     "name": "Kakuna",
+     "levels": [
+      7,
+      7
+     ],
+     "why": "Rogue Mega Evolved Beedrill is battled",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Vert_Sector_5"
+    },
+    {
+     "place": "Vert District",
+     "species": 15,
+     "name": "Beedrill",
+     "levels": [
+      10,
+      10
+     ],
+     "why": "Rogue Mega Evolved Beedrill is battled",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Vert_Sector_5"
+    },
+    {
+     "place": "Wild Zone 4",
+     "species": 972,
+     "name": "Houndstone",
+     "levels": [
+      75,
+      75
+     ],
+     "why": "None of them can be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Wild_Zone_4"
+    },
+    {
+     "place": "Wild Zone 4",
+     "species": 971,
+     "name": "Greavard",
+     "levels": [
+      50,
+      50
+     ],
+     "why": "None of them can be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Wild_Zone_4"
+    },
+    {
+     "place": "Lysandre Labs",
+     "species": 681,
+     "name": "Aegislash",
+     "levels": [
+      50,
+      50
+     ],
+     "why": "None of them can be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Lysandre_Labs"
+    },
+    {
+     "place": "Lysandre Labs",
+     "species": 679,
+     "name": "Honedge",
+     "levels": [
+      34,
+      34
+     ],
+     "why": "None of them can be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Lysandre_Labs"
+    },
+    {
+     "place": "Lysandre Labs",
+     "species": 679,
+     "name": "Honedge",
+     "levels": [
+      34,
+      34
+     ],
+     "why": "None of them can be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Lysandre_Labs"
+    },
+    {
+     "place": "Wild Zone 6",
+     "species": 979,
+     "name": "Annihilape",
+     "levels": [
+      99,
+      99
+     ],
+     "why": "can not be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Wild_Zone_6"
+    },
+    {
+     "place": "Wild Zone 17",
+     "species": 227,
+     "name": "Skarmory",
+     "levels": [
+      65,
+      65
+     ],
+     "why": "cannot be caught",
+     "url": "https://bulbapedia.bulbagarden.net/wiki/Wild_Zone_17"
     }
    ],
    "coverageLosses": []

@@ -59,6 +59,8 @@ export interface BulbaRow {
   /** The template's method value ("Grass", "Fish Old", "Gift", "Trade", "Special"…). */
   method: string;
   levels?: string;
+  /** Scarlet/Violet's Terastallized encounters: the Tera Type its level cell's Tera Jewel shows ("Normal"). */
+  tera?: string;
   rate?: string;
   /** The table's current divider label ("Fishing", "Headbutt Group A", "B1F-3F"…), plain text. */
   div?: string;
@@ -90,10 +92,10 @@ export function pokemonSection(text: string): { body: string; offset: number } |
   return { body: text.slice(start, next ? start + next.index : undefined), offset: start };
 }
 
-/** Scarlet/Violet pages put fixed and special encounters in their own level-2 sections. */
+/** Scarlet/Violet pages put fixed, Terastallized and special encounters in their own level-2 sections. */
 function extraSections(text: string): string[] {
   const out: string[] = [];
-  for (const m of text.matchAll(/^==\s*(Fixed encounters|Special encounters|Static encounters|Gift Pokémon)\s*==\s*$/gm)) {
+  for (const m of text.matchAll(/^==\s*(Fixed encounters|Terastallized encounters|Special encounters|Static encounters|Gift Pokémon)\s*==\s*$/gm)) {
     const start = m.index! + m[0].length;
     const next = /^==[^=].*?[^=]==\s*$/m.exec(text.slice(start));
     out.push(text.slice(start, next ? start + next.index : undefined));
@@ -202,10 +204,10 @@ function rowOf(t: Template, tpl: string, spec: Spec, div: string | undefined, he
   const tip = /\{\{tt\|[^|{}]*\|([^{}]*)\}\}/.exec(rawRate)?.[1];
   const note = tip ? plain(tip) : undefined;
   // Legends: Arceus writes the form in the dex code: "058H" (Hisuian Growlithe), "550W" (White-Striped Basculin),
-  // "487O" (Origin Giratina), "422E" (East Sea Shellos), "413S"/"413G" (Sandy/Plant Cloak). Unown's letters ("201H")
-  // name no Pokémon of their own and come to nothing when the label is looked up as a form.
+  // "487O" (Origin Giratina), "422E" (East Sea Shellos), "413S"/"413G" (Sandy/Plant Cloak). Unown's letters ("201H",
+  // "201QU") are its letter, not these codes: they name no form.
   const LA_CODE: Record<string, string> = { H: "Hisuian Form", W: "White-Striped Form", O: "Origin Forme", E: "East Sea", S: "Sandy Cloak", G: "Plant Cloak" };
-  const code = tpl === "entryla" ? p(1).match(/^\d{1,4}([A-Z])$/)?.[1] : undefined;
+  const code = tpl === "entryla" && !/^0*201\D/.test(p(1)) ? p(1).match(/^\d{1,4}([A-Z])$/)?.[1] : undefined;
   const form = t.named.form ? plain(t.named.form) : code && LA_CODE[code] ? LA_CODE[code] : undefined;
   return {
     tpl,
@@ -215,7 +217,9 @@ function rowOf(t: Template, tpl: string, spec: Spec, div: string | undefined, he
     name: plain(p(2)),
     ...(form ? { form } : {}),
     method: spec.method ? plain(p(spec.method)) : habitat || "Wild",
-    ...(p(spec.levels) ? { levels: plain(p(spec.levels)) } : {}),
+    // "37 [[image:TeraGem_Normal.png|30px]]": the level, and the Tera Jewel's type.
+    ...(p(spec.levels) ? { levels: plain(p(spec.levels).replace(/\[\[(?:image|file):[^\]]*\]\]/gi, "")) } : {}),
+    ...(/TeraGem_(\w+)\./i.test(p(spec.levels)) ? { tera: /TeraGem_(\w+)\./i.exec(p(spec.levels))![1] } : {}),
     ...(rate ? { rate } : {}),
     ...(div ? { div } : {}),
     heads,

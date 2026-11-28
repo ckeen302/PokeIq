@@ -12,7 +12,7 @@
  * art isn't made yet is only allowed when scripts/nuzlocke/art-missing.json lists it (it is printed as a warning). Also a
  * condition on rows it can't belong to: a Max Raid den, Tera Raid, rod, Headbutt, Rock Smash or Honey condition on
  * another method; time-of-day, season or weather conditions in a game without them; "before" and "after" the Hall of
- * Fame at once. And any coverage the build lost (crosscheck.json coverageLosses: a place's Pokémon, version or water/land
+ * Fame at once; wiki markup or an HTML entity ("&#8209;") left in a condition. And any coverage the build lost (crosscheck.json coverageLosses: a place's Pokémon, version or water/land
  * way of meeting it that the merged sources had and the output dropped without a logged reason). And spelling: curly
  * quotes, or two names of a game (areas, parts, conditions) that differ only by case, spacing or punctuation. And the
  * story bosses (scripts/nuzlocke/story-bosses.json): an unknown anchor, a missing source, a badge (a story boss never
@@ -86,6 +86,7 @@ function conditionProblems(game: string, kind: EncounterKind, method: string, co
   if (parts.some((x) => SEASON_PART.test(x)) && !SEASON_GAMES.has(game)) out.push(`a season condition ("${cond}") in a game without seasons`);
   if (parts.some((x) => WEATHER_PART.test(x)) && !WEATHER_GAMES.has(game)) out.push(`a weather condition ("${cond}") in a game without weather encounters`);
   if (/\bBefore entering the Hall of Fame\b/.test(cond) && /\bEnter the Hall of Fame\b/.test(cond)) out.push(`contradictory story conditions ("${cond}")`);
+  if (/&#?\w+;|\[\[|\]\]|\{\{|\}\}|'''/.test(cond)) out.push(`wiki markup or an HTML entity in a condition ("${cond}")`);
   return out;
 }
 
