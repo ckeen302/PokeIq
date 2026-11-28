@@ -496,8 +496,11 @@ describe("bosses, badges and the level cap", () => {
   it("is the first boss not yet beaten, in story order", async () => {
     const view = await frlgView();
     let run = createRun({ game: view.id, version: "firered", name: "T", now: T0 });
-    const keys = bossKeys((await loadGame(view.id))!.steps);
-    expect(keys.slice(0, 8)).toEqual(["brock", "misty", "lt-surge", "erika", "koga", "sabrina", "blaine", "giovanni"]);
+    const steps = (await loadGame(view.id))!.steps;
+    const keys = bossKeys(steps);
+    const bosses = steps.flatMap((s) => (s.type === "boss" ? [s.boss] : []));
+    const gyms = keys.filter((_, i) => bosses[i].badge);
+    expect(gyms.slice(0, 8)).toEqual(["brock", "misty", "lt-surge", "erika", "koga", "sabrina", "blaine", "giovanni"]);
     expect(new Set(keys).size).toBe(keys.length);
     expect(levelCap(run, view)).toMatchObject({ cap: 14, boss: { key: "brock", name: "Brock" } });
     run = toggleBoss(run, "misty", T0); // beaten out of order: Brock is still next
