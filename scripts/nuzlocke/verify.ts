@@ -11,7 +11,9 @@
  * art isn't made yet is only allowed when scripts/nuzlocke/art-missing.json lists it (it is printed as a warning). Also a
  * condition on rows it can't belong to: a Max Raid den, Tera Raid, rod, Headbutt, Rock Smash or Honey condition on
  * another method; time-of-day, season or weather conditions in a game without them; "before" and "after" the Hall of
- * Fame at once.
+ * Fame at once. And any coverage the build lost (crosscheck.json coverageLosses: a place's Pokémon, version or water/land
+ * way of meeting it that the merged sources had and the output dropped without a logged reason). And spelling: curly
+ * quotes, or two names of a game (areas, parts, conditions) that differ only by case, spacing or punctuation.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -79,6 +81,38 @@ function conditionProblems(game: string, kind: EncounterKind, method: string, co
   return out;
 }
 
+// ---- coverage: the build logs, per game, what the merged sources had that its output lost other than by a logged
+// drop (area, Pokémon, version, water or land); anything there is a bug
+const CROSSCHECK = path.join(__dirname, "crosscheck.json");
+const crossGames = fs.existsSync(CROSSCHECK) ? (JSON.parse(fs.readFileSync(CROSSCHECK, "utf8")).games as Record<string, { coverageLosses?: string[] }>) : {};
+for (const [id, c] of Object.entries(crossGames)) {
+  if (!files.includes(id)) continue;
+  if (c.coverageLosses === undefined) fail(`crosscheck.json ${id}`, "no coverage check recorded (rebuild the game)");
+  for (const k of c.coverageLosses ?? []) fail(`${id} coverage`, `the merged sources had ${k}, the output lost it`);
+}
+for (const f of files) if (!crossGames[f]) fail(`crosscheck.json`, `${f} has no entry (rebuild it)`);
+
+// ---- spelling: straight apostrophes, and no two names of a game (areas, parts, conditions) that differ only by case,
+// spacing or punctuation ("Hauoli outskirts" / "Hau'oli Outskirts")
+function spellingProblems(id: string, g: NuzGame): string[] {
+  const out: string[] = [];
+  const byKey = new Map<string, Set<string>>();
+  const note = (t: string, what: string) => {
+    if (/[’‘“”]/.test(t)) out.push(`${what} "${t}" has a curly quote (use straight ones)`);
+    const k = t.toLowerCase().replace(/[^a-z0-9]/g, "");
+    if (!k) return;
+    if (!byKey.has(k)) byKey.set(k, new Set());
+    byKey.get(k)!.add(t);
+  };
+  const areas = [...g.steps.flatMap((s) => (s.type === "area" ? [s.area] : [])), ...g.extra];
+  for (const a of areas) {
+    note(a.name, "area name");
+    for (const e of a.encounters) if (e.condition) for (const p of e.condition.split(/; | \/ /)) note(p, `${a.id} condition`);
+  }
+  for (const [, v] of byKey) if (v.size > 1) out.push(`names that differ only by case or punctuation: ${[...v].map((x) => `"${x}"`).join(", ")}`);
+  return out.map((m) => `${id}: ${m}`);
+}
+
 // ---- each game (shipped ones, then held-back ones, checked the same way)
 const totals: string[] = [];
 const held = GAMES.filter((c) => HELD_BACK.has(c.id) && files.includes(c.id)).map((c) => ({ id: c.id, name: c.name, gen: c.gen, region: c.region, versions: c.versions }));
@@ -92,6 +126,7 @@ for (const info of [...NUZ_GAMES, ...held]) {
   if (g.id !== info.id || g.name !== info.name || g.gen !== info.gen || g.region !== info.region || JSON.stringify(g.versions) !== JSON.stringify(info.versions)) fail(at, "id/name/gen/region/versions differ from NUZ_GAMES");
   const vids = g.versions.map((v) => v.id);
   for (const v of vids) if (!KNOWN_VERSIONS.has(v)) fail(at, `unknown version id ${v}`);
+  for (const p of spellingProblems(at, g)) fail("spelling", p);
   if (!vids.length) fail(at, "no versions");
   if (!Array.isArray(g.sources) || !g.sources.length) fail(at, "empty sources");
   for (const s of g.sources ?? []) if (!/^https:\/\//.test(s)) fail(at, `source is not a URL: ${s}`);

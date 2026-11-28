@@ -15,7 +15,7 @@ import type { Walkthrough } from "./walkthrough";
 
 /** Availability labels ("v=") of each game -> the versions they cover. */
 const V_LABELS: Record<string, Record<string, string[]>> = {
-  "scarlet-violet": { Scarlet: ["scarlet"], Violet: ["violet"], "The Teal Mask": ["scarlet", "violet"], "The Indigo Disk": ["scarlet", "violet"] },
+  "scarlet-violet": { Scarlet: ["scarlet"], Violet: ["violet"], "The Hidden Treasure of Area Zero": ["scarlet", "violet"], "The Teal Mask": ["scarlet", "violet"], "The Indigo Disk": ["scarlet", "violet"] },
   "legends-arceus": { "Legends: Arceus": ["legends-arceus"] },
   "legends-za": { "Legends: Z-A": ["legends-za"], "Mega Dimension": ["legends-za"] },
 };
