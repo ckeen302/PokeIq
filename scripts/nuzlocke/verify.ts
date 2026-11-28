@@ -3,7 +3,8 @@
  *
  *   npm run verify:nuzlocke
  *
- * Fails on: a game in NUZ_GAMES without a file, or a file without a NUZ_GAMES entry; NUZ_GAMES out of release order or
+ * Fails on: a game in NUZ_GAMES without a file, or a file without a NUZ_GAMES entry (unless the game is held back, see
+ * HELD_BACK in lib/config.ts; its file is checked all the same); NUZ_GAMES out of release order or
  * out of step with the build's game list or its file; an empty `sources`; duplicate area ids; an area with no
  * encounters; an unknown version id; a species or form without art; a rate outside 0-100; a level range with min > max
  * (or outside 1-100); a boss cap below 1 or above 100; and malformed fields (kinds, forms without art ids…). A form whose
@@ -14,7 +15,7 @@ import path from "node:path";
 import type { EncounterKind, NuzArea, NuzGame } from "../../src/lib/nuzlocke/model";
 import { NUZ_GAMES } from "../../src/lib/nuzlocke/games";
 import { VERSIONS } from "../../src/lib/pokemon/encounter-types";
-import { GAMES } from "./lib/config";
+import { GAMES, HELD_BACK } from "./lib/config";
 
 const ROOT = path.resolve(__dirname, "../..");
 const DATA = path.join(ROOT, "src/data/nuzlocke");
@@ -33,7 +34,8 @@ const artMissingUsed = new Map<string, string[]>();
 // ---- the game list
 const files = fs.existsSync(DATA) ? fs.readdirSync(DATA).filter((f) => f.endsWith(".json")).map((f) => f.replace(/\.json$/, "")) : [];
 for (const g of NUZ_GAMES) if (!files.includes(g.id)) fail("NUZ_GAMES", `${g.id} has no src/data/nuzlocke/${g.id}.json`);
-for (const f of files) if (!NUZ_GAMES.some((g) => g.id === f)) fail(`src/data/nuzlocke/${f}.json`, "not in NUZ_GAMES");
+for (const f of files) if (!NUZ_GAMES.some((g) => g.id === f) && !HELD_BACK.has(f)) fail(`src/data/nuzlocke/${f}.json`, "not in NUZ_GAMES (nor held back in scripts/nuzlocke/lib/config.ts)");
+for (const g of NUZ_GAMES) if (HELD_BACK.has(g.id)) fail("NUZ_GAMES", `${g.id} is held back (scripts/nuzlocke/lib/config.ts HELD_BACK) but listed`);
 const order = GAMES.map((g) => g.id);
 let last = -1;
 for (const g of NUZ_GAMES) {
@@ -46,9 +48,10 @@ for (const g of NUZ_GAMES) {
 }
 if (new Set(NUZ_GAMES.map((g) => g.id)).size !== NUZ_GAMES.length) fail("NUZ_GAMES", "duplicate game id");
 
-// ---- each game
+// ---- each game (shipped ones, then held-back ones, checked the same way)
 const totals: string[] = [];
-for (const info of NUZ_GAMES) {
+const held = GAMES.filter((c) => HELD_BACK.has(c.id) && files.includes(c.id)).map((c) => ({ id: c.id, name: c.name, gen: c.gen, region: c.region, versions: c.versions }));
+for (const info of [...NUZ_GAMES, ...held]) {
   const file = path.join(DATA, `${info.id}.json`);
   if (!fs.existsSync(file)) continue;
   const raw = fs.readFileSync(file, "utf8");
@@ -137,4 +140,4 @@ if (errors.length) {
   if (errors.length > 200) console.error(`  … and ${errors.length - 200} more`);
   process.exit(1);
 }
-console.log(`\n✓ ${NUZ_GAMES.length} game(s) verified`);
+console.log(`\n✓ ${NUZ_GAMES.length} game(s) verified${held.length ? ` (+ ${held.length} held back, not in NUZ_GAMES: ${held.map((h) => h.id).join(", ")})` : ""}`);

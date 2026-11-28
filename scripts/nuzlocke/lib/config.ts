@@ -69,3 +69,9 @@ export const GAMES: GameCfg[] = [
 ];
 
 export const GAME_BY_ID = new Map(GAMES.map((g) => [g.id, g]));
+
+/**
+ * Games whose data is built (src/data/nuzlocke/{id}.json) but not shipped in NUZ_GAMES until their spot checks against
+ * Bulbapedia pass: scripts/nuzlocke/verify.ts checks their files like any other and requires them to stay out of NUZ_GAMES.
+ */
+export const HELD_BACK = new Set<string>(["scarlet-violet", "legends-arceus", "legends-za"]);
