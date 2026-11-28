@@ -9,6 +9,8 @@ import { ClientMessages } from "@/i18n/ClientMessages";
 import { INTL_LOCALE } from "@/i18n/format";
 import type { Translator } from "@/i18n/catalog";
 import { localizePath } from "@/i18n/paths";
+import { localeHref } from "@/i18n/href";
+import type { Locale } from "@/i18n/config";
 import page from "@/messages/nuzlocke-page";
 import nuz from "@/messages/nuzlocke";
 import tools from "@/messages/tools";
@@ -18,7 +20,8 @@ import { artSrc, capFor, type GameSummary, type GameView, type ViewArea, type Vi
 import { versionColor } from "@/lib/nuzlocke/versions";
 import { cn } from "@/lib/utils";
 import { GameStart } from "./GameStart";
-import { methodIcon } from "./icons";
+import { METHOD_ICONS, methodIconKey } from "./icons";
+import "./nuzlocke.css";
 
 /**
  * A game's page, rendered on the server (it's the page search engines read): every area in story order with every
@@ -49,7 +52,22 @@ function rowText(t: PageT, view: GameView, row: EncounterRow): { only: string[] 
   return { only, text: parts.join(" · ") };
 }
 
-function AreaBlock({ t, view, area }: { t: PageT; view: GameView; area: ViewArea }) {
+/** The method icons, drawn once: each area's headings point at them (<use>), so a long page carries each icon once. */
+function IconSheet() {
+  return (
+    <svg aria-hidden style={{ position: "absolute", width: 0, height: 0, overflow: "hidden" }}>
+      <defs>
+        {Object.entries(METHOD_ICONS).map(([key, Icon]) => (
+          <symbol key={key} id={`nzi-${key}`} viewBox="0 0 24 24">
+            <Icon />
+          </symbol>
+        ))}
+      </defs>
+    </svg>
+  );
+}
+
+function AreaBlock({ t, view, area, locale }: { t: PageT; view: GameView; area: ViewArea; locale: Locale }) {
   const groups = groupByMethod(area.encounters);
   return (
     <li className="rounded-[22px] border border-foreground/[0.08] bg-card p-4 shadow-[0_16px_40px_-34px_hsl(var(--shade)/0.9)] sm:p-5" id={`area-${area.id}`} data-testid="nz-guide-area">
@@ -59,12 +77,15 @@ function AreaBlock({ t, view, area }: { t: PageT; view: GameView; area: ViewArea
       ) : (
         <div className="mt-3 space-y-3.5">
           {groups.map((g) => {
-            const Icon = methodIcon(g.method, g.kind);
+            const icon = methodIconKey(g.method, g.kind);
             const kind = g.kind !== "wild" && g.method.toLowerCase() !== t(`game.kinds.${g.kind}`).toLowerCase() ? t(`game.kinds.${g.kind}`) : null;
             return (
               <div key={`${g.kind}|${g.method}`}>
                 <p className="mb-1 flex items-center gap-1.5 text-[11.5px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
-                  <Icon className="h-3.5 w-3.5" aria-hidden /> {g.method}
+                  <svg className="h-3.5 w-3.5" aria-hidden>
+                    <use href={`#nzi-${icon}`} />
+                  </svg>{" "}
+                  {g.method}
                   {kind && <span className="rounded-full bg-foreground/[0.07] px-2 py-0.5 text-[10.5px] tracking-[0.08em]">{kind}</span>}
                 </p>
                 <ul className="grid gap-x-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -72,23 +93,21 @@ function AreaBlock({ t, view, area }: { t: PageT; view: GameView; area: ViewArea
                     const mon = view.mons[row.mon];
                     if (!mon) return null;
                     const { only, text } = rowText(t, view, row);
+                    // Plain markup with the page's own classes: a game's page lists hundreds of these.
                     return (
                       <li key={row.mon}>
-                        <Link href={`/pokemon/${mon.slug}`} className="flex min-h-12 items-center gap-2.5 rounded-xl px-1.5 py-1 transition-colors hover:bg-foreground/[0.05]">
-                          <img src={artSrc(mon.art)} alt="" width={40} height={40} loading="lazy" decoding="async" className="h-10 w-10 shrink-0 object-contain" />
-                          <span className="min-w-0">
-                            <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                              <span className="text-[14.5px] font-semibold leading-tight">{mon.name}</span>
-                              {only && (
-                                <span className="inline-flex items-center gap-1 rounded-full bg-foreground/[0.06] px-1.5 py-px text-[11px] font-semibold text-foreground/80">
-                                  <span className="h-2 w-2 rounded-full" style={{ background: versionColor(only[0]) }} aria-hidden />
-                                  {t("game.only", { version: versionNames(view, only) })}
-                                </span>
-                              )}
-                            </span>
-                            {text && <span className="block text-[12.5px] leading-snug text-muted-foreground [font-variant-numeric:tabular-nums]">{text}</span>}
+                        <a href={localeHref(`/pokemon/${mon.slug}`, locale).href} className="nzg-row">
+                          <img src={artSrc(mon.art)} alt="" width={40} height={40} loading="lazy" decoding="async" className="nzg-img" />
+                          <span className="nzg-txt">
+                            <b>{mon.name}</b>
+                            {only && (
+                              <i className="nzg-only" style={{ "--v": versionColor(only[0]) } as React.CSSProperties}>
+                                {t("game.only", { version: versionNames(view, only) })}
+                              </i>
+                            )}
+                            {text && <small>{text}</small>}
                           </span>
-                        </Link>
+                        </a>
                       </li>
                     );
                   })}
@@ -121,6 +140,39 @@ function BossLine({ t, view, boss }: { t: PageT; view: GameView; boss: ViewBoss 
   );
 }
 
+/** Every boss's level cap at a glance, in story order (each version's, where they differ). */
+function CapList({ t, view }: { t: PageT; view: GameView }) {
+  const bosses = view.steps.flatMap((s) => (s.type === "boss" ? [s.boss] : []));
+  if (!bosses.some((b) => b.cap !== undefined || b.capByVersion)) return null;
+  return (
+    <section className="mt-12 max-sm:mt-9" aria-labelledby="nz-caps" data-testid="nz-guide-caps">
+      <h2 id="nz-caps" className="font-display text-2xl font-semibold tracking-tight">
+        {t("game.capsHeading")}
+      </h2>
+      <p className="mb-4 mt-1 text-[15px] text-muted-foreground">{t("game.capsLead")}</p>
+      <ol className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        {bosses.map((b) => {
+          const caps = view.versions.map((v) => [v, capFor(b, v.id)] as const).filter(([, c]) => c !== undefined);
+          const same = new Set(caps.map(([, c]) => c)).size <= 1;
+          const Icon = b.badge ? Medal : Swords;
+          return (
+            <li key={b.key} className="flex items-center gap-3 rounded-2xl border border-foreground/[0.07] bg-card px-3.5 py-2.5">
+              <Icon className="h-4 w-4 shrink-0 text-[hsl(var(--warning))]" aria-hidden />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-[14.5px] font-semibold leading-tight">{b.name}</span>
+                {b.badge && <span className="block truncate text-[12.5px] text-muted-foreground">{b.badge}</span>}
+              </span>
+              <span className="shrink-0 text-right font-display text-[19px] font-bold leading-none [font-variant-numeric:tabular-nums]">
+                {caps.length === 0 ? "–" : same ? caps[0][1] : caps.map(([v, c]) => `${v.name} ${c}`).join(" · ")}
+              </span>
+            </li>
+          );
+        })}
+      </ol>
+    </section>
+  );
+}
+
 export function GameGuide({ view, game }: { view: GameView; game: GameSummary }) {
   const t = serverT(page);
   const locale = getLocale();
@@ -140,6 +192,7 @@ export function GameGuide({ view, game }: { view: GameView; game: GameSummary })
   return (
     <div className="mx-auto max-w-5xl" data-testid="nuzlocke-game">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ld }} />
+      <IconSheet />
       <Link href={PATH} className="inline-flex h-10 items-center gap-1.5 rounded-full pr-3 text-[14px] font-semibold text-muted-foreground transition-colors hover:text-foreground">
         <ArrowLeft className="h-4 w-4" aria-hidden /> {t("game.back")}
       </Link>
@@ -159,12 +212,14 @@ export function GameGuide({ view, game }: { view: GameView; game: GameSummary })
         </div>
       </header>
 
+      <CapList t={t} view={view} />
+
       <section className="mt-12 max-sm:mt-9" aria-labelledby="nz-story">
         <h2 id="nz-story" className="mb-4 font-display text-2xl font-semibold tracking-tight">
           {t("game.story")}
         </h2>
         <ol className="space-y-3">
-          {view.steps.map((s, i) => (s.type === "area" ? <AreaBlock key={s.area.id} t={t} view={view} area={s.area} /> : <BossLine key={`${s.boss.key}-${i}`} t={t} view={view} boss={s.boss} />))}
+          {view.steps.map((s, i) => (s.type === "area" ? <AreaBlock key={s.area.id} t={t} view={view} area={s.area} locale={locale} /> : <BossLine key={`${s.boss.key}-${i}`} t={t} view={view} boss={s.boss} />))}
         </ol>
       </section>
 
@@ -176,7 +231,7 @@ export function GameGuide({ view, game }: { view: GameView; game: GameSummary })
           <p className="mb-4 mt-1 text-[15px] text-muted-foreground">{t("game.otherLead")}</p>
           <ol className="space-y-3">
             {view.extra.map((a) => (
-              <AreaBlock key={a.id} t={t} view={view} area={a} />
+              <AreaBlock key={a.id} t={t} view={view} area={a} locale={locale} />
             ))}
           </ol>
         </section>

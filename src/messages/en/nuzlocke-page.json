@@ -3,7 +3,6 @@
   "subtitle": "Log the first Pokémon you meet in each area, keep your team, box and graveyard in order, and pick your run up where you left off.",
   "metaTitle": "Nuzlocke Tracker: encounters, team, graveyard and level caps",
   "metaDescription": "A free Nuzlocke tracker: pick your game, log the first encounter in each area, mark the fallen, and see your team's weaknesses and the next level cap. Saved in your browser, with share links.",
-  "cardSubtitle": "Log every encounter, loss and level cap of your run.",
   "ogAlt": "The Nuzlocke Tracker on PokéIQ",
   "credit": "Each game's sources are listed on its page. Types and type charts from Pokémon Showdown's data; pictures: Pokémon HOME renders from PokéAPI. Pokémon is © Nintendo, Game Freak and Creatures.",
   "games": {
@@ -20,6 +19,8 @@
     "metaDescription": "Every area of Pokémon {name} in story order, with the Pokémon you can meet there and each boss's level cap. Start a Nuzlocke run and track it as you play.",
     "lead": "Every area in story order, with the Pokémon you can meet there and each boss's level cap.",
     "start": "Start a run in {versions}",
+    "capsHeading": "Level caps",
+    "capsLead": "The level of each boss's strongest Pokémon, in story order: the usual cap for your team.",
     "back": "Nuzlocke Tracker",
     "story": "Areas in story order",
     "other": "Other areas",

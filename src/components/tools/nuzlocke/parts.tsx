@@ -2,7 +2,8 @@
 
 /* eslint-disable @next/next/no-img-element -- the site's own pre-sized Pokémon pictures, lazy and sized by their box */
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { MoreHorizontal } from "lucide-react";
+import { createPortal } from "react-dom";
+import { MoreHorizontal, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { typeColor, typeTextColor } from "@/lib/pokemon/type-colors";
 import { artSrc } from "@/lib/nuzlocke/view";
@@ -46,6 +47,72 @@ export function TypeChip({ t, type, size = "md", className }: { t: NuzT; type: s
 
 export function VersionDot({ id, className }: { id: string; className?: string }) {
   return <span className={cn("inline-block h-2.5 w-2.5 shrink-0 rounded-full ring-2 ring-foreground/10", className)} style={{ background: versionColor(id) }} aria-hidden />;
+}
+
+/**
+ * A sheet from the bottom on a phone, a centred dialog on a wider screen (as the site's other tools' dialogs), with a
+ * footer that stays put while the body scrolls. Escape and the backdrop close it; the focus moves in (to the first
+ * field, or the first [data-autofocus]), stays in, and goes back where it was.
+ */
+export function Sheet({ title, sub, onClose, closeLabel, children, footer, wide, testId }: { title: string; sub?: ReactNode; onClose(): void; closeLabel: string; children: ReactNode; footer?: ReactNode; wide?: boolean; testId?: string }) {
+  const close = useRef(onClose);
+  close.current = onClose;
+  const panel = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const before = document.activeElement as HTMLElement | null;
+    const first = panel.current?.querySelector<HTMLElement>("input, select, textarea, [data-autofocus]") ?? panel.current?.querySelector<HTMLElement>("button");
+    first?.focus({ preventScroll: true });
+    const root = document.documentElement;
+    const overflow = root.style.overflow;
+    root.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        close.current();
+      }
+      if (e.key === "Tab" && panel.current) {
+        const f = [...panel.current.querySelectorAll<HTMLElement>("button:not([disabled]), input, select, textarea, a[href], [tabindex='0']")];
+        if (!f.length) return;
+        const i = f.indexOf(document.activeElement as HTMLElement);
+        const to = e.shiftKey && i <= 0 ? f[f.length - 1] : !e.shiftKey && i === f.length - 1 ? f[0] : null;
+        if (to) {
+          e.preventDefault();
+          to.focus();
+        }
+      }
+    };
+    window.addEventListener("keydown", onKey, true);
+    return () => {
+      window.removeEventListener("keydown", onKey, true);
+      root.style.overflow = overflow;
+      before?.focus?.({ preventScroll: true });
+    };
+  }, []);
+  return createPortal(
+    <div className="fixed inset-0 z-[80] flex items-end justify-center sm:items-center sm:p-6" data-testid={testId}>
+      <div className="absolute inset-0 bg-black/55 backdrop-blur-[2px]" onClick={() => close.current()} aria-hidden />
+      <div
+        ref={panel}
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        className={cn("nz-rise relative flex max-h-[90dvh] w-full flex-col overflow-hidden rounded-t-[28px] border border-foreground/[0.08] bg-card text-card-foreground shadow-[0_30px_80px_-20px_rgb(0_0_0/0.6)] sm:max-h-[min(88dvh,860px)] sm:rounded-[28px]", wide ? "sm:max-w-3xl" : "sm:max-w-lg")}
+      >
+        <div className="flex items-start justify-between gap-3 px-6 pb-2 pt-5 max-sm:px-5">
+          <div className="min-w-0">
+            <h2 className="truncate font-display text-xl font-semibold tracking-tight">{title}</h2>
+            {sub}
+          </div>
+          <button type="button" onClick={() => close.current()} aria-label={closeLabel} title={closeLabel} className="-mr-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-foreground/[0.07] hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring max-md:h-11 max-md:w-11">
+            <X className="h-5 w-5" aria-hidden />
+          </button>
+        </div>
+        <div className="nz-scroll min-h-0 flex-1 overflow-y-auto px-6 pb-5 pt-1 max-sm:px-5">{children}</div>
+        {footer && <div className="shrink-0 border-t border-foreground/[0.07] bg-card px-6 pb-5 pt-3.5 max-sm:px-5 max-sm:pb-[max(16px,env(safe-area-inset-bottom))]">{footer}</div>}
+      </div>
+    </div>,
+    document.body
+  );
 }
 
 /** An on/off switch with its label and one line of explanation beside it. */

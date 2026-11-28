@@ -9,7 +9,7 @@ import { allAreas, type GameView } from "@/lib/nuzlocke/view";
 import { typeColor, typeTextColor } from "@/lib/pokemon/type-colors";
 import { Modal, PillButton } from "../tier-list/ui";
 import type { Act } from "./act";
-import { whereText } from "./DeathDialog";
+import { whereFell } from "./DeathDialog";
 import { Menu, Sprite, TypeChip, type MenuItem, type NuzT } from "./parts";
 
 export type Side = "team" | "box" | "grave";
@@ -78,7 +78,7 @@ function TeamView({ t, run, view, readOnly, act, onTeamBuilder }: { t: NuzT; run
           const m = members[i];
           if (!m)
             return (
-              <li key={`empty-${i}`} data-slot={Math.min(i, Math.max(0, members.length - 1))} className="flex min-h-[104px] items-center justify-center rounded-2xl border-2 border-dashed border-foreground/[0.1] text-[13px] font-semibold text-muted-foreground/70" data-testid="nz-slot-empty">
+              <li key={`empty-${i}`} data-slot={Math.min(i, Math.max(0, members.length - 1))} className="flex min-h-[78px] items-center justify-center rounded-2xl border-2 border-dashed border-foreground/[0.1] text-[13px] font-semibold text-muted-foreground/70" data-testid="nz-slot-empty">
                 {t("panel.emptySlot")}
               </li>
             );
@@ -88,69 +88,64 @@ function TeamView({ t, run, view, readOnly, act, onTeamBuilder }: { t: NuzT; run
             <li
               key={m.id}
               data-slot={i}
-              className={cn("relative rounded-2xl border border-foreground/[0.08] bg-foreground/[0.03] p-2.5 transition-shadow", drag?.id === m.id && "nz-dragging", drag && drag.over === i && drag.id !== m.id && "nz-drop")}
+              className={cn("relative flex items-center gap-2 rounded-2xl border border-foreground/[0.08] bg-foreground/[0.03] py-2 pl-2 pr-1 transition-shadow", drag?.id === m.id && "nz-dragging", drag && drag.over === i && drag.id !== m.id && "nz-drop")}
               data-testid="nz-slot"
               data-mon={m.id}
             >
-              <div className="flex items-center gap-2">
-                <Sprite art={v?.art} className="h-14 w-14 shrink-0 max-sm:h-12 max-sm:w-12" />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-display text-[15.5px] font-bold leading-tight" data-testid="nz-slot-name">{name}</p>
-                  {m.nickname && <p className="truncate text-[12px] text-muted-foreground">{v?.name}</p>}
-                  <p className="mt-1 flex flex-wrap gap-1">
-                    {v?.types.map((ty) => <TypeChip key={ty} t={t} type={ty} size="sm" />)}
-                  </p>
-                </div>
+              <Sprite art={v?.art} className="h-[52px] w-[52px] shrink-0 max-sm:h-11 max-sm:w-11" />
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-display text-[15px] font-bold leading-tight" data-testid="nz-slot-name">{name}</p>
+                <p className="truncate text-[12px] leading-snug text-muted-foreground [font-variant-numeric:tabular-nums]">{[m.nickname ? v?.name : null, m.level ? t("mon.lv", { n: m.level }) : null].filter(Boolean).join(" · ")}</p>
+                <p className="mt-1 flex flex-wrap gap-1">
+                  {v?.types.map((ty) => <TypeChip key={ty} t={t} type={ty} size="sm" />)}
+                </p>
               </div>
-              <div className="mt-1.5 flex items-center justify-between gap-1">
-                <span className="pl-1 text-[12px] font-semibold text-muted-foreground [font-variant-numeric:tabular-nums]">{m.level ? t("mon.lv", { n: m.level }) : ""}</span>
-                {!readOnly && (
-                  <span className="flex items-center">
-                    <button
-                      type="button"
-                      aria-label={`${t("mon.drag")}: ${name}`}
-                      title={t("mon.drag")}
-                      className="flex h-9 w-8 cursor-grab touch-none items-center justify-center rounded-lg text-muted-foreground hover:bg-foreground/[0.06] hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing"
-                      onPointerDown={(e) => {
-                        e.currentTarget.setPointerCapture(e.pointerId);
-                        setDrag({ id: m.id, from: i, over: i });
-                      }}
-                      onPointerMove={(e) => drag && setDrag({ ...drag, over: overAt(e.clientX, e.clientY) })}
-                      onPointerUp={() => {
-                        if (drag && drag.over !== null && drag.over !== drag.from) act.move(drag.id, drag.over);
-                        setDrag(null);
-                      }}
-                      onPointerCancel={() => setDrag(null)}
-                      onKeyDown={(e) => {
-                        const by = e.key === "ArrowLeft" || e.key === "ArrowUp" ? -1 : e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : 0;
-                        if (!by) return;
-                        e.preventDefault();
-                        act.move(m.id, i + by);
-                      }}
-                      data-testid="nz-grip"
-                    >
-                      <GripVertical className="h-4 w-4" aria-hidden />
-                    </button>
-                    <Menu
-                      label={t("mon.menu", { name })}
-                      items={monMenu(t, view, m, [
-                        ...(i > 0 ? [{ id: "up", label: t("mon.moveUp"), icon: <MoveLeft /> }] : []),
-                        ...(i < members.length - 1 ? [{ id: "down", label: t("mon.moveDown"), icon: <MoveRight /> }] : []),
-                        { id: "box", label: t("mon.toBox"), icon: <Package /> },
-                        { id: "dead", label: t("mon.markDead"), icon: <HeartCrack />, danger: true },
-                      ])}
-                      onPick={(id) => {
-                        if (id === "up") act.move(m.id, i - 1);
-                        else if (id === "down") act.move(m.id, i + 1);
-                        else if (id === "box") act.status(m.id, "box");
-                        else if (id === "dead") act.status(m.id, "dead");
-                        else if (id.startsWith("evo:")) act.evolve(m.id, id.slice(4));
-                      }}
-                      testId="nz-slot-menu"
-                    />
-                  </span>
-                )}
-              </div>
+              {!readOnly && (
+                <span className="flex flex-col items-center self-stretch justify-between">
+                  <Menu
+                    label={t("mon.menu", { name })}
+                    items={monMenu(t, view, m, [
+                      ...(i > 0 ? [{ id: "up", label: t("mon.moveUp"), icon: <MoveLeft /> }] : []),
+                      ...(i < members.length - 1 ? [{ id: "down", label: t("mon.moveDown"), icon: <MoveRight /> }] : []),
+                      { id: "box", label: t("mon.toBox"), icon: <Package /> },
+                      { id: "dead", label: t("mon.markDead"), icon: <HeartCrack />, danger: true },
+                    ])}
+                    onPick={(id) => {
+                      if (id === "up") act.move(m.id, i - 1);
+                      else if (id === "down") act.move(m.id, i + 1);
+                      else if (id === "box") act.status(m.id, "box");
+                      else if (id === "dead") act.status(m.id, "dead");
+                      else if (id.startsWith("evo:")) act.evolve(m.id, id.slice(4));
+                    }}
+                    testId="nz-slot-menu"
+                  />
+                  <button
+                    type="button"
+                    aria-label={`${t("mon.drag")}: ${name}`}
+                    title={t("mon.drag")}
+                    className="flex h-9 w-8 cursor-grab touch-none items-center justify-center rounded-lg text-muted-foreground/70 hover:bg-foreground/[0.06] hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing"
+                    onPointerDown={(e) => {
+                      e.currentTarget.setPointerCapture(e.pointerId);
+                      setDrag({ id: m.id, from: i, over: i });
+                    }}
+                    onPointerMove={(e) => drag && setDrag({ ...drag, over: overAt(e.clientX, e.clientY) })}
+                    onPointerUp={() => {
+                      if (drag && drag.over !== null && drag.over !== drag.from) act.move(drag.id, drag.over);
+                      setDrag(null);
+                    }}
+                    onPointerCancel={() => setDrag(null)}
+                    onKeyDown={(e) => {
+                      const by = e.key === "ArrowLeft" || e.key === "ArrowUp" ? -1 : e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : 0;
+                      if (!by) return;
+                      e.preventDefault();
+                      act.move(m.id, i + by);
+                    }}
+                    data-testid="nz-grip"
+                  >
+                    <GripVertical className="h-4 w-4" aria-hidden />
+                  </button>
+                </span>
+              )}
             </li>
           );
         })}
@@ -165,13 +160,17 @@ function TeamView({ t, run, view, readOnly, act, onTeamBuilder }: { t: NuzT; run
           <MatchupRow t={t} label={t("panel.weak")} lines={weak} pick={(l) => l.weak} tone="weak" testId="nz-weak" empty={t("panel.noWeak")} />
           <MatchupRow t={t} label={t("panel.resist")} lines={resist} pick={(l) => l.resist} tone="resist" testId="nz-resist" />
           {gaps.length > 0 && (
-            <p className="mt-3 flex flex-wrap items-center gap-1.5 rounded-xl border border-destructive/25 bg-destructive/[0.06] px-3 py-2 text-[12.5px] font-semibold" data-testid="nz-gaps">
-              <ShieldAlert className="h-4 w-4 shrink-0 text-destructive" aria-hidden />
-              {t("panel.gaps")}
-              {gaps.map((l) => (
-                <TypeChip key={l.type} t={t} type={l.type} size="sm" />
-              ))}
-            </p>
+            <div className="mt-3 rounded-xl border border-destructive/25 bg-destructive/[0.06] px-3 py-2.5" data-testid="nz-gaps">
+              <p className="flex items-start gap-1.5 text-[12.5px] font-semibold leading-snug">
+                <ShieldAlert className="mt-px h-4 w-4 shrink-0 text-destructive" aria-hidden />
+                {t("panel.gaps")}
+              </p>
+              <p className="mt-2 flex flex-wrap gap-1.5">
+                {gaps.map((l) => (
+                  <TypeChip key={l.type} t={t} type={l.type} />
+                ))}
+              </p>
+            </div>
           )}
           <p className="mt-3 text-[11.5px] leading-snug text-muted-foreground">{t("panel.matchupsNote", { gen: view.gen })}</p>
         </section>
@@ -263,7 +262,7 @@ function GraveView({ t, run, view, readOnly, act }: { t: NuzT; run: Run; view: G
           const v = view.mons[m.mon];
           const name = displayName(m, v);
           const by = m.death?.by ? view.dex.find(([id]) => id === m.death!.by)?.[1] : m.death?.byText;
-          const where = whereText(t, view, m.death?.area);
+          const where = whereFell(view, m.death?.area);
           return (
             <li key={m.id} className="relative flex flex-col items-center rounded-2xl border border-foreground/[0.07] bg-[linear-gradient(180deg,hsl(var(--foreground)/0.045),hsl(var(--foreground)/0.015))] px-2.5 pb-3 pt-2 text-center" data-testid="nz-grave-mon">
               {!readOnly && (
@@ -277,7 +276,7 @@ function GraveView({ t, run, view, readOnly, act }: { t: NuzT; run: Run; view: G
               <p className="truncate text-[12px] text-muted-foreground">{v?.name}</p>
               <p className="mt-1.5 space-y-0.5 text-[11.5px] leading-snug text-muted-foreground">
                 {by && <span className="block">{t("panel.fellTo", { by })}</span>}
-                {where && <span className="block">{t("panel.fellAt", { where })}</span>}
+                {where && <span className="block">{"boss" in where ? t("panel.fellVs", { boss: where.boss }) : t("panel.fellAt", { where: where.area })}</span>}
                 {m.death?.level && <span className="block font-semibold">{t("mon.lv", { n: m.death.level })}</span>}
               </p>
             </li>

@@ -145,5 +145,9 @@
   "keys": {
     "hint": "Espace : aléatoire · ⌘Z : annuler"
   },
-  "credit": "Sprites de PokéAPI et, à partir du n° 650, du Smogon Sprite Project ; rendus 3D de Pokémon HOME et illustrations officielles, tous deux via PokéAPI."
+  "credit": "Sprites de PokéAPI et, à partir du n° 650, du Smogon Sprite Project ; rendus 3D de Pokémon HOME et illustrations officielles, tous deux via PokéAPI.",
+  "nuzlocke": {
+    "title": "Suivi de Nuzlocke",
+    "subtitle": "Note chaque rencontre, chaque perte et chaque niveau maximum de ton run."
+  }
 }

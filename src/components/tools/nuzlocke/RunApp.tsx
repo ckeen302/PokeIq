@@ -60,7 +60,7 @@ import { ShareDialog, downloadBackup } from "./ShareDialog";
 
 type Tab = "routes" | Side;
 type Dialog = { kind: "pick"; area: string; extra?: boolean } | { kind: "death"; mon: string } | { kind: "swap"; mon: string } | { kind: "rules" } | { kind: "share" } | { kind: "delete" } | null;
-type Load = { kind: "loading" } | { kind: "missing" } | { kind: "broken" } | { kind: "error"; run: Run } | { kind: "ready"; run: Run; view: GameView };
+type Load = { kind: "loading" } | { kind: "missing" } | { kind: "broken" } | { kind: "nogame" } | { kind: "error"; run: Run } | { kind: "ready"; run: Run; view: GameView };
 
 /** The run screen: finds the run (saved here, or a share link's), loads its game, then shows it. */
 export default function RunApp({ games, shared, brokenText }: { games: GameSummary[]; shared: string | null; brokenText?: string }) {
@@ -73,8 +73,10 @@ export default function RunApp({ games, shared, brokenText }: { games: GameSumma
       const id = new URLSearchParams(window.location.search).get("id") ?? "";
       run = takeHandOff(id) ?? loadStore().runs[id] ?? null;
     }
-    const summary = run && games.find((g) => g.id === run.game);
-    if (!run || !summary) return setLoad({ kind: shared !== null ? "broken" : "missing" });
+    if (!run) return setLoad({ kind: shared !== null ? "broken" : "missing" });
+    // A run of a game the tracker doesn't offer right now (its data hasn't landed, or was taken out) stays saved.
+    const summary = games.find((g) => g.id === run.game);
+    if (!summary) return setLoad({ kind: "nogame" });
     setLoad({ kind: "loading" });
     loadView(run.game, summary.data).then(
       (view) => setLoad({ kind: "ready", run: run!, view }),
@@ -87,8 +89,9 @@ export default function RunApp({ games, shared, brokenText }: { games: GameSumma
   if (load.kind === "ready") return <RunScreen key={load.run.id} initial={load.run} view={load.view} readOnly={shared !== null} shareRaw={shared} />;
   return (
     <div className="mx-auto flex min-h-[50vh] max-w-lg flex-col items-center justify-center gap-4 text-center" data-testid={`nz-${load.kind}`}>
-      <h1 className="font-display text-[26px] font-bold tracking-tight">{load.kind === "missing" ? t("state.notFound") : load.kind === "broken" ? (brokenText ?? t("state.loadError")) : t("state.loadError")}</h1>
+      <h1 className="font-display text-[26px] font-bold tracking-tight">{load.kind === "missing" ? t("state.notFound") : load.kind === "nogame" ? t("state.noGame") : load.kind === "broken" ? (brokenText ?? t("state.loadError")) : t("state.loadError")}</h1>
       {load.kind === "missing" && <p className="text-[15px] text-muted-foreground">{t("state.notFoundLead")}</p>}
+      {load.kind === "nogame" && shared === null && <p className="text-[15px] text-muted-foreground">{t("state.noGameLead")}</p>}
       <div className="flex flex-wrap justify-center gap-2">
         {load.kind === "error" && (
           <PillButton primary onClick={open}>

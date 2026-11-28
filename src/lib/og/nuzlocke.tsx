@@ -9,6 +9,7 @@ import { badgeCount, badgeTotal, graveyard, stats, team, type Run } from "@/lib/
 import { VERSION_LOOK } from "@/lib/nuzlocke/versions";
 import type { GameView } from "@/lib/nuzlocke/view";
 import page from "@/messages/en/nuzlocke-page.json";
+import toolsEn from "@/messages/en/tools.json";
 
 /**
  * The Nuzlocke Tracker's preview cards: the tracker's own, a game's, and a shared run's, drawn from the link alone:
@@ -55,7 +56,7 @@ function Slots({ arts, size = 132 }: { arts: (string | null)[]; size?: number })
 /** The tracker's own card: a team of six in its slots. */
 export async function nuzToolCard() {
   const arts = await Promise.all([6, 25, 9, 143, 3, 130].map((id) => picture(id, 118)));
-  return ogCard({ eyebrow: "PokéIQ tools", title: ["Nuzlocke", ["Tracker", ACCENT]], subtitle: page.cardSubtitle, accent: ACCENT, visual: <Slots arts={arts} />, footer: "Start your run →" }, HEADERS);
+  return ogCard({ eyebrow: "PokéIQ tools", title: ["Nuzlocke", ["Tracker", ACCENT]], subtitle: toolsEn.nuzlocke.subtitle, accent: ACCENT, visual: <Slots arts={arts} />, footer: "Start your run →" }, HEADERS);
 }
 
 /** A game's card: its versions' box-art Pokémon. */
@@ -73,20 +74,33 @@ export async function nuzGameCard(view: Pick<GameView, "name" | "versions" | "re
   return ogCard({ eyebrow: `Nuzlocke Tracker · ${view.region} · Gen ${view.gen}`, title: fitted.lines, titleSize: fitted.size, subtitle: page.game.lead, accent, visual, footer: "Start your run →" }, HEADERS);
 }
 
-/** A shared run's card: its team (the fallen, in grey, when there's no one left), badges and losses. */
+/** A shared run's card: its team in its slots, its badges, its fallen (in grey) and its numbers. */
 export async function nuzRunCard(run: Run, view: GameView) {
   const version = view.versions.find((v) => v.id === run.version);
-  const members = team(run);
+  const members = team(run).slice(0, 6);
   const fallen = graveyard(run);
-  const showFallen = !members.length && fallen.length > 0;
-  const shown = (showFallen ? fallen : members).slice(0, 6);
-  const arts = await Promise.all(shown.map((m) => picture(view.mons[m.mon]?.art ?? 0, 118, showFallen)));
+  const [arts, gone] = await Promise.all([Promise.all(members.map((m) => picture(view.mons[m.mon]?.art ?? 0, 104))), Promise.all(fallen.slice(-6).map((m) => picture(view.mons[m.mon]?.art ?? 0, 56, true)))]);
   const s = stats(run);
   const badges = badgeCount(run, view);
   const total = badgeTotal(view);
   const accent = VERSION_LOOK[run.version]?.color ?? ACCENT;
   const fitted = fitTitle(run.name || "Nuzlocke", 600, [64, 54, 46, 40]);
-  const badgeText = total ? `${badges}/${total} badges` : `${badges} ${badges === 1 ? "badge" : "badges"}`;
+  const label = { fontFamily: "Silkscreen", fontSize: 16, letterSpacing: 2, color: "#a4a0ba", textTransform: "uppercase" as const };
+  const visual = (
+    <div style={{ display: "flex", flexDirection: "column", width: 444, gap: 16 }}>
+      <Slots arts={arts} size={140} />
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{ display: "flex", ...label, width: 120 }}>Badges</div>
+        {Array.from({ length: total ?? Math.max(8, badges) }, (_, i) => (
+          <div key={i} style={{ display: "flex", width: 22, height: 22, borderRadius: 11, background: i < badges ? "#fcc33a" : "rgba(255,255,255,0.08)", border: i < badges ? "2px solid #ffe08a" : "2px solid rgba(255,255,255,0.12)" }} />
+        ))}
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 6, height: 56 }}>
+        <div style={{ display: "flex", ...label, width: 124 }}>Graveyard</div>
+        {gone.length ? gone.map((a, i) => (a ? <img key={i} src={a} width={56} height={56} style={{ opacity: 0.8 }} /> : null)) : <div style={{ display: "flex", fontSize: 22, color: "#a4a0ba" }}>No one yet</div>}
+      </div>
+    </div>
+  );
   return ogCard(
     {
       eyebrow: `${version?.name ?? view.name} Nuzlocke`,
@@ -94,8 +108,8 @@ export async function nuzRunCard(run: Run, view: GameView) {
       titleSize: fitted.size,
       subtitle: view.name,
       accent,
-      visual: <Slots arts={arts} />,
-      chips: [badgeText, `${s.dead} fallen`, `${s.caught} caught`],
+      visual,
+      chips: [`${total ? `${badges}/${total}` : badges} ${badges === 1 && !total ? "badge" : "badges"}`, `${s.dead} fallen`, `${s.caught} caught`],
     },
     HEADERS
   );

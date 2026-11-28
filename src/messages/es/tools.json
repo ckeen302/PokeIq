@@ -145,5 +145,9 @@
   "keys": {
     "hint": "Espacio: aleatorio · ⌘Z: deshacer"
   },
-  "credit": "Sprites de PokéAPI y, desde el n.º 650, del Smogon Sprite Project; modelos 3D de Pokémon HOME e ilustraciones oficiales, ambos a través de PokéAPI."
+  "credit": "Sprites de PokéAPI y, desde el n.º 650, del Smogon Sprite Project; modelos 3D de Pokémon HOME e ilustraciones oficiales, ambos a través de PokéAPI.",
+  "nuzlocke": {
+    "title": "Registro de Nuzlocke",
+    "subtitle": "Apunta cada encuentro, cada baja y cada límite de nivel de tu partida."
+  }
 }

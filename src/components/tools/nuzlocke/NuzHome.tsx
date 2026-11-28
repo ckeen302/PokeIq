@@ -2,14 +2,14 @@
 
 import "./nuzlocke.css";
 import { useCallback, useEffect, useState } from "react";
-import { ArrowRight, HeartCrack, Medal } from "lucide-react";
+import { ArrowRight, ChevronsUp, HeartCrack, Medal } from "lucide-react";
 import Link from "@/components/ui/Link";
 import { useT } from "@/i18n/client";
 import { useLocale } from "@/i18n/navigation";
 import { INTL_LOCALE } from "@/i18n/format";
 import nuz from "@/messages/nuzlocke";
 import { cn } from "@/lib/utils";
-import { badgeCount, badgeTotal, stats, team, type Run } from "@/lib/nuzlocke/run";
+import { badgeCount, badgeTotal, levelCap, stats, team, type Run } from "@/lib/nuzlocke/run";
 import { listRuns, loadStore, saveRun } from "@/lib/nuzlocke/storage";
 import { VERSION_LOOK } from "@/lib/nuzlocke/versions";
 import type { GameSummary, GameView } from "@/lib/nuzlocke/view";
@@ -30,8 +30,7 @@ export function NuzHome({ games, headings }: { games: GameSummary[]; headings: {
   const done = useCallback(() => setToast(null), []);
 
   useEffect(() => {
-    const known = new Set(games.map((g) => g.id));
-    const read = () => setRuns(listRuns(loadStore()).filter((r) => known.has(r.game)));
+    const read = () => setRuns(listRuns(loadStore()));
     read();
     // A run just deleted from its page can be put back from here.
     const gone = takeDeleted();
@@ -47,7 +46,7 @@ export function NuzHome({ games, headings }: { games: GameSummary[]; headings: {
     const onStorage = (e: StorageEvent) => e.key?.startsWith("pokeiq:nuzlocke") && read();
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
-  }, [games, t]);
+  }, [t]);
 
   const used = games.filter((g) => runs?.some((r) => r.game === g.id));
   const views = useViews(used);
@@ -61,7 +60,7 @@ export function NuzHome({ games, headings }: { games: GameSummary[]; headings: {
           </h2>
           <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-4">
             {runs.map((r) => (
-              <RunCard key={r.id} run={r} game={games.find((g) => g.id === r.game)!} view={views[r.game]} />
+              <RunCard key={r.id} run={r} game={games.find((g) => g.id === r.game)} view={views[r.game]} />
             ))}
           </ul>
         </section>
@@ -105,13 +104,15 @@ export function NuzHome({ games, headings }: { games: GameSummary[]; headings: {
   );
 }
 
-function RunCard({ run, game, view }: { run: Run; game: GameSummary; view: GameView | undefined }) {
+/** A saved run. One whose game the tracker doesn't offer right now still shows, saying so. */
+function RunCard({ run, game, view }: { run: Run; game: GameSummary | undefined; view: GameView | undefined }) {
   const t = useT(nuz);
   const locale = useLocale();
   const s = stats(run);
   const members = team(run);
-  const version = game.versions.find((v) => v.id === run.version);
+  const version = game?.versions.find((v) => v.id === run.version);
   const badges = view ? badgeCount(run, view) : null;
+  const cap = view && run.rules.caps ? levelCap(run, view) : null;
   const total = view ? badgeTotal(view) : null;
   return (
     <li>
@@ -124,11 +125,12 @@ function RunCard({ run, game, view }: { run: Run; game: GameSummary; view: GameV
         <span className="flex items-center justify-between gap-3 text-[12.5px] text-muted-foreground">
           <span className="flex min-w-0 items-center gap-2">
             <VersionDot id={run.version} />
-            <span className="truncate font-semibold text-foreground/85">{version?.name ?? game.name}</span>
+            <span className="truncate font-semibold text-foreground/85">{version?.name ?? game?.name ?? run.version}</span>
           </span>
           <span className="shrink-0">{t("home.played", { when: relativeTime(run.updatedAt, INTL_LOCALE[locale], t("home.justNow")) })}</span>
         </span>
         <span className="block truncate font-display text-[21px] font-bold leading-tight tracking-tight">{run.name}</span>
+        {!game && <span className="text-[13px] text-muted-foreground">{t("home.noGame")}</span>}
         <span className="flex h-14 items-center gap-1" aria-hidden>
           {Array.from({ length: 6 }, (_, i) => {
             const m = members[i];
@@ -150,6 +152,12 @@ function RunCard({ run, game, view }: { run: Run; game: GameSummary; view: GameV
             <HeartCrack className="h-4 w-4" aria-hidden />
             {t("home.fallen", { n: s.dead })}
           </span>
+          {cap && (
+            <span className="inline-flex items-center gap-1 text-screen">
+              <ChevronsUp className="h-4 w-4" aria-hidden />
+              {t("home.cap", { n: cap.cap })}
+            </span>
+          )}
           <ArrowRight className="ml-auto h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" aria-hidden />
         </span>
       </Link>

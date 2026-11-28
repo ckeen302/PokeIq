@@ -31,7 +31,7 @@ export interface ViewMon {
 }
 
 /** An encounter, pointing at its Pokémon in `mons`. */
-export interface ViewEncounter extends Omit<NuzEncounter, "species" | "form"> {
+export interface ViewEncounter extends Omit<NuzEncounter, "species" | "form" | "art"> {
   mon: string;
 }
 

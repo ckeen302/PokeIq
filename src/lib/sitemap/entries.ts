@@ -5,7 +5,7 @@ import { NEA_CATEGORIES, NEA_PATH } from "@/lib/name-em-all/categories";
 import { ABILITIES, ITEMS, MOVES } from "@/lib/dex/data";
 import { SITE_URL } from "@/lib/site";
 import { TEMPLATES } from "@/lib/tier-list/templates";
-import { NUZ_GAMES } from "@/lib/nuzlocke/source";
+import { gameIds as nuzlockeGames } from "@/lib/nuzlocke/games.server";
 import { GAMES_LIVE, RACE_LIVE, LAB_DEX_LIVE, LAB_PATH, MASS_BATTLE_LIVE, POKEMON_STORY_LIVE, WORLD_HISTORY_LIVE } from "@/lib/lab";
 import { CHAPTER_IDS as STORY_CHAPTER_IDS } from "@/lib/pokemon-story/data";
 import { STORY_PATH, chapterPath as storyChapterPath } from "@/lib/pokemon-story/deeplink";
@@ -63,7 +63,7 @@ export async function englishSitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/tools/catch-rate-calculator`, changeFrequency: "monthly", priority: 0.8 },
     { url: `${SITE_URL}/tools/shiny-hunt-counter`, changeFrequency: "monthly", priority: 0.8 },
     { url: `${SITE_URL}/tools/nuzlocke-tracker`, changeFrequency: "monthly", priority: 0.8 },
-    ...NUZ_GAMES.map((g) => ({ url: `${SITE_URL}/tools/nuzlocke-tracker/${g.id}`, changeFrequency: "monthly" as const, priority: 0.7 })),
+    ...(await nuzlockeGames()).map((id) => ({ url: `${SITE_URL}/tools/nuzlocke-tracker/${id}`, changeFrequency: "monthly" as const, priority: 0.7 })),
     ...TEMPLATES.map((t) => ({ url: `${SITE_URL}/tools/tier-list/${t.slug}`, changeFrequency: "monthly" as const, priority: t.group === "custom" ? 0.4 : 0.7 })),
     { url: `${SITE_URL}/quiz`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${SITE_URL}/pokedex`, changeFrequency: "monthly", priority: 0.8 },

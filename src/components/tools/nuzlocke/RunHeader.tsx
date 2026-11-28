@@ -45,8 +45,8 @@ export function RunHeader({ t, run, view, readOnly, onRename, onBadge, onMenu }:
           <p className="flex min-w-0 items-center gap-2 text-[12px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
             <VersionDot id={run.version} />
             <span className="shrink-0 text-foreground/85" data-testid="nz-version">{version?.name ?? run.version}</span>
-            <span aria-hidden>·</span>
-            <Link href={`${TRACKER_PATH}/${view.id}`} className="truncate underline-offset-4 hover:text-foreground hover:underline">
+            <span aria-hidden className="max-sm:hidden">·</span>
+            <Link href={`${TRACKER_PATH}/${view.id}`} className="truncate underline-offset-4 hover:text-foreground hover:underline max-sm:hidden">
               {view.name}
             </Link>
           </p>

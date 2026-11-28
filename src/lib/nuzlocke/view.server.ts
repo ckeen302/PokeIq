@@ -111,12 +111,14 @@ export function formFor(s: Specie): string | undefined {
   return `${base}-${forme}`;
 }
 
-function viewMon(gen: Generation, species: number, form: string | undefined): ViewMon | null {
+/** `art`: the form's picture id when the game data names one (NuzEncounter.art). */
+function viewMon(gen: Generation, species: number, form: string | undefined, artId?: number): ViewMon | null {
   const row = BY_ID.get(species);
   if (!row) return null;
   const f = form ? FORMS.get(form) : undefined;
   const specie = specieFor(gen, species, form);
-  const art = f && HAS_ART.has(f.id) ? f.id : species;
+  // The form's own picture when the site has it (the data's id first, else the Pokédex's), else the species'.
+  const art = form && artId && HAS_ART.has(artId) ? artId : f && HAS_ART.has(f.id) ? f.id : species;
   return {
     key: form ?? String(species),
     species,
@@ -131,14 +133,14 @@ function viewMon(gen: Generation, species: number, form: string | undefined): Vi
 }
 
 /** Each Pokémon of the game, and everything it can evolve into in the generation (each with its own evolutions). */
-function collectMons(gen: Generation, seeds: { species: number; form?: string }[]): Record<string, ViewMon> {
+function collectMons(gen: Generation, seeds: { species: number; form?: string; art?: number }[]): Record<string, ViewMon> {
   const mons: Record<string, ViewMon> = {};
   const queue = [...seeds];
   while (queue.length) {
-    const { species, form } = queue.shift()!;
+    const { species, form, art } = queue.shift()!;
     const key = form ?? String(species);
     if (mons[key]) continue;
-    const mon = viewMon(gen, species, form);
+    const mon = viewMon(gen, species, form, art);
     if (!mon) continue;
     mons[key] = mon;
     const specie = specieFor(gen, species, form);
@@ -191,7 +193,11 @@ const TEAM_FORMAT: Record<number, string> = { 3: "gen3ou", 4: "gen4ou", 9: "gen9
 const areaView = (a: NuzArea): ViewArea => ({
   id: a.id,
   name: a.name,
-  encounters: a.encounters.map(({ species: _s, form: _f, ...e }) => ({ ...e, mon: monKey({ species: _s, form: _f }) })),
+  encounters: a.encounters.map(({ species, form, ...e }) => {
+    // The picture is the Pokémon's (in `mons`), not the encounter's.
+    delete (e as { art?: number }).art;
+    return { ...e, mon: monKey({ species, form }) };
+  }),
 });
 
 export function buildView(game: NuzGame): GameView {
@@ -199,7 +205,7 @@ export function buildView(game: NuzGame): GameView {
   const areas = [...game.steps.flatMap((s) => (s.type === "area" ? [s.area] : [])), ...game.extra];
   const mons = collectMons(
     gen,
-    areas.flatMap((a) => a.encounters.map((e) => ({ species: e.species, ...(e.form && { form: e.form }) })))
+    areas.flatMap((a) => a.encounters.map((e) => ({ species: e.species, ...(e.form && { form: e.form, ...(e.art && { art: e.art }) }) })))
   );
   const keys = bossKeys(game.steps);
   let b = 0;

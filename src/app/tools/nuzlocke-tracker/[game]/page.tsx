@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { pageMetadata } from "@/lib/seo";
 import { serverT } from "@/i18n/server";
 import page from "@/messages/nuzlocke-page";
-import { GAME_IDS, gameSummaries, gameView } from "@/lib/nuzlocke/games.server";
+import { gameIds, gameSummaries, gameView } from "@/lib/nuzlocke/games.server";
 import { GameGuide } from "@/components/tools/nuzlocke/GameGuide";
 
 /**
@@ -13,8 +13,8 @@ import { GameGuide } from "@/components/tools/nuzlocke/GameGuide";
 
 type Params = { game: string };
 
-export function generateStaticParams(): Params[] {
-  return GAME_IDS().map((game) => ({ game }));
+export async function generateStaticParams(): Promise<Params[]> {
+  return (await gameIds()).map((game) => ({ game }));
 }
 
 export const dynamicParams = false;

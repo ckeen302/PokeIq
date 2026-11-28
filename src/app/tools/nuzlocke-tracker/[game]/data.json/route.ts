@@ -1,11 +1,11 @@
-import { GAME_IDS, gameView } from "@/lib/nuzlocke/games.server";
+import { gameIds, gameView } from "@/lib/nuzlocke/games.server";
 
 /** GET /tools/nuzlocke-tracker/<game>/data.json: the game as the run screen uses it (lib/nuzlocke/view), built with the site. */
 export const dynamic = "force-static";
 export const dynamicParams = false;
 
-export function generateStaticParams() {
-  return GAME_IDS().map((game) => ({ game }));
+export async function generateStaticParams() {
+  return (await gameIds()).map((game) => ({ game }));
 }
 
 export async function GET(_req: Request, { params }: { params: Promise<{ game: string }> }) {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { BookOpen, Check, ChevronDown, ChevronsUp, Hash, Medal, Plus, RotateCcw, Sparkles, Swords, Trash2, Undo2 } from "lucide-react";
+import { BookOpen, Check, ChevronDown, ChevronsUp, Hash, Medal, Plus, RotateCcw, SkipForward, Sparkles, Swords, Trash2, Undo2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NICK_MAX, counts, displayName, levelCap, monsIn, type MonStatus, type Run, type RunMon } from "@/lib/nuzlocke/run";
 import type { AreaFilter } from "@/lib/nuzlocke/storage";
@@ -236,7 +236,7 @@ function AreaCard({ t, run, view, area, readOnly, justCaught, onCaughtShown, act
 
       {(result?.kind === "failed" || result?.kind === "skipped") && (
         <div className="mt-2 flex items-center gap-3 rounded-2xl bg-foreground/[0.035] p-2 pr-2.5" data-testid="nz-area-result">
-          {failedMon ? <Sprite art={failedMon.art} dim className="h-11 w-11 shrink-0" /> : <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-foreground/[0.06] text-muted-foreground"><Undo2 className="h-5 w-5" aria-hidden /></span>}
+          {failedMon ? <Sprite art={failedMon.art} dim className="h-11 w-11 shrink-0" /> : <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-foreground/[0.06] text-muted-foreground">{result.kind === "skipped" ? <SkipForward className="h-5 w-5" aria-hidden /> : <Undo2 className="h-5 w-5" aria-hidden />}</span>}
           <span className="min-w-0 flex-1 text-[14.5px] font-semibold text-muted-foreground">{result.kind === "skipped" ? t("routes.skipped") : failedMon ? t("routes.failedAs", { name: failedMon.name }) : t("routes.failed")}</span>
           {!readOnly && (
             <button type="button" onClick={() => act.reopen(area.id, true)} className="h-10 shrink-0 rounded-full px-4 text-[13.5px] font-semibold text-foreground transition-colors hover:bg-foreground/[0.07] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring max-md:h-11" data-testid={`nz-change-${area.id}`}>

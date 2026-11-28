@@ -145,5 +145,9 @@
   "keys": {
     "hint": "スペース：ランダム ・ ⌘Z：元に戻す"
   },
-  "credit": "ドット絵はPokéAPI、No.650以降はSmogon Sprite Project。3DモデルはPokémon HOME、公式イラストとともにPokéAPI経由です。"
+  "credit": "ドット絵はPokéAPI、No.650以降はSmogon Sprite Project。3DモデルはPokémon HOME、公式イラストとともにPokéAPI経由です。",
+  "nuzlocke": {
+    "title": "ナズロックトラッカー",
+    "subtitle": "出会い・ひんし・レベル上限をすべて記録しよう。"
+  }
 }

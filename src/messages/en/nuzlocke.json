@@ -7,7 +7,9 @@
     "fallen": "{n, plural, one {# fallen} other {# fallen}}",
     "badges": "{n, plural, one {# badge} other {# badges}}",
     "teamEmpty": "No team yet",
-    "deleted": "{name} deleted"
+    "deleted": "{name} deleted",
+    "noGame": "Its game isn't in the tracker right now",
+    "cap": "Level cap {n}"
   },
   "start": {
     "title": "New run",
@@ -173,7 +175,7 @@
     "matchups": "Type matchups",
     "weak": "Weak to",
     "resist": "Resists",
-    "gaps": "Nobody resists these, and two or more are weak:",
+    "gaps": "Two or more are weak to these, and nobody resists them:",
     "matchupsNote": "By type, with Gen {gen}'s type chart. Abilities aren't counted.",
     "noWeak": "No weaknesses by type.",
     "cell": "{type}: {weak} weak, {resist} resist",
@@ -182,7 +184,8 @@
     "graveEmpty": "No one has fallen. Long may it last.",
     "graveLead": "Every Pokémon lost on this run.",
     "fellTo": "Fainted by {by}",
-    "fellAt": "at {where}"
+    "fellAt": "in {where}",
+    "fellVs": "against {boss}"
   },
   "onboarding": {
     "title": "How it works",
@@ -242,7 +245,9 @@
     "notFoundLead": "Runs are saved in the browser they were started in. Open it there, or import a backup.",
     "loadError": "The game's data didn't load. Check your connection and try again.",
     "retry": "Try again",
-    "back": "Your runs"
+    "back": "Your runs",
+    "noGame": "This run's game isn't in the tracker right now",
+    "noGameLead": "The run is still saved on this device, and it opens again once its game is back."
   },
   "kinds": {
     "wild": "Wild",

@@ -145,5 +145,9 @@
   "keys": {
     "hint": "Space: randomise · ⌘Z: undo"
   },
-  "credit": "Sprites from PokéAPI and, from #650, the Smogon Sprite Project; 3D renders from Pokémon HOME and the official artwork, both via PokéAPI."
+  "credit": "Sprites from PokéAPI and, from #650, the Smogon Sprite Project; 3D renders from Pokémon HOME and the official artwork, both via PokéAPI.",
+  "nuzlocke": {
+    "title": "Nuzlocke Tracker",
+    "subtitle": "Log every encounter, loss and level cap of your run."
+  }
 }

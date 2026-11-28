@@ -5,7 +5,6 @@ import tierList from "@/messages/tier-list";
 import ballPage from "@/messages/pokeball-maker-page";
 import shinyCounterPage from "@/messages/shiny-counter-page";
 import catchRatePage from "@/messages/catch-rate-page";
-import nuzlockePage from "@/messages/nuzlocke-page";
 import home from "@/messages/home";
 
 /** The Tools hub's cards: each tool's name and line (existing strings only), its accent and its card art. The Favorite Pokémon Picker is a list in the Tier List Maker now, not a card of its own. */
@@ -33,7 +32,6 @@ export async function hubData(): Promise<HubData> {
   const pb = serverT(ballPage);
   const sc = serverT(shinyCounterPage);
   const cr = serverT(catchRatePage);
-  const nz = serverT(nuzlockePage);
   const h = serverT(home);
   return {
     title: t("hub.title"),
@@ -45,7 +43,7 @@ export async function hubData(): Promise<HubData> {
       { href: "/tools/catch-rate-calculator", title: cr("title"), subtitle: cr("cardSubtitle"), image: "/tools/hub/catch.webp", accent: "150 72% 52%", testId: "tool-card-catch-rate" },
       { href: "/tools/pokeball-maker", title: pb("cardTitle"), subtitle: pb("cardSubtitle"), image: "/tools/hub/ball.webp", accent: "356 86% 60%", testId: "tool-card-pokeball-maker" },
       { href: "/tools/tier-list", title: tl("card.title"), subtitle: tl("card.subtitle"), image: "/tools/hub/tier.webp", accent: "258 94% 74%", testId: "tool-card-tier-list" },
-      { href: "/tools/nuzlocke-tracker", title: nz("title"), subtitle: nz("cardSubtitle"), image: "/tools/hub/nuzlocke.webp", accent: "318 82% 66%", testId: "tool-card-nuzlocke" },
+      { href: "/tools/nuzlocke-tracker", title: t("nuzlocke.title"), subtitle: t("nuzlocke.subtitle"), image: "/tools/hub/nuzlocke.webp", accent: "318 82% 66%", testId: "tool-card-nuzlocke" },
     ],
   };
 }

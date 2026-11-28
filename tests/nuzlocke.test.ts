@@ -2,9 +2,10 @@ import { existsSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import DETAILS from "@/data/pokedex-details.json";
 import type { NuzEncounter, NuzGame, NuzStep } from "@/lib/nuzlocke/model";
-import { NUZ_GAMES, loadGame } from "@/lib/nuzlocke/source";
+import { NUZ_GAMES, loadGame } from "@/lib/nuzlocke/games";
 import { buildView, formFor, generation, specieFor } from "@/lib/nuzlocke/view.server";
-import { bossKeys, type GameView } from "@/lib/nuzlocke/view";
+import { allAreas, bossKeys, type GameView } from "@/lib/nuzlocke/view";
+import { availableGames, gameSummaries, gameView } from "@/lib/nuzlocke/games.server";
 import { groupByMethod } from "@/lib/nuzlocke/group";
 import { matchupSummary, multiplier, teamMatchups } from "@/lib/nuzlocke/matchups";
 import {
@@ -69,6 +70,32 @@ describe("the game data the screens use", () => {
     // Once nuzlocke-data is merged, games.ts exists and the fixture must be gone (source.ts re-exports ./games).
     if (existsSync("src/lib/nuzlocke/games.ts")) expect(existsSync("src/lib/nuzlocke/dev-fixture.ts")).toBe(false);
     expect(NUZ_GAMES.length).toBeGreaterThan(0);
+  });
+
+  it("builds every listed game that has data: each Pokémon met has its picture, page and types", async () => {
+    for (const g of NUZ_GAMES) {
+      const game = await loadGame(g.id);
+      if (!game) continue; // listed before its data lands: the pages leave it out (next test)
+      const v = buildView(game);
+      for (const a of allAreas(v))
+        for (const e of a.encounters) {
+          const mon = v.mons[e.mon];
+          expect(mon, `${g.id} ${a.id} ${e.mon}`).toBeDefined();
+          expect(mon.types.length, `${g.id} ${e.mon}`).toBeGreaterThan(0);
+          expect(mon.slug).toMatch(/^[a-z0-9-]+$/);
+        }
+      const keys = v.steps.flatMap((s) => (s.type === "boss" ? [s.boss.key] : []));
+      expect(new Set(keys).size, g.id).toBe(keys.length);
+    }
+  });
+
+  it("leaves out a game without data, gracefully", async () => {
+    expect(await loadGame("no-such-game")).toBeNull();
+    expect(await gameView("no-such-game")).toBeNull();
+    const offered = await availableGames();
+    expect(offered.every((g) => NUZ_GAMES.includes(g))).toBe(true);
+    for (const g of offered) expect(await loadGame(g.id)).not.toBeNull();
+    expect((await gameSummaries()).map((g) => g.id)).toEqual(offered.map((g) => g.id));
   });
 
   it("maps every PokéAPI form the Pokédex has to Showdown's, with the same types", () => {
@@ -137,7 +164,8 @@ describe("the game data the screens use", () => {
     const view = await frlgView();
     const pallet = view.steps.find((s) => s.type === "area" && s.area.id === "pallet-town");
     const groups = groupByMethod(pallet!.type === "area" ? pallet!.area.encounters : []);
-    expect(groups.map((g) => g.method)).toEqual(["Gift", "Surf", "Old Rod", "Good Rod", "Super Rod"]);
+    expect(groups.map((g) => g.method).sort()).toEqual(["Good Rod", "Old Rod", "Starter", "Super Rod", "Surf"]);
+    expect(groups.find((g) => g.method === "Starter")).toMatchObject({ kind: "gift", rows: [{ mon: "1" }, { mon: "4" }, { mon: "7" }] });
     const krabby = groups.find((g) => g.method === "Good Rod")!.rows.find((r) => r.mon === "98")!;
     expect(krabby.stats).toEqual([
       { versions: ["leafgreen"], rate: 60, levels: [5, 15] },
@@ -271,16 +299,15 @@ describe("bosses, badges and the level cap", () => {
   it("is the first boss not yet beaten, in story order", async () => {
     const view = await frlgView();
     let run = createRun({ game: view.id, version: "firered", name: "T", now: T0 });
-    expect(bossKeys((await loadGame(view.id))!.steps)).toEqual(["rival", "rival-2", "brock", "rival-3", "misty", "lt-surge"]);
-    expect(levelCap(run, view)).toMatchObject({ cap: 5, boss: { key: "rival" } });
-    run = toggleBoss(run, "rival", T0);
-    run = toggleBoss(run, "rival-2", T0);
-    expect(levelCap(run, view)).toMatchObject({ cap: 14, boss: { name: "Brock" } });
+    const keys = bossKeys((await loadGame(view.id))!.steps);
+    expect(keys.slice(0, 8)).toEqual(["brock", "misty", "lt-surge", "erika", "koga", "sabrina", "blaine", "giovanni"]);
+    expect(new Set(keys).size).toBe(keys.length);
+    expect(levelCap(run, view)).toMatchObject({ cap: 14, boss: { key: "brock", name: "Brock" } });
     run = toggleBoss(run, "misty", T0); // beaten out of order: Brock is still next
     expect(levelCap(run, view)?.cap).toBe(14);
     run = toggleBoss(run, "brock", T0);
-    expect(levelCap(run, view)).toMatchObject({ cap: 18, boss: { key: "rival-3" } });
-    for (const k of ["rival-3", "lt-surge"]) run = toggleBoss(run, k, T0);
+    expect(levelCap(run, view)).toMatchObject({ cap: 24, boss: { key: "lt-surge" } });
+    for (const k of keys) if (!run.beaten.includes(k)) run = toggleBoss(run, k, T0);
     expect(levelCap(run, view)).toBeNull();
   });
 
@@ -305,7 +332,7 @@ describe("bosses, badges and the level cap", () => {
     run = addBadge(run, view, T0).run;
     expect(run.beaten).toEqual(["brock", "misty"]);
     expect(badgeCount(run, view)).toBe(2);
-    run = toggleBoss(run, "rival", T0);
+    run = toggleBoss(run, "elite-four-lorelei", T0); // not a badge
     expect(badgeCount(run, view)).toBe(2);
     const off = removeBadge(run, view, T0);
     expect(off.boss?.name).toBe("Misty");

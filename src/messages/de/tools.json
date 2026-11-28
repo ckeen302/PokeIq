@@ -145,5 +145,9 @@
   "keys": {
     "hint": "Leertaste: Zufall · ⌘Z: rückgängig"
   },
-  "credit": "Sprites von PokéAPI und ab Nr. 650 vom Smogon Sprite Project; 3D-Renderings aus Pokémon HOME und offizielle Artworks, beide über PokéAPI."
+  "credit": "Sprites von PokéAPI und ab Nr. 650 vom Smogon Sprite Project; 3D-Renderings aus Pokémon HOME und offizielle Artworks, beide über PokéAPI.",
+  "nuzlocke": {
+    "title": "Nuzlocke-Tracker",
+    "subtitle": "Halte jede Begegnung, jeden Verlust und jede Levelgrenze deines Runs fest."
+  }
 }

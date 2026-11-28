@@ -1,6 +1,5 @@
 "use client";
 
-import "../tier-list/tier-list.css";
 import "./nuzlocke.css";
 import { useMemo, useState } from "react";
 import { ArrowRight } from "lucide-react";
@@ -14,9 +13,8 @@ import { DEFAULT_RULES, createRun, type Rules } from "@/lib/nuzlocke/run";
 import { listRuns, loadStore, saveRun } from "@/lib/nuzlocke/storage";
 import { VERSION_LOOK } from "@/lib/nuzlocke/versions";
 import type { GameSummary } from "@/lib/nuzlocke/view";
-import { Modal } from "../tier-list/ui";
 import { RulesForm } from "./RulesForm";
-import { Sprite, VersionDot } from "./parts";
+import { Sheet, Sprite, VersionDot } from "./parts";
 import { handOff } from "./handoff";
 
 export const TRACKER_PATH = "/tools/nuzlocke-tracker";
@@ -49,9 +47,27 @@ export function StartRun({ games, gameId, onClose }: { games: GameSummary[]; gam
   };
 
   return (
-    <Modal title={t("start.title")} onClose={onClose} closeLabel={t("picker.close")} testId="nz-start">
+    <Sheet
+      title={t("start.title")}
+      onClose={onClose}
+      closeLabel={t("picker.close")}
+      testId="nz-start"
+      footer={
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <Link href={`${TRACKER_PATH}/${game.id}`} className="text-[14px] font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
+            {t("start.guide")}
+          </Link>
+          <button type="submit" form="nz-start-form" disabled={busy} className={cn(buttonVariants({ size: "lg" }), "max-sm:w-full")} data-testid="nz-start-go">
+            {t("start.start")} <ArrowRight className="h-4 w-4" aria-hidden />
+          </button>
+        </div>
+      }
+    >
       <form
-        className="space-y-6"
+        id="nz-start-form"
+        tabIndex={-1}
+        data-autofocus
+        className="space-y-6 pb-1 outline-none"
         onSubmit={(e) => {
           e.preventDefault();
           start();
@@ -129,15 +145,7 @@ export function StartRun({ games, gameId, onClose }: { games: GameSummary[]; gam
           <p className="text-[13px] text-muted-foreground">{t("start.rulesLead")}</p>
         </div>
 
-        <div className="sticky bottom-0 -mx-6 -mb-6 flex flex-wrap items-center justify-between gap-3 border-t border-foreground/[0.06] bg-card px-6 py-4 max-sm:-mx-5 max-sm:px-5 max-sm:pb-[max(16px,env(safe-area-inset-bottom))]">
-          <Link href={`${TRACKER_PATH}/${game.id}`} className="text-[14px] font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
-            {t("start.guide")}
-          </Link>
-          <button type="submit" disabled={busy} className={cn(buttonVariants({ size: "lg" }), "max-sm:w-full")} data-testid="nz-start-go">
-            {t("start.start")} <ArrowRight className="h-4 w-4" aria-hidden />
-          </button>
-        </div>
       </form>
-    </Modal>
+    </Sheet>
   );
 }

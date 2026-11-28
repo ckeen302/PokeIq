@@ -13,14 +13,15 @@ const fold = (s: string) => s.normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerC
 /** "Where" can be an area or a boss fight: a boss is kept as "boss:<key>". */
 export const BOSS_PREFIX = "boss:";
 
-/** The place a Pokémon fell, in words: an area's name, or "vs Brock". */
-export function whereText(t: NuzT, view: GameView, where: string | undefined): string | null {
+/** Where a Pokémon fell: an area, or a boss fight. */
+export function whereFell(view: GameView, where: string | undefined): { area: string } | { boss: string } | null {
   if (!where) return null;
   if (where.startsWith(BOSS_PREFIX)) {
     const b = allBosses(view).find((x) => x.key === where.slice(BOSS_PREFIX.length));
-    return b ? t("death.whereBoss", { boss: b.name }) : null;
+    return b ? { boss: b.name } : null;
   }
-  return allAreas(view).find((a) => a.id === where)?.name ?? null;
+  const a = allAreas(view).find((x) => x.id === where);
+  return a ? { area: a.name } : null;
 }
 
 /** The last place logged, in story order: most likely where the run is now. */
