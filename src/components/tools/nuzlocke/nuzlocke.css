@@ -1,0 +1,42 @@
+/* The Nuzlocke Tracker. Colours come from the site's tokens, so light and dark both follow the theme. */
+
+@keyframes nz-rise { from { transform: translateY(10px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes nz-pop { from { transform: translateY(-4px) scale(0.98); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes nz-flash { 0% { box-shadow: 0 0 0 0 hsl(var(--screen) / 0.55); } 100% { box-shadow: 0 0 0 14px hsl(var(--screen) / 0); } }
+.nz-rise { animation: nz-rise 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.nz-pop { animation: nz-pop 160ms ease-out both; transform-origin: top right; }
+.nz-flash { animation: nz-flash 900ms ease-out 1; }
+
+/* The level cap: a little device display by night, a lavender tile by day (its text follows the theme). */
+.nz-cap {
+  position: relative;
+  background: radial-gradient(120% 100% at 50% 0%, hsl(var(--screen) / 0.16), transparent 70%), hsl(250 45% 8%);
+  box-shadow: inset 0 0 0 1px hsl(var(--screen) / 0.28), inset 0 0 30px hsl(var(--screen) / 0.08);
+}
+:root.light .nz-cap {
+  background: radial-gradient(120% 100% at 50% 0%, hsl(258 90% 74% / 0.24), transparent 70%), hsl(252 72% 96%);
+  box-shadow: inset 0 0 0 1px hsl(258 60% 60% / 0.26), 0 1px 2px hsl(250 40% 40% / 0.08);
+}
+
+/* The fallen: their picture in soft grey, as on a memorial. */
+.nz-dim { filter: grayscale(1) contrast(0.9) brightness(1.05); opacity: 0.82; }
+:root.light .nz-dim { filter: grayscale(1) contrast(0.85) brightness(1.08); opacity: 0.75; }
+
+/* The phone's dock for Routes / Team / Box / Graveyard sits just above the site's tab bar; the footer's margin grows
+   by its height so the page's end scrolls up above it. */
+html:has([data-nz-dock]) body > footer { margin-bottom: calc(4rem + env(safe-area-inset-bottom) + 4.5rem); }
+@media (min-width: 1024px) {
+  html:has([data-nz-dock]) body > footer { margin-bottom: 0; }
+}
+
+.nz-scroll { overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: hsl(var(--foreground) / 0.18) transparent; }
+.nz-scroll::-webkit-scrollbar { width: 10px; }
+.nz-scroll::-webkit-scrollbar-thumb { background: hsl(var(--foreground) / 0.16); border-radius: 10px; border: 3px solid transparent; background-clip: padding-box; }
+
+/* A team slot being dragged. */
+.nz-dragging { opacity: 0.35; }
+.nz-drop { box-shadow: 0 0 0 2px hsl(var(--screen)), 0 10px 24px -12px hsl(var(--screen) / 0.6); }
+
+@media (prefers-reduced-motion: reduce) {
+  .nz-rise, .nz-pop, .nz-flash { animation: none; }
+}

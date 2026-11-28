@@ -1,0 +1,45 @@
+/**
+ * Each version's look on the tracker's cards: a colour for its dot (its box art's main colour, by eye) and the Pokémon
+ * on its box art. Decoration only; a version missing here gets a neutral dot and no picture.
+ */
+export const VERSION_LOOK: Record<string, { color: string; mascot?: number }> = {
+  red: { color: "#e53935", mascot: 6 },
+  blue: { color: "#1e88e5", mascot: 9 },
+  yellow: { color: "#fbc02d", mascot: 25 },
+  gold: { color: "#c9a227", mascot: 250 },
+  silver: { color: "#9ea7b3", mascot: 249 },
+  crystal: { color: "#4dd0e1", mascot: 245 },
+  ruby: { color: "#c62828", mascot: 383 },
+  sapphire: { color: "#1565c0", mascot: 382 },
+  emerald: { color: "#2e7d32", mascot: 384 },
+  firered: { color: "#ef5323", mascot: 6 },
+  leafgreen: { color: "#43a047", mascot: 3 },
+  diamond: { color: "#5c6bc0", mascot: 483 },
+  pearl: { color: "#ec407a", mascot: 484 },
+  platinum: { color: "#78909c", mascot: 487 },
+  heartgold: { color: "#d4a017", mascot: 250 },
+  soulsilver: { color: "#a8b4c0", mascot: 249 },
+  black: { color: "#455a64", mascot: 644 },
+  white: { color: "#b0bec5", mascot: 643 },
+  "black-2": { color: "#37474f", mascot: 646 },
+  "white-2": { color: "#cfd8dc", mascot: 646 },
+  x: { color: "#1976d2", mascot: 716 },
+  y: { color: "#d32f2f", mascot: 717 },
+  "omega-ruby": { color: "#b71c1c", mascot: 383 },
+  "alpha-sapphire": { color: "#0d47a1", mascot: 382 },
+  sun: { color: "#fb8c00", mascot: 791 },
+  moon: { color: "#5e35b1", mascot: 792 },
+  "ultra-sun": { color: "#f57c00", mascot: 800 },
+  "ultra-moon": { color: "#4527a0", mascot: 800 },
+  "lets-go-pikachu": { color: "#fdd835", mascot: 25 },
+  "lets-go-eevee": { color: "#a1887f", mascot: 133 },
+  sword: { color: "#039be5", mascot: 888 },
+  shield: { color: "#d81b60", mascot: 889 },
+  "brilliant-diamond": { color: "#42a5f5", mascot: 483 },
+  "shining-pearl": { color: "#f48fb1", mascot: 484 },
+  "legends-arceus": { color: "#8d6e63", mascot: 493 },
+  scarlet: { color: "#e53935", mascot: 1007 },
+  violet: { color: "#8e24aa", mascot: 1008 },
+};
+
+export const versionColor = (id: string): string => VERSION_LOOK[id]?.color ?? "hsl(var(--muted-foreground))";

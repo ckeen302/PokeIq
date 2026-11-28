@@ -135,6 +135,8 @@ export const NAMESPACES = [
   "nea-hub",
   "nea-pages",
   "nea-race",
+  "nuzlocke",
+  "nuzlocke-page",
   "og",
   "og-alt",
   "pikadoku",

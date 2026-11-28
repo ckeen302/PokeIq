@@ -1,0 +1,55 @@
+{
+  "title": "Nuzlocke Tracker",
+  "subtitle": "Log the first Pokémon you meet in each area, keep your team, box and graveyard in order, and pick your run up where you left off.",
+  "metaTitle": "Nuzlocke Tracker: encounters, team, graveyard and level caps",
+  "metaDescription": "A free Nuzlocke tracker: pick your game, log the first encounter in each area, mark the fallen, and see your team's weaknesses and the next level cap. Saved in your browser, with share links.",
+  "cardSubtitle": "Log every encounter, loss and level cap of your run.",
+  "ogAlt": "The Nuzlocke Tracker on PokéIQ",
+  "credit": "Each game's sources are listed on its page. Types and type charts from Pokémon Showdown's data; pictures: Pokémon HOME renders from PokéAPI. Pokémon is © Nintendo, Game Freak and Creatures.",
+  "games": {
+    "heading": "Start a new run",
+    "lead": "Pick your game.",
+    "regionGen": "{region} · Gen {gen}",
+    "guideLink": "Areas, Pokémon and level caps",
+    "guideHeading": "Every game's areas",
+    "guideLead": "Each game's areas in story order, with the Pokémon you can meet there and each boss's level cap."
+  },
+  "game": {
+    "title": "{name} Nuzlocke Tracker",
+    "metaTitle": "{name} Nuzlocke Tracker: every area, encounter and level cap",
+    "metaDescription": "Every area of Pokémon {name} in story order, with the Pokémon you can meet there and each boss's level cap. Start a Nuzlocke run and track it as you play.",
+    "lead": "Every area in story order, with the Pokémon you can meet there and each boss's level cap.",
+    "start": "Start a run in {versions}",
+    "back": "Nuzlocke Tracker",
+    "story": "Areas in story order",
+    "other": "Other areas",
+    "otherLead": "Areas outside the story order: side areas and the post-game.",
+    "levelCap": "Level cap {n}",
+    "rate": "{n}%",
+    "level": "Lv {n}",
+    "levels": "Lv {min}–{max}",
+    "only": "{version} only",
+    "noEncounters": "No Pokémon to meet here.",
+    "sources": "Sources",
+    "sourcesLead": "Where this game's data comes from:",
+    "kinds": {
+      "wild": "Wild",
+      "gift": "Gift",
+      "static": "Static",
+      "trade": "Trade",
+      "egg": "Egg",
+      "fossil": "Fossil",
+      "roaming": "Roaming"
+    }
+  },
+  "shared": {
+    "title": "{name}: a {game} Nuzlocke",
+    "description": "A Nuzlocke run shared from PokéIQ's Nuzlocke Tracker: its team, graveyard, badges and every encounter.",
+    "ogAlt": "{name}, a {game} Nuzlocke: the team, badges and graveyard",
+    "broken": "That share link didn't open. It may have been cut short when it was copied."
+  },
+  "run": {
+    "title": "Your Nuzlocke run",
+    "description": "A Nuzlocke run saved in this browser."
+  }
+}
