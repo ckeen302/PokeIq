@@ -15,18 +15,23 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { NuzArea, NuzBoss, NuzEncounter, NuzGame, NuzStep } from "../../src/lib/nuzlocke/model";
-import { ALIASES, BULBA_PAGES, type Alias } from "./lib/aliases";
+import { ALIASES, API_ROW_ERRORS, BULBA_PAGES, DATA_ERRORS, NOT_A_PLACE, SEREBII_ERRORS, SUB_RULES, type Alias } from "./lib/aliases";
 import { placeKey, slug } from "./lib/areas";
 import { bulbaKind, bulbaPages, TERRAIN, type BulbaLoc } from "./lib/bulba-loc";
 import type { BulbaRow } from "./lib/bulba-catch";
+import { plain } from "./lib/bulbapedia";
 import { GAMES, GAME_BY_ID, type GameCfg } from "./lib/config";
 import { STATS } from "./lib/fetch";
 import { pokeapiRows } from "./lib/pokeapi-rows";
 import { parseLevels, parseRate, type Row } from "./lib/rows";
 import { locRows } from "./lib/serebii";
 import { serebiiToRows } from "./lib/serebii-rows";
-import { walkthrough, type Walkthrough, type WtParty } from "./lib/walkthrough";
+import { noteRow, serebiiGameRows } from "./lib/serebii8";
+import { summaryBosses, type SummaryBosses } from "./lib/summary-bosses";
+import { walkthrough, type Walkthrough, type WtEvent, type WtParty } from "./lib/walkthrough";
 import { BOSSES } from "./lib/bosses";
+import { addVec, famOf, sameVec, slotNames, vecBulba, vecOurs } from "./lib/rates";
+import { formFor, isLegendary, type FormHit } from "./lib/forms";
 
 const ROOT = path.resolve(__dirname, "../..");
 const OUT_DIR = path.join(ROOT, "src/data/nuzlocke");
@@ -67,6 +72,22 @@ export interface Audit {
   source: string;
 }
 
+/** A rate difference: PokéAPI's chances for a Pokémon and method in a place vs Bulbapedia's and Serebii's (summed over parts, per time slot). */
+export interface RateCheck {
+  area: string;
+  version: string;
+  species: number;
+  name: string;
+  method: string;
+  /** Per part (floor, area…) of the place, the chances by time slot. */
+  pokeapi?: number[][];
+  bulbapedia?: number[][];
+  serebii?: number[][];
+  /** replace: PokéAPI's rows give way to Serebii's, which match Bulbapedia; add: the method is missing from PokéAPI, Serebii's rows match Bulbapedia; add-bulbapedia: only Bulbapedia has it, its rows are used; keep: no two sources agree on another value, PokéAPI stands. */
+  action: "replace" | "add" | "add-bulbapedia" | "keep";
+  source: string;
+}
+
 /* ------------------------------------------------------------------------------------------------------- areas -- */
 
 interface Acc {
@@ -76,19 +97,35 @@ interface Acc {
   rows: Row[];
 }
 
+const REGION_NAMES = ["Kanto", "Johto", "Hoenn", "Sinnoh", "Unova", "Kalos", "Alola"];
+const SEREBII_URL: Record<string, string> = {
+  lgpe: "https://www.serebii.net/pokedex-sm/location/",
+  swsh: "https://www.serebii.net/pokedex-swsh/",
+  bdsp: "https://www.serebii.net/pokedex-swsh/",
+  la: "https://www.serebii.net/pokedex-swsh/",
+  sv: "https://www.serebii.net/pokedex-sv/",
+  za: "https://www.serebii.net/pokedex-sv/",
+};
+
 function aliasOf(game: string, place: string, sub?: string): Alias | undefined {
   const al = ALIASES[game] ?? {};
-  return (sub ? al[placeKey(`${place} ${sub}`)] : undefined) ?? al[placeKey(place)];
+  const hit = (sub ? al[placeKey(`${place} ${sub}`)] : undefined) ?? al[placeKey(place)];
+  if (hit) return hit;
+  // Serebii lists roamers under the region's name; PokéAPI under "Roaming <Region>".
+  if (REGION_NAMES.includes(place)) return { area: `Roaming ${place}`, why: "roaming Pokémon" };
+  return undefined;
 }
 
 /* ----------------------------------------------------------------------------------------------------- helpers -- */
 
 /** The area a walkthrough heading names: "Route 2 (West)", "One Island (Town)" and "Route 4" all name their place. */
-function keyOfHead(name: string, keys: { has(k: string): boolean }): string | undefined {
+function keyOfHead(name: string, keys: { has(k: string): boolean }, game?: string): string | undefined {
   const tries = [name, name.replace(/\s*\([^)]*\)\s*$/, ""), name.replace(/^(VS|Battle|Exploring) /i, "")];
   for (const t of tries) {
     const k = placeKey(t);
     if (keys.has(k)) return k;
+    const al = game ? ALIASES[game]?.[k] : undefined;
+    if (al && !al.sub && keys.has(placeKey(al.area))) return placeKey(al.area);
   }
   return undefined;
 }
@@ -121,6 +158,7 @@ interface Built {
   game: NuzGame;
   disagreements: Disagreement[];
   audit: Audit[];
+  rates: RateCheck[];
   report: Record<string, unknown>;
 }
 
@@ -152,13 +190,68 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
     sources.add("https://pokeapi.co/api/v2/location-area/");
   }
   if (cfg.serebiiLoc) {
-    ser = serebiiToRows((await locRows(cfg.serebiiLoc)).filter((r) => versions.includes(r.ver)));
+    ser = serebiiToRows((await locRows(cfg.serebiiLoc)).filter((r) => versions.includes(r.ver)), { alola: cfg.gen === 7 });
     sources.add(`https://www.serebii.net/${{ rby: "pokedex", gs: "pokedex-gs", rs: "pokedex-rs", dp: "pokedex-dp", bw: "pokedex-bw", xy: "pokedex-xy", sm: "pokedex-sm" }[cfg.serebiiLoc]}/location/`);
   }
+  // Let's Go and Sword/Shield: Serebii's detail tables are the cross-check of PokéAPI's data.
+  if (cfg.serebii && cfg.pokeapi) {
+    ser = (await serebiiGameRows(cfg.serebii, versions)).rows;
+    sources.add(SEREBII_URL[cfg.serebii]);
+  }
+  // BD/SP, Legends: Arceus, Scarlet/Violet, Legends: Z-A: Serebii is the source (PokéAPI has no encounters for them).
+  if (cfg.serebii && !cfg.pokeapi) {
+    const got = await serebiiGameRows(cfg.serebii, versions);
+    const errs = SEREBII_ERRORS[cfg.id] ?? [];
+    for (const r of got.rows) {
+      const err = errs.find(([place, sp]) => place === placeKey(r.place) && sp === r.species);
+      if (err) {
+        const n = `Serebii data error skipped: ${speciesName(r.species)} at ${r.place} (${err[2]})`;
+        if (!notes.includes(n)) notes.push(n);
+        continue;
+      }
+      if (!NOT_A_PLACE.has(placeKey(r.place))) add(r);
+    }
+    for (const n of got.notes) {
+      const r = await noteRow(n);
+      if (r && !NOT_A_PLACE.has(placeKey(r.place))) add(r);
+    }
+    sources.add(SEREBII_URL[cfg.serebii]);
+  }
+  const bad = DATA_ERRORS[cfg.id] ?? {};
+  const badRows = API_ROW_ERRORS[cfg.id] ?? [];
+  api = api.filter((r) => {
+    const why = bad[placeKey(r.place)] ?? badRows.find(([pl, sp]) => pl === placeKey(r.place) && sp === r.species)?.[2];
+    const n = `PokéAPI data error skipped: ${bad[placeKey(r.place)] ? r.place : `${speciesName(r.species)} at ${r.place}`} (${why})`;
+    if (why && !notes.includes(n)) notes.push(n);
+    return !why;
+  });
   for (const r of api) add(r);
+  // Serebii and Bulbapedia name species, not forms: a row they add takes the form PokéAPI has for that species in that
+  // place, else the only form PokéAPI has for it anywhere in the game (Alola's Rattata are all Alolan), else none.
+  const formsBy = (rows: Row[], species: number) => new Map(rows.filter((r) => r.src === "pokeapi" && r.species === species).map((r) => [r.form ?? "", { form: r.form, art: r.art }]));
+  const withForm = (r: Row, areaKey: string): Row => {
+    if (r.form) return r;
+    let f = formsBy(accs.get(areaKey)?.rows ?? [], r.species);
+    if (f.size !== 1) f = formsBy(api, r.species);
+    const only = f.size === 1 ? [...f.values()][0] : undefined;
+    return only?.form ? { ...r, form: only.form, art: only.art } : r;
+  };
   // Serebii rows are kept aside: they only enter through the cross-check below (or where PokéAPI has no such area).
+  // Serebii glues some parts to the place's name ("Lost Tower5F", "Route 210South"): a PokéAPI place's name followed by
+  // a capital or a digit is that place and part.
+  const apiNames = [...new Set(api.map((r) => r.place))].sort((a, b) => b.length - a.length);
+  for (const r of ser) {
+    if (accs.has(placeKey(r.place)) || aliasOf(cfg.id, r.place, r.sub)) continue;
+    const p = apiNames.find((n) => r.place.length > n.length && r.place.startsWith(n) && /^[A-Z0-9]/.test(r.place.slice(n.length)) && !(/\d$/.test(n) && /^\d/.test(r.place.slice(n.length))));
+    if (p) {
+      const part = r.place.slice(p.length).trim();
+      r.sub = r.sub ? `${part} ${r.sub}` : part;
+      r.place = p;
+    }
+  }
   const serByArea = new Map<string, Row[]>();
   for (const r of ser) {
+    if (NOT_A_PLACE.has(placeKey(r.place))) continue;
     const al = aliasOf(cfg.id, r.place, r.sub);
     const name = al?.area ?? r.place;
     const key = placeKey(name);
@@ -188,7 +281,7 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
     const apiRows = a?.rows.filter((r) => r.src === "pokeapi") ?? [];
     if (!apiRows.length) {
       // A place only Serebii has: its rows fill the gap (checked against Bulbapedia below like any Serebii row).
-      for (const r of srows) add(r);
+      for (const r of srows) add(withForm(r, key));
       if (srows.length) notes.push(`Serebii-only place: ${srows[0].place} (${new Set(srows.map((r) => r.species)).size} species)`);
       continue;
     }
@@ -199,7 +292,7 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
       for (const sp of new Set([...P, ...S])) {
         if (P.has(sp) === S.has(sp)) continue;
         const locs = bulba.get(key);
-        const hits = bulbaHits(locs, ver, sp).filter((h) => !bulbaKind(h.method));
+        const hits = bulbaHits(locs, ver, sp).filter((h) => !bulbaKind(h.method, h.tpl, h.div));
         const b: Disagreement["bulbapedia"] = !locs?.length ? "no page" : hits.length ? "yes" : "no";
         let resolution: Disagreement["resolution"];
         if (P.has(sp)) resolution = b === "yes" ? "keep" : b === "no" ? "drop" : "unresolved";
@@ -217,19 +310,172 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
           source: locs?.[0]?.url ?? "",
         });
         if (resolution === "drop") for (const r of apiRows) if (r.ver === ver && r.species === sp && comparable(r)) dropped.add(r);
-        if (resolution === "add") for (const r of srows) if (r.ver === ver && r.species === sp && comparable(r)) add(r);
+        if (resolution === "add") for (const r of srows) if (r.ver === ver && r.species === sp && comparable(r)) add(withForm(r, key));
       }
     }
   }
   for (const a of accs.values()) a.rows = a.rows.filter((r) => !dropped.has(r));
 
+  // ---- Let's Go: PokéAPI's rows have no chances (every one is 100) and its own method names ("Overworld (sky)"); for
+  // each Pokémon both sources list (after the cross-check), Serebii's detail rows stand in, with their methods, chances
+  // and levels. A Pokémon only PokéAPI (and Bulbapedia) lists keeps PokéAPI's row, without the chance.
+  if (cfg.serebiiRows) {
+    for (const [key, srows] of serByArea) {
+      const a = accs.get(key);
+      if (!a) continue;
+      for (const ver of versions) {
+        const S = new Set(srows.filter((r) => r.ver === ver && r.kind === "wild").map((r) => r.species));
+        const gone = new Set(a.rows.filter((r) => r.src === "pokeapi" && r.ver === ver && r.kind === "wild" && S.has(r.species)).map((r) => r.species));
+        if (!gone.size) continue;
+        const already = new Set(a.rows.filter((r) => r.src === "serebii" && r.ver === ver).map((r) => r.species));
+        // A condition PokéAPI gives a Pokémon there (one for all its rows) that Serebii doesn't: kept on Serebii's rows.
+        const pcond = new Map<number, string>();
+        for (const sp of gone) {
+          const cs = [...new Set(a.rows.filter((r) => r.src === "pokeapi" && r.ver === ver && r.kind === "wild" && r.species === sp).map((r) => r.cond ?? ""))];
+          if (cs.length === 1 && cs[0]) pcond.set(sp, cs[0]);
+        }
+        a.rows = a.rows.filter((r) => !(r.src === "pokeapi" && r.ver === ver && r.kind === "wild" && gone.has(r.species)));
+        for (const r of srows)
+          if (r.ver === ver && r.kind === "wild" && gone.has(r.species) && !already.has(r.species)) {
+            const c = pcond.get(r.species);
+            add(withForm(c && !(r.cond ?? "").includes(c) ? { ...r, cond: [c, r.cond].filter(Boolean).join("; ") } : r, key));
+          }
+      }
+    }
+    // PokéAPI's own rows left (a Pokémon only it and Bulbapedia list there): no chance, and Serebii's method words.
+    const LG: Record<string, [string, string?]> = { Overworld: ["Walking"], "Overworld (rare spawn)": ["Walking", "Rare Spawns"], "Overworld (water)": ["Water"], "Overworld (water, rare spawn)": ["Water", "Rare Spawns"], "Overworld (sky)": ["In the Sky"], "Overworld (sky, rare spawn)": ["In the Sky", "Rare Spawns"] };
+    for (const a of accs.values())
+      for (const r of a.rows) {
+        if (r.src !== "pokeapi") continue;
+        delete r.rate;
+        const to = LG[r.method];
+        if (!to) continue;
+        r.method = to[0];
+        if (to[1]) r.cond = [r.cond, to[1]].filter(Boolean).join("; ");
+      }
+    // The sky: Bulbapedia's tables head its rows "While riding a Flying Pokémon / After becoming Champion" (a post-game
+    // encounter); Serebii's "In the Sky" rows take that as their condition.
+    for (const a of accs.values()) {
+      const head = bulba.get(a.key)?.flatMap((l) => l.rows).find((h) => /^Sky$/i.test(h.method) && /^While riding/i.test(h.div ?? ""))?.div;
+      if (!head) continue;
+      const cond = head.replace(/\s+(After becoming)/, "; $1").replace(/; After/, "; after");
+      for (const r of a.rows) if (/^In the Sky/.test(r.method)) r.cond = [cond, r.cond].filter(Boolean).join("; ");
+    }
+  }
+
+  // ---- Bulbapedia's form labels ("Alolan Form", "Midnight Form") as PokéAPI forms
+  const bulbaForms = new Map<string, FormHit | null>();
+  for (const locs of bulba.values())
+    for (const l of locs)
+      for (const h of l.rows) if (h.form && !bulbaForms.has(`${h.species}|${h.form}`)) bulbaForms.set(`${h.species}|${h.form}`, await formFor(h.species, h.form));
+  const formOfBulba = (h: BulbaRow): FormHit => (h.form ? (bulbaForms.get(`${h.species}|${h.form}`) ?? {}) : {});
+
+  // ---- rates: PokéAPI's chances per Pokémon and method checked against Bulbapedia's; Serebii settles a difference.
+  // Compared as the set of chance vectors of its table slots (one per part and level range, its time slots summed),
+  // so sources that split a place into parts differently (one table for "2F-3F" vs one per floor) still compare equal.
+  const rateChecks: RateCheck[] = [];
+  const slots = slotNames(cfg.id);
+  const nSlots = Math.max(1, slots.length);
+  const specialDiv = /swarm|radar|slot|radio|insert|outbreak|special|contest|hoenn|sinnoh|sound|safari|block|daily|grotto|horde|ambush|sos|ally|island scan|bubbl|rustling|shadow|dust|rippl|shaking|flower|rough|berry/i;
+  const notPart = /^(surfing|surf|fishing|fish|old rod|good rod|super rod|headbutt|rock smash|grass|tall grass|cave|water|land)$/i;
+  for (const a of accs.values()) {
+    const locs = bulba.get(a.key);
+    const srows = serByArea.get(a.key) ?? [];
+    if (!locs?.length || !cfg.pokeapi || cfg.serebiiRows) continue;
+    for (const ver of versions) {
+      // key "species|family" -> part -> summed slot vector
+      const P = new Map<string, Map<string, number[]>>();
+      const B = new Map<string, Map<string, number[]>>();
+      const S = new Map<string, Map<string, number[]>>();
+      const put = (m: Map<string, Map<string, number[]>>, key: string, part: string, v: number[]) => {
+        if (!m.has(key)) m.set(key, new Map());
+        addVec(m.get(key)!, part, v);
+      };
+      const pRows = a.rows.filter((r) => r.src === "pokeapi" && r.ver === ver && r.kind === "wild");
+      for (const r of pRows) {
+        const v = vecOurs(r, slots);
+        const f = famOf(r.method);
+        if (v && f) put(P, `${r.species}|${f}`, `${r.sub ?? ""}|${r.levels}`, v);
+      }
+      for (const h of locs.flatMap((l) => l.rows)) {
+        if (!h.versions.includes(ver) || bulbaKind(h.method, h.tpl, h.div)) continue;
+        const f = famOf(h.method);
+        if (!f || specialDiv.test(h.div ?? "")) continue;
+        const v = vecBulba(h, nSlots);
+        const part = [...h.heads.filter((x) => !/^Generation /i.test(x)), ...(h.div && !notPart.test(h.div) ? [h.div] : []), ...(/^b?\d+f/i.test(h.method) ? [h.method] : [])].join(" / ");
+        if (v) put(B, `${h.species}|${f}`, `${part}|${parseLevels(h.levels)}`, v);
+      }
+      for (const r of srows.filter((x) => x.ver === ver && x.kind === "wild")) {
+        const v = vecOurs(r, slots);
+        const f = famOf(r.method);
+        if (v && f) put(S, `${r.species}|${f}`, `${r.sub ?? ""}|${r.levels}`, v);
+      }
+      const setOf = (m?: Map<string, number[]>) => (m ? [...m.values()] : undefined);
+      const total = (x: number[][]) => x.reduce((acc, v) => acc.map((a, i) => a + v[i]), Array(nSlots).fill(0) as number[]);
+      // Same table: the same set of slot vectors, or the same totals per time slot (one source splits a Pokémon's
+      // slots into rows by level or by time, another adds them up).
+      const sameSet = (x?: number[][], y?: number[][]) =>
+        !!x && !!y && ((x.every((v) => y.some((w) => sameVec(v, w))) && y.every((w) => x.some((v) => sameVec(v, w)))) || sameVec(total(x), total(y)));
+      for (const key of new Set([...P.keys(), ...B.keys()])) {
+        const [sp, fam] = key.split("|");
+        const species = Number(sp);
+        if (!Number.isInteger(species) || species < 1) continue;
+        const p = setOf(P.get(key));
+        const b = setOf(B.get(key));
+        if (!b || sameSet(p, b)) continue;
+        // Only rows without other conditions were compared; a key PokéAPI has under conditions only is not comparable.
+        if (!p && pRows.some((r) => r.species === species && famOf(r.method) === fam)) continue;
+        const sv = setOf(S.get(key));
+        // Neither PokéAPI nor Serebii has this method for it here (e.g. Red/Blue's Route 4 fishing, which the pret
+        // disassembly confirms): Bulbapedia's own rows fill the gap.
+        const onlyBulba = !p && !sv && !srows.some((x) => x.ver === ver && x.species === species && famOf(x.method) === fam);
+        const action: RateCheck["action"] = onlyBulba ? "add-bulbapedia" : sameSet(sv, b) ? (p ? "replace" : "add") : "keep";
+        rateChecks.push({ area: a.names[0].name, version: ver, species, name: speciesName(species), method: fam, ...(p ? { pokeapi: p } : {}), bulbapedia: b, ...(sv ? { serebii: sv } : {}), action, source: locs[0].url });
+        if (action === "keep") continue;
+        // Bulbapedia's rows also carry forms (Sun/Moon's Midday and Midnight Lycanroc): when they name one, they are
+        // the rows used (Serebii's name the species only).
+        const bRows = locs.flatMap((l) => l.rows.filter((h) => h.versions.includes(ver) && h.species === species && famOf(h.method) === fam && !specialDiv.test(h.div ?? "") && !bulbaKind(h.method, h.tpl, h.div)).map((h) => ({ h, url: l.url })));
+        const useBulba = action === "add-bulbapedia" || bRows.some(({ h }) => formOfBulba(h).form);
+        if (useBulba) {
+          a.rows = a.rows.filter((r) => !(r.src === "pokeapi" && r.ver === ver && r.kind === "wild" && r.species === species && famOf(r.method) === fam && vecOurs(r, slots)));
+          for (const { h, url } of bRows) a.rows.push(...bulbaToRows(h, ver, slots, a.names[0].name, url, formOfBulba(h)).map((r) => (r.form ? r : withForm(r, a.key))));
+          continue;
+        }
+        const repl = srows.filter((x) => x.ver === ver && x.kind === "wild" && x.species === species && famOf(x.method) === fam && vecOurs(x, slots));
+        a.rows = a.rows.filter((r) => !(r.src === "pokeapi" && r.ver === ver && r.kind === "wild" && r.species === species && famOf(r.method) === fam && vecOurs(r, slots)));
+        for (const r of repl) a.rows.push(withForm({ ...r }, a.key));
+      }
+    }
+  }
+
   // ---- starters: the walkthrough's "First partner" table rows, in the area its heading names
   const starters = new Set<string>();
   for (const c of wt.catches) {
     if (!cfg.bulba.includes(c.row.tpl) || !/first partner|starter/i.test(`${c.row.method} ${c.row.div ?? ""}`)) continue;
-    const k = [...c.row.heads].reverse().map((h) => keyOfHead(h, accs)).find(Boolean);
+    const k = [...c.row.heads].reverse().map((h) => keyOfHead(h, accs, cfg.id)).find(Boolean);
     if (k) starters.add(`${k}|${c.row.species}`);
     else notes.push(`walkthrough starter ${speciesName(c.row.species)} under [${c.row.heads.join(" > ")}] names no area`);
+  }
+  if (!starters.size) {
+    // No "First partner" table: the species the walkthrough's rival battles name as the player's choice
+    // ({{PlayerChoice}} captions), given in the earliest area (by the walkthrough's order) that gifts them.
+    const chosen = new Set(
+      wt.events
+        .filter((e): e is WtParty => e.type === "party" && /^Player choice: /.test(e.caption))
+        .map((e) => pokedex.find((p) => p.name === e.caption.replace(/^Player choice: /, "").trim())?.id)
+        .filter((x): x is number => !!x),
+    );
+    const firstSeen: string[] = [];
+    for (const e of wt.events) {
+      if (e.type !== "head") continue;
+      const k = [e.name, ...e.linked].map((n) => keyOfHead(n, accs, cfg.id)).find(Boolean);
+      if (k && !firstSeen.includes(k)) firstSeen.push(k);
+    }
+    for (const sp of chosen) {
+      const at = firstSeen.find((k) => accs.get(k)!.rows.some((r) => r.kind === "gift" && r.species === sp));
+      if (at) starters.add(`${at}|${sp}`);
+    }
+    if (chosen.size) notes.push(`starters from the walkthrough's player-choice captions: ${[...chosen].map(speciesName).join(", ")}`);
   }
   for (const a of accs.values())
     for (const r of a.rows) {
@@ -242,11 +488,11 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
   for (const a of accs.values()) {
     const locs = bulba.get(a.key);
     if (!locs?.length) continue;
-    const areaTerrains = new Set(locs.flatMap((l) => l.rows).filter((r) => !bulbaKind(r.method) && BULBA_FAMILY(r.method) === "walk").map((r) => TERRAIN[r.method.toLowerCase()]).filter(Boolean));
+    const areaTerrains = new Set(locs.flatMap((l) => l.rows).filter((r) => !bulbaKind(r.method, r.tpl, r.div) && BULBA_FAMILY(r.method) === "walk").map((r) => TERRAIN[r.method.toLowerCase()]).filter(Boolean));
     for (const r of a.rows) {
       if (r.kind !== "wild" || r.method !== "Walking") continue;
       // The terrain of Bulbapedia's matching row: same rate and levels first (the same table slot), then any of its rows.
-      const walk = bulbaHits(locs, r.ver, r.species).filter((h) => !bulbaKind(h.method) && BULBA_FAMILY(h.method) === "walk" && TERRAIN[h.method.toLowerCase()]);
+      const walk = bulbaHits(locs, r.ver, r.species).filter((h) => !bulbaKind(h.method, h.tpl, h.div) && BULBA_FAMILY(h.method) === "walk" && TERRAIN[h.method.toLowerCase()]);
       const lv = (h: BulbaRow) => JSON.stringify(parseLevels(h.levels));
       const tiers = [
         walk.filter((h) => parseRate(h.rate) === r.rate && lv(h) === JSON.stringify(r.levels)),
@@ -267,7 +513,7 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
     // Non-wild encounters on Bulbapedia's table that neither PokéAPI nor Serebii has here.
     for (const l of locs)
       for (const h of l.rows) {
-        const kind = bulbaKind(h.method);
+        const kind = bulbaKind(h.method, h.tpl, h.div);
         if (!kind) continue;
         for (const ver of h.versions) {
           if (!versions.includes(ver)) continue;
@@ -288,6 +534,107 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
         }
       }
   }
+
+  // ---- One-time encounters that Serebii files as "Wild" (where Serebii is the source): a Pokémon Bulbapedia's page has
+  // only as a one-time encounter there (a fixed "Only One" row, or a Special encounters box), never on its wild table.
+  // A Pokémon Bulbapedia never lists as wild anywhere in the game but shows as a one-time encounter somewhere counts too
+  // (Serebii files Snacksworth's Zapdos under Poco Path; Bulbapedia under South Province (Area One), around it).
+  const allLocs = [...bulba.values()].flat();
+  const onceRow = (l: (typeof allLocs)[number], ver: string, sp: number) => l.rows.some((h) => h.tpl === "entry9/special" && h.versions.includes(ver) && h.species === sp && /^Only One$/i.test(h.rate ?? "")) || l.boxes.includes(sp);
+  const wildIn = (ls: typeof allLocs, ver: string, sp: number) => ls.some((l) => l.rows.some((h) => h.versions.includes(ver) && h.species === sp && !bulbaKind(h.method, h.tpl, h.div)));
+  if (cfg.serebii && !cfg.pokeapi)
+    for (const a of accs.values()) {
+      const locs = bulba.get(a.key) ?? [];
+      const wildHere = (ver: string, sp: number) => wildIn(locs, ver, sp);
+      // Elsewhere only for a Legendary or Mythical Pokémon (PokéAPI's flag): a common one Bulbapedia shows once somewhere
+      // may simply be missing from the wild table of a place it has no page for.
+      const legendary = new Set<number>();
+      for (const r of a.rows) if (r.src === "serebii" && r.kind === "wild" && (await isLegendary(r.species))) legendary.add(r.species);
+      const once = (ver: string, sp: number) => locs.find((l) => onceRow(l, ver, sp)) ?? (!legendary.has(sp) || wildIn(allLocs, ver, sp) ? undefined : allLocs.find((l) => onceRow(l, ver, sp)));
+      const drop = new Set<Row>();
+      for (const r of a.rows) {
+        if (r.src !== "serebii" || r.kind !== "wild" || wildHere(r.ver, r.species)) continue;
+        const l = once(r.ver, r.species);
+        if (!l) continue;
+        if (a.rows.some((x) => x !== r && x.ver === r.ver && x.species === r.species && x.kind === "static")) drop.add(r);
+        else {
+          r.kind = "static";
+          r.method = "Static";
+        }
+        notes.push(`one-time encounter, not wild: ${speciesName(r.species)} at ${a.names[0].name} (${r.ver}) — Serebii "Wild", ${l.url} ${drop.has(r) ? "(its static row kept)" : "(made static)"}`);
+      }
+      a.rows = a.rows.filter((x) => !drop.has(x));
+    }
+
+  // ---- Serebii's form-less rows (its "Fixed:" lines name no form): the form Bulbapedia's table gives that Pokémon
+  // there, when it gives one form for it (Paldea's fixed Tauros is a Combat Breed).
+  if (cfg.serebii && !cfg.pokeapi)
+    for (const a of accs.values()) {
+      const locs = bulba.get(a.key);
+      if (!locs?.length) continue;
+      for (const r of a.rows) {
+        if (r.src !== "serebii" || r.form) continue;
+        const hs = locs.flatMap((l) => l.rows).filter((h) => h.versions.includes(r.ver) && h.species === r.species && !bulbaKind(h.method, h.tpl, h.div) === (r.kind === "wild"));
+        const labels = [...new Set(hs.map((h) => h.form ?? ""))];
+        if (labels.length !== 1 || !labels[0]) continue;
+        const f = await formFor(r.species, labels[0]);
+        if (!f?.form) continue;
+        r.form = f.form;
+        r.art = f.art;
+        notes.push(`form from Bulbapedia's table: ${speciesName(r.species)} at ${a.names[0].name} (${r.ver}, ${r.kind}) is ${f.form} — ${locs[0].url}`);
+      }
+    }
+
+  // ---- Levels Serebii doesn't give (Legends: Arceus, Scarlet/Violet): the range of Bulbapedia's wild rows for that
+  // Pokémon there (its regular rows: not alpha, mass-outbreak or distortion rows).
+  if (cfg.serebii && !cfg.pokeapi)
+    for (const a of accs.values()) {
+      const locs = bulba.get(a.key);
+      if (!locs?.length) continue;
+      for (const r of a.rows) {
+        if (r.levels || r.kind !== "wild" || /outbreak|distortion/i.test(`${r.method} ${r.sub ?? ""} ${r.cond ?? ""}`)) continue;
+        const lv = locs
+          .flatMap((l) => l.rows)
+          .filter((h) => h.versions.includes(r.ver) && h.species === r.species && !bulbaKind(h.method, h.tpl, h.div) && !/outbreak|distortion|alpha/i.test(h.div ?? ""))
+          .map((h) => parseLevels(h.levels))
+          .filter((x): x is [number, number] => !!x);
+        if (!lv.length) continue;
+        r.levels = [Math.min(...lv.map((x) => x[0])), Math.max(...lv.map((x) => x[1]))];
+      }
+    }
+
+  // ---- Wild Pokémon Bulbapedia's table has at a place and Serebii doesn't (where Serebii is the source; neither lists
+  // every Pokémon of Scarlet/Violet's or Legends: Arceus's big areas, and each row either gives is a sourced encounter):
+  // Bulbapedia's rows are added, with its levels and its note as the condition. Rows of a special table (mass outbreaks,
+  // space-time distortions, alphas, Unown, missions, swarms, radar, honey) are left out. Scarlet/Violet's and the
+  // Legends games' numbers are spawn weights, not chances: no rate. (Serebii files Poco Path's wild Pokémon under South
+  // Province (Area One), so Poco Path's come from here.)
+  const SPECIAL_TABLE = /outbreak|distortion|unown|alpha|only during|mission|request|swarm|radar|honey|special/i;
+  if (cfg.serebii && !cfg.pokeapi)
+    for (const a of accs.values()) {
+      const locs = bulba.get(a.key);
+      if (!locs?.length) continue;
+      // A DLC's place (every Serebii row there says "The Teal Mask"): Bulbapedia's rows there need that DLC too.
+      const ser = a.rows.filter((r) => r.src === "serebii");
+      const dlc = ["The Teal Mask", "The Indigo Disk", "Mega Dimension"].find((d) => ser.length && ser.every((r) => (r.cond ?? "").split("; ").includes(d)));
+      for (const ver of versions) {
+        const have = new Set(a.rows.filter((r) => r.ver === ver).map((r) => r.species));
+        const add: Row[] = [];
+        for (const l of locs)
+          for (const h of l.rows) {
+            if (!h.versions.includes(ver) || have.has(h.species) || bulbaKind(h.method, h.tpl, h.div) || SPECIAL_TABLE.test(`${h.div ?? ""} ${h.heads.join(" ")}`)) continue;
+            const form = h.form ? await formFor(h.species, h.form) : {};
+            const levels = parseLevels(h.levels);
+            const weights = cfg.gen === 9 || /^entry(la|za)$/.test(h.tpl);
+            const rate = weights ? undefined : parseRate(h.rate);
+            const note = [h.named.note ? plain(h.named.note) : "", dlc ?? ""].filter(Boolean).join("; ") || undefined;
+            add.push({ src: "bulbapedia", ver, place: a.names[0].name, species: h.species, ...(form?.form ? { form: form.form, art: form.art } : {}), kind: "wild", method: weights ? "Wild" : h.method, ...(rate !== undefined ? { rate } : {}), ...(levels ? { levels } : {}), ...(note ? { cond: note } : {}), url: l.url });
+          }
+        if (!add.length) continue;
+        a.rows.push(...add);
+        notes.push(`Bulbapedia-only wild (${ver}) at ${a.names[0].name}: ${[...new Set(add.map((r) => speciesName(r.species)))].join(", ")} — ${[...new Set(add.map((r) => r.url))].join(", ")}`);
+      }
+    }
 
   // ---- Bulbapedia audit of every wild row: drop what its table marks unavailable in every version; list what it lacks
   const audit: Audit[] = [];
@@ -311,6 +658,14 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
     a.rows = a.rows.filter((x) => !drop.has(x));
   }
 
+  // ---- parts the place itself names (SUB_RULES)
+  for (const rule of SUB_RULES.filter((x) => x.games.includes(cfg.id)))
+    for (const r of accs.get(rule.area)?.rows ?? []) if (!r.sub && rule.method.test(r.method)) r.sub = rule.sub;
+
+  // ---- every row names a real species (a source row we couldn't read is an error, not data)
+  for (const a of accs.values())
+    for (const r of a.rows) if (!Number.isInteger(r.species) || r.species < 1 || r.species > 1025) throw new Error(`${cfg.id}: unreadable species ${r.species} at ${r.place} (${r.url})`);
+
   // ---- areas
   const areas = new Map<string, NuzArea>();
   const usedIds = new Set<string>();
@@ -325,7 +680,11 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
   }
 
   // ---- story order and bosses
-  const { steps, extra, bossReport, unplaced } = order(cfg, wt, areas);
+  const sb = await summaryBosses(cfg.id);
+  for (const u of sb.urls) sources.add(u);
+  notes.push(...sb.notes);
+  const { steps, extra, bossReport, unplaced, fromSummary } = order(cfg, wt, areas, sb);
+  if (fromSummary.length) notes.push(`placed by the walkthrough index's part summaries: ${fromSummary.join("; ")}`);
   const game: NuzGame = {
     id: cfg.id,
     name: cfg.name,
@@ -340,6 +699,7 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
     game,
     disagreements,
     audit,
+    rates: rateChecks,
     report: {
       areas: areas.size,
       encounters: [...areas.values()].reduce((n, a) => n + a.encounters.length, 0),
@@ -348,11 +708,36 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
       disagreements: disagreements.length,
       unresolved: disagreements.filter((d) => d.resolution === "unresolved").length,
       auditDropped: audit.filter((x) => x.action === "drop").length,
+      rateReplaced: rateChecks.filter((x) => x.action === "replace").length,
+      rateAdded: rateChecks.filter((x) => x.action === "add").length,
+      rateAddedBulbapedia: rateChecks.filter((x) => x.action === "add-bulbapedia").length,
+      rateKept: rateChecks.filter((x) => x.action === "keep").length,
       auditNotListed: audit.filter((x) => x.action === "keep").length,
       noBulbapediaPage: [...accs.values()].filter((a) => !bulba.get(a.key)?.length).map((a) => displayName(a)),
       notes,
     },
   };
+}
+
+/** Bulbapedia catch rows -> our Rows (one per distinct chance across the time/season slots). */
+function bulbaToRows(h: BulbaRow, ver: string, names: string[], place: string, url: string, form: FormHit = {}): Row[] {
+  const n = Math.max(1, names.length);
+  const fam = famOf(h.method)!;
+  const method = fam === "walk" ? (TERRAIN[h.method.toLowerCase()] ?? "Walking") : fam === "surf" ? "Surf" : fam === "old rod" ? "Old Rod" : fam === "good rod" ? "Good Rod" : "Super Rod";
+  // The part: a floor given as the method ("1F") or the table's sub-heading.
+  const sub = /^b?\d+f/i.test(h.method) ? h.method : h.heads.filter((x) => !/^Generation /i.test(x)).pop();
+  const v = vecBulba(h, n) ?? [];
+  const levels = parseLevels(h.levels);
+  const by = new Map<number, number[]>();
+  v.forEach((x, i) => {
+    if (x > 0) by.set(x, [...(by.get(x) ?? []), i]);
+  });
+  const out: Row[] = [];
+  for (const [rate, idx] of by) {
+    const cond = n > 1 && idx.length < n ? idx.map((i) => names[i]).join(", ") : undefined;
+    out.push({ src: "bulbapedia", ver, place, ...(sub ? { sub } : {}), species: h.species, ...(form.form ? { form: form.form, art: form.art } : {}), kind: "wild", method, rate, ...(levels ? { levels } : {}), ...(cond ? { cond } : {}), url });
+  }
+  return out;
 }
 
 function accsHasElsewhere(accs: Map<string, Acc>, ver: string, species: number, kind: string): boolean {
@@ -370,6 +755,10 @@ function displayName(a: Acc): string {
 function encountersOf(rows: Row[], versions: string[]): NuzEncounter[] {
   // 1. per version: identical rows across sub-areas fold; a part is named unless the encounter is in every part of the area.
   const parts = new Set(rows.map((r) => r.sub ?? ""));
+  // A roamer's grass and water rows are one roaming Pokémon: one row, with whatever condition PokéAPI gives either.
+  const roamCond = new Map<string, string>();
+  for (const r of rows) if (r.kind === "roaming" && r.cond) roamCond.set(`${r.ver}|${r.species}`, r.cond);
+  rows = rows.map((r) => (r.kind === "roaming" ? { ...r, method: "Roaming", ...(roamCond.get(`${r.ver}|${r.species}`) ? { cond: roamCond.get(`${r.ver}|${r.species}`) } : {}) } : r));
   const bySig = new Map<string, { r: Row; subs: Set<string>; vers: Set<string> }>();
   for (const r of rows) {
     const sig = JSON.stringify([r.ver, r.species, r.form, r.kind, r.method, r.rate, r.levels, r.cond]);
@@ -404,7 +793,41 @@ function encountersOf(rows: Row[], versions: string[]): NuzEncounter[] {
 
 /* ------------------------------------------------------------------------------------------- order and bosses -- */
 
-function order(cfg: GameCfg, wt: Walkthrough, areas: Map<string, NuzArea>) {
+/**
+ * A walkthrough index's summary of a part -> its items, in order: "Victory Road, Part 7: Cortondo, South Province (Area
+ * Six), Alfornada, Optional: Alfornada Cavern" -> Cortondo, South Province (Area Six), Alfornada, Alfornada Cavern.
+ * "X (A & B)" and "X (A, B)" name several places: X (A) or A X.
+ */
+function summaryItems(summary: string): string[][] {
+  // "Routes 17 & 18", "Routes 132, 133, and 134": one item per route.
+  summary = summary.replace(/\bRoutes (\d+(?:, \d+)*,? (?:and|&) \d+)\b/g, (_, ns: string) => ns.split(/,? (?:and|&) |, /).map((n) => `Route ${n}`).join(", "));
+  const items: string[] = [];
+  let depth = 0;
+  let cur = "";
+  for (const ch of summary) {
+    if (ch === "(") depth++;
+    if (ch === ")") depth--;
+    if (ch === "," && depth === 0) {
+      items.push(cur);
+      cur = "";
+    } else cur += ch;
+  }
+  items.push(cur);
+  return items
+    // "Lake of the Moone / Lake of the Sunne", "Naranja Academy/Uva Academy": one place per version, each its own item.
+    .flatMap((x) => x.split(/\s*\/\s*/))
+    .map((x) => x.trim().replace(/^(?:Part \d+:\s*)?(?:Optional:\s*)?/, "").trim())
+    .filter(Boolean)
+    .map((x) => {
+      const m = x.match(/^(.+?) \(([^()]*(?:,|&)[^()]*)\)$/);
+      if (!m) return [x];
+      return m[2].split(/\s*(?:,|&)\s*/).map((a) => `${m[1]} (${a})|${a} ${m[1]}`);
+    })
+    .flat()
+    .map((x) => x.split("|"));
+}
+
+function order(cfg: GameCfg, wt: Walkthrough, areas: Map<string, NuzArea>, sb: SummaryBosses) {
   const steps: NuzStep[] = [];
   const placed = new Set<string>();
   const bossCfg = BOSSES[cfg.id];
@@ -412,23 +835,69 @@ function order(cfg: GameCfg, wt: Walkthrough, areas: Map<string, NuzArea>) {
   const parties = wt.events.filter((e): e is WtParty => e.type === "party");
   const picked = bossCfg.pick(parties);
   const pickedSet = new Map(picked.map((b) => [b.first, b]));
-  const bossReport: { name: string; cap?: number; capByVersion?: Record<string, number>; note?: string }[] = [];
-  for (const e of wt.events) {
-    if (e.type === "head") {
-      const k = keyOfHead(e.name, areas);
-      if (k && !placed.has(k)) {
-        placed.add(k);
-        steps.push({ type: "area", area: areas.get(k)! });
+  const bossNote = new Map<NuzBoss, string | undefined>();
+  const fromSummary: string[] = [];
+  const headKey = (e: WtEvent) => (e.type === "head" ? [e.name, ...e.linked].map((n) => keyOfHead(n, areas, cfg.id)).find(Boolean) : undefined);
+  // Places some part's headings reach: those headings place them (a summary may name a place the story only passes,
+  // e.g. on Mr. Briney's boat); the summaries place the rest.
+  const byHeading = new Set(wt.events.map(headKey).filter(Boolean) as string[]);
+  for (const part of wt.parts) {
+    const start = steps.length;
+    // 1. The part's page: places as its headings reach them, bosses as its parties meet them.
+    for (const e of wt.events) {
+      if (e.part !== part.idx) continue;
+      if (e.type === "head") {
+        const k = headKey(e);
+        if (k && !placed.has(k)) {
+          placed.add(k);
+          steps.push({ type: "area", area: areas.get(k)! });
+        }
+      } else {
+        const b = pickedSet.get(e);
+        if (!b) continue;
+        steps.push({ type: "boss", boss: b.boss });
+        bossNote.set(b.boss, b.note);
       }
-    } else {
-      const b = pickedSet.get(e);
-      if (!b) continue;
-      steps.push({ type: "boss", boss: b.boss });
-      bossReport.push({ name: b.boss.name, ...(b.boss.cap !== undefined ? { cap: b.boss.cap } : {}), ...(b.boss.capByVersion ? { capByVersion: b.boss.capByVersion } : {}), ...(b.note ? { note: b.note } : {}) });
+    }
+    // 2. The index's summary of the part: a place (or boss) its page doesn't reach (or has no page yet) goes in the
+    // summary's order, after the summary item before it that this part has already placed.
+    let at = start;
+    const indexOf = (pred: (s: NuzStep) => boolean) => steps.findIndex((s, i) => i >= start && pred(s));
+    for (const alts of summaryItems(part.summary)) {
+      const bosses = sb.byItem.get(alts[0]);
+      if (bosses) {
+        for (const boss of bosses) {
+          const i = indexOf((s) => s.type === "boss" && s.boss.name === boss.name);
+          if (i >= 0) {
+            at = Math.max(at, i + 1);
+            continue;
+          }
+          steps.splice(at++, 0, { type: "boss", boss });
+          bossNote.set(boss, `placed by the walkthrough index's summary of ${part.title}`);
+        }
+        continue;
+      }
+      const k = alts.map((n) => keyOfHead(n, areas, cfg.id)).find(Boolean);
+      if (!k) continue;
+      if (placed.has(k)) {
+        const i = indexOf((s) => s.type === "area" && s.area === areas.get(k));
+        if (i >= 0) at = Math.max(at, i + 1);
+        continue;
+      }
+      if (byHeading.has(k)) continue;
+      placed.add(k);
+      steps.splice(at++, 0, { type: "area", area: areas.get(k)! });
+      fromSummary.push(`${areas.get(k)!.name} (${part.title})`);
     }
   }
   const extra = [...areas.entries()].filter(([k]) => !placed.has(k)).map(([, a]) => a);
-  return { steps, extra, bossReport, unplaced: extra.map((a) => a.name) };
+  const bossReport = steps.flatMap((s) => {
+    if (s.type !== "boss") return [];
+    const b = s.boss;
+    const note = bossNote.get(b);
+    return [{ name: b.name, ...(b.cap !== undefined ? { cap: b.cap } : {}), ...(b.capByVersion ? { capByVersion: b.capByVersion } : {}), ...(note ? { note } : {}) }];
+  });
+  return { steps, extra, bossReport, unplaced: extra.map((a) => a.name), fromSummary };
 }
 
 /* -------------------------------------------------------------------------------------------------------- main -- */
@@ -437,7 +906,7 @@ async function main() {
   const args = process.argv.slice(2);
   const ids = args.includes("--all") ? GAMES.map((g) => g.id) : args.filter((a, i) => args[i - 1] === "--game");
   if (!ids.length) throw new Error("usage: build.ts --game <id> [--game <id>…] | --all");
-  const log: Record<string, { disagreements: Disagreement[]; bulbapedia: Audit[] }> = fs.existsSync(CROSSCHECK) ? JSON.parse(fs.readFileSync(CROSSCHECK, "utf8")).games ?? {} : {};
+  const log: Record<string, { disagreements: Disagreement[]; bulbapedia: Audit[]; rates: RateCheck[] }> = fs.existsSync(CROSSCHECK) ? JSON.parse(fs.readFileSync(CROSSCHECK, "utf8")).games ?? {} : {};
   fs.mkdirSync(OUT_DIR, { recursive: true });
   fs.mkdirSync(REPORT_DIR, { recursive: true });
   for (const id of ids) {
@@ -446,11 +915,11 @@ async function main() {
     const t = Date.now();
     const b = await buildGame(cfg);
     fs.writeFileSync(path.join(OUT_DIR, `${id}.json`), JSON.stringify(b.game));
-    log[id] = { disagreements: b.disagreements, bulbapedia: b.audit };
+    log[id] = { disagreements: b.disagreements, bulbapedia: b.audit, rates: b.rates };
     fs.writeFileSync(path.join(REPORT_DIR, `${id}.json`), JSON.stringify(b.report, null, 1));
-    const r = b.report as { areas: number; encounters: number; bosses: unknown[]; disagreements: number; unresolved: number; auditDropped: number; auditNotListed: number; unplaced: string[] };
+    const r = b.report as { areas: number; encounters: number; bosses: unknown[]; disagreements: number; unresolved: number; auditDropped: number; auditNotListed: number; rateReplaced: number; rateAdded: number; rateAddedBulbapedia: number; rateKept: number; unplaced: string[] };
     console.log(
-      `${id}: ${r.areas} areas, ${r.encounters} encounters, ${r.bosses.length} bosses, ${r.disagreements} disagreements (${r.unresolved} unresolved), Bulbapedia audit: ${r.auditDropped} dropped / ${r.auditNotListed} not listed, ${r.unplaced.length} in extra — ${((Date.now() - t) / 1000).toFixed(1)}s`,
+      `${id}: ${r.areas} areas, ${r.encounters} encounters, ${r.bosses.length} bosses, ${r.disagreements} disagreements (${r.unresolved} unresolved), Bulbapedia audit: ${r.auditDropped} dropped / ${r.auditNotListed} not listed, rates: ${r.rateReplaced} replaced / ${r.rateAdded} added / ${r.rateAddedBulbapedia} Bulbapedia-only / ${r.rateKept} kept, ${r.unplaced.length} in extra — ${((Date.now() - t) / 1000).toFixed(1)}s`,
     );
   }
   const ordered = Object.fromEntries(GAMES.filter((g) => log[g.id]).map((g) => [g.id, log[g.id]]));
@@ -459,7 +928,7 @@ async function main() {
     JSON.stringify(
       {
         about:
-          "Per game. disagreements: PokéAPI vs Serebii species disagreements per area and version, each settled by the game's table on Bulbapedia's location page (source): keep/drop = a PokéAPI row Bulbapedia lists / doesn't list; add/skip = a Serebii-only row Bulbapedia lists / doesn't list; unresolved = no Bulbapedia table, PokéAPI's data stands. bulbapedia: every other wild row Bulbapedia's table doesn't list for that version: drop = Bulbapedia lists the Pokémon there for no version of the game (e.g. an unreleased event table), keep = not on its table (both other sources list it). Written by scripts/nuzlocke/build.ts.",
+          "Per game. disagreements: PokéAPI vs Serebii species disagreements per area and version, each settled by the game's table on Bulbapedia's location page (source): keep/drop = a PokéAPI row Bulbapedia lists / doesn't list; add/skip = a Serebii-only row Bulbapedia lists / doesn't list; unresolved = no Bulbapedia table, PokéAPI's data stands. bulbapedia: every other wild row Bulbapedia's table doesn't list for that version: drop = Bulbapedia lists the Pokémon there for no version of the game (e.g. an unreleased event table), keep = not on its table (both other sources list it). rates: per Pokémon and method family, PokéAPI's chances (per time slot, summed over the place's parts) that differ from Bulbapedia's table: replace = Serebii's rows (which match Bulbapedia) are used instead; add = PokéAPI lacks the method there and Serebii's matching rows are added; add-bulbapedia = only Bulbapedia has it, its rows are added; keep = no two sources agree, PokéAPI's stand. Written by scripts/nuzlocke/build.ts.",
         games: ordered,
       },
       null,

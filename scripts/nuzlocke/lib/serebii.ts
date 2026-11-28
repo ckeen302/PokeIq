@@ -49,13 +49,41 @@ export async function lgpeRows(): Promise<SerebiiRow[]> {
   return per.flat();
 }
 
+/**
+ * The overview parser drops a label written inline before a line's places ("Paldean Form: <a>…</a>, <a>…</a>",
+ * "Combat Breed: …", "Titan: …"); it only reads a label on a line of its own. Each place of such a line carries the
+ * label through the parser ("Alfornada Cavern⟨Paldean Form⟩"), and comes out with it as a note ("label:Paldean Form").
+ */
+const MARK = /⟨([^⟩]+)⟩/;
+function markInline(html: string): string {
+  const start = html.indexOf("<h2>Locations</h2>");
+  if (start < 0) return html;
+  const end = html.indexOf("</table>", start);
+  const table = html.slice(start, end).replace(/(<td class="fooinfo"[^>]*>)([\s\S]*?)(<\/td>)/g, (_, a: string, info: string, b: string) => {
+    const segs = info.split(/(<br\s*\/?>)/i).map((seg) => {
+      const m = seg.match(/^\s*([^:<>]{2,60}?):\s*(?=<a\b)/);
+      if (!m || /^(Fixed|Max Raid Battles|Tera Raid Battles)$/.test(m[1].trim())) return seg;
+      const label = m[1].trim();
+      return seg.replace(/(<a\b[^>]*>)([\s\S]*?)(<\/a>)/g, (_x, o: string, t: string, c: string) => `${o}${t}⟨${label}⟩${c}`);
+    });
+    return a + segs.join("") + b;
+  });
+  return html.slice(0, start) + table + html.slice(end);
+}
+function unmark<T extends { loc?: string; base?: string; n?: string }>(r: T): T {
+  const m = r.loc?.match(MARK);
+  if (!m) return r;
+  const clean = (x?: string) => x?.replace(MARK, "").trim();
+  return { ...r, loc: clean(r.loc), base: clean(r.base), n: [`label:${m[1]}`, r.n].filter(Boolean).join(" · ") };
+}
+
 /** Sword/Shield Pokédex pages (species 1-905): overview rows (incl. Legends: Arceus and DLC notes) and detail rows. */
 export async function swshRows(): Promise<{ overview: SerebiiRow[]; detail: SerebiiRow[] }> {
   const ids = Array.from({ length: 905 }, (_, i) => i + 1);
   const per = await pool(ids, 4, async (id) => {
     const ov = await page(`pokedex-swsh/${nnn(id)}.shtml`, `https://www.serebii.net/pokedex-swsh/${nnn(id)}.shtml`);
     if (!ov) return { overview: [], detail: [] };
-    const overview = parseOverview(ov.html).map((r) => ({ ...r, species: id, url: ov.url }));
+    const overview = parseOverview(markInline(ov.html)).map((r) => ({ ...unmark(r), species: id, url: ov.url }));
     const locUrl = ov.url.replace(/\/?(index\.shtml)?$/, "/") + "locations.shtml";
     const loc = await page(`pokedex-swsh/${nnn(id)}-locations.shtml`, locUrl);
     const detail = loc
@@ -71,7 +99,7 @@ export async function svRows(): Promise<SerebiiRow[]> {
   const ids = Array.from({ length: 1025 }, (_, i) => i + 1);
   const per = await pool(ids, 4, async (id) => {
     const p = await page(`pokedex-sv/${nnn(id)}.shtml`, `https://www.serebii.net/pokedex-sv/${nnn(id)}.shtml`);
-    return p ? parseOverview(p.html).map((r) => ({ ...r, species: id, url: p.url })) : [];
+    return p ? parseOverview(markInline(p.html)).map((r) => ({ ...unmark(r), species: id, url: p.url })) : [];
   });
   return per.flat();
 }

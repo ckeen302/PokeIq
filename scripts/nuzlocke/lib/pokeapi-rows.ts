@@ -5,6 +5,7 @@
  * (Gen 2/4) or season (Gen 5); slots with equal totals share one row whose condition names them.
  */
 import type { EncounterKind } from "../../../src/lib/nuzlocke/model";
+import { API_NAMES, PLACEHOLDER } from "./aliases";
 import { accent, cleanPlace, subArea } from "./areas";
 import { getJson, pool } from "./fetch";
 import { enName, idOf, loadAll, type ApiLocation, type ApiLocationArea } from "./pokeapi";
@@ -71,8 +72,9 @@ export const API_METHOD: Record<string, { kind: EncounterKind; label: string } |
   wanderer: { kind: "wild", label: "Wanderer" },
   "wanderer-water": { kind: "wild", label: "Wanderer (water)" },
   "chase-water": { kind: "wild", label: "Chase (water)" },
-  "max-raid": { kind: "wild", label: "Max Raid Battle" },
-  "dynamax-adventure": { kind: "static", label: "Dynamax Adventure" },
+  // Raids are den tables, not a place's encounters (like Scarlet/Violet's Tera Raids): left out.
+  "max-raid": null,
+  "dynamax-adventure": null,
   // Event distributions and the GameCube games: not encounters in these games.
   "colosseum-bonus-disc-jpn": null,
   "colosseum-bonus-disc-us": null,
@@ -82,6 +84,10 @@ export const API_METHOD: Record<string, { kind: EncounterKind; label: string } |
   "snag-rematch": null,
   pokespot: null,
 };
+
+/** Conditions that swap a few slots of a table (the rest of the table stays as it is). */
+const SPECIAL = /^(swarm-yes|radar-on|slot2-(?!none)|radio-(?!off))/;
+const specialOf = new Map<Row, string>();
 
 /** Conditions that describe the ordinary case. */
 const PLAIN_COND = new Set(["swarm-no", "radar-off", "radio-off", "slot2-none", "bug-catching-contest-no", "johto-safari-blocks-inactive", "backlot-not-mentioned", "great-marsh-daily-slot-none", "weather-normal"]);
@@ -105,6 +111,8 @@ async function conditionNames(): Promise<Map<string, string>> {
     const n = v?.names.find((x) => x.language.name === "en")?.name;
     if (n && n !== "?") m.set(r.name, accent(n.replace(/’/g, "'")));
   });
+  // PokéAPI gives these (Let's Go's sky rare spawns) no English name: their names say it.
+  for (const bird of ["articuno", "zapdos", "moltres"]) if (!m.has(`other-caught-${bird}`)) m.set(`other-caught-${bird}`, `After catching ${bird[0].toUpperCase()}${bird.slice(1)}`);
   condNames = m;
   return m;
 }
@@ -146,7 +154,11 @@ export async function pokeapiRows(vmap: Record<string, string>): Promise<{ rows:
       skipped.push(`location-area ${a.name}: its location has no English name`);
       continue;
     }
-    const place = cleanPlace(locEn);
+    if (PLACEHOLDER.test(locEn)) {
+      skipped.push(`location-area ${a.name}: placeholder location "${locEn}"`);
+      continue;
+    }
+    const place = API_NAMES[loc.name]?.name ?? cleanPlace(locEn);
     const sub = subArea(place, enName(a.names), a.name, loc.name);
     const url = `https://pokeapi.co/api/v2/location-area/${a.id}/`;
     for (const pe of a.pokemon_encounters) {
@@ -203,11 +215,21 @@ export async function pokeapiRows(vmap: Record<string, string>): Promise<{ rows:
           for (const [rate, idx] of byRate) {
             const when = g.slotKind === "none" || idx.length === nSlots ? "" : idx.map((i) => labels[i]).join(", ");
             const cond = [when, condText].filter(Boolean).join("; ");
-            rows.push({ ...base, ...(rated && rate <= 100 ? { rate } : {}), ...(cond ? { cond } : {}) });
+            const row: Row = { ...base, ...(rated && rate <= 100 ? { rate } : {}), ...(cond ? { cond } : {}) };
+            const special = g.conds.filter((c) => SPECIAL.test(c));
+            if (special.length) specialOf.set(row, special.join(","));
+            rows.push(row);
           }
         }
       }
     }
   }
-  return { rows, skipped };
+  // A swarm, the Poké Radar, a dual-slot game or the radio swaps a few slots of the place's table: PokéAPI repeats the
+  // whole table under that condition. Only the Pokémon that need it are kept with it; the rest are already listed.
+  // (A special row stays when it raises the Pokémon's chance: Snubbull's swarm on Route 38.)
+  const plainKey = (r: Row) => JSON.stringify([r.place, r.sub, r.ver, r.species, r.form, r.method]);
+  const plainRate = new Map<string, number>();
+  for (const r of rows) if (!specialOf.has(r)) plainRate.set(plainKey(r), Math.max(plainRate.get(plainKey(r)) ?? 0, r.rate ?? 0));
+  const kept = rows.filter((r) => !specialOf.has(r) || !plainRate.has(plainKey(r)) || (r.rate ?? 0) > plainRate.get(plainKey(r))!);
+  return { rows: kept, skipped };
 }

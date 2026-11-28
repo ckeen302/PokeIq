@@ -1,0 +1,30 @@
+{
+ "about": "Forms that can be met in a game but have no art yet in public/sizes/art/256 (form name -> PokéAPI pokemon id). The encounters stay in the data; npm run verify:nuzlocke prints these as warnings and fails on any other missing art, or on an entry here that gets art or stops being used.",
+ "forms": {
+  "wormadam-sandy": 10004,
+  "wormadam-trash": 10005,
+  "rotom-heat": 10008,
+  "rotom-wash": 10009,
+  "rotom-frost": 10010,
+  "rotom-fan": 10011,
+  "rotom-mow": 10012,
+  "basculin-blue-striped": 10016,
+  "keldeo-resolute": 10024,
+  "meowstic-female": 10025,
+  "pumpkaboo-small": 10027,
+  "pumpkaboo-large": 10028,
+  "pumpkaboo-super": 10029,
+  "oricorio-pom-pom": 10123,
+  "oricorio-pau": 10124,
+  "oricorio-sensu": 10125,
+  "lycanroc-midnight": 10126,
+  "rockruff-own-tempo": 10151,
+  "zygarde-10": 10181,
+  "toxtricity-low-key": 10184,
+  "indeedee-female": 10186,
+  "oinkologne-female": 10254,
+  "squawkabilly-blue-plumage": 10260,
+  "squawkabilly-yellow-plumage": 10261,
+  "squawkabilly-white-plumage": 10262
+ }
+}

@@ -64,19 +64,31 @@ const EXTRA: Record<string, { test: (p: WtParty) => boolean; title: (p: WtParty)
   "black-white": [
     { test: (p) => p.cls === "Team Plasma" && /^(N|Ghetsis)$/.test(p.name) && p.path.some((h) => /Throne Room/.test(h)), title: (p) => p.name, why: "N and Ghetsis at N's Castle end the main story (Alder is fought after it)" },
   ],
+  "scarlet-violet": [
+    { test: (p) => !p.standalone && /^(Giacomo|Mela|Atticus|Ortega|Eri)$/.test(p.name) && (p.cls === "" || /Team Star|Squad Boss/i.test(p.cls)), title: (p) => `Team Star ${p.name}`, why: "Team Star's squad bosses (the walkthrough's major fights)" },
+    { test: (p) => !!p.standalone && (/^VS Titan /.test(p.path[p.path.length - 1] ?? "") || p.path.some((h) => /Titan/.test(h))), title: (p) => `Titan ${p.name}`, why: "the Titan Pokémon (the walkthrough's major fights; its level is the Titan's, from the walkthrough's Pokémon box or text)" },
+  ],
+  "legends-arceus": [
+    { test: (p) => !!p.standalone && p.path.some((h) => /^Frenzied /.test(h)), title: (p) => `Noble ${p.name}`, why: "the frenzied Nobles (Kleavor, Lilligant, Arcanine, Electrode, Avalugg): Legends: Arceus's boss battles, its level from the walkthrough's Pokémon box" },
+  ],
+  "sword-shield": [
+    { test: (p) => !p.standalone && p.cls === "Gym Leader" && !p.gym && p.part < 21 && p.path.some((h) => /^Wyndon Stadium$/.test(h)), title: (p) => `Champion Cup ${p.name}`, why: "the Champion Cup Finals at Wyndon Stadium (Bede's challenge, then Nessa, Bea or Allister, and Raihan) stand between the eight badges and Leon, as an Elite Four would" },
+  ],
   "sun-moon": [
     { test: (p) => p.cls === "Captain" && p.part < 27, title: (p) => `Captain ${p.name}`, why: "Alola's Trial Captains" },
     { test: (p) => p.cls === "Island Kahuna" && p.part < 27, title: (p) => `Kahuna ${p.name}`, why: "Alola's Kahunas (grand trials)" },
-    { test: (p) => p.cls === "Pokémon Professor" && p.name === "Kukui" && p.path.some((h) => /Champion/.test(h)), title: () => "Champion title match: Kukui", why: "Kukui is the first Champion battle" },
+    { test: (p) => p.cls === "Pokémon Professor" && p.name === "Kukui" && p.path.some((h) => /Champion/.test(h)), title: () => "Champion battle: Kukui", why: "Kukui is Sun and Moon's Champion battle" },
   ],
   "ultra-sun-ultra-moon": [
     { test: (p) => p.cls === "Captain" && p.part < 29, title: (p) => `Captain ${p.name}`, why: "Alola's Trial Captains" },
     { test: (p) => p.cls === "Island Kahuna" && p.part < 29, title: (p) => `Kahuna ${p.name}`, why: "Alola's Kahunas (grand trials)" },
+    { test: (p) => p.name === "Hau" && p.part < 29 && p.path.some((h) => /Champion's Chamber/i.test(h)), title: () => "Champion battle: Hau", why: "Hau is Ultra Sun and Ultra Moon's Champion battle" },
   ],
 };
 
 function kindOf(p: WtParty, game: string): Kind | null {
   if (EXTRA[game]?.some((x) => x.test(p))) return "extra";
+  if (p.standalone) return null;
   if (/^Champion$/i.test(p.cls) || (p.cls === "" || p.cls === "Elite Four") && p.path.some((h) => /^(The )?Champion\b/i.test(h))) return "champion";
   if (/^Elite Four$/i.test(p.cls) || (p.cls === "" && p.path.some((h) => /^(The )?Elite Four$/i.test(h)))) return "e4";
   if (p.gym && p.gym.badge && !/^\?+$/.test(p.name) && (p.cls === "" || /^(Gym )?Leaders?$/i.test(p.cls))) return "leader";
@@ -104,6 +116,8 @@ function generic(game: string): BossCfg {
       const groups: { kind: Kind; key: string; parties: WtParty[] }[] = [];
       for (const p of parties) {
         const kind = kindOf(p, game);
+        // A lone Pokémon box is a boss only by a game's own rule (a Titan); otherwise it is not a battle at all.
+        if (p.standalone && kind !== "extra") continue;
         if (!kind || !p.mons.length) {
           cur = null;
           continue;
@@ -122,7 +136,12 @@ function generic(game: string): BossCfg {
         const first = g.parties[0];
         const names = [...new Set(g.parties.map((p) => p.name))];
         let title: string;
-        if (g.kind === "leader") title = names.length > 1 ? names.join(" / ") : names[0];
+        // One leader per version (BW's Drayden/Iris): name each with its version.
+        const verName = (n: string) => {
+          const vs = [...new Set(g.parties.filter((p) => p.name === n).flatMap((p) => versionsOf(p, game)))];
+          return vs.length < all.length ? `${n} (${vs.map((v) => GAME_BY_ID.get(game)!.versions.find((x) => x.id === v)!.name).join(", ")})` : n;
+        };
+        if (g.kind === "leader") title = names.length > 1 ? names.map(verName).join(" / ") : names[0];
         else if (g.kind === "e4") title = `Elite Four ${names.join(" / ")}`;
         else if (g.kind === "champion") title = `Champion ${names.join(" / ")}`;
         else title = EXTRA[game]!.find((x) => x.test(first))!.title(first);
@@ -134,8 +153,10 @@ function generic(game: string): BossCfg {
         const caps = [...new Set(Object.values(per))];
         const cap = Math.max(...Object.values(per));
         const boss: NuzBoss = { name: title, ...(g.kind === "leader" && first.gym?.badge ? { badge: first.gym.badge } : {}), cap };
+        const inVers = all.filter((v) => per[v] !== undefined);
+        if (inVers.length < all.length) boss.versions = inVers;
         const notes: string[] = [];
-        if (caps.length > 1 || Object.keys(per).length < all.length) {
+        if (caps.length > 1) {
           boss.capByVersion = Object.fromEntries(all.filter((v) => per[v] !== undefined).map((v) => [v, per[v]]));
           notes.push(`by version: ${JSON.stringify(boss.capByVersion)}`);
         }
