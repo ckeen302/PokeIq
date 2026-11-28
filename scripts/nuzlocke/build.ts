@@ -25,6 +25,7 @@ import { pages, pageUrl, plain } from "./lib/bulbapedia";
 import { catchRows } from "./lib/bulba-catch";
 import { areaPages, areaRows, availability, confirmed, partners } from "./lib/bulba-primary";
 import { categorySweep } from "./lib/bulba-sweep";
+import { mergeStoryBosses, storyBosses } from "./lib/story-bosses";
 import { AMBUSH, BATTLE_ONLY_FORMS, BOSS_BEFORE, NOTES, ROW_FIXES, SPREAD, STATICS } from "./lib/fixes";
 import { GAMES, GAME_BY_ID, type GameCfg } from "./lib/config";
 import { STATS } from "./lib/fetch";
@@ -739,7 +740,7 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
         const f = famOf(h.method);
         if (!f || specialDiv.test(h.div ?? "") || NOT_RANDOM_TABLE.test(h.heads.join(" | "))) continue;
         const v = vecBulba(h, nSlots);
-        const part = [...h.heads.filter((x) => !/^Generation /i.test(x)), ...(h.div && !notPart.test(h.div) ? [h.div] : []), ...(/^b?\d+f/i.test(h.method) ? [h.method] : [])].join(" / ");
+        const part = [...h.heads.filter((x) => !GAME_HEAD.test(x)), ...(h.div && !notPart.test(h.div) ? [h.div] : []), ...(/^b?\d+f/i.test(h.method) ? [h.method] : [])].join(" / ");
         if (v) put(B, `${h.species}|${f}`, `${part}|${parseLevels(h.levels)}`, v);
       }
       for (const r of srows.filter((x) => x.ver === ver && x.kind === "wild")) {
@@ -828,7 +829,7 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
         const levels = parseLevels(h.levels);
         const rate = /\//.test(h.rate ?? "") ? undefined : parseRate(h.rate);
         const form = formOfBulba(h);
-        const sub = h.heads.filter((x) => !/^Generation /i.test(x) && !NOT_RANDOM_TABLE.test(x) && !/^(Hidden|Visible) encounters$/i.test(x)).pop();
+        const sub = h.heads.filter((x) => !GAME_HEAD.test(x) && !NOT_RANDOM_TABLE.test(x) && !/^(Hidden|Visible) encounters$/i.test(x)).pop();
         // The divider's "After becoming Champion" is the Hall of Fame condition; the weather columns (rain=, fog=…) are
         // the weathers it appears in, one row each, worded as PokéAPI's rows (clear weather is a row without one).
         const story = /after becoming (the )?champion|after entering the hall of fame/i.test(h.div ?? "") ? "Enter the Hall of Fame" : undefined;
@@ -1007,7 +1008,11 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
       if (!locs?.length) continue;
       for (const r of a.rows) {
         if (r.form) continue;
-        const hs = locs.flatMap((l) => l.rows).filter((h) => h.versions.includes(r.ver) && h.species === r.species && !bulbaKind(h.method, h.tpl, h.div) === (r.kind === "wild"));
+        // Its form from Bulbapedia's rows met the same way (wild or not), else from any of its rows there (a static
+        // PokéAPI files for the Lv 50 Gastrodon Bulbapedia lists as a wanderer).
+        const mine = locs.flatMap((l) => l.rows).filter((h) => h.versions.includes(r.ver) && h.species === r.species);
+        const same = mine.filter((h) => !bulbaKind(h.method, h.tpl, h.div) === (r.kind === "wild"));
+        const hs = same.length ? same : mine;
         let labels = [...new Set(hs.map((h) => h.form ?? ""))];
         if (labels.length > 1) labels = [...new Set(hs.filter((h) => famOf(h.method) === famOf(r.method) && levelsOverlap(parseLevels(h.levels), r.levels)).map((h) => h.form ?? ""))];
         if (labels.length !== 1 || !labels[0]) continue;
@@ -1264,6 +1269,13 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
     fixesLog.push({ area: m.area, action: `${m.boss} before it`, why: m.why, source: m.source });
     sources.add(m.source);
   }
+  // ---- story bosses (scripts/nuzlocke/story-bosses.json: rivals, villains, totems…), by their anchors
+  const story = storyBosses()[cfg.id] ?? [];
+  const merged = mergeStoryBosses(cfg.id, steps, story);
+  steps.splice(0, steps.length, ...merged.steps);
+  for (const e of story) sources.add(e.source);
+  if (merged.problems.length) notes.push(`STORY BOSSES LEFT OUT: ${merged.problems.join("; ")}`);
+  if (story.length) notes.push(`story bosses: ${merged.placed} of ${story.length} placed`);
   const game: NuzGame = {
     id: cfg.id,
     name: cfg.name,
@@ -1311,6 +1323,9 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
  * check compares (PokéAPI's "walk"), so they stay out of it (PokéAPI's overworld rows have them).
  */
 const NOT_RANDOM_TABLE = /(^|\| )(Visible encounters|Wanderers?|Curry encounters)( \||$)/i;
+
+/** A heading that names a generation or a game ("Generation IV", "Pokémon Ultra Sun and Ultra Moon"), not a part. */
+const GAME_HEAD = /^(Generation [IVX]+|Pokémon (Red|Blue|Green|Yellow|Gold|Silver|Crystal|Ruby|Sapphire|Emerald|FireRed|LeafGreen|Diamond|Pearl|Platinum|HeartGold|SoulSilver|Black|White|X|Y|Omega Ruby|Alpha Sapphire|Sun|Moon|Ultra Sun|Ultra Moon|Let's Go|Sword|Shield|Brilliant Diamond|Shining Pearl|Legends|Scarlet|Violet)\b.*)$/i;
 
 /** Bulbapedia's Sword/Shield weather columns -> PokéAPI's wording of that weather (clear weather: no condition). */
 const WEATHER: [string, string | undefined][] = [
@@ -1400,7 +1415,7 @@ function bulbaToRows(h: BulbaRow, ver: string, names: string[], place: string, u
   const method = fam === "walk" ? (TERRAIN[h.method.toLowerCase()] ?? "Walking") : fam === "surf" ? "Surf" : fam === "old rod" ? "Old Rod" : fam === "good rod" ? "Good Rod" : "Super Rod";
   // The part: a floor given as the method ("1F") or the table's sub-heading; on a page that is a part of the area
   // (Mirage Mountain (southeast of Route 129)), that part first.
-  const own = /^b?\d+f/i.test(h.method) ? h.method : h.heads.filter((x) => !/^Generation /i.test(x) && !/^(Hidden|Visible) encounters$/i.test(x)).pop();
+  const own = /^b?\d+f/i.test(h.method) ? h.method : h.heads.filter((x) => !GAME_HEAD.test(x) && !/^(Hidden|Visible) encounters$/i.test(x)).pop();
   const sub = [pagePart, own].filter(Boolean).join(" ") || undefined;
   const v = vecBulba(h, n) ?? [];
   const levels = parseLevels(h.levels);

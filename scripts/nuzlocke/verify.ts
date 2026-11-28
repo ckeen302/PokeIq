@@ -16,7 +16,10 @@
  * another method; time-of-day, season or weather conditions in a game without them; "before" and "after" the Hall of
  * Fame at once. And any coverage the build lost (crosscheck.json coverageLosses: a place's Pokémon, version or water/land
  * way of meeting it that the merged sources had and the output dropped without a logged reason). And spelling: curly
- * quotes, or two names of a game (areas, parts, conditions) that differ only by case, spacing or punctuation.
+ * quotes, or two names of a game (areas, parts, conditions) that differ only by case, spacing or punctuation. And the
+ * story bosses (scripts/nuzlocke/story-bosses.json): an unknown anchor, a missing source, a badge (a story boss never
+ * changes the badge count), one that isn't in the steps right after its anchor or not in the file's order; and a boss
+ * step that repeats the one before it exactly.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -25,6 +28,7 @@ import { NUZ_GAMES } from "../../src/lib/nuzlocke/games";
 import { VERSIONS } from "../../src/lib/pokemon/encounter-types";
 import { GAMES, HELD_BACK } from "./lib/config";
 import { COSMETIC_FORMS } from "./lib/forms";
+import { storyBosses, storyProblems } from "./lib/story-bosses";
 
 const ROOT = path.resolve(__dirname, "../..");
 const DATA = path.join(ROOT, "src/data/nuzlocke");
@@ -35,6 +39,8 @@ const MAX_SPECIES = 1025;
 
 const errors: string[] = [];
 const fail = (where: string, msg: string) => errors.push(`${where}: ${msg}`);
+const STORY = storyBosses();
+for (const id of Object.keys(STORY)) if (!GAMES.some((c) => c.id === id)) fail("story-bosses.json", `unknown game ${id}`);
 const hasArt = (id: number) => fs.existsSync(path.join(ART, `${id}.webp`));
 /** A cosmetic form's picture (East Sea Shellos is 422-east.webp): the tracker keeps these, PokéAPI having no id for them. */
 const cosmeticArt = (species: number, form: string) => path.join(ROOT, "public/tools/nuzlocke/forms", `${species}-${form.slice(form.indexOf("-") + 1)}.webp`);
@@ -137,6 +143,36 @@ for (const info of [...NUZ_GAMES, ...held]) {
   if (!Array.isArray(g.sources) || !g.sources.length) fail(at, "empty sources");
   for (const s of g.sources ?? []) if (!/^https:\/\//.test(s)) fail(at, `source is not a URL: ${s}`);
   if (!Array.isArray(g.steps) || !Array.isArray(g.extra)) fail(at, "steps/extra missing");
+
+  // Story bosses (scripts/nuzlocke/story-bosses.json): every anchor exists, every entry has its source and no badge
+  // (a story boss never changes the badge count), and each one is in the steps at its anchor.
+  const story = STORY[info.id] ?? [];
+  const storyNames = new Set(story.map((e) => e.boss?.name));
+  const baseSteps = g.steps.filter((s) => !(s.type === "boss" && storyNames.has(s.boss.name)));
+  for (const p of storyProblems(info.id, story, baseSteps)) fail("story-bosses.json", p.msg);
+  const badges = (steps: typeof g.steps) => steps.filter((s) => s.type === "boss" && s.boss.badge).length;
+  if (badges(g.steps) !== badges(baseSteps)) fail(at, "story bosses change the badge count");
+  // In the steps in the file's order, and no boss twice in a row.
+  let lastAt = -1;
+  for (const e of story) {
+    const i = g.steps.findIndex((s, k) => k > lastAt && s.type === "boss" && s.boss.name === e.boss.name && s.boss.cap === e.boss.cap);
+    if (i < 0) {
+      fail(at, `story boss ${e.boss.name} is not in the steps after the one before it in the file (rebuild, or its anchor is out of story order)`);
+      continue;
+    }
+    lastAt = i;
+    // Its anchor comes before it, with only bosses between them.
+    let j = i - 1;
+    while (j >= 0 && g.steps[j].type === "boss" && !(e.afterBoss && (g.steps[j] as { boss: { name: string } }).boss.name === e.afterBoss)) j--;
+    const anchor = g.steps[j];
+    const ok = anchor && (e.after ? anchor.type === "area" && anchor.area.id === e.after : anchor.type === "boss" && anchor.boss.name === e.afterBoss);
+    if (!ok) fail(at, `story boss ${e.boss.name} is not right after its anchor ${e.after ?? e.afterBoss}`);
+  }
+
+  g.steps.forEach((s, k) => {
+    const prev = g.steps[k - 1];
+    if (k && s.type === "boss" && prev.type === "boss" && JSON.stringify(s.boss) === JSON.stringify(prev.boss)) fail(at, `boss ${s.boss.name} twice in a row`);
+  });
 
   const areas: NuzArea[] = [...g.steps.filter((s) => s.type === "area").map((s) => (s as { area: NuzArea }).area), ...g.extra];
   const ids = new Set<string>();

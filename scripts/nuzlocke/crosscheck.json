@@ -52027,10 +52027,7 @@
      ],
      "bulbapedia": [
       [
-       90
-      ],
-      [
-       30
+       120
       ]
      ],
      "serebii": [
@@ -52096,10 +52093,7 @@
      ],
      "bulbapedia": [
       [
-       90
-      ],
-      [
-       30
+       120
       ]
      ],
      "serebii": [
@@ -68445,6 +68439,39 @@
     {
      "area": "Route 1",
      "version": "ultra-sun",
+     "species": 52,
+     "name": "Meowth",
+     "pokeapi": false,
+     "serebii": true,
+     "bulbapedia": "no",
+     "resolution": "skip",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Alola_Route_1"
+    },
+    {
+     "area": "Route 1",
+     "version": "ultra-sun",
+     "species": 81,
+     "name": "Magnemite",
+     "pokeapi": false,
+     "serebii": true,
+     "bulbapedia": "no",
+     "resolution": "skip",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Alola_Route_1"
+    },
+    {
+     "area": "Route 1",
+     "version": "ultra-sun",
+     "species": 88,
+     "name": "Grimer",
+     "pokeapi": false,
+     "serebii": true,
+     "bulbapedia": "no",
+     "resolution": "skip",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Alola_Route_1"
+    },
+    {
+     "area": "Route 1",
+     "version": "ultra-sun",
      "species": 143,
      "name": "Snorlax",
      "pokeapi": false,
@@ -68466,6 +68493,50 @@
     },
     {
      "area": "Route 1",
+     "version": "ultra-sun",
+     "species": 570,
+     "name": "Zorua",
+     "pokeapi": false,
+     "serebii": true,
+     "bulbapedia": "no",
+     "resolution": "skip",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Alola_Route_1"
+    },
+    {
+     "area": "Route 1",
+     "version": "ultra-moon",
+     "species": 52,
+     "name": "Meowth",
+     "pokeapi": false,
+     "serebii": true,
+     "bulbapedia": "no",
+     "resolution": "skip",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Alola_Route_1"
+    },
+    {
+     "area": "Route 1",
+     "version": "ultra-moon",
+     "species": 81,
+     "name": "Magnemite",
+     "pokeapi": false,
+     "serebii": true,
+     "bulbapedia": "no",
+     "resolution": "skip",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Alola_Route_1"
+    },
+    {
+     "area": "Route 1",
+     "version": "ultra-moon",
+     "species": 88,
+     "name": "Grimer",
+     "pokeapi": false,
+     "serebii": true,
+     "bulbapedia": "no",
+     "resolution": "skip",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Alola_Route_1"
+    },
+    {
+     "area": "Route 1",
      "version": "ultra-moon",
      "species": 143,
      "name": "Snorlax",
@@ -68480,6 +68551,17 @@
      "version": "ultra-moon",
      "species": 185,
      "name": "Sudowoodo",
+     "pokeapi": false,
+     "serebii": true,
+     "bulbapedia": "no",
+     "resolution": "skip",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Alola_Route_1"
+    },
+    {
+     "area": "Route 1",
+     "version": "ultra-moon",
+     "species": 570,
+     "name": "Zorua",
      "pokeapi": false,
      "serebii": true,
      "bulbapedia": "no",
@@ -69647,102 +69729,6 @@
      "version": "ultra-moon",
      "species": 440,
      "name": "Happiny",
-     "sources": [
-      "pokeapi"
-     ],
-     "bulbapedia": "not listed",
-     "action": "keep",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Alola_Route_1"
-    },
-    {
-     "area": "Route 1",
-     "version": "ultra-sun",
-     "species": 81,
-     "name": "Magnemite",
-     "sources": [
-      "pokeapi"
-     ],
-     "bulbapedia": "not listed",
-     "action": "keep",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Alola_Route_1"
-    },
-    {
-     "area": "Route 1",
-     "version": "ultra-moon",
-     "species": 81,
-     "name": "Magnemite",
-     "sources": [
-      "pokeapi"
-     ],
-     "bulbapedia": "not listed",
-     "action": "keep",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Alola_Route_1"
-    },
-    {
-     "area": "Route 1",
-     "version": "ultra-sun",
-     "species": 570,
-     "name": "Zorua",
-     "sources": [
-      "pokeapi"
-     ],
-     "bulbapedia": "not listed",
-     "action": "keep",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Alola_Route_1"
-    },
-    {
-     "area": "Route 1",
-     "version": "ultra-moon",
-     "species": 570,
-     "name": "Zorua",
-     "sources": [
-      "pokeapi"
-     ],
-     "bulbapedia": "not listed",
-     "action": "keep",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Alola_Route_1"
-    },
-    {
-     "area": "Route 1",
-     "version": "ultra-sun",
-     "species": 52,
-     "name": "Meowth",
-     "sources": [
-      "pokeapi"
-     ],
-     "bulbapedia": "not listed",
-     "action": "keep",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Alola_Route_1"
-    },
-    {
-     "area": "Route 1",
-     "version": "ultra-moon",
-     "species": 52,
-     "name": "Meowth",
-     "sources": [
-      "pokeapi"
-     ],
-     "bulbapedia": "not listed",
-     "action": "keep",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Alola_Route_1"
-    },
-    {
-     "area": "Route 1",
-     "version": "ultra-sun",
-     "species": 88,
-     "name": "Grimer",
-     "sources": [
-      "pokeapi"
-     ],
-     "bulbapedia": "not listed",
-     "action": "keep",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Alola_Route_1"
-    },
-    {
-     "area": "Route 1",
-     "version": "ultra-moon",
-     "species": 88,
-     "name": "Grimer",
      "sources": [
       "pokeapi"
      ],
@@ -78935,126 +78921,6 @@
      ],
      "action": "replace",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Vast_Poni_Canyon"
-    },
-    {
-     "area": "Trainers’ School",
-     "version": "ultra-sun",
-     "species": 52,
-     "name": "Meowth",
-     "method": "walk",
-     "bulbapedia": [
-      [
-       50,
-       50
-      ]
-     ],
-     "action": "add-bulbapedia",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Trainers'_School_(Alola)"
-    },
-    {
-     "area": "Trainers’ School",
-     "version": "ultra-sun",
-     "species": 81,
-     "name": "Magnemite",
-     "method": "walk",
-     "bulbapedia": [
-      [
-       10,
-       10
-      ]
-     ],
-     "action": "add-bulbapedia",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Trainers'_School_(Alola)"
-    },
-    {
-     "area": "Trainers’ School",
-     "version": "ultra-sun",
-     "species": 88,
-     "name": "Grimer",
-     "method": "walk",
-     "bulbapedia": [
-      [
-       10,
-       10
-      ]
-     ],
-     "action": "add-bulbapedia",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Trainers'_School_(Alola)"
-    },
-    {
-     "area": "Trainers’ School",
-     "version": "ultra-sun",
-     "species": 570,
-     "name": "Zorua",
-     "method": "walk",
-     "bulbapedia": [
-      [
-       30,
-       30
-      ]
-     ],
-     "action": "add-bulbapedia",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Trainers'_School_(Alola)"
-    },
-    {
-     "area": "Trainers’ School",
-     "version": "ultra-moon",
-     "species": 52,
-     "name": "Meowth",
-     "method": "walk",
-     "bulbapedia": [
-      [
-       50,
-       50
-      ]
-     ],
-     "action": "add-bulbapedia",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Trainers'_School_(Alola)"
-    },
-    {
-     "area": "Trainers’ School",
-     "version": "ultra-moon",
-     "species": 81,
-     "name": "Magnemite",
-     "method": "walk",
-     "bulbapedia": [
-      [
-       10,
-       10
-      ]
-     ],
-     "action": "add-bulbapedia",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Trainers'_School_(Alola)"
-    },
-    {
-     "area": "Trainers’ School",
-     "version": "ultra-moon",
-     "species": 88,
-     "name": "Grimer",
-     "method": "walk",
-     "bulbapedia": [
-      [
-       10,
-       10
-      ]
-     ],
-     "action": "add-bulbapedia",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Trainers'_School_(Alola)"
-    },
-    {
-     "area": "Trainers’ School",
-     "version": "ultra-moon",
-     "species": 570,
-     "name": "Zorua",
-     "method": "walk",
-     "bulbapedia": [
-      [
-       30,
-       30
-      ]
-     ],
-     "action": "add-bulbapedia",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Trainers'_School_(Alola)"
     }
    ],
    "fixes": [

@@ -42,6 +42,7 @@ const ALOLA7: Record<string, Alias> = {
     rowsOnly: true,
     why: "the Pokémon PokéAPI and Serebii file under Thrifty Megamart are the abandoned site's on Ula'ula Island, north of Route 14 (Bulbapedia's Thrifty Megamart (Abandoned Site) page), not the working store on Akala's Royal Avenue, which the walkthrough's Akala part names",
   },
+  "route 1 trainers school": { area: "Trainers' School", why: "PokéAPI files the Trainers' School's Pokémon as a part of Route 1; the school is a place of its own (Bulbapedia's Trainers' School (Alola) page; Serebii names it too)" },
   "trial 6 abandoned megamart": { area: "Thrifty Megamart (Abandoned Site)", why: "the walkthrough index's name for it (\"Tapu Village, Aether House, Route 14, Trial 6: Abandoned Megamart\")" },
 };
 
