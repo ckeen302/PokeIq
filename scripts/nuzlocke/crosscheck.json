@@ -112416,6 +112416,36 @@
     }
    ],
    "rates": []
+  },
+  "legends-za": {
+   "disagreements": [],
+   "bulbapedia": [
+    {
+     "area": "Wild Zone 15",
+     "version": "legends-za",
+     "species": 709,
+     "name": "Trevenant",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Wild_Zone_15"
+    },
+    {
+     "area": "Wild Zone 15",
+     "version": "legends-za",
+     "species": 714,
+     "name": "Noibat",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Wild_Zone_15"
+    }
+   ],
+   "rates": []
   }
  }
 }

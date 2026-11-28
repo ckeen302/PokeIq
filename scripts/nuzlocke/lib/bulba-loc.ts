@@ -85,8 +85,14 @@ export async function bulbaPages(
 }
 
 /** Map a Bulbapedia row's method to a kind (undefined = wild). Scarlet/Violet's special-encounter table is all fixed encounters. */
-export function bulbaKind(method: string, tpl?: string): "gift" | "static" | "trade" | "egg" | "fossil" | "roaming" | undefined {
+export function bulbaKind(method: string, tpl?: string, div?: string): "gift" | "static" | "trade" | "egg" | "fossil" | "roaming" | undefined {
   if (tpl === "entry9/special") return "static";
+  // The Legends games' tables have no method column: the divider says it ("Gift Pokémon", "Restored from a Fossil").
+  if ((tpl === "entryla" || tpl === "entryza") && div) {
+    if (/\bGift Pokémon\b/i.test(div)) return "gift";
+    if (/\bFossil\b/i.test(div)) return "fossil";
+    if (/\bTrade\b/i.test(div)) return "trade";
+  }
   const m = method.trim();
   if (/^(Gift|Starter|Prize|Purchase|Buy)$/i.test(m)) return "gift";
   if (/^Egg$/i.test(m)) return "egg";

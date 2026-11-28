@@ -62,6 +62,15 @@ export const ALIASES: Record<string, Record<string, Alias>> = {
       { area: z, sub: `Space-time Distortion in ${z}`, why: "a space-time distortion is an event in its zone" },
     ]),
   ),
+  // Serebii names a few sectors of Lumiose's districts as places of their own (one Pokémon each); the walkthrough's
+  // "Wild Zones 18" heading is Wild Zone 18.
+  "legends-za": {
+    "rouge district rouge sector 2": { area: "Rouge District", sub: "Rouge Sector 2", why: "a sector of Rouge District" },
+    "magenta district magenta sector 8": { area: "Magenta District", sub: "Magenta Sector 8", why: "a sector of Magenta District" },
+    "rouge district rouge sector 1": { area: "Rouge District", sub: "Rouge Sector 1", why: "a sector of Rouge District" },
+    "rouge sector 1": { area: "Rouge District", sub: "Rouge Sector 1", why: "a sector of Rouge District" },
+    "wild zones 18": { area: "Wild Zone 18", why: "the walkthrough's heading for Wild Zone 18" },
+  },
   "sword-shield": {
     "isle of armor": { area: "Roaming the Isle of Armor", why: "Serebii's place for Galarian Moltres, PokéAPI's roaming-isle-of-armor" },
     "crown tundra": { area: "Roaming the Crown Tundra", why: "Serebii's place for Galarian Articuno, PokéAPI's roaming-crown-tundra" },

@@ -37,6 +37,7 @@ export const NUZ_GAMES: NuzGameInfo[] = [
   { id: "brilliant-diamond-shining-pearl", name: "Brilliant Diamond & Shining Pearl", gen: 8, region: "Sinnoh", versions: [V("brilliant-diamond", "Brilliant Diamond"), V("shining-pearl", "Shining Pearl")] },
   { id: "legends-arceus", name: "Legends: Arceus", gen: 8, region: "Hisui", versions: [V("legends-arceus", "Legends: Arceus")] },
   { id: "scarlet-violet", name: "Scarlet & Violet", gen: 9, region: "Paldea", versions: [V("scarlet", "Scarlet"), V("violet", "Violet")] },
+  { id: "legends-za", name: "Legends: Z-A", gen: 9, region: "Kalos", versions: [V("legends-za", "Legends: Z-A")] },
 ];
 
 const IDS = new Set(NUZ_GAMES.map((g) => g.id));

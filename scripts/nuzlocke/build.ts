@@ -30,7 +30,7 @@ import { summaryBosses, type SummaryBosses } from "./lib/summary-bosses";
 import { walkthrough, type Walkthrough, type WtEvent, type WtParty } from "./lib/walkthrough";
 import { BOSSES } from "./lib/bosses";
 import { addVec, famOf, sameVec, slotNames, vecBulba, vecOurs } from "./lib/rates";
-import { formFor, type FormHit } from "./lib/forms";
+import { formFor, isLegendary, type FormHit } from "./lib/forms";
 
 const ROOT = path.resolve(__dirname, "../..");
 const OUT_DIR = path.join(ROOT, "src/data/nuzlocke");
@@ -289,7 +289,7 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
       for (const sp of new Set([...P, ...S])) {
         if (P.has(sp) === S.has(sp)) continue;
         const locs = bulba.get(key);
-        const hits = bulbaHits(locs, ver, sp).filter((h) => !bulbaKind(h.method, h.tpl));
+        const hits = bulbaHits(locs, ver, sp).filter((h) => !bulbaKind(h.method, h.tpl, h.div));
         const b: Disagreement["bulbapedia"] = !locs?.length ? "no page" : hits.length ? "yes" : "no";
         let resolution: Disagreement["resolution"];
         if (P.has(sp)) resolution = b === "yes" ? "keep" : b === "no" ? "drop" : "unresolved";
@@ -395,7 +395,7 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
         if (v && f) put(P, `${r.species}|${f}`, `${r.sub ?? ""}|${r.levels}`, v);
       }
       for (const h of locs.flatMap((l) => l.rows)) {
-        if (!h.versions.includes(ver) || bulbaKind(h.method, h.tpl)) continue;
+        if (!h.versions.includes(ver) || bulbaKind(h.method, h.tpl, h.div)) continue;
         const f = famOf(h.method);
         if (!f || specialDiv.test(h.div ?? "")) continue;
         const v = vecBulba(h, nSlots);
@@ -431,7 +431,7 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
         if (action === "keep") continue;
         // Bulbapedia's rows also carry forms (Sun/Moon's Midday and Midnight Lycanroc): when they name one, they are
         // the rows used (Serebii's name the species only).
-        const bRows = locs.flatMap((l) => l.rows.filter((h) => h.versions.includes(ver) && h.species === species && famOf(h.method) === fam && !specialDiv.test(h.div ?? "") && !bulbaKind(h.method, h.tpl)).map((h) => ({ h, url: l.url })));
+        const bRows = locs.flatMap((l) => l.rows.filter((h) => h.versions.includes(ver) && h.species === species && famOf(h.method) === fam && !specialDiv.test(h.div ?? "") && !bulbaKind(h.method, h.tpl, h.div)).map((h) => ({ h, url: l.url })));
         const useBulba = action === "add-bulbapedia" || bRows.some(({ h }) => formOfBulba(h).form);
         if (useBulba) {
           a.rows = a.rows.filter((r) => !(r.src === "pokeapi" && r.ver === ver && r.kind === "wild" && r.species === species && famOf(r.method) === fam && vecOurs(r, slots)));
@@ -485,11 +485,11 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
   for (const a of accs.values()) {
     const locs = bulba.get(a.key);
     if (!locs?.length) continue;
-    const areaTerrains = new Set(locs.flatMap((l) => l.rows).filter((r) => !bulbaKind(r.method, r.tpl) && BULBA_FAMILY(r.method) === "walk").map((r) => TERRAIN[r.method.toLowerCase()]).filter(Boolean));
+    const areaTerrains = new Set(locs.flatMap((l) => l.rows).filter((r) => !bulbaKind(r.method, r.tpl, r.div) && BULBA_FAMILY(r.method) === "walk").map((r) => TERRAIN[r.method.toLowerCase()]).filter(Boolean));
     for (const r of a.rows) {
       if (r.kind !== "wild" || r.method !== "Walking") continue;
       // The terrain of Bulbapedia's matching row: same rate and levels first (the same table slot), then any of its rows.
-      const walk = bulbaHits(locs, r.ver, r.species).filter((h) => !bulbaKind(h.method, h.tpl) && BULBA_FAMILY(h.method) === "walk" && TERRAIN[h.method.toLowerCase()]);
+      const walk = bulbaHits(locs, r.ver, r.species).filter((h) => !bulbaKind(h.method, h.tpl, h.div) && BULBA_FAMILY(h.method) === "walk" && TERRAIN[h.method.toLowerCase()]);
       const lv = (h: BulbaRow) => JSON.stringify(parseLevels(h.levels));
       const tiers = [
         walk.filter((h) => parseRate(h.rate) === r.rate && lv(h) === JSON.stringify(r.levels)),
@@ -510,7 +510,7 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
     // Non-wild encounters on Bulbapedia's table that neither PokéAPI nor Serebii has here.
     for (const l of locs)
       for (const h of l.rows) {
-        const kind = bulbaKind(h.method, h.tpl);
+        const kind = bulbaKind(h.method, h.tpl, h.div);
         if (!kind) continue;
         for (const ver of h.versions) {
           if (!versions.includes(ver)) continue;
@@ -538,12 +538,16 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
   // (Serebii files Snacksworth's Zapdos under Poco Path; Bulbapedia under South Province (Area One), around it).
   const allLocs = [...bulba.values()].flat();
   const onceRow = (l: (typeof allLocs)[number], ver: string, sp: number) => l.rows.some((h) => h.tpl === "entry9/special" && h.versions.includes(ver) && h.species === sp && /^Only One$/i.test(h.rate ?? "")) || l.boxes.includes(sp);
-  const wildIn = (ls: typeof allLocs, ver: string, sp: number) => ls.some((l) => l.rows.some((h) => h.versions.includes(ver) && h.species === sp && !bulbaKind(h.method, h.tpl)));
+  const wildIn = (ls: typeof allLocs, ver: string, sp: number) => ls.some((l) => l.rows.some((h) => h.versions.includes(ver) && h.species === sp && !bulbaKind(h.method, h.tpl, h.div)));
   if (cfg.serebii && !cfg.pokeapi)
     for (const a of accs.values()) {
       const locs = bulba.get(a.key) ?? [];
       const wildHere = (ver: string, sp: number) => wildIn(locs, ver, sp);
-      const once = (ver: string, sp: number) => locs.find((l) => onceRow(l, ver, sp)) ?? (wildIn(allLocs, ver, sp) ? undefined : allLocs.find((l) => onceRow(l, ver, sp)));
+      // Elsewhere only for a Legendary or Mythical Pokémon (PokéAPI's flag): a common one Bulbapedia shows once somewhere
+      // may simply be missing from the wild table of a place it has no page for.
+      const legendary = new Set<number>();
+      for (const r of a.rows) if (r.src === "serebii" && r.kind === "wild" && (await isLegendary(r.species))) legendary.add(r.species);
+      const once = (ver: string, sp: number) => locs.find((l) => onceRow(l, ver, sp)) ?? (!legendary.has(sp) || wildIn(allLocs, ver, sp) ? undefined : allLocs.find((l) => onceRow(l, ver, sp)));
       const drop = new Set<Row>();
       for (const r of a.rows) {
         if (r.src !== "serebii" || r.kind !== "wild" || wildHere(r.ver, r.species)) continue;
@@ -567,7 +571,7 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
       if (!locs?.length) continue;
       for (const r of a.rows) {
         if (r.src !== "serebii" || r.form) continue;
-        const hs = locs.flatMap((l) => l.rows).filter((h) => h.versions.includes(r.ver) && h.species === r.species && !bulbaKind(h.method, h.tpl) === (r.kind === "wild"));
+        const hs = locs.flatMap((l) => l.rows).filter((h) => h.versions.includes(r.ver) && h.species === r.species && !bulbaKind(h.method, h.tpl, h.div) === (r.kind === "wild"));
         const labels = [...new Set(hs.map((h) => h.form ?? ""))];
         if (labels.length !== 1 || !labels[0]) continue;
         const f = await formFor(r.species, labels[0]);
@@ -588,7 +592,7 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
         if (r.levels || r.kind !== "wild" || /outbreak|distortion/i.test(`${r.method} ${r.sub ?? ""} ${r.cond ?? ""}`)) continue;
         const lv = locs
           .flatMap((l) => l.rows)
-          .filter((h) => h.versions.includes(r.ver) && h.species === r.species && !bulbaKind(h.method, h.tpl) && !/outbreak|distortion|alpha/i.test(h.div ?? ""))
+          .filter((h) => h.versions.includes(r.ver) && h.species === r.species && !bulbaKind(h.method, h.tpl, h.div) && !/outbreak|distortion|alpha/i.test(h.div ?? ""))
           .map((h) => parseLevels(h.levels))
           .filter((x): x is [number, number] => !!x);
         if (!lv.length) continue;
@@ -608,7 +612,7 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
         const add: Row[] = [];
         for (const l of locs)
           for (const h of l.rows) {
-            if (!h.versions.includes(ver) || bulbaKind(h.method, h.tpl)) continue;
+            if (!h.versions.includes(ver) || bulbaKind(h.method, h.tpl, h.div)) continue;
             const form = h.form ? await formFor(h.species, h.form) : {};
             const levels = parseLevels(h.levels);
             const rate = cfg.gen === 9 ? undefined : parseRate(h.rate);
