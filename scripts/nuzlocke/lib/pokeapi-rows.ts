@@ -140,11 +140,36 @@ export async function apiData(): Promise<ApiData> {
 }
 
 /** Rows for the PokéAPI versions in `vmap` (PokéAPI version -> our version id). */
-export async function pokeapiRows(vmap: Record<string, string>): Promise<{ rows: Row[]; skipped: string[] }> {
+/**
+ * PokéAPI condition values given to rows they can't belong to, and what they stand for: per method (as a pattern
+ * that excludes the methods the value is right for), the wrong value and the right one, with the evidence.
+ */
+const CONDITION_FIXES: { notMethod: RegExp; wrong: string; right: string; why: string }[] = [
+  {
+    notMethod: /^max-raid$/,
+    wrong: "max-den-rarity-special",
+    right: "story-progress-before-hall-of-fame",
+    why: "Rolling Fields' wild rows (walk, overworld, wanderer, berry trees…) carry the Max Raid den value max-den-rarity-special where every other Wild Area zone has story-progress-before-hall-of-fame: Rolling Fields has no before-Hall-of-Fame row otherwise, each of these rows pairs with a story-progress-hall-of-fame row (same Pokémon, method and weather; Lv 7-10 against Lv 60), and Bulbapedia's table lists these Pokémon at these levels as its regular spawns (https://bulbapedia.bulbagarden.net/wiki/Rolling_Fields)",
+  },
+];
+
+export interface ConditionFix {
+  area: string;
+  version: string;
+  species: number;
+  method: string;
+  wrong: string;
+  right: string;
+  why: string;
+  source: string;
+}
+
+export async function pokeapiRows(vmap: Record<string, string>): Promise<{ rows: Row[]; skipped: string[]; fixes: ConditionFix[] }> {
   const { areas, locations } = await apiData();
   const names = await conditionNames();
   const rows: Row[] = [];
   const skipped: string[] = [];
+  const fixes: ConditionFix[] = [];
   for (const a of areas) {
     const loc = locations.get(idOf(a.location.url));
     const hasVer = a.pokemon_encounters.some((pe) => pe.version_details.some((vd) => vmap[vd.version.name]));
@@ -174,7 +199,12 @@ export async function pokeapiRows(vmap: Record<string, string>): Promise<{ rows:
           const m = API_METHOD[d.method.name];
           if (m === null) continue;
           if (m === undefined) throw new Error(`unmapped PokéAPI method ${d.method.name} (${a.name})`);
-          const cv = d.condition_values.map((c) => c.name);
+          const cv = d.condition_values.map((c) => {
+            const fix = CONDITION_FIXES.find((f) => f.wrong === c.name && !f.notMethod.test(d.method.name));
+            if (!fix) return c.name;
+            fixes.push({ area: a.name, version: ver, species, method: d.method.name, wrong: fix.wrong, right: fix.right, why: fix.why, source: url });
+            return fix.right;
+          });
           const times = cv.filter((c) => c in TIME).map((c) => TIME[c]);
           const seasons = cv.filter((c) => c in SEASON).map((c) => SEASON[c]);
           const other = cv.filter((c) => !(c in TIME) && !(c in SEASON) && !PLAIN_COND.has(c)).sort();
@@ -231,5 +261,5 @@ export async function pokeapiRows(vmap: Record<string, string>): Promise<{ rows:
   const plainRate = new Map<string, number>();
   for (const r of rows) if (!specialOf.has(r)) plainRate.set(plainKey(r), Math.max(plainRate.get(plainKey(r)) ?? 0, r.rate ?? 0));
   const kept = rows.filter((r) => !specialOf.has(r) || !plainRate.has(plainKey(r)) || (r.rate ?? 0) > plainRate.get(plainKey(r))!);
-  return { rows: kept, skipped };
+  return { rows: kept, skipped, fixes };
 }

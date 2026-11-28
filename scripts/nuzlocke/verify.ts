@@ -8,7 +8,12 @@
  * out of step with the build's game list or its file; an empty `sources`; duplicate area ids; an area with no
  * encounters; an unknown version id; a species or form without art; a rate outside 0-100; a level range with min > max
  * (or outside 1-100); a boss cap below 1 or above 100; and malformed fields (kinds, forms without art ids…). A form whose
- * art isn't made yet is only allowed when scripts/nuzlocke/art-missing.json lists it (it is printed as a warning).
+ * art isn't made yet is only allowed when scripts/nuzlocke/art-missing.json lists it (it is printed as a warning). Also a
+ * condition on rows it can't belong to: a Max Raid den, Tera Raid, rod, Headbutt, Rock Smash or Honey condition on
+ * another method; time-of-day, season or weather conditions in a game without them; "before" and "after" the Hall of
+ * Fame at once. And any coverage the build lost (crosscheck.json coverageLosses: a place's Pokémon, version or water/land
+ * way of meeting it that the merged sources had and the output dropped without a logged reason). And spelling: curly
+ * quotes, or two names of a game (areas, parts, conditions) that differ only by case, spacing or punctuation.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -48,6 +53,66 @@ for (const g of NUZ_GAMES) {
 }
 if (new Set(NUZ_GAMES.map((g) => g.id)).size !== NUZ_GAMES.length) fail("NUZ_GAMES", "duplicate game id");
 
+// ---- conditions that only fit some methods or games
+/** A condition naming a way of meeting Pokémon sits only on rows of that method. */
+const COND_NEEDS: [RegExp, RegExp, string][] = [
+  [/max raid|raid battle|raid den|pillar of light|wild area news|dynamax adventure/i, /raid|dynamax/i, "a Max Raid den condition"],
+  [/tera raid/i, /tera raid/i, "a Tera Raid condition"],
+  [/\b(old|good|super) rod\b/i, /rod|fish/i, "a fishing condition"],
+  [/\bheadbutt\b/i, /headbutt/i, "a Headbutt condition"],
+  [/\brock smash\b/i, /rock smash/i, "a Rock Smash condition"],
+  [/\bhoney\b/i, /honey/i, "a Honey Tree condition"],
+];
+const TIME_PART = /^(Morning|Day|Night)(, (Morning|Day|Night))*$/;
+const SEASON_PART = /^(Spring|Summer|Autumn|Winter)(, (Spring|Summer|Autumn|Winter))*$/;
+const WEATHER_PART = /^During .*weather$|^During (a |an )?(snowstorm|sandstorm|thunderstorm|intense sun|fog)$/i;
+const TIME_GAMES = new Set(["gold-silver", "crystal", "diamond-pearl", "platinum", "heartgold-soulsilver", "sun-moon", "ultra-sun-ultra-moon", "brilliant-diamond-shining-pearl"]);
+const SEASON_GAMES = new Set(["black-white", "black-2-white-2"]);
+const WEATHER_GAMES = new Set(["sword-shield"]);
+function conditionProblems(game: string, kind: EncounterKind, method: string, cond: string): string[] {
+  const out: string[] = [];
+  // (A gift's condition may name what earns it: "Catch 5 Ultra Beasts in Dynamax Adventures".)
+  if (kind === "wild" || kind === "static") for (const [c, m, what] of COND_NEEDS) if (c.test(cond) && !m.test(method)) out.push(`${what} ("${cond}") on a ${method} row`);
+  const parts = cond.split("; ");
+  if (parts.some((x) => TIME_PART.test(x)) && !TIME_GAMES.has(game)) out.push(`a time-of-day condition ("${cond}") in a game without time-of-day encounters`);
+  if (parts.some((x) => SEASON_PART.test(x)) && !SEASON_GAMES.has(game)) out.push(`a season condition ("${cond}") in a game without seasons`);
+  if (parts.some((x) => WEATHER_PART.test(x)) && !WEATHER_GAMES.has(game)) out.push(`a weather condition ("${cond}") in a game without weather encounters`);
+  if (/\bBefore entering the Hall of Fame\b/.test(cond) && /\bEnter the Hall of Fame\b/.test(cond)) out.push(`contradictory story conditions ("${cond}")`);
+  return out;
+}
+
+// ---- coverage: the build logs, per game, what the merged sources had that its output lost other than by a logged
+// drop (area, Pokémon, version, water or land); anything there is a bug
+const CROSSCHECK = path.join(__dirname, "crosscheck.json");
+const crossGames = fs.existsSync(CROSSCHECK) ? (JSON.parse(fs.readFileSync(CROSSCHECK, "utf8")).games as Record<string, { coverageLosses?: string[] }>) : {};
+for (const [id, c] of Object.entries(crossGames)) {
+  if (!files.includes(id)) continue;
+  if (c.coverageLosses === undefined) fail(`crosscheck.json ${id}`, "no coverage check recorded (rebuild the game)");
+  for (const k of c.coverageLosses ?? []) fail(`${id} coverage`, `the merged sources had ${k}, the output lost it`);
+}
+for (const f of files) if (!crossGames[f]) fail(`crosscheck.json`, `${f} has no entry (rebuild it)`);
+
+// ---- spelling: straight apostrophes, and no two names of a game (areas, parts, conditions) that differ only by case,
+// spacing or punctuation ("Hauoli outskirts" / "Hau'oli Outskirts")
+function spellingProblems(id: string, g: NuzGame): string[] {
+  const out: string[] = [];
+  const byKey = new Map<string, Set<string>>();
+  const note = (t: string, what: string) => {
+    if (/[’‘“”]/.test(t)) out.push(`${what} "${t}" has a curly quote (use straight ones)`);
+    const k = t.toLowerCase().replace(/[^a-z0-9]/g, "");
+    if (!k) return;
+    if (!byKey.has(k)) byKey.set(k, new Set());
+    byKey.get(k)!.add(t);
+  };
+  const areas = [...g.steps.flatMap((s) => (s.type === "area" ? [s.area] : [])), ...g.extra];
+  for (const a of areas) {
+    note(a.name, "area name");
+    for (const e of a.encounters) if (e.condition) for (const p of e.condition.split(/; | \/ /)) note(p, `${a.id} condition`);
+  }
+  for (const [, v] of byKey) if (v.size > 1) out.push(`names that differ only by case or punctuation: ${[...v].map((x) => `"${x}"`).join(", ")}`);
+  return out.map((m) => `${id}: ${m}`);
+}
+
 // ---- each game (shipped ones, then held-back ones, checked the same way)
 const totals: string[] = [];
 const held = GAMES.filter((c) => HELD_BACK.has(c.id) && files.includes(c.id)).map((c) => ({ id: c.id, name: c.name, gen: c.gen, region: c.region, versions: c.versions }));
@@ -61,6 +126,7 @@ for (const info of [...NUZ_GAMES, ...held]) {
   if (g.id !== info.id || g.name !== info.name || g.gen !== info.gen || g.region !== info.region || JSON.stringify(g.versions) !== JSON.stringify(info.versions)) fail(at, "id/name/gen/region/versions differ from NUZ_GAMES");
   const vids = g.versions.map((v) => v.id);
   for (const v of vids) if (!KNOWN_VERSIONS.has(v)) fail(at, `unknown version id ${v}`);
+  for (const p of spellingProblems(at, g)) fail("spelling", p);
   if (!vids.length) fail(at, "no versions");
   if (!Array.isArray(g.sources) || !g.sources.length) fail(at, "empty sources");
   for (const s of g.sources ?? []) if (!/^https:\/\//.test(s)) fail(at, `source is not a URL: ${s}`);
@@ -116,6 +182,7 @@ for (const info of [...NUZ_GAMES, ...held]) {
         if (lo < 1 || hi > 100) fail(what, `levels ${lo}-${hi} outside 1-100`);
       }
       if (e.condition !== undefined && !e.condition.trim()) fail(what, "empty condition");
+      if (e.condition) for (const p of conditionProblems(info.id, e.kind, e.method, e.condition)) fail(what, p);
       const sig = JSON.stringify(e);
       if (sigs.has(sig)) fail(what, "duplicate encounter");
       sigs.add(sig);

@@ -26,6 +26,13 @@ export interface GameCfg {
   bulbaRegions: string[];
   /** PokéAPI's rows have no real chances (Let's Go): Serebii's detail rows stand in for the Pokémon both list. */
   serebiiRows?: boolean;
+  /**
+   * Bulbapedia's location tables are the source (lib/bulba-primary.ts). "serebii": a Serebii row is also added where
+   * the Pokémon's own Bulbapedia page confirms that place; "names": Serebii only names the areas.
+   */
+  bulbaPrimary?: "serebii" | "names";
+  /** Places that count as reached where the walkthrough's text first names them (see walkthrough.ts). */
+  wtMentions?: RegExp;
 }
 
 const V = (id: string, name: string): NuzVersion => ({ id, name });
@@ -63,9 +70,9 @@ export const GAMES: GameCfg[] = [
     bulbaRegions: ["Galar"],
   },
   { id: "brilliant-diamond-shining-pearl", name: "Brilliant Diamond & Shining Pearl", gen: 8, region: "Sinnoh", versions: [V("brilliant-diamond", "Brilliant Diamond"), V("shining-pearl", "Shining Pearl")], walkthrough: "Walkthrough:Pokémon Brilliant Diamond and Shining Pearl", serebii: "bdsp", bulba: ["entrybdsp"], bulbaRegions: ["Sinnoh"] },
-  { id: "legends-arceus", name: "Legends: Arceus", gen: 8, region: "Hisui", versions: [V("legends-arceus", "Legends: Arceus")], walkthrough: "Walkthrough:Pokémon Legends: Arceus", serebii: "la", bulba: ["entryla"], bulbaRegions: [] },
-  { id: "scarlet-violet", name: "Scarlet & Violet", gen: 9, region: "Paldea", versions: [V("scarlet", "Scarlet"), V("violet", "Violet")], walkthrough: "Walkthrough:Pokémon Scarlet and Violet", serebii: "sv", bulba: ["entry9", "entry9/special"], bulbaRegions: ["Paldea"] },
-  { id: "legends-za", name: "Legends: Z-A", gen: 9, region: "Kalos", versions: [V("legends-za", "Legends: Z-A")], walkthrough: "Walkthrough:Pokémon Legends: Z-A", serebii: "za", bulba: ["entryza"], bulbaRegions: ["Kalos"] },
+  { id: "legends-arceus", name: "Legends: Arceus", gen: 8, region: "Hisui", versions: [V("legends-arceus", "Legends: Arceus")], walkthrough: "Walkthrough:Pokémon Legends: Arceus", serebii: "la", bulba: ["entryla"], bulbaRegions: [], bulbaPrimary: "names" },
+  { id: "scarlet-violet", name: "Scarlet & Violet", gen: 9, region: "Paldea", versions: [V("scarlet", "Scarlet"), V("violet", "Violet")], walkthrough: "Walkthrough:Pokémon Scarlet and Violet", serebii: "sv", bulba: ["entry9", "entry9/special"], bulbaRegions: ["Paldea"], bulbaPrimary: "serebii" },
+  { id: "legends-za", name: "Legends: Z-A", gen: 9, region: "Kalos", versions: [V("legends-za", "Legends: Z-A")], walkthrough: "Walkthrough:Pokémon Legends: Z-A", serebii: "za", bulba: ["entryza"], bulbaRegions: ["Kalos"], bulbaPrimary: "serebii", wtMentions: /\bWild Zone \d+\b|\b(?:Vert|Bleu|Rouge|Magenta|Jaune) District\b/ },
 ];
 
 export const GAME_BY_ID = new Map(GAMES.map((g) => [g.id, g]));
