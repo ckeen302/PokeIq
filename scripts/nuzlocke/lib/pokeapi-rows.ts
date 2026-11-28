@@ -72,8 +72,9 @@ export const API_METHOD: Record<string, { kind: EncounterKind; label: string } |
   wanderer: { kind: "wild", label: "Wanderer" },
   "wanderer-water": { kind: "wild", label: "Wanderer (water)" },
   "chase-water": { kind: "wild", label: "Chase (water)" },
-  "max-raid": { kind: "wild", label: "Max Raid Battle" },
-  "dynamax-adventure": { kind: "static", label: "Dynamax Adventure" },
+  // Raids are den tables, not a place's encounters (like Scarlet/Violet's Tera Raids): left out.
+  "max-raid": null,
+  "dynamax-adventure": null,
   // Event distributions and the GameCube games: not encounters in these games.
   "colosseum-bonus-disc-jpn": null,
   "colosseum-bonus-disc-us": null,

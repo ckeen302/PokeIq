@@ -22,7 +22,7 @@ function methodOf(m: string): { kind: EncounterKind; label: string } | null {
     case "Interact":
       return { kind: "static", label: "Static" };
     case "Max Raid":
-      return { kind: "wild", label: "Max Raid Battle" };
+      return null;
     case "Massive mass outbreak":
       return { kind: "wild", label: "Massive mass outbreak" };
     case "Hyperspace":

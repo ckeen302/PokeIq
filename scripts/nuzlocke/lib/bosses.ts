@@ -68,6 +68,9 @@ const EXTRA: Record<string, { test: (p: WtParty) => boolean; title: (p: WtParty)
     { test: (p) => !p.standalone && /^(Giacomo|Mela|Atticus|Ortega|Eri)$/.test(p.name) && (p.cls === "" || /Team Star|Squad Boss/i.test(p.cls)), title: (p) => `Team Star ${p.name}`, why: "Team Star's squad bosses (the walkthrough's major fights)" },
     { test: (p) => !!p.standalone && (/^VS Titan /.test(p.path[p.path.length - 1] ?? "") || p.path.some((h) => /Titan/.test(h))), title: (p) => `Titan ${p.name}`, why: "the Titan Pokémon (the walkthrough's major fights; its level is the Titan's, from the walkthrough's Pokémon box or text)" },
   ],
+  "sword-shield": [
+    { test: (p) => !p.standalone && p.cls === "Gym Leader" && !p.gym && p.part < 21 && p.path.some((h) => /^Wyndon Stadium$/.test(h)), title: (p) => `Champion Cup ${p.name}`, why: "the Champion Cup Finals at Wyndon Stadium (Bede's challenge, then Nessa, Bea or Allister, and Raihan) stand between the eight badges and Leon, as an Elite Four would" },
+  ],
   "sun-moon": [
     { test: (p) => p.cls === "Captain" && p.part < 27, title: (p) => `Captain ${p.name}`, why: "Alola's Trial Captains" },
     { test: (p) => p.cls === "Island Kahuna" && p.part < 27, title: (p) => `Kahuna ${p.name}`, why: "Alola's Kahunas (grand trials)" },

@@ -55,6 +55,11 @@ export const ALIASES: Record<string, Record<string, Alias>> = {
     "glacier room": { area: "Underground Ruins", sub: "Glacier Room", why: "Regice's room is in the Underground Ruins (Bulbapedia's Underground Ruins page)" },
     "iron room": { area: "Underground Ruins", sub: "Iron Room", why: "Registeel's room is in the Underground Ruins (Bulbapedia's Underground Ruins page)" },
   },
+  "sword-shield": {
+    "isle of armor": { area: "Roaming the Isle of Armor", why: "Serebii's place for Galarian Moltres, PokéAPI's roaming-isle-of-armor" },
+    "crown tundra": { area: "Roaming the Crown Tundra", why: "Serebii's place for Galarian Articuno, PokéAPI's roaming-crown-tundra" },
+    "wild area": { area: "Roaming Galar Wild Areas", why: "Serebii's place for Galarian Zapdos, PokéAPI's roaming-galar-wild-area" },
+  },
   "scarlet-violet": { "alfornado cavern": { area: "Alfornada Cavern", why: "Serebii's misspelling of Alfornada Cavern" } },
   "x-y": { roaming: { area: "Roaming Kalos", why: "PokéAPI's '(Roaming)' location: the roaming legendary bird" } },
   "sun-moon": ALOLA7,
