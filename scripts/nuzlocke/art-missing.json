@@ -1,0 +1,14 @@
+{
+ "about": "Forms that can be met in a game but have no art yet in public/sizes/art/256 (form name -> PokéAPI pokemon id). The encounters stay in the data; npm run verify:nuzlocke prints these as warnings and fails on any other missing art, or on an entry here that gets art or stops being used.",
+ "forms": {
+  "basculin-blue-striped": 10016,
+  "pumpkaboo-small": 10027,
+  "pumpkaboo-large": 10028,
+  "pumpkaboo-super": 10029,
+  "oricorio-pom-pom": 10123,
+  "oricorio-pau": 10124,
+  "oricorio-sensu": 10125,
+  "lycanroc-midnight": 10126,
+  "zygarde-10": 10181
+ }
+}

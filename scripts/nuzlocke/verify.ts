@@ -6,7 +6,8 @@
  * Fails on: a game in NUZ_GAMES without a file, or a file without a NUZ_GAMES entry; NUZ_GAMES out of release order or
  * out of step with the build's game list or its file; an empty `sources`; duplicate area ids; an area with no
  * encounters; an unknown version id; a species or form without art; a rate outside 0-100; a level range with min > max
- * (or outside 1-100); a boss cap below 1 or above 100; and malformed fields (kinds, forms without art ids…).
+ * (or outside 1-100); a boss cap below 1 or above 100; and malformed fields (kinds, forms without art ids…). A form whose
+ * art isn't made yet is only allowed when scripts/nuzlocke/art-missing.json lists it (it is printed as a warning).
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -25,6 +26,9 @@ const MAX_SPECIES = 1025;
 const errors: string[] = [];
 const fail = (where: string, msg: string) => errors.push(`${where}: ${msg}`);
 const hasArt = (id: number) => fs.existsSync(path.join(ART, `${id}.webp`));
+/** Forms known to have no art yet (reported, kept in the data): form name -> PokéAPI pokemon id. Anything else without art fails. */
+const ART_MISSING = JSON.parse(fs.readFileSync(path.join(__dirname, "art-missing.json"), "utf8")).forms as Record<string, number>;
+const artMissingUsed = new Map<string, string[]>();
 
 // ---- the game list
 const files = fs.existsSync(DATA) ? fs.readdirSync(DATA).filter((f) => f.endsWith(".json")).map((f) => f.replace(/\.json$/, "")) : [];
@@ -92,7 +96,10 @@ for (const info of NUZ_GAMES) {
       if (e.form !== undefined && (!e.form || e.art === undefined)) fail(what, "form without its art id");
       if (e.art !== undefined && e.form === undefined) fail(what, "art id without a form");
       const art = e.art ?? e.species;
-      if (!hasArt(art)) fail(what, `no art: public/sizes/art/256/${art}.webp`);
+      if (!hasArt(art)) {
+        if (e.form && ART_MISSING[e.form] === art) artMissingUsed.set(e.form, [...new Set([...(artMissingUsed.get(e.form) ?? []), at])]);
+        else fail(what, `no art: public/sizes/art/256/${art}.webp`);
+      }
       if (e.versions !== undefined) {
         if (!e.versions.length) fail(what, "empty versions");
         for (const v of e.versions) if (!vids.includes(v)) fail(what, `unknown version id ${v}`);
@@ -115,7 +122,15 @@ for (const info of NUZ_GAMES) {
   totals.push(`${at}: ${areas.length} areas (${g.extra.length} extra), ${encounters} encounters, ${bosses} bosses`);
 }
 
+for (const [form, id] of Object.entries(ART_MISSING)) {
+  if (hasArt(id)) fail("art-missing.json", `${form} (${id}) has art now: remove it from the list`);
+  else if (!artMissingUsed.has(form)) fail("art-missing.json", `${form} is listed but no encounter uses it`);
+}
 for (const t of totals) console.log(t);
+if (artMissingUsed.size) {
+  console.warn(`\n⚠ ${artMissingUsed.size} form(s) have no art yet (listed in scripts/nuzlocke/art-missing.json; the encounters are kept):`);
+  for (const [form, games] of artMissingUsed) console.warn(`  - ${form} (public/sizes/art/256/${ART_MISSING[form]}.webp) in ${games.join(", ")}`);
+}
 if (errors.length) {
   console.error(`\n✗ ${errors.length} problem(s):`);
   for (const e of errors.slice(0, 200)) console.error(`  - ${e}`);

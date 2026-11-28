@@ -117,7 +117,8 @@ function rowOf(t: Template, tpl: string, spec: Spec, div: string | undefined, he
   return {
     tpl,
     versions,
-    species: Number(p(1)),
+    // "025", "201A" (Unown's letter), "025Ro" (Pikachu in a costume), "{{#ifexpr:…|592|592F}}" (Frillish's gender): the dex number.
+    species: Number((/^\{\{#if/.test(p(1)) ? p(1).split("|")[1] : p(1)).match(/\d{1,4}/)?.[0] ?? NaN),
     name: plain(p(2)),
     ...(form ? { form } : {}),
     method: plain(p(spec.method)),

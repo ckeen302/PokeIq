@@ -46,6 +46,8 @@ export interface NuzBoss {
   cap?: number;
   /** When a boss's team or levels differ by version (or by starter), the per-version caps. */
   capByVersion?: Record<string, number>;
+  /** Only in these versions (a version-exclusive battle), by version id; absent when every version has it. */
+  versions?: string[];
 }
 
 /** One step of the game in story order: an area to encounter in, or a boss. */

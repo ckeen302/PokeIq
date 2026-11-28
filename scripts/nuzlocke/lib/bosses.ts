@@ -67,11 +67,12 @@ const EXTRA: Record<string, { test: (p: WtParty) => boolean; title: (p: WtParty)
   "sun-moon": [
     { test: (p) => p.cls === "Captain" && p.part < 27, title: (p) => `Captain ${p.name}`, why: "Alola's Trial Captains" },
     { test: (p) => p.cls === "Island Kahuna" && p.part < 27, title: (p) => `Kahuna ${p.name}`, why: "Alola's Kahunas (grand trials)" },
-    { test: (p) => p.cls === "Pokémon Professor" && p.name === "Kukui" && p.path.some((h) => /Champion/.test(h)), title: () => "Champion title match: Kukui", why: "Kukui is the first Champion battle" },
+    { test: (p) => p.cls === "Pokémon Professor" && p.name === "Kukui" && p.path.some((h) => /Champion/.test(h)), title: () => "Champion battle: Kukui", why: "Kukui is Sun and Moon's Champion battle" },
   ],
   "ultra-sun-ultra-moon": [
     { test: (p) => p.cls === "Captain" && p.part < 29, title: (p) => `Captain ${p.name}`, why: "Alola's Trial Captains" },
     { test: (p) => p.cls === "Island Kahuna" && p.part < 29, title: (p) => `Kahuna ${p.name}`, why: "Alola's Kahunas (grand trials)" },
+    { test: (p) => p.name === "Hau" && p.part < 29 && p.path.some((h) => /Champion's Chamber/i.test(h)), title: () => "Champion battle: Hau", why: "Hau is Ultra Sun and Ultra Moon's Champion battle" },
   ],
 };
 
@@ -122,7 +123,12 @@ function generic(game: string): BossCfg {
         const first = g.parties[0];
         const names = [...new Set(g.parties.map((p) => p.name))];
         let title: string;
-        if (g.kind === "leader") title = names.length > 1 ? names.join(" / ") : names[0];
+        // One leader per version (BW's Drayden/Iris): name each with its version.
+        const verName = (n: string) => {
+          const vs = [...new Set(g.parties.filter((p) => p.name === n).flatMap((p) => versionsOf(p, game)))];
+          return vs.length < all.length ? `${n} (${vs.map((v) => GAME_BY_ID.get(game)!.versions.find((x) => x.id === v)!.name).join(", ")})` : n;
+        };
+        if (g.kind === "leader") title = names.length > 1 ? names.map(verName).join(" / ") : names[0];
         else if (g.kind === "e4") title = `Elite Four ${names.join(" / ")}`;
         else if (g.kind === "champion") title = `Champion ${names.join(" / ")}`;
         else title = EXTRA[game]!.find((x) => x.test(first))!.title(first);
@@ -134,8 +140,10 @@ function generic(game: string): BossCfg {
         const caps = [...new Set(Object.values(per))];
         const cap = Math.max(...Object.values(per));
         const boss: NuzBoss = { name: title, ...(g.kind === "leader" && first.gym?.badge ? { badge: first.gym.badge } : {}), cap };
+        const inVers = all.filter((v) => per[v] !== undefined);
+        if (inVers.length < all.length) boss.versions = inVers;
         const notes: string[] = [];
-        if (caps.length > 1 || Object.keys(per).length < all.length) {
+        if (caps.length > 1) {
           boss.capByVersion = Object.fromEntries(all.filter((v) => per[v] !== undefined).map((v) => [v, per[v]]));
           notes.push(`by version: ${JSON.stringify(boss.capByVersion)}`);
         }

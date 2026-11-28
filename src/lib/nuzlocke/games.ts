@@ -16,7 +16,22 @@ const V = (id: string, name: string): NuzVersion => ({ id, name });
 
 /** Every game with data, in release order (Japanese release), newest last. */
 export const NUZ_GAMES: NuzGameInfo[] = [
+  { id: "red-blue", name: "Red & Blue", gen: 1, region: "Kanto", versions: [V("red", "Red"), V("blue", "Blue")] },
+  { id: "yellow", name: "Yellow", gen: 1, region: "Kanto", versions: [V("yellow", "Yellow")] },
+  { id: "gold-silver", name: "Gold & Silver", gen: 2, region: "Johto", versions: [V("gold", "Gold"), V("silver", "Silver")] },
+  { id: "crystal", name: "Crystal", gen: 2, region: "Johto", versions: [V("crystal", "Crystal")] },
+  { id: "ruby-sapphire", name: "Ruby & Sapphire", gen: 3, region: "Hoenn", versions: [V("ruby", "Ruby"), V("sapphire", "Sapphire")] },
   { id: "firered-leafgreen", name: "FireRed & LeafGreen", gen: 3, region: "Kanto", versions: [V("firered", "FireRed"), V("leafgreen", "LeafGreen")] },
+  { id: "emerald", name: "Emerald", gen: 3, region: "Hoenn", versions: [V("emerald", "Emerald")] },
+  { id: "diamond-pearl", name: "Diamond & Pearl", gen: 4, region: "Sinnoh", versions: [V("diamond", "Diamond"), V("pearl", "Pearl")] },
+  { id: "platinum", name: "Platinum", gen: 4, region: "Sinnoh", versions: [V("platinum", "Platinum")] },
+  { id: "heartgold-soulsilver", name: "HeartGold & SoulSilver", gen: 4, region: "Johto", versions: [V("heartgold", "HeartGold"), V("soulsilver", "SoulSilver")] },
+  { id: "black-white", name: "Black & White", gen: 5, region: "Unova", versions: [V("black", "Black"), V("white", "White")] },
+  { id: "black-2-white-2", name: "Black 2 & White 2", gen: 5, region: "Unova", versions: [V("black-2", "Black 2"), V("white-2", "White 2")] },
+  { id: "x-y", name: "X & Y", gen: 6, region: "Kalos", versions: [V("x", "X"), V("y", "Y")] },
+  { id: "omega-ruby-alpha-sapphire", name: "Omega Ruby & Alpha Sapphire", gen: 6, region: "Hoenn", versions: [V("omega-ruby", "Omega Ruby"), V("alpha-sapphire", "Alpha Sapphire")] },
+  { id: "sun-moon", name: "Sun & Moon", gen: 7, region: "Alola", versions: [V("sun", "Sun"), V("moon", "Moon")] },
+  { id: "ultra-sun-ultra-moon", name: "Ultra Sun & Ultra Moon", gen: 7, region: "Alola", versions: [V("ultra-sun", "Ultra Sun"), V("ultra-moon", "Ultra Moon")] },
 ];
 
 const IDS = new Set(NUZ_GAMES.map((g) => g.id));

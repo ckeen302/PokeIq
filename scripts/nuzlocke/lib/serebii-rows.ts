@@ -25,26 +25,30 @@ function label(m: string): string {
 
 const TIME_NAMES = ["Morning", "Day", "Night"];
 
-export function serebiiToRows(rs: SerebiiRow[]): Row[] {
+/** `alola`: Alola has day and night only (Serebii's Morning/Day/Night slots: morning and day are its day). */
+export function serebiiToRows(rs: SerebiiRow[], opts: { alola?: boolean } = {}): Row[] {
   const out: Row[] = [];
   for (const r of rs) {
     if (!r.loc || !r.m) continue;
     // "Kanto - Roaming After Nat. Dex & If Bulbasaur Chosen": a roaming Pokémon, whatever the method cell says.
-    const roaming = /roaming/i.test(`${r.loc} ${r.sub ?? ""}`);
+    // Serebii lists roamers under the region's name ("Hoenn") or as "Kanto - Roaming…".
+    const roaming = /roaming/i.test(`${r.loc} ${r.sub ?? ""}`) || /^(Kanto|Johto|Hoenn|Sinnoh|Unova|Kalos|Alola)$/.test(r.loc);
     const kind = roaming ? "roaming" : (KIND.find(([re]) => re.test(r.m!))?.[1] ?? "wild");
     const base: Row = { src: "serebii", ver: r.ver, place: accent(r.loc), ...(r.sub ? { sub: r.sub } : {}), species: r.species, kind, method: roaming ? "Roaming" : label(r.m), url: r.url };
     const lv = parseLevels(r.lv);
     if (lv && kind !== "trade") base.levels = lv;
     const notes = r.n ? [r.n] : [];
     if (r.t) {
-      // Morning / Day / Night rates: one row per distinct rate.
+      // Morning / Day / Night rates (Alola: Day / Night): one row per distinct rate.
+      const slots = opts.alola ? [r.t[1], r.t[2]] : r.t;
+      const slotNames = opts.alola ? ["Day", "Night"] : TIME_NAMES;
       const by = new Map<string, number[]>();
-      r.t.forEach((v, i) => {
+      slots.forEach((v, i) => {
         if (v !== "—") by.set(v, [...(by.get(v) ?? []), i]);
       });
       for (const [v, idx] of by) {
         const rate = parseRate(v);
-        const cond = [idx.length === 3 ? "" : idx.map((i) => TIME_NAMES[i]).join(", "), ...notes].filter(Boolean).join("; ");
+        const cond = [idx.length === slots.length ? "" : idx.map((i) => slotNames[i]).join(", "), ...notes].filter(Boolean).join("; ");
         out.push({ ...base, ...(rate !== undefined && kind === "wild" ? { rate } : {}), ...(cond ? { cond } : {}) });
       }
       continue;
