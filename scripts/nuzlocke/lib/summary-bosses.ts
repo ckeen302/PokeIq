@@ -21,6 +21,9 @@ interface Ref {
 }
 
 export const SUMMARY_BOSSES: Record<string, Record<string, Ref[]>> = {
+  // The walkthrough shows Kleavor's, Lilligant's and Arcanine's frenzies with a Pokémon box (their level); Electrode's
+  // and Avalugg's with none.
+  "legends-arceus": Object.fromEntries(["Kleavor", "Lilligant", "Arcanine", "Electrode", "Avalugg"].map((n) => [`Frenzied ${n}`, [{ name: `Noble ${n}` }]])),
   "scarlet-violet": {
     "Montenevera Gym Test": [{ name: "Ryme", page: "Montenevera Gym", trainer: "Ryme", under: /^Gym battle$/, badge: true }],
     "The Quaking Earth Titan": [{ name: "Titan Great Tusk (Scarlet) / Iron Treads (Violet)" }],

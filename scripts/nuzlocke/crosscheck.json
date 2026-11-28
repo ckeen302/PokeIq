@@ -97297,6 +97297,684 @@
    ],
    "rates": []
   },
+  "legends-arceus": {
+   "disagreements": [],
+   "bulbapedia": [
+    {
+     "area": "Obsidian Fieldlands",
+     "version": "legends-arceus",
+     "species": 26,
+     "name": "Raichu",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Jubilife_Village"
+    },
+    {
+     "area": "Obsidian Fieldlands",
+     "version": "legends-arceus",
+     "species": 76,
+     "name": "Golem",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Jubilife_Village"
+    },
+    {
+     "area": "Obsidian Fieldlands",
+     "version": "legends-arceus",
+     "species": 169,
+     "name": "Crobat",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Jubilife_Village"
+    },
+    {
+     "area": "Obsidian Fieldlands",
+     "version": "legends-arceus",
+     "species": 363,
+     "name": "Spheal",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Jubilife_Village"
+    },
+    {
+     "area": "Obsidian Fieldlands",
+     "version": "legends-arceus",
+     "species": 364,
+     "name": "Sealeo",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Jubilife_Village"
+    },
+    {
+     "area": "Obsidian Fieldlands",
+     "version": "legends-arceus",
+     "species": 441,
+     "name": "Chatot",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Jubilife_Village"
+    },
+    {
+     "area": "Obsidian Fieldlands",
+     "version": "legends-arceus",
+     "species": 570,
+     "name": "Zorua",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Jubilife_Village"
+    },
+    {
+     "area": "Obsidian Fieldlands",
+     "version": "legends-arceus",
+     "species": 571,
+     "name": "Zoroark",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Jubilife_Village"
+    },
+    {
+     "area": "Obsidian Fieldlands",
+     "version": "legends-arceus",
+     "species": 706,
+     "name": "Goodra",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Jubilife_Village"
+    },
+    {
+     "area": "Obsidian Fieldlands",
+     "version": "legends-arceus",
+     "species": 899,
+     "name": "Wyrdeer",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Jubilife_Village"
+    },
+    {
+     "area": "Crimson Mirelands",
+     "version": "legends-arceus",
+     "species": 94,
+     "name": "Gengar",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Golden_Lowlands"
+    },
+    {
+     "area": "Crimson Mirelands",
+     "version": "legends-arceus",
+     "species": 208,
+     "name": "Steelix",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Golden_Lowlands"
+    },
+    {
+     "area": "Crimson Mirelands",
+     "version": "legends-arceus",
+     "species": 220,
+     "name": "Swinub",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Golden_Lowlands"
+    },
+    {
+     "area": "Crimson Mirelands",
+     "version": "legends-arceus",
+     "species": 221,
+     "name": "Piloswine",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Golden_Lowlands"
+    },
+    {
+     "area": "Crimson Mirelands",
+     "version": "legends-arceus",
+     "species": 436,
+     "name": "Bronzor",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Golden_Lowlands"
+    },
+    {
+     "area": "Crimson Mirelands",
+     "version": "legends-arceus",
+     "species": 437,
+     "name": "Bronzong",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Golden_Lowlands"
+    },
+    {
+     "area": "Crimson Mirelands",
+     "version": "legends-arceus",
+     "species": 451,
+     "name": "Skorupi",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Golden_Lowlands"
+    },
+    {
+     "area": "Crimson Mirelands",
+     "version": "legends-arceus",
+     "species": 452,
+     "name": "Drapion",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Golden_Lowlands"
+    },
+    {
+     "area": "Crimson Mirelands",
+     "version": "legends-arceus",
+     "species": 464,
+     "name": "Rhyperior",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Golden_Lowlands"
+    },
+    {
+     "area": "Crimson Mirelands",
+     "version": "legends-arceus",
+     "species": 549,
+     "name": "Lilligant",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Golden_Lowlands"
+    },
+    {
+     "area": "Crimson Mirelands",
+     "version": "legends-arceus",
+     "species": 706,
+     "name": "Goodra",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Golden_Lowlands"
+    },
+    {
+     "area": "Crimson Mirelands",
+     "version": "legends-arceus",
+     "species": 904,
+     "name": "Overqwil",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Golden_Lowlands"
+    },
+    {
+     "area": "Cobalt Coastlands",
+     "version": "legends-arceus",
+     "species": 35,
+     "name": "Clefairy",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Crossing_Slope"
+    },
+    {
+     "area": "Cobalt Coastlands",
+     "version": "legends-arceus",
+     "species": 59,
+     "name": "Arcanine",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Crossing_Slope"
+    },
+    {
+     "area": "Cobalt Coastlands",
+     "version": "legends-arceus",
+     "species": 68,
+     "name": "Machamp",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Crossing_Slope"
+    },
+    {
+     "area": "Cobalt Coastlands",
+     "version": "legends-arceus",
+     "species": 76,
+     "name": "Golem",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Crossing_Slope"
+    },
+    {
+     "area": "Cobalt Coastlands",
+     "version": "legends-arceus",
+     "species": 95,
+     "name": "Onix",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Crossing_Slope"
+    },
+    {
+     "area": "Cobalt Coastlands",
+     "version": "legends-arceus",
+     "species": 129,
+     "name": "Magikarp",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Crossing_Slope"
+    },
+    {
+     "area": "Cobalt Coastlands",
+     "version": "legends-arceus",
+     "species": 173,
+     "name": "Cleffa",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Crossing_Slope"
+    },
+    {
+     "area": "Cobalt Coastlands",
+     "version": "legends-arceus",
+     "species": 208,
+     "name": "Steelix",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Crossing_Slope"
+    },
+    {
+     "area": "Cobalt Coastlands",
+     "version": "legends-arceus",
+     "species": 242,
+     "name": "Blissey",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Crossing_Slope"
+    },
+    {
+     "area": "Cobalt Coastlands",
+     "version": "legends-arceus",
+     "species": 447,
+     "name": "Riolu",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Crossing_Slope"
+    },
+    {
+     "area": "Cobalt Coastlands",
+     "version": "legends-arceus",
+     "species": 448,
+     "name": "Lucario",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Crossing_Slope"
+    },
+    {
+     "area": "Cobalt Coastlands",
+     "version": "legends-arceus",
+     "species": 467,
+     "name": "Magmortar",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Crossing_Slope"
+    },
+    {
+     "area": "Cobalt Coastlands",
+     "version": "legends-arceus",
+     "species": 468,
+     "name": "Togekiss",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Crossing_Slope"
+    },
+    {
+     "area": "Cobalt Coastlands",
+     "version": "legends-arceus",
+     "species": 902,
+     "name": "Basculegion",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Crossing_Slope"
+    },
+    {
+     "area": "Cobalt Coastlands",
+     "version": "legends-arceus",
+     "species": 904,
+     "name": "Overqwil",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Crossing_Slope"
+    },
+    {
+     "area": "Coronet Highlands",
+     "version": "legends-arceus",
+     "species": 77,
+     "name": "Ponyta",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Heavenward_Lookout"
+    },
+    {
+     "area": "Coronet Highlands",
+     "version": "legends-arceus",
+     "species": 78,
+     "name": "Rapidash",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Heavenward_Lookout"
+    },
+    {
+     "area": "Coronet Highlands",
+     "version": "legends-arceus",
+     "species": 94,
+     "name": "Gengar",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Heavenward_Lookout"
+    },
+    {
+     "area": "Coronet Highlands",
+     "version": "legends-arceus",
+     "species": 101,
+     "name": "Electrode",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Heavenward_Lookout"
+    },
+    {
+     "area": "Coronet Highlands",
+     "version": "legends-arceus",
+     "species": 122,
+     "name": "Mr. Mime",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Heavenward_Lookout"
+    },
+    {
+     "area": "Coronet Highlands",
+     "version": "legends-arceus",
+     "species": 355,
+     "name": "Duskull",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Heavenward_Lookout"
+    },
+    {
+     "area": "Coronet Highlands",
+     "version": "legends-arceus",
+     "species": 439,
+     "name": "Mime Jr.",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Heavenward_Lookout"
+    },
+    {
+     "area": "Coronet Highlands",
+     "version": "legends-arceus",
+     "species": 445,
+     "name": "Garchomp",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Heavenward_Lookout"
+    },
+    {
+     "area": "Coronet Highlands",
+     "version": "legends-arceus",
+     "species": 459,
+     "name": "Snover",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Heavenward_Lookout"
+    },
+    {
+     "area": "Coronet Highlands",
+     "version": "legends-arceus",
+     "species": 460,
+     "name": "Abomasnow",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Heavenward_Lookout"
+    },
+    {
+     "area": "Coronet Highlands",
+     "version": "legends-arceus",
+     "species": 903,
+     "name": "Sneasler",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Heavenward_Lookout"
+    },
+    {
+     "area": "Alabaster Icelands",
+     "version": "legends-arceus",
+     "species": 38,
+     "name": "Ninetales",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Whiteout_Valley"
+    },
+    {
+     "area": "Alabaster Icelands",
+     "version": "legends-arceus",
+     "species": 65,
+     "name": "Alakazam",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Whiteout_Valley"
+    },
+    {
+     "area": "Alabaster Icelands",
+     "version": "legends-arceus",
+     "species": 94,
+     "name": "Gengar",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Whiteout_Valley"
+    },
+    {
+     "area": "Alabaster Icelands",
+     "version": "legends-arceus",
+     "species": 126,
+     "name": "Magmar",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Whiteout_Valley"
+    },
+    {
+     "area": "Alabaster Icelands",
+     "version": "legends-arceus",
+     "species": 240,
+     "name": "Magby",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Whiteout_Valley"
+    },
+    {
+     "area": "Alabaster Icelands",
+     "version": "legends-arceus",
+     "species": 417,
+     "name": "Pachirisu",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Whiteout_Valley"
+    },
+    {
+     "area": "Alabaster Icelands",
+     "version": "legends-arceus",
+     "species": 429,
+     "name": "Mismagius",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Whiteout_Valley"
+    },
+    {
+     "area": "Alabaster Icelands",
+     "version": "legends-arceus",
+     "species": 477,
+     "name": "Dusknoir",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Whiteout_Valley"
+    }
+   ],
+   "rates": []
+  },
   "scarlet-violet": {
    "disagreements": [],
    "bulbapedia": [

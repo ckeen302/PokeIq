@@ -578,6 +578,24 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
       }
     }
 
+  // ---- Levels Serebii doesn't give (Legends: Arceus, Scarlet/Violet): the range of Bulbapedia's wild rows for that
+  // Pokémon there (its regular rows: not alpha, mass-outbreak or distortion rows).
+  if (cfg.serebii && !cfg.pokeapi)
+    for (const a of accs.values()) {
+      const locs = bulba.get(a.key);
+      if (!locs?.length) continue;
+      for (const r of a.rows) {
+        if (r.levels || r.kind !== "wild" || /outbreak|distortion/i.test(`${r.method} ${r.sub ?? ""} ${r.cond ?? ""}`)) continue;
+        const lv = locs
+          .flatMap((l) => l.rows)
+          .filter((h) => h.versions.includes(r.ver) && h.species === r.species && !bulbaKind(h.method, h.tpl) && !/outbreak|distortion|alpha/i.test(h.div ?? ""))
+          .map((h) => parseLevels(h.levels))
+          .filter((x): x is [number, number] => !!x);
+        if (!lv.length) continue;
+        r.levels = [Math.min(...lv.map((x) => x[0])), Math.max(...lv.map((x) => x[1]))];
+      }
+    }
+
   // ---- A place Serebii names but gives no wild Pokémon for (it files Poco Path's under South Province (Area One)):
   // Bulbapedia's table for the place, as it gives it (its habitat as the method; Scarlet/Violet's numbers are spawn
   // weights, not chances, so no rate).

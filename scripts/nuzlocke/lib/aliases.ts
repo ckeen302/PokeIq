@@ -55,6 +55,13 @@ export const ALIASES: Record<string, Record<string, Alias>> = {
     "glacier room": { area: "Underground Ruins", sub: "Glacier Room", why: "Regice's room is in the Underground Ruins (Bulbapedia's Underground Ruins page)" },
     "iron room": { area: "Underground Ruins", sub: "Iron Room", why: "Registeel's room is in the Underground Ruins (Bulbapedia's Underground Ruins page)" },
   },
+  // Serebii names a zone's space-time distortion as a place of its own; it is an event in the zone.
+  "legends-arceus": Object.fromEntries(
+    ["Obsidian Fieldlands", "Crimson Mirelands", "Cobalt Coastlands", "Coronet Highlands", "Alabaster Icelands"].map((z) => [
+      `space time distortion in ${z.toLowerCase()}`,
+      { area: z, sub: `Space-time Distortion in ${z}`, why: "a space-time distortion is an event in its zone" },
+    ]),
+  ),
   "sword-shield": {
     "isle of armor": { area: "Roaming the Isle of Armor", why: "Serebii's place for Galarian Moltres, PokéAPI's roaming-isle-of-armor" },
     "crown tundra": { area: "Roaming the Crown Tundra", why: "Serebii's place for Galarian Articuno, PokéAPI's roaming-crown-tundra" },

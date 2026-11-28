@@ -6,7 +6,7 @@
 import type { EncounterKind } from "../../../src/lib/nuzlocke/model";
 import { accent } from "./areas";
 import type { SerebiiSource } from "./config";
-import { formFor } from "./forms";
+import { formFor, isLegendary } from "./forms";
 import { parseLevels, parseRate, type Row } from "./rows";
 import { lgpeRows, svRows, swshRows, type SerebiiRow } from "./serebii";
 
@@ -106,6 +106,12 @@ export async function serebiiGameRows(src: SerebiiSource, versions: string[]): P
       const f = p.match(FORM_NOTE);
       if (f) formLabel = `${f[1]} Form`;
       else cond.push(p);
+    }
+    // Legends: Arceus: a Legendary or Mythical Pokémon (PokéAPI's flag) that Serebii puts at one spot, not "or nearby",
+    // is met once there (Uxie at Lake Acuity): a static encounter.
+    if (src === "la" && kind === "wild" && !parts.includes("or nearby") && (await isLegendary(r.species))) {
+      kind = "static";
+      method = "Static";
     }
     const form = await formFor(r.species, formLabel);
     // Legends: Arceus: "Spot (Area)" -> the area, with the spot as its part.

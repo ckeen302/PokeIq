@@ -1,6 +1,8 @@
 {
  "about": "Forms that can be met in a game but have no art yet in public/sizes/art/256 (form name -> PokéAPI pokemon id). The encounters stay in the data; npm run verify:nuzlocke prints these as warnings and fails on any other missing art, or on an entry here that gets art or stops being used.",
  "forms": {
+  "wormadam-sandy": 10004,
+  "wormadam-trash": 10005,
   "rotom-heat": 10008,
   "rotom-wash": 10009,
   "rotom-frost": 10010,

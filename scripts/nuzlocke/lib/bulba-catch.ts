@@ -161,7 +161,12 @@ function rowOf(t: Template, tpl: string, spec: Spec, div: string | undefined, he
   const habitat = HABITAT.filter(([k]) => /^yes$/i.test(t.named[k] ?? "")).map(([, l]) => l).join(", ");
   const rates = spec.rates.map(p).filter(Boolean);
   const rate = t.named.all !== undefined ? plain(t.named.all) : rates.length ? rates.map(plain).join("/") : undefined;
-  const form = t.named.form ? plain(t.named.form) : undefined;
+  // Legends: Arceus writes the form in the dex code: "058H" (Hisuian Growlithe), "550W" (White-Striped Basculin),
+  // "487O" (Origin Giratina), "422E" (East Sea Shellos), "413S"/"413G" (Sandy/Plant Cloak). Unown's letters ("201H")
+  // name no Pokémon of their own and come to nothing when the label is looked up as a form.
+  const LA_CODE: Record<string, string> = { H: "Hisuian Form", W: "White-Striped Form", O: "Origin Forme", E: "East Sea", S: "Sandy Cloak", G: "Plant Cloak" };
+  const code = tpl === "entryla" ? p(1).match(/^\d{1,4}([A-Z])$/)?.[1] : undefined;
+  const form = t.named.form ? plain(t.named.form) : code && LA_CODE[code] ? LA_CODE[code] : undefined;
   return {
     tpl,
     versions,

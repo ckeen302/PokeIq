@@ -35,6 +35,7 @@ export const NUZ_GAMES: NuzGameInfo[] = [
   { id: "lets-go-pikachu-eevee", name: "Let's Go, Pikachu! & Let's Go, Eevee!", gen: 7, region: "Kanto", versions: [V("lets-go-pikachu", "Let's Go, Pikachu!"), V("lets-go-eevee", "Let's Go, Eevee!")] },
   { id: "sword-shield", name: "Sword & Shield", gen: 8, region: "Galar", versions: [V("sword", "Sword"), V("shield", "Shield")] },
   { id: "brilliant-diamond-shining-pearl", name: "Brilliant Diamond & Shining Pearl", gen: 8, region: "Sinnoh", versions: [V("brilliant-diamond", "Brilliant Diamond"), V("shining-pearl", "Shining Pearl")] },
+  { id: "legends-arceus", name: "Legends: Arceus", gen: 8, region: "Hisui", versions: [V("legends-arceus", "Legends: Arceus")] },
   { id: "scarlet-violet", name: "Scarlet & Violet", gen: 9, region: "Paldea", versions: [V("scarlet", "Scarlet"), V("violet", "Violet")] },
 ];
 

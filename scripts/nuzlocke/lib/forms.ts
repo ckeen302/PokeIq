@@ -6,7 +6,7 @@
 import { getJson } from "./fetch";
 import { idOf } from "./pokeapi";
 
-type Species = { varieties: { is_default: boolean; pokemon: { name: string; url: string } }[] };
+type Species = { is_legendary?: boolean; is_mythical?: boolean; varieties: { is_default: boolean; pokemon: { name: string; url: string } }[] };
 
 const memo = new Map<number, Species | null>();
 async function species(id: number): Promise<Species | null> {
@@ -51,4 +51,10 @@ export async function formFor(speciesId: number, label: string | undefined): Pro
   if (!hit) return null;
   if (hit.is_default) return {};
   return { form: hit.pokemon.name, art: idOf(hit.pokemon.url) };
+}
+
+/** PokéAPI's Legendary or Mythical flag for a species. */
+export async function isLegendary(speciesId: number): Promise<boolean> {
+  const sp = await species(speciesId);
+  return !!(sp?.is_legendary || sp?.is_mythical);
 }
