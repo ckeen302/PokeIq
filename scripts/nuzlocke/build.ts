@@ -336,7 +336,7 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
       const dlc = cfg.id === "scarlet-violet" ? ({ Kitakami: "The Teal Mask", Unova: "The Indigo Disk" } as Record<string, string>)[p?.region ?? ""] : lists.length ? "Mega Dimension" : undefined;
       for (const r of await areaRows(cfg, n, use, dlc)) add(r);
       battleOnly.push(...boxesLeftOut.splice(0));
-      for (const u of use) if (catchRows(u.text).some((r) => tpl.has(r.tpl))) sources.add(u.url);
+      for (const u of use) if (catchRows(u.text, { whole: "whole" in u && !!u.whole }).some((r) => tpl.has(r.tpl))) sources.add(u.url);
       confirmAt.set(k, new Set([n, ...(p ? [p.title, ...p.subs] : [])]));
     }
     if (formsAsText.size) notes.push(`forms kept as condition text (no art yet): ${[...formsAsText].join(", ")}`);

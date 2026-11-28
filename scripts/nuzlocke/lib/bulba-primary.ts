@@ -428,17 +428,23 @@ export async function areaRows(cfg: GameCfg, place: string, pagesOf: { title: st
       // a fixed alpha's level is in its "Alpha Levels" column.
       // A spawn that is always an alpha (Legends: Arceus's alpha icon) has only alpha levels; a cell with two level
       // ranges is two spawns.
-      const sets = h.levelsAfter ? [] : (h.levelSets ?? []).map((x) => parseLevels(x)).filter((x): x is [number, number] => !!x);
+      const sets = h.levelsAfter ? [] : (h.levelSets ?? []).flatMap((x) => (parseLevels(x) ? [{ levels: parseLevels(x), text: x }] : []));
       const one = parseLevels(h.levelsAfter ?? h.levels) ?? (k.method === "Fixed alpha" || h.alpha ? parseLevels(h.alphaLevels) : undefined);
-      const levelsList: ([number, number] | undefined)[] = sets.length > 1 ? sets : [one];
-      const before = h.levelsAfter && h.levels ? `Lv. ${h.levels} before completing The Way Home` : "";
+      const items: { levels?: [number, number]; text: string }[] = sets.length > 1 ? sets : [{ levels: one, text: h.levels ?? "" }];
       // (Which of the type's zones it is, "Hyperspace Wild Zone 2", is left out: a portal shows only its type and stars.)
       const zone = zoneType ? `${h.heads.find((x) => /★$/.test(x)) ?? ""} ${zoneType}-type hyperspace wild zone`.trim() : "";
-      // A form PokéAPI doesn't list as a Pokémon (a cosmetic one, "Former Titan") stays in the condition.
-      const cond = [zone, k.cond ? decode(k.cond) : "", f === null ? formText : "", h.alpha && k.method !== "Fixed alpha" ? "Alpha" : "", h.times?.join(", ") ?? "", h.weather ? `Weather: ${h.weather.join(", ")}` : "", before, dlc].filter(Boolean).join("; ") || undefined;
-      for (const levels of levelsList)
+      for (const it of items) {
+        // (A Kitakami table without that column gives the earlier levels only: said so, no level guessed for after.)
+        const before = h.levelsAfter && h.levels
+          ? `Lv. ${h.levels} before completing The Way Home`
+          : h.tpl === "entry9" && dlc === "The Teal Mask" && it.text
+            ? `Lv. ${it.text} before completing The Way Home; Bulbapedia lists no level for after it`
+            : "";
+        // A form PokéAPI doesn't list as a Pokémon (a cosmetic one, "Former Titan") stays in the condition.
+        const cond = [zone, k.cond ? decode(k.cond) : "", f === null ? formText : "", h.alpha && k.method !== "Fixed alpha" ? "Alpha" : "", h.times?.join(", ") ?? "", h.weather ? `Weather: ${h.weather.join(", ")}` : "", before, dlc].filter(Boolean).join("; ") || undefined;
         for (const ver of h.versions.filter((v) => versions.includes(v)))
-          out.push({ src: "bulbapedia", ver, place, species: h.species, ...(f?.form ? { form: f.form, art: f.art } : {}), kind: k.kind, method: k.method, ...(levels ? { levels } : {}), ...(cond ? { cond } : {}), url: p.url });
+          out.push({ src: "bulbapedia", ver, place, species: h.species, ...(f?.form ? { form: f.form, art: f.art } : {}), kind: k.kind, method: k.method, ...(it.levels ? { levels: it.levels } : {}), ...(cond ? { cond } : {}), url: p.url });
+      }
     }
     for (const b of boxRows(p.text, cfg)) {
       if (b.uncatchable) {

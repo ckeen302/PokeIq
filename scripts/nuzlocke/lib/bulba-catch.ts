@@ -259,6 +259,13 @@ function timeWeather(t: Template, tpl: string, cols: Record<string, string>): { 
   return out;
 }
 
+/** A level cell with two ranges ("33-36<br>50-52", "30-39, 50-53"): each range (the Bulbapedia-primary games' templates). */
+function levelSetsOf(tpl: string, cell: string): { levelSets?: string[] } {
+  if (!/^entry(la|za|9)$/.test(tpl)) return {};
+  const parts = cell.replace(/\[\[(?:image|file):[^\]]*\]\]/gi, "").split(/<br\s*\/?>|,\s*/i).map((x) => plain(x)).filter(Boolean);
+  return parts.length > 1 && parts.every((x) => /^\d+(?:\s*[-–]\s*\d+)?$/.test(x)) ? { levelSets: parts } : {};
+}
+
 function rowOf(t: Template, tpl: string, spec: Spec, div: string | undefined, heads: string[], cols: Record<string, string> = {}): BulbaRow {
   const p = (n: number) => (t.pos[n - 1] ?? "").trim();
   const versions = spec.single ? [spec.single] : spec.flags.filter((_, i) => /^yes$/i.test(p(3 + i)));
@@ -287,7 +294,7 @@ function rowOf(t: Template, tpl: string, spec: Spec, div: string | undefined, he
     ...(/TeraGem_(\w+)\./i.test(p(spec.levels)) ? { tera: /TeraGem_(\w+)\./i.exec(p(spec.levels))![1] } : {}),
     ...(t.named.levelscaled?.trim() ? { levelsAfter: plain(t.named.levelscaled) } : {}),
     ...(tpl === "entryla" && p(4) ? { alphaLevels: plain(p(4)) } : {}),
-    ...(/^entry(la|za|9)$/.test(tpl) && /<br\s*\/?>/i.test(p(spec.levels)) ? { levelSets: p(spec.levels).split(/<br\s*\/?>/i).map((x) => plain(x)).filter(Boolean) } : {}),
+    ...levelSetsOf(tpl, p(spec.levels)),
     ...(tpl === "entryla" && /^yes$/i.test(t.named.alpha ?? "") ? { alpha: true as const } : {}),
     ...timeWeather(t, tpl, cols),
     ...(rate ? { rate } : {}),
