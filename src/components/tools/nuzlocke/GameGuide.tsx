@@ -190,7 +190,7 @@ function CapList({ t, view }: { t: PageT; view: GameView }) {
         {t("game.capsHeading")}
       </h2>
       <p className="mb-4 mt-1 text-[15px] text-muted-foreground">{t("game.capsLead")}</p>
-      <ol className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+      <ol className="grid grid-cols-[minmax(0,1fr)] gap-2 sm:grid-cols-2 lg:grid-cols-3">
         {bosses.map((b) => {
           const caps = view.versions.filter((v) => inVersion(b, v.id)).map((v) => [v, capFor(b, v.id)] as const).filter(([, c]) => c !== undefined);
           const same = new Set(caps.map(([, c]) => c)).size <= 1;
@@ -201,7 +201,7 @@ function CapList({ t, view }: { t: PageT; view: GameView }) {
             <li key={b.key} className={cn("flex min-h-[60px] items-center gap-3 rounded-2xl border px-3.5 py-2.5", story ? "border-dashed border-foreground/[0.12] bg-transparent" : "border-foreground/[0.07] bg-card")} data-story={story ? "1" : undefined}>
               <Icon className={cn("h-4 w-4 shrink-0", story ? "text-muted-foreground" : "text-[hsl(var(--warning))]")} aria-label={story ? t("game.storyBattle") : undefined} aria-hidden={!story} />
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-[14.5px] font-semibold leading-tight">{b.name}</span>
+                <span className="line-clamp-2 text-[14.5px] font-semibold leading-tight">{b.name}</span>
                 {(b.badge || b.versions || story || b.optional) && (
                   <span className="flex min-w-0 flex-wrap items-center gap-1.5 text-[12.5px] text-muted-foreground">
                     {b.badge && <span className="truncate">{b.badge}</span>}

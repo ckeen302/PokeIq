@@ -57,6 +57,8 @@ export function postText(t: NuzT, stats: readonly EncounterStat[]): string[] {
 
 /** How many of a Pokémon's conditions show before "+3 more" (all of them once it's chosen). */
 const WHEN_SHOWN = 3;
+/** A line longer than this (a note on where it spawns) shows in two lines until the row is chosen. */
+const NOTE_SHOWN = 80;
 
 /**
  * One Pokémon in the picker. Memoised: a big area (Sword & Shield's Wild Area) lists a hundred or more, and choosing one
@@ -109,7 +111,7 @@ const PickRow = memo(function PickRow({
             ))}
           </span>
           {/* A long note (Bulbapedia's on where a Pokémon spawns) in two lines, all of it once the row is chosen. */}
-          {text && <span className={cn("mt-0.5 block text-[12.5px] text-muted-foreground [font-variant-numeric:tabular-nums]", !on && "line-clamp-2")}>{text}</span>}
+          {text && <span className={cn("mt-0.5 block text-[12.5px] text-muted-foreground [font-variant-numeric:tabular-nums] [overflow-wrap:anywhere]", !on && text.length > NOTE_SHOWN && "line-clamp-2")}>{text}</span>}
           {when.length > 0 && (
             <span className="mt-1 flex flex-wrap gap-1" data-testid="nz-when">
               {shown.map((w) => (

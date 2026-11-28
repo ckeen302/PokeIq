@@ -92,7 +92,8 @@ export function RunHeader({ t, run, view, readOnly, onRename, onBadge, onMenu }:
                 <span className="font-display text-[34px] font-bold leading-none text-screen [font-variant-numeric:tabular-nums] max-sm:text-[30px]" data-testid="nz-cap-value">
                   {cap.cap}
                 </span>
-                <span className="min-w-0 truncate text-[13px] font-semibold text-foreground/80 max-sm:text-[12px]">{t("header.capFor", { boss: cap.boss.name })}</span>
+                {/* On a phone the tile is narrow: a long name (Rogue Mega Absol (Jaune Sector 6)) takes two lines. */}
+                <span className="min-w-0 truncate text-[13px] font-semibold text-foreground/80 max-sm:line-clamp-2 max-sm:w-full max-sm:whitespace-normal max-sm:text-[12px] max-sm:leading-snug">{t("header.capFor", { boss: cap.boss.name })}</span>
               </span>
             ) : (
               <span className="mt-1 text-[14px] font-semibold">{t("header.noCap")}</span>
