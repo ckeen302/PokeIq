@@ -56,6 +56,13 @@ export function methodRank(method: string, kind: EncounterKind): number {
   if (/rock smash|smash/.test(m)) return 4;
   if (/headbutt|honey|tree/.test(m)) return 4.1;
   if (/grass|cave|walk|tall|dark|field|flower|sand|snow|bridge|overworld/.test(m)) return 0;
+  // Scarlet & Violet's and the Legends games' ways: the land first, then the air; then the ones met at one spot (alphas),
+  // and last what takes an event (an outbreak, a space-time distortion, a hyperspace zone).
+  if (/^land\b|^wild$/.test(m)) return 0;
+  if (/overland|in the air|flying|sky/.test(m)) return 0.2;
+  if (/outbreak|space-time|hyperspace/.test(m)) return 5;
+  if (/\bore\b|\bboxes\b/.test(m)) return 4;
+  if (/alpha|^fixed/.test(m)) return 4.5;
   return 0.5;
 }
 

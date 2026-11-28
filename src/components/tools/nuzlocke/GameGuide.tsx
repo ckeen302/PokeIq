@@ -82,8 +82,10 @@ function rowText(t: PageT, view: GameView, row: EncounterRow): { only: string[] 
   for (const s of postStats(row.stats)) by.set(s.post!, [...(by.get(s.post!) ?? []), s]);
   const post = [...by]
     .map(([when, lines]) => {
+      // A post-game line is there for its levels: when they aren't known, it says so.
       const level = levelText(t, lines);
-      return t("game.post", { when, text: level && sameButLevels(lines, story, view.versions.map((v) => v.id)) ? level : linesText(t, view, lines, sets.size > 1) });
+      if (sameButLevels(lines, story, view.versions.map((v) => v.id))) return t("game.post", { when, text: level ?? t("game.noLevel") });
+      return t("game.post", { when, text: [linesText(t, view, lines, sets.size > 1), level ? "" : t("game.noLevel")].filter(Boolean).join(" · ") });
     })
     .join("\n");
   return { only, text: linesText(t, view, story, sets.size > 1), post };
@@ -137,7 +139,10 @@ function areaGroups(t: PageT, view: GameView, area: ViewArea, locale: Locale): G
 function AreaBlock({ t, view, area, locale }: { t: PageT; view: GameView; area: ViewArea; locale: Locale }) {
   return (
     <li className="rounded-[22px] border border-foreground/[0.08] bg-card p-4 shadow-[0_16px_40px_-34px_hsl(var(--shade)/0.9)] sm:p-5" id={`area-${area.id}`} data-testid="nz-guide-area">
-      <h3 className="font-display text-[19px] font-bold tracking-tight">{area.name}</h3>
+      <h3 className="font-display text-[19px] font-bold tracking-tight">
+        {area.name}
+        {area.addOn && <i className="nzg-only nzg-tag ml-2 align-middle font-sans tracking-normal">{area.addOn}</i>}
+      </h3>
       {area.encounters.length === 0 ? <p className="mt-1 text-[14px] text-muted-foreground">{t("game.noEncounters")}</p> : <GuideList groups={areaGroups(t, view, area, locale)} />}
     </li>
   );

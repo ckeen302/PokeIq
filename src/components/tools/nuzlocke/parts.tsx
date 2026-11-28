@@ -45,6 +45,15 @@ export function TypeChip({ t, type, size = "md", className }: { t: NuzT; type: s
   );
 }
 
+/** The add-on a whole area is in ("The Teal Mask"), by its name. */
+export function AddOnTag({ name, className }: { name: string; className?: string }) {
+  return (
+    <span className={cn("inline-flex shrink-0 items-center rounded-full bg-foreground/[0.07] px-2 py-px align-middle text-[11px] font-semibold leading-[18px] tracking-normal text-foreground/70", className)} data-testid="nz-add-on">
+      {name}
+    </span>
+  );
+}
+
 export function VersionDot({ id, className }: { id: string; className?: string }) {
   return <span className={cn("inline-block h-2.5 w-2.5 shrink-0 rounded-full ring-2 ring-foreground/10", className)} style={{ background: versionColor(id) }} aria-hidden />;
 }

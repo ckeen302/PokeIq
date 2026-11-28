@@ -43,7 +43,20 @@ export const FORM_ART: Record<string, number> = {
   "squawkabilly-blue-plumage": 10260,
   "squawkabilly-yellow-plumage": 10261,
   "squawkabilly-white-plumage": 10262,
+  "dudunsparce-three-segment": 10255,
 };
+
+/**
+ * Where Showdown's default forme isn't PokéAPI's. The tracker's Pokémon follow Showdown's (their evolutions come from
+ * it), whose Maushold is the Family of Three and Maushold-Four the Family of Four; PokéAPI's default Maushold (925, the
+ * site's picture) is the Family of Four, and its Family of Three 10257. Each one's picture and a name that says which.
+ */
+export const SHOWDOWN_DEFAULTS: Record<string, { art: number; name: string }> = {
+  "925": { art: 10257, name: "Maushold (Family of Three)" },
+  "maushold-four": { art: 925, name: "Maushold (Family of Four)" },
+};
+/** The other way: a game's Maushold with no form is PokéAPI's default, the Family of Four (Showdown's Maushold-Four). */
+export const POKEAPI_DEFAULTS: Record<number, string> = { 925: "maushold-four" };
 
 const FLOWERS = ["yellow", "orange", "blue", "white"] as const;
 const FLOWER_LINE = [
@@ -61,6 +74,8 @@ const FLOWER_LINE = [
 export const COSMETIC_FORMS: Record<string, { species: number; render: string; name: string; evolves?: string }> = {
   "shellos-east": { species: 422, render: "422-east", name: "East Sea Shellos", evolves: "gastrodon-east" },
   "gastrodon-east": { species: 423, render: "423-east", name: "East Sea Gastrodon" },
+  // Not where it's met, but a pattern: an evolution Showdown offers Spewpa (a Fancy Pattern Scatterbug's).
+  "vivillon-fancy": { species: 666, render: "666-fancy", name: "Fancy Pattern Vivillon" },
   ...Object.fromEntries(
     FLOWER_LINE.flatMap(([species, slug, name], i) =>
       FLOWERS.map((c) => [`${slug}-${c}`, { species, render: `${species}-${c}`, name: `${c[0].toUpperCase()}${c.slice(1)} ${name}`, ...(FLOWER_LINE[i + 1] && { evolves: `${FLOWER_LINE[i + 1][1]}-${c}` }) }])

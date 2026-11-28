@@ -3,7 +3,8 @@
  * Pokémon HOME render from PokéAPI's sprites, made the way scripts/sizes-art.ts makes the rest (256 px, the same
  * WebP), so they sit with them:
  *   - a form with a PokéAPI pokemon id: public/sizes/art/256/{id}.webp (its `art` id then just works);
- *   - a cosmetic form with none (East Sea Shellos, Flabébé's colours): public/tools/nuzlocke/forms/{species}-{form}.webp.
+ *   - a cosmetic form with none (East Sea Shellos, Flabébé's colours): public/tools/nuzlocke/forms/{species}-{form}.webp;
+ *   - a cover's form the site's art lacks (Complete Forme Zygarde): public/tools/nuzlocke/{id}.webp.
  *
  *   NODE_USE_ENV_PROXY=1 npx tsx scripts/nuzlocke-art.ts           (missing ones only)
  *   NODE_USE_ENV_PROXY=1 npx tsx scripts/nuzlocke-art.ts --force   (every one again)
@@ -11,7 +12,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import { transcodeHome } from "../src/lib/server/sizes-art";
-import { COSMETIC_FORMS, FORM_ART } from "../src/lib/nuzlocke/form-art";
+import { COSMETIC_FORMS, FORM_ART, SHOWDOWN_DEFAULTS } from "../src/lib/nuzlocke/form-art";
+import { ART_PATHS } from "../src/lib/nuzlocke/view";
 
 const HOME = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home";
 const ROOT = process.cwd();
@@ -28,8 +30,10 @@ async function fetchPng(name: string | number): Promise<Buffer> {
 
 async function main() {
   const jobs = [
-    ...Object.entries(FORM_ART).map(([form, id]) => ({ form, render: id, file: path.join(ROOT, "public/sizes/art/256", `${id}.webp`) })),
+    ...[...Object.entries(FORM_ART), ...Object.entries(SHOWDOWN_DEFAULTS).map(([form, d]) => [form, d.art] as const)].map(([form, id]) => ({ form, render: id, file: path.join(ROOT, "public/sizes/art/256", `${id}.webp`) })),
     ...Object.entries(COSMETIC_FORMS).map(([form, c]) => ({ form, render: c.render, file: path.join(ROOT, "public/tools/nuzlocke/forms", `${c.render}.webp`) })),
+    // The games' covers the site's art lacks (view.ts ART_PATHS).
+    ...Object.entries(ART_PATHS).map(([id, src]) => ({ form: `cover ${id}`, render: Number(id), file: path.join(ROOT, "public", src) })),
   ];
   let written = 0;
   for (const job of jobs) {

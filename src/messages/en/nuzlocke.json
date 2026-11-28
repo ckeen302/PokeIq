@@ -157,7 +157,8 @@
     "levels": "Lv\u00a0{min}–\u2060{max}",
     "level": "Lv\u00a0{n}",
     "more": "+{n} more",
-    "post": "{when}: {text}"
+    "post": "{when}: {text}",
+    "noLevel": "level not listed"
   },
   "death": {
     "title": "Mark {name} as dead",

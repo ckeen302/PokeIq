@@ -9,7 +9,7 @@ import { capFor, inVersion, type GameView, type ViewArea, type ViewBoss } from "
 import { groupByMethod } from "@/lib/nuzlocke/group";
 import { Segmented } from "../tier-list/ui";
 import type { Act } from "./act";
-import { Menu, Sprite, TypeChip, VersionDot, type MenuItem, type NuzT } from "./parts";
+import { AddOnTag, Menu, Sprite, TypeChip, VersionDot, type MenuItem, type NuzT } from "./parts";
 
 /**
  * The run's main column: every area in story order with the bosses between them, each area's one encounter (or the
@@ -252,7 +252,10 @@ function AreaCard({ t, run, view, area, next, readOnly, justCaught, onCaughtShow
   return (
     <li id={`nz-area-${area.id}`} className={cn("rounded-[22px] border bg-card p-3 shadow-[0_14px_36px_-32px_hsl(var(--shade)/0.9)] transition-colors sm:p-3.5", result ? "border-foreground/[0.07]" : "border-foreground/[0.1]")} data-testid="nz-area" data-area={area.id} data-state={result?.kind ?? "open"}>
       <div className="flex items-center gap-2 px-1">
-        <h3 className="min-w-0 flex-1 truncate font-display text-[16.5px] font-bold tracking-tight">{area.name}</h3>
+        <h3 className="min-w-0 flex-1 truncate font-display text-[16.5px] font-bold tracking-tight">
+          {area.name}
+          {area.addOn && <AddOnTag name={area.addOn} className="ml-2" />}
+        </h3>
         {result && <Check className="h-4 w-4 shrink-0 text-success" strokeWidth={3} aria-hidden />}
         {!readOnly && menu.length > 0 && <Menu label={t("routes.areaMenu", { area: area.name })} items={menu} onPick={(id) => (id === "reopen" ? act.reopen(area.id) : act.pick(area.id, true))} className="-my-1.5 -mr-1.5" testId={`nz-area-menu-${area.id}`} />}
       </div>

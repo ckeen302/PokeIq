@@ -40,6 +40,7 @@ export const VERSION_LOOK: Record<string, { color: string; mascot?: number }> = 
   "legends-arceus": { color: "#8d6e63", mascot: 493 },
   scarlet: { color: "#e53935", mascot: 1007 },
   violet: { color: "#8e24aa", mascot: 1008 },
+  "legends-za": { color: "#1aa3a3", mascot: 10120 },
 };
 
 export const versionColor = (id: string): string => VERSION_LOOK[id]?.color ?? "hsl(var(--muted-foreground))";

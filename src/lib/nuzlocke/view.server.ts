@@ -7,8 +7,8 @@ import SIZES_ART from "@/data/sizes-art.json";
 import { TYPES } from "@/lib/pokemon/type-matrix";
 import type { NuzArea, NuzGame } from "./model";
 import { bossKeys, monKey, type GameView, type ViewArea, type ViewMon, type ViewStep } from "./view";
-import { compactEncounters } from "./compact";
-import { COSMETIC_FORMS, FORM_ART, cosmeticArt } from "./form-art";
+import { addOnOf, compactEncounters, dayOf, withoutPart } from "./compact";
+import { COSMETIC_FORMS, FORM_ART, POKEAPI_DEFAULTS, SHOWDOWN_DEFAULTS, cosmeticArt } from "./form-art";
 
 /**
  * A game's data made ready for the tracker's screens (lib/nuzlocke/view.ts), on the server: every Pokémon's name,
@@ -37,7 +37,7 @@ const BY_ID = new Map(POKEDEX.map((p) => [p.id, p]));
 const FORMS = new Map<string, FormRow & { species: number }>();
 for (const [id, d] of Object.entries(DETAILS as unknown as Record<string, { forms?: FormRow[] }>)) for (const f of d.forms ?? []) FORMS.set(f.slug, { ...f, species: Number(id) });
 /** Pictures the site has: its Pokémon art (made for /pokedex/sizes), and the forms the tracker added to it (form-art.ts). */
-const HAS_ART = new Set([...Object.keys(SIZES_ART as Record<string, unknown>).map(Number), ...Object.values(FORM_ART)]);
+const HAS_ART = new Set([...Object.keys(SIZES_ART as Record<string, unknown>).map(Number), ...Object.values(FORM_ART), ...Object.values(SHOWDOWN_DEFAULTS).map((d) => d.art)]);
 
 /** Real species and formes of the generation, also those no longer in its newest games ("Past"), as the calculators take them. */
 const ALLOWED_NONSTANDARD = new Set(["Past", "Unobtainable"]);
@@ -134,8 +134,8 @@ function formeName(s: Specie): string {
   return `${forme} ${s.baseSpecies}`;
 }
 
-/** `art`: the form's picture id when the game data names one (NuzEncounter.art). */
-function viewMon(gen: Generation, species: number, form: string | undefined, artId?: number): ViewMon | null {
+/** `art`: the form's picture id when the game data names one (NuzEncounter.art). `abilities`: for the Team Builder. */
+function viewMon(gen: Generation, species: number, form: string | undefined, artId: number | undefined, abilities: boolean): ViewMon | null {
   const row = BY_ID.get(species);
   if (!row) return null;
   const f = form ? FORMS.get(form) : undefined;
@@ -144,43 +144,47 @@ function viewMon(gen: Generation, species: number, form: string | undefined, art
   // The form's own picture: a cosmetic form's (kept with the tracker), else the first id with a picture of the data's,
   // the Pokédex's and the tracker's own (form-art.ts); the species' only for a form that looks the same (Partner Pikachu).
   const ids = form ? [artId, f?.id, FORM_ART[form]].filter((id): id is number => !!id && HAS_ART.has(id)) : [];
-  const art = cosmetic ? cosmeticArt(form!) : (ids[0] ?? species);
+  const swap = SHOWDOWN_DEFAULTS[form ?? String(species)];
+  const art = swap?.art ?? (cosmetic ? cosmeticArt(form!) : (ids[0] ?? species));
   return {
     key: form ?? String(species),
     species,
     ...(form && { form }),
-    name: cosmetic?.name ?? f?.name ?? (form && specie?.forme ? formeName(specie) : row.name),
+    name: swap?.name ?? cosmetic?.name ?? f?.name ?? (form && specie?.forme ? formeName(specie) : row.name),
     slug: row.slug,
     art,
     types: (specie?.types ?? []).map((t) => t.toLowerCase()),
     family: row.chain,
     showdown: specie?.name ?? row.name,
-    ...(gen.num >= 3 && specie?.abilities[0] && { ability: specie.abilities[0] }),
+    ...(abilities && specie?.abilities[0] && { ability: specie.abilities[0] }),
   };
 }
 
-/** Each Pokémon of the game, and everything it can evolve into in the generation (each with its own evolutions). */
-function collectMons(gen: Generation, seeds: { species: number; form?: string; art?: number }[]): Record<string, ViewMon> {
+/**
+ * Each Pokémon of the game, and everything it can evolve into up to the game's generation (`upTo`), each with its own
+ * evolutions, looked up in `gen`'s Pokédex.
+ */
+function collectMons(gen: Generation, upTo: number, abilities: boolean, seeds: { species: number; form?: string; art?: number }[]): Record<string, ViewMon> {
   const mons: Record<string, ViewMon> = {};
   const queue = [...seeds];
   while (queue.length) {
     const { species, form, art } = queue.shift()!;
     const key = form ?? String(species);
     if (mons[key]) continue;
-    const mon = viewMon(gen, species, form, art);
+    const mon = viewMon(gen, species, form, art, abilities);
     if (!mon) continue;
     mons[key] = mon;
     // A cosmetic form evolves into the same sea's, the same flower's (Showdown keeps one evolution for all of them).
     const cosmetic = form ? COSMETIC_FORMS[form] : undefined;
     if (cosmetic) {
-      if (cosmetic.evolves && COSMETIC_FORMS[cosmetic.evolves].species && BY_ID.get(COSMETIC_FORMS[cosmetic.evolves].species)!.gen <= gen.num) {
+      if (cosmetic.evolves && COSMETIC_FORMS[cosmetic.evolves].species && BY_ID.get(COSMETIC_FORMS[cosmetic.evolves].species)!.gen <= upTo) {
         mon.evos = [cosmetic.evolves];
         queue.push({ species: COSMETIC_FORMS[cosmetic.evolves].species, form: cosmetic.evolves });
       }
       continue;
     }
     const specie = specieFor(gen, species, form);
-    const evos = (specie?.evos ?? []).map((name) => gen.species.get(name)).filter((s): s is Specie => !!s && BY_ID.has(s.num) && BY_ID.get(s.num)!.gen <= gen.num);
+    const evos = (specie?.evos ?? []).map((name) => gen.species.get(name)).filter((s): s is Specie => !!s && BY_ID.has(s.num) && BY_ID.get(s.num)!.gen <= upTo);
     if (evos.length) {
       mon.evos = evos.map((s) => formFor(s) ?? String(s.num));
       for (const s of evos) queue.push({ species: s.num, form: formFor(s) });
@@ -225,29 +229,55 @@ const CATCH_RATE: Record<string, string> = {
 };
 /** The Team Builder's format for a generation, where it has one (Generations III, IV and IX). */
 const TEAM_FORMAT: Record<number, string> = { 3: "gen3ou", 4: "gen4ou", 9: "gen9ubers" };
+/** The Legends games battle their own way (no abilities, their own moves): a Showdown format isn't theirs. */
+const OWN_BATTLES = new Set(["legends-arceus", "legends-za"]);
 
-const areaView = (a: NuzArea, versions: readonly string[]): ViewArea => ({
-  id: a.id,
-  name: a.name,
-  // Each Pokémon once per way of meeting it and version, its lines summed up (Sword & Shield's Wild Area has hundreds).
-  encounters: compactEncounters(a.encounters, versions).map(({ species, form, ...e }) => {
-    // The picture is the Pokémon's (in `mons`), not the encounter's.
-    delete (e as { art?: number }).art;
-    return { ...e, mon: monKey({ species, form }) };
-  }),
-});
+/**
+ * The generation whose Pokédex a game's Pokémon are looked up in: the game's own, but for Legends: Arceus. It's a
+ * Generation VIII game, and Showdown's Generation VIII is Sword & Shield's, without Hisui's Pokémon and forms (Hisuian
+ * Growlithe would be a Fire-type Growlithe, Overqwil nothing); its Generation IX has them.
+ */
+const DEX_GEN: Record<string, number> = { "legends-arceus": 9 };
+
+/** An encounter's form in the tracker's (Showdown's) terms. */
+const formOf = (e: { species: number; form?: string }): string | undefined => e.form ?? POKEAPI_DEFAULTS[e.species];
+
+function areaView(a: NuzArea, versions: readonly string[], day: readonly string[]): ViewArea {
+  const addOn = addOnOf(a.encounters);
+  const lines = addOn ? a.encounters.map((e) => withoutPart(e, addOn)) : a.encounters;
+  return {
+    id: a.id,
+    name: a.name,
+    ...(addOn && { addOn }),
+    // Each Pokémon once per way of meeting it and version, its lines summed up (Sword & Shield's Wild Area has hundreds).
+    encounters: compactEncounters(lines, versions, day).map(({ species, form, ...e }) => {
+      // The picture is the Pokémon's (in `mons`), not the encounter's.
+      delete (e as { art?: number }).art;
+      return { ...e, mon: monKey({ species, form: formOf({ species, form }) }) };
+    }),
+  };
+}
 
 export function buildView(game: NuzGame): GameView {
   const gen = generation(game.gen);
+  const teamFormat = OWN_BATTLES.has(game.id) ? undefined : TEAM_FORMAT[game.gen];
   const areas = [...game.steps.flatMap((s) => (s.type === "area" ? [s.area] : [])), ...game.extra];
   const mons = collectMons(
-    gen,
-    areas.flatMap((a) => a.encounters.map((e) => ({ species: e.species, ...(e.form && { form: e.form, ...(e.art && { art: e.art }) }) })))
+    generation(DEX_GEN[game.id] ?? game.gen),
+    game.gen,
+    !!teamFormat,
+    areas.flatMap((a) =>
+      a.encounters.map((e) => {
+        const form = formOf(e);
+        return { species: e.species, ...(form && { form, ...(e.art && { art: e.art }) }) };
+      })
+    )
   );
   const keys = bossKeys(game.steps);
   let b = 0;
   const versionIds = game.versions.map((v) => v.id);
-  const steps: ViewStep[] = game.steps.map((s) => (s.type === "area" ? { type: "area", area: areaView(s.area, versionIds) } : { type: "boss", boss: { ...s.boss, key: keys[b++] } }));
+  const day = dayOf(areas.flatMap((a) => a.encounters));
+  const steps: ViewStep[] = game.steps.map((s) => (s.type === "area" ? { type: "area", area: areaView(s.area, versionIds, day) } : { type: "boss", boss: { ...s.boss, key: keys[b++] } }));
   const { types, chart } = typeChart(gen);
   return {
     id: game.id,
@@ -256,13 +286,13 @@ export function buildView(game: NuzGame): GameView {
     region: game.region,
     versions: game.versions,
     steps,
-    extra: game.extra.map((a) => areaView(a, versionIds)),
+    extra: game.extra.map((a) => areaView(a, versionIds, day)),
     mons,
     dex: POKEDEX.filter((p) => p.gen <= game.gen).map((p) => [p.id, p.name]),
     types,
     chart,
     ...(CATCH_RATE[game.id] && { catchRate: CATCH_RATE[game.id] }),
-    ...(TEAM_FORMAT[game.gen] && { teamFormat: TEAM_FORMAT[game.gen] }),
+    ...(teamFormat && { teamFormat }),
     sources: game.sources,
   };
 }

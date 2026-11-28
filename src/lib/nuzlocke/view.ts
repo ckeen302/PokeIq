@@ -49,6 +49,8 @@ export interface ViewEncounter extends Omit<NuzEncounter, "species" | "form" | "
 export interface ViewArea {
   id: string;
   name: string;
+  /** The add-on the whole area is in ("The Teal Mask"), said by its name instead of on each line. */
+  addOn?: string;
   encounters: ViewEncounter[];
 }
 
@@ -145,10 +147,11 @@ export const capFor = (b: NuzBoss, version: string): number | undefined => b.cap
 export const givesBadge = (b: NuzBoss): boolean => !!b.badge && /badge$/i.test(b.badge.trim());
 
 /**
- * Pictures kept with the tracker because /sizes/art has none: the forms on Ultra Sun's and Ultra Moon's covers, Dusk Mane
- * and Dawn Wings Necrozma (by PokéAPI id; the same renders as the rest of the site's).
+ * Pictures kept with the tracker because /sizes/art has none: the forms on the covers of Ultra Sun and Ultra Moon (Dusk
+ * Mane and Dawn Wings Necrozma) and of Legends: Z-A (Complete Forme Zygarde), by PokéAPI id; the same renders as the rest
+ * of the site's (scripts/nuzlocke-art.ts).
  */
-const ART_PATHS: Record<number, string> = { 10155: "/tools/nuzlocke/10155.webp", 10156: "/tools/nuzlocke/10156.webp" };
+export const ART_PATHS: Record<number, string> = { 10155: "/tools/nuzlocke/10155.webp", 10156: "/tools/nuzlocke/10156.webp", 10120: "/tools/nuzlocke/10120.webp" };
 
 /** The picture of a Pokémon (or of any species, by number). */
 export const artSrc = (art: number | string): string => (typeof art === "string" ? art : (ART_PATHS[art] ?? `/sizes/art/256/${art}.webp`));

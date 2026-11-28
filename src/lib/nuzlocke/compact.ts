@@ -37,7 +37,10 @@ export const NORMAL_WEATHER = "Normal weather";
 export const ANY_WEATHER = "Any weather";
 const WEATHER_ORDER = [NORMAL_WEATHER, "Overcast", "Rain", "Thunderstorm", "Snow", "Snowstorm", "Sandstorm", "Intense sun", "Fog"];
 
-const TIMES = ["Morning", "Day", "Night"];
+/** The parts of the day the data names; a game has some of them (Scarlet & Violet all four, Legends: Z-A day and night). */
+const TIMES = ["Morning", "Day", "Evening", "Night"];
+/** The day of the games before Legends: Arceus and Scarlet & Violet, which have no evening. */
+export const DAY = ["Morning", "Day", "Night"];
 const timesOf = (part: string): string[] | null => {
   const t = part.split(", ");
   return t.every((x) => TIMES.includes(x)) ? t : null;
@@ -53,7 +56,14 @@ const STAGES: [string, string][] = [
 const RELABEL: Record<string, string> = {
   "Enter the Hall of Fame": "After the Hall of Fame",
   "Before entering the Hall of Fame": "Before the Hall of Fame",
+  // Scarlet & Violet's Legendary Pokémon that Snacksworth's Treats bring.
+  "After acquiring the corresponding Treat from Snacksworth, certain Legendary Pokémon will spawn in this area as a static encounter": "After its Treat from Snacksworth",
+  "the Treat for it comes from group Blueberry Quests only": "Treat from group Blueberry Quests only",
 };
+const SNACKS = "After its Treat from Snacksworth";
+const SNACKS_BBQ = "Treat from group Blueberry Quests only";
+/** Legends: Z-A's hyperspace wild zones, under Hyperspace Lumiose: "4★ Grass-type hyperspace wild zone" is a "4★ Grass-type zone". */
+const ZONE = /^(\d★ \w+-type) hyperspace wild zone$/;
 /** DPPt's honey trees, as the data words them: "Honey Tree Group A (70% on normal trees / 20% on Munchlax trees)". */
 const HONEY = /^Honey Tree Group ([A-Z]) \((\d+)% on normal trees \/ (\d+)% on Munchlax trees\)$/;
 
@@ -64,12 +74,16 @@ const HONEY = /^Honey Tree Group ([A-Z]) \((\d+)% on normal trees \/ (\d+)% on M
 const label = (part: string, method: string): string => {
   const honey = HONEY.exec(part);
   if (honey) return `${/honey/i.test(method) ? "Group" : "Honey tree group"} ${honey[1]} (${honey[2]}% normal / ${honey[3]}% Munchlax trees)`;
+  const zone = ZONE.exec(part);
+  if (zone) return `${zone[1]} zone`;
   return RELABEL[part] ?? part;
 };
 
 /** The parts of a condition as the screens say them, joined: "Have Fossilized Dino in bag; Have Fossilized Fish in bag" is "Fossilized Dino + Fossilized Fish". */
 function say(list: readonly string[], method: string): string {
-  const said = list.map((p) => label(p, method));
+  let said = list.map((p) => label(p, method));
+  // "After its Treat from Snacksworth (group Blueberry Quests only)", not the Treat twice.
+  if (said.includes(SNACKS) && said.includes(SNACKS_BBQ)) said = said.filter((p) => p !== SNACKS_BBQ).map((p) => (p === SNACKS ? `${SNACKS} (group Blueberry Quests only)` : p));
   const bag = said.flatMap((p) => /^Have (.+) in bag$/.exec(p)?.[1] ?? []);
   if (bag.length < 2) return said.join("; ");
   const first = said.findIndex((p) => /^Have .+ in bag$/.test(p));
@@ -85,7 +99,28 @@ const POST: [RegExp, string][] = [
   [/^Acquired National Pokédex$/, "After the National Pokédex"],
   [/^Elite four defeated$/i, "After the Elite Four"],
   [/^after becoming Champion$/i, "After becoming Champion"],
+  [/^After completing The Way Home$/, "After The Way Home"],
 ];
+
+/**
+ * Kitakami's levels before Scarlet & Violet's story ends, which a line's condition gives ("Lv. 11-15 before completing The
+ * Way Home"; its own levels are after it, or the same when "Bulbapedia lists no level for after it"): a story line at
+ * those levels, and a post-game one at its own (none when they aren't known).
+ */
+const SCALED = /^Lv\. (\d+)(?:-(\d+))? before completing The Way Home$/;
+const NO_LATER = "Bulbapedia lists no level for after it";
+function unscale(e: NuzEncounter): NuzEncounter[] {
+  const all = parts(e.condition);
+  const scaled = all.map((p) => SCALED.exec(p)).find(Boolean);
+  if (!scaled) return [e];
+  const rest = all.filter((p) => !SCALED.test(p) && p !== NO_LATER);
+  const story: NuzEncounter = { ...e, levels: [Number(scaled[1]), Number(scaled[2] ?? scaled[1])] };
+  if (rest.length) story.condition = rest.join("; ");
+  else delete story.condition;
+  const later: NuzEncounter = { ...e, condition: [...rest, "After completing The Way Home"].join("; ") };
+  if (all.includes(NO_LATER)) delete later.levels;
+  return [story, later];
+}
 /** Their story-time side, left unsaid on a Pokémon that has a post-game line (which then says the difference). */
 const PRE = new Set(["Before entering the Hall of Fame", "Before National Pokédex"]);
 
@@ -109,7 +144,25 @@ const weatherOf = (e: NuzEncounter): string => parts(e.condition).map((p) => WEA
 /** Up to this many plain lines (no weather) stay as they are: "1F 69% · B1F 20%" says more than a range. */
 const KEEP = 3;
 
-export function compactEncounters(encounters: readonly NuzEncounter[], versions: readonly string[]): CompactEncounter[] {
+/** The parts of the day a game's lines name: all four (Scarlet & Violet's evening), day and night (Legends: Z-A), or DAY. */
+export function dayOf(encounters: readonly NuzEncounter[]): string[] {
+  const used = new Set(encounters.flatMap((e) => parts(e.condition).flatMap((p) => timesOf(p) ?? [])));
+  return used.has("Evening") ? TIMES : used.has("Morning") || !used.size ? DAY : ["Day", "Night"];
+}
+
+/**
+ * Add-on content a whole area is in (Kitakami is The Teal Mask's, the Terarium The Indigo Disk's): said once, by the
+ * area's name, not on each of its lines.
+ */
+const ADD_ONS = ["The Teal Mask", "The Indigo Disk", "Mega Dimension"];
+export function addOnOf(encounters: readonly NuzEncounter[]): string | undefined {
+  return encounters.length ? ADD_ONS.find((d) => encounters.every((e) => parts(e.condition).includes(d))) : undefined;
+}
+export const withoutPart = (e: NuzEncounter, part: string): NuzEncounter => without(e, (p) => p === part);
+
+/** `day`: the parts of the day the game has, so lines that cover them all say nothing of the time. */
+export function compactEncounters(all: readonly NuzEncounter[], versions: readonly string[], day: readonly string[] = DAY): CompactEncounter[] {
+  const encounters = all.flatMap(unscale);
   // The weathers of each way of meeting that has any (the Wild Area's grass does; its fishing and berry trees don't).
   const weathers = new Map<string, Set<string>>();
   for (const e of encounters) if (parts(e.condition).some((p) => p in WEATHER)) weathers.set(e.method, new Set());
@@ -140,7 +193,7 @@ export function compactEncounters(encounters: readonly NuzEncounter[], versions:
     for (const v of versions) {
       const mine = lines.filter((e) => !e.versions || e.versions.includes(v));
       if (!mine.length) continue;
-      const entry = merge(mine, methodWeathers);
+      const entry = merge(mine, methodWeathers, day);
       const key = JSON.stringify(entry);
       const seen = byResult.get(key);
       if (seen) seen.versions.push(v);
@@ -151,7 +204,7 @@ export function compactEncounters(encounters: readonly NuzEncounter[], versions:
   return out;
 }
 
-function merge(lines: NuzEncounter[], methodWeathers: Set<string> | null): CompactEncounter {
+function merge(lines: NuzEncounter[], methodWeathers: Set<string> | null, day: readonly string[]): CompactEncounter {
   const out: CompactEncounter = { ...lines[0] };
   delete out.condition;
   delete out.rate;
@@ -179,7 +232,8 @@ function merge(lines: NuzEncounter[], methodWeathers: Set<string> | null): Compa
 
   // The time of day: left out when the lines cover the whole day.
   const times = each.map((p) => p.find((x) => timesOf(x)));
-  const allDay = times.some((x) => !x) || new Set(times.flatMap((x) => timesOf(x!)!)).size === TIMES.length;
+  const covered = new Set(times.flatMap((x) => (x ? timesOf(x)! : [])));
+  const allDay = times.some((x) => !x) || day.every((x) => covered.has(x));
   const timeUnion = allDay ? null : TIMES.filter((x) => times.some((y) => timesOf(y!)!.includes(x)));
   each.forEach((p, i) => (each[i] = p.filter((x) => !timesOf(x))));
 
@@ -187,7 +241,14 @@ function merge(lines: NuzEncounter[], methodWeathers: Set<string> | null): Compa
   // gives each place its own chip, said once: "Area 2 / Main Area" and "Area 2" are "Area 2" and "Main Area".
   const common = each[0].filter((x) => each.every((p) => p.includes(x)));
   const own = each.map((p) => p.filter((x) => !common.includes(x)));
-  const rest = [...new Set(own.flatMap((p) => (p.length === 1 && / \/ /.test(p[0]) && !/[()]/.test(p[0]) ? p[0].split(" / ").map((x) => say([x], lines[0].method)) : [say(p, lines[0].method)])).filter(Boolean))];
+  let rest = [...new Set(own.flatMap((p) => (p.length === 1 && / \/ /.test(p[0]) && !/[()]/.test(p[0]) ? p[0].split(" / ").map((x) => say([x], lines[0].method)) : [say(p, lines[0].method)])).filter(Boolean))];
+  // What they all begin with is said once: "After visiting Solaceon Ruins…, at the dam" and "…, in the pond" are "After
+  // visiting Solaceon Ruins…" with "at the dam" and "in the pond".
+  const lead = rest.length > 1 && !rest.some((x) => x.includes("; ")) ? sharedLead(rest) : "";
+  if (lead) {
+    common.push(lead);
+    rest = rest.map((x) => x.slice(lead.length + 2));
+  }
   if (timeUnion) when.push(timeUnion.join(", "));
   when.push(...rest);
 
@@ -202,4 +263,11 @@ function merge(lines: NuzEncounter[], methodWeathers: Set<string> | null): Compa
   }
   if (levels.length) out.levels = [Math.min(...levels.map((l) => l[0])), Math.max(...levels.map((l) => l[1]))];
   return out;
+}
+
+/** The words up to a ", " that every one of these begins with (and goes on after), or "". */
+function sharedLead(all: readonly string[]): string {
+  let lead = all[0];
+  for (const x of all) while (lead && !x.startsWith(`${lead}, `)) lead = lead.includes(", ") ? lead.slice(0, lead.lastIndexOf(", ")) : "";
+  return lead.length >= 12 ? lead : "";
 }

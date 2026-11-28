@@ -8,7 +8,7 @@ import { groupByMethod, levelSpan, methodLabel, postStats, sameButLevels, storyS
 import { allAreas, inVersion, type GameView } from "@/lib/nuzlocke/view";
 import type { EncounterKind } from "@/lib/nuzlocke/model";
 import type { Act } from "./act";
-import { Sheet, Sprite, TypeChip, type NuzT } from "./parts";
+import { AddOnTag, Sheet, Sprite, TypeChip, type NuzT } from "./parts";
 import { methodIcon } from "./icons";
 
 const fold = (s: string) => s.normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase();
@@ -48,8 +48,9 @@ export function postText(t: NuzT, stats: readonly EncounterStat[]): string[] {
   const by = new Map<string, EncounterStat[]>();
   for (const s of postStats(stats)) by.set(s.post!, [...(by.get(s.post!) ?? []), s]);
   return [...by].map(([post, lines]) => {
-    const level = levelText(t, lines);
-    const text = level && sameButLevels(lines, story) ? level : [...new Set(lines.flatMap((s) => s.when ?? []))].concat(oddsTexts(t, lines), level ?? []).join(" · ");
+    // A post-game line is there for its levels: when they aren't known, it says so.
+    const level = levelText(t, lines) ?? t("picker.noLevel");
+    const text = sameButLevels(lines, story) ? level : [...new Set(lines.flatMap((s) => s.when ?? []))].concat(oddsTexts(t, lines), level).join(" · ");
     return t("picker.post", { when: post, text });
   });
 }
@@ -107,7 +108,8 @@ const PickRow = memo(function PickRow({
               <TypeChip key={ty} t={t} type={ty} size="sm" />
             ))}
           </span>
-          {text && <span className="mt-0.5 block text-[12.5px] text-muted-foreground [font-variant-numeric:tabular-nums]">{text}</span>}
+          {/* A long note (Bulbapedia's on where a Pokémon spawns) in two lines, all of it once the row is chosen. */}
+          {text && <span className={cn("mt-0.5 block text-[12.5px] text-muted-foreground [font-variant-numeric:tabular-nums]", !on && "line-clamp-2")}>{text}</span>}
           {when.length > 0 && (
             <span className="mt-1 flex flex-wrap gap-1" data-testid="nz-when">
               {shown.map((w) => (
@@ -226,7 +228,20 @@ export function Picker({ t, run, view, area: areaId, extra, onClose, act }: { t:
     </div>
   );
   return (
-    <Sheet title={area.name} sub={<p tabIndex={-1} data-autofocus className="mt-0.5 text-[14px] text-muted-foreground outline-none">{extra ? t("picker.leadExtra") : t("picker.lead")}</p>} onClose={onClose} closeLabel={t("picker.close")} wide footer={footer} testId="nz-picker">
+    <Sheet
+      title={area.name}
+      sub={
+        <p tabIndex={-1} data-autofocus className="mt-0.5 text-[14px] text-muted-foreground outline-none">
+          {area.addOn && <AddOnTag name={area.addOn} className="mr-2" />}
+          {extra ? t("picker.leadExtra") : t("picker.lead")}
+        </p>
+      }
+      onClose={onClose}
+      closeLabel={t("picker.close")}
+      wide
+      footer={footer}
+      testId="nz-picker"
+    >
       {/* The search stays at the top of the list; its shadow fills the list's own top padding, so no row shows above it. */}
       {rows > 6 && (
         <div className="sticky top-0 z-10 -mx-6 bg-card px-6 pb-2 pt-1 shadow-[0_-6px_0_0_hsl(var(--card))] max-sm:-mx-5 max-sm:px-5">

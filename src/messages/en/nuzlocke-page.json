@@ -33,6 +33,7 @@
     "rate": "{n}%",
     "rates": "{min}–\u2060{max}%",
     "post": "{when}: {text}",
+    "noLevel": "level not listed",
     "level": "Lv\u00a0{n}",
     "levels": "Lv\u00a0{min}–\u2060{max}",
     "only": "{version} only",

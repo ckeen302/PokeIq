@@ -134,10 +134,28 @@ describe("the game data the screens use", () => {
     expect(g7.mons["rattata-alola"].art).toBe(10091);
     expect(g7.mons["rattata-alola"].name).toBe("Alolan Rattata");
     expect(g7.mons["rattata-alola"].showdown).toBe("Rattata-Alola");
-    // The Team Builder's first pick of ability, from Gen 3 on.
+    // The Team Builder's first pick of ability, for a game it has a format for (Gens III, IV and IX), so not the
+    // Legends games, which have no abilities.
     expect(g1.mons["35"].ability).toBeUndefined();
-    expect(g6.mons["35"].ability).toBe("Cute Charm");
-    expect(g7.mons["rattata-alola"].ability).toBe("Gluttony");
+    expect(g6.mons["35"].ability).toBeUndefined();
+    expect(buildView(game(4, [{ species: 35 }])).mons["35"].ability).toBe("Cute Charm");
+    const g9 = buildView(game(9, [{ species: 19, form: "rattata-alola" }]));
+    expect(g9).toMatchObject({ teamFormat: "gen9ubers" });
+    expect(g9.mons["rattata-alola"].ability).toBe("Gluttony");
+    const za = buildView({ ...game(9, [{ species: 35 }]), id: "legends-za" });
+    expect(za.teamFormat).toBeUndefined();
+    expect(za.mons["35"].ability).toBeUndefined();
+  });
+
+  it("looks Legends: Arceus's Pokémon up in a Pokédex that has Hisui's", async () => {
+    const v = buildView((await loadGame("legends-arceus"))!);
+    expect(v.mons["growlithe-hisui"]).toMatchObject({ name: "Hisuian Growlithe", types: ["fire", "rock"] });
+    expect(v.mons["qwilfish-hisui"]).toMatchObject({ types: ["dark", "poison"], evos: ["904"] });
+    expect(v.mons["904"]).toMatchObject({ name: "Overqwil", types: ["dark", "poison"] });
+    expect(v.mons["234"]?.evos).toEqual(["899"]); // Stantler → Wyrdeer
+    expect(v.teamFormat).toBeUndefined();
+    // Nothing from a later generation: Hisui's evolutions only.
+    for (const m of Object.values(v.mons)) expect(m.species, m.key).toBeLessThanOrEqual(905);
   });
 
 
@@ -166,8 +184,9 @@ describe("the game data the screens use", () => {
   });
 
   it("gives every form its own picture, and every picture is a file", async () => {
-    // Partner Pikachu and Partner Eevee have no HOME render, and look like Pikachu and Eevee.
-    const lookAlike = new Set(["pikachu-starter", "eevee-starter"]);
+    // Partner Pikachu and Partner Eevee have no HOME render, and look like Pikachu and Eevee; PokéAPI's Maushold, the
+    // site's picture, is the Family of Four.
+    const lookAlike = new Set(["pikachu-starter", "eevee-starter", "maushold-four"]);
     for (const g of NUZ_GAMES) {
       const game = await loadGame(g.id);
       if (!game) continue;
@@ -183,6 +202,12 @@ describe("the game data the screens use", () => {
     expect(v.mons["floette-yellow"]).toMatchObject({ name: "Yellow Floette", types: ["fairy"], evos: ["florges-yellow"] });
     expect(v.mons["florges-yellow"].art).toBe("/tools/nuzlocke/forms/671-yellow.webp");
     expect(buildView(game(4, [{ species: 479, form: "rotom-heat", art: 10008 }])).mons["rotom-heat"].art).toBe(10008);
+    // Showdown's Maushold (an evolution) is the Family of Three; a game's Maushold with no form, PokéAPI's Family of Four.
+    const mice = buildView(game(9, [{ species: 924 }, { species: 925 }]));
+    expect(mice.mons["924"].evos).toEqual(["925", "maushold-four"]);
+    expect(mice.mons["925"]).toMatchObject({ name: "Maushold (Family of Three)", art: 10257 });
+    expect(mice.mons["maushold-four"]).toMatchObject({ name: "Maushold (Family of Four)", art: 925 });
+    expect(allAreas(mice)[0].encounters.map((e) => e.mon)).toEqual(["924", "maushold-four"]);
   });
 
   it("offers each generation's own evolutions", () => {
@@ -335,6 +360,43 @@ describe("an area's encounters, summed up", () => {
     const honey = allAreas(v).flatMap((x) => x.encounters).filter((e) => /group [a-z] \(/i.test(e.condition ?? "") || e.when?.some((w) => /group [a-z] \(/i.test(w)));
     expect(honey.length).toBeGreaterThan(0);
     for (const e of honey) expect(e.method).toBe("Honey Tree");
+  });
+
+  it("reads Scarlet & Violet's and the Legends games' conditions plainly", async () => {
+    // Kitakami before the story's end, and after it; or after it at levels Bulbapedia doesn't give.
+    const kita = (c: string, levels: [number, number]): NuzEncounter => ({ species: 23, kind: "wild", method: "Land", levels, condition: c });
+    const out = compactEncounters([kita("Night; Lv. 11-15 before completing The Way Home", [55, 60])], ["scarlet", "violet"]);
+    expect(out).toEqual([
+      { species: 23, kind: "wild", method: "Land", levels: [11, 15], condition: "Night" },
+      { species: 23, kind: "wild", method: "Land", levels: [55, 60], condition: "Night", post: "After The Way Home" },
+    ]);
+    const unknown = compactEncounters([kita("Lv. 25 before completing The Way Home; Bulbapedia lists no level for after it", [25, 25])], ["scarlet"]);
+    expect(unknown).toEqual([
+      { species: 23, kind: "wild", method: "Land", levels: [25, 25] },
+      { species: 23, kind: "wild", method: "Land", post: "After The Way Home" },
+    ]);
+    // Snacksworth's Treats, and Z-A's hyperspace zones, in fewer words.
+    const snack = compactEncounters([{ species: 897, kind: "static", method: "Static", levels: [70, 70], condition: "After acquiring the corresponding Treat from Snacksworth, certain Legendary Pokémon will spawn in this area as a static encounter; the Treat for it comes from group Blueberry Quests only" }], ["scarlet"]);
+    expect(snack[0].condition).toBe("After its Treat from Snacksworth (group Blueberry Quests only)");
+    const zones = compactEncounters([{ species: 3, kind: "wild", method: "Wild", levels: [41, 52], condition: "4★ Grass-type hyperspace wild zone" }], ["legends-za"]);
+    expect(zones[0].condition).toBe("4★ Grass-type zone");
+    // What every chip begins with, said once (Legends: Arceus's Unown).
+    const unown = (place: string): NuzEncounter => ({ species: 201, kind: "static", method: "Static", levels: [25, 25], condition: `After visiting Solaceon Ruins and the Unown Research Notes are added to the Pokédex, ${place}` });
+    const u = compactEncounters(["at the dam", "in the pond", "atop the tent", "on the sign"].map(unown), ["legends-arceus"]);
+    expect(u).toEqual([expect.objectContaining({ condition: "After visiting Solaceon Ruins and the Unown Research Notes are added to the Pokédex", when: ["at the dam", "in the pond", "atop the tent", "on the sign"] })]);
+    // The evening is part of the day: "Morning, Day" and "Evening, Night" are all of it; "Evening, Night" alone isn't.
+    const t = (c: string): NuzEncounter => ({ species: 16, kind: "wild", method: "Land", levels: [5, 5], condition: c });
+    const four = ["Morning", "Day", "Evening", "Night"];
+    const day = (lines: string[]) => compactEncounters([...lines, "Night", "Night", "Night"].map(t), ["scarlet"], four)[0].when;
+    expect(day(["Morning, Day", "Evening, Night"])).toBeUndefined();
+    expect(day(["Evening, Night", "Evening"])).toEqual(["Evening, Night"]);
+    // The add-on a whole area is in is said once, by its name.
+    const v = buildView((await loadGame("scarlet-violet"))!);
+    const apple = allAreas(v).find((a) => a.id === "apple-hills")!;
+    expect(apple.addOn).toBe("The Teal Mask");
+    expect(apple.encounters.every((e) => ![e.condition, ...(e.when ?? [])].join(" ").includes("Teal Mask"))).toBe(true);
+    expect(allAreas(v).find((a) => a.id === "south-province-area-two")!.addOn).toBeUndefined();
+    expect(apple.encounters.filter((e) => e.mon === "23").map((e) => [e.levels, e.post])).toEqual([[[11, 15], undefined], [[55, 60], "After The Way Home"]]);
   });
 
   it("keeps the story's levels apart from the post-game's", async () => {
@@ -641,6 +703,16 @@ describe("story battles and the level cap", () => {
     expect(hasBadges(sm, "sun")).toBe(false);
     expect(hasBadges(v, "a")).toBe(true); // a version's own gym
     expect(hasBadges(buildView(game(3, [])), "a")).toBe(true); // no bosses in the data: counted by hand
+  });
+
+  it("counts badges in Scarlet & Violet, and none in the Legends games", async () => {
+    for (const [id, version, badges] of [["scarlet-violet", "scarlet", 8], ["legends-arceus", "legends-arceus", null], ["legends-za", "legends-za", null]] as const) {
+      const v = buildView((await loadGame(id))!);
+      expect(badgeTotal(v, version), id).toBe(badges);
+      expect(hasBadges(v, version), id).toBe(badges !== null);
+      // Their first cap: a gym leader, a Titan, a Noble or a Z-A Royale promotion, never a rival by default.
+      expect(levelCap(run(version, false), v)?.boss.kind, id).toBeUndefined();
+    }
   });
 
   it("is done when every boss that sets the cap is beaten, rivals or not", () => {
