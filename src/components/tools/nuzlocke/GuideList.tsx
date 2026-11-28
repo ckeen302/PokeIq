@@ -12,7 +12,8 @@ import { artSrc } from "@/lib/nuzlocke/view";
 
 /**
  * A row: its Pokédex link, picture, name, line ("45% · Lv 2–5"), the version it's only in with that version's colour
- * ("" for none), and its post-game line ("After the Hall of Fame: Lv 60"), shown muted under the story's.
+ * ("" for none), and its post-game line ("After the Hall of Fame: Lv 60"), shown muted under the story's. A "\n" in a
+ * line starts another one under it (each version's, when they differ).
  */
 export type GuideRow = [href: string, art: number | string, name: string, text: string, only?: string, color?: string, post?: string];
 /** A way of meeting: its icon (in the page's icon sheet), its heading, its kind when the heading doesn't say it ("Gift"), its rows. */
@@ -22,8 +23,8 @@ const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replac
 
 function row([href, art, name, text, only, color, post]: GuideRow): string {
   const tag = only ? `<i class="nzg-only" style="--v:${esc(color ?? "")}">${esc(only)}</i>` : "";
-  const later = post ? `<small class="nzg-post">${esc(post)}</small>` : "";
-  return `<li><a href="${esc(href)}"><img src="${artSrc(art)}" alt="" loading="lazy"><span><b>${esc(name)}</b>${tag}${text ? `<small>${esc(text)}</small>` : ""}${later}</span></a></li>`;
+  const lines = (s: string | undefined, cls: string) => (s ? s.split("\n").map((l) => `<small${cls}>${esc(l)}</small>`).join("") : "");
+  return `<li><a href="${esc(href)}"><img src="${artSrc(art)}" alt="" loading="lazy"><span><b>${esc(name)}</b>${tag}${lines(text, "")}${lines(post, ' class="nzg-post"')}</span></a></li>`;
 }
 
 export function GuideList({ groups }: { groups: GuideGroup[] }) {

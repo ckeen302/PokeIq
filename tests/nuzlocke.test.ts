@@ -356,6 +356,9 @@ describe("an area's encounters, summed up", () => {
     expect(sameButLevels([{ condition: "1F", rate: 30 }, { condition: "2F", rate: 69 }], [{ condition: "1F", rate: 69 }, { condition: "2F", rate: 30 }])).toBe(false);
     expect(sameButLevels([{ when: ["Fog"], rate: 100 }], [{ when: ["Snowstorm", "Fog"], rate: 100 }])).toBe(false);
     expect(sameButLevels([{ rate: 40 }], [])).toBe(false);
+    // On a game's page, line for line in each version: Sword's and Shield's story lines, one post-game line for both.
+    expect(sameButLevels(oddish.filter((e) => e.post), oddish.filter((e) => !e.post), ["sword", "shield"])).toBe(true);
+    expect(sameButLevels([{ versions: ["sword"], rate: 40 }], [{ versions: ["sword"], rate: 40 }, { versions: ["shield"], rate: 40 }], ["sword", "shield"])).toBe(false);
     // The Isle of Armor has both, kept apart too; the Crown Tundra's lines don't depend on the Hall of Fame.
     for (const id of ["fields-of-honor", "soothing-wetlands", "giants-bed"]) {
       const area = allAreas(v).find((a) => a.id === id)!;

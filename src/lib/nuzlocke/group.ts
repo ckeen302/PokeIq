@@ -104,19 +104,20 @@ export function levelSpan(stats: readonly EncounterStat[]): [number, number] | n
 }
 
 /** A line's places, weathers and odds, each once and in any order ("Area 2 / Area 3" is "Area 2" and "Area 3"). */
-function said(s: EncounterStat, withVersions: boolean): string {
+function said(s: EncounterStat): string {
   const rate = s.rate === undefined ? "" : `${s.rateMin ?? s.rate}–${s.rate}%`;
   const words = [...(s.condition?.split(/; | \/ /) ?? []), ...(s.when ?? []).flatMap((w) => w.split(" / ")), rate];
-  return [withVersions ? (s.versions?.join(",") ?? "*") : "", ...[...new Set(words)].sort()].join("|");
+  return [...new Set(words)].sort().join("|");
 }
 
 /**
  * Whether some post-game lines are the story's again but for their levels: the same places, weathers and odds, line for
- * line. "After the Hall of Fame: Lv 60" then says all there is. `withVersions`: the lines' versions count too (a game's
- * page, which names them; a run's picker shows its own version's lines only).
+ * line. "After the Hall of Fame: Lv 60" then says all there is. `versions`, the game's, for a page that names them: each
+ * line then counts once for each version it's in (every one when it names none).
  */
-export function sameButLevels(post: readonly EncounterStat[], story: readonly EncounterStat[], withVersions = false): boolean {
-  const a = new Set(post.map((s) => said(s, withVersions)));
-  const b = new Set(story.map((s) => said(s, withVersions)));
+export function sameButLevels(post: readonly EncounterStat[], story: readonly EncounterStat[], versions?: readonly string[]): boolean {
+  const keys = (stats: readonly EncounterStat[]) => new Set(stats.flatMap((s) => (versions ? (s.versions ?? versions).map((v) => `${v}|${said(s)}`) : [said(s)])));
+  const a = keys(post);
+  const b = keys(story);
   return story.length > 0 && a.size === b.size && [...a].every((x) => b.has(x));
 }

@@ -45,14 +45,28 @@ function levelText(t: PageT, stats: readonly EncounterStat[]): string | null {
   return span ? (span[0] === span[1] ? t("game.level", { n: span[0] }) : t("game.levels", { min: span[0], max: span[1] })) : null;
 }
 
-/** The text of some of a row's lines: each line of the data ("1F 69%", "FireRed 20%") or of a summary ("Overcast · Rain · 1–20%"), then the levels. */
+/**
+ * The text of some of a row's lines: each line of the data ("1F 69%") or of a summary ("Overcast · Rain · 1–20%"), then
+ * the levels. With `versionTags`, each version's lines go on a line of their own, with their own levels: "Sword: Main
+ * Area · Overcast · 40% · Lv 7–9", then "Shield: …" (lines joined with "\n", which GuideList writes one under another).
+ */
 function linesText(t: PageT, view: GameView, stats: readonly EncounterStat[], versionTags: boolean): string {
-  const lines = stats.map((s) => {
-    const rate = s.rate === undefined ? null : s.rateMin !== undefined ? t("game.rates", { min: s.rateMin, max: s.rate }) : t("game.rate", { n: s.rate });
-    const summed = !!s.when || s.rateMin !== undefined;
-    return [versionTags && s.versions ? versionNames(view, s.versions) : null, s.condition, ...(s.when ?? []), rate].filter(Boolean).join(summed ? " · " : " ");
-  });
-  return [...new Set(lines.filter(Boolean)), levelText(t, stats)].filter(Boolean).join(" · ");
+  const text = (some: readonly EncounterStat[]) => {
+    const lines = some.map((s) => {
+      const rate = s.rate === undefined ? null : s.rateMin !== undefined ? t("game.rates", { min: s.rateMin, max: s.rate }) : t("game.rate", { n: s.rate });
+      return [s.condition, ...(s.when ?? []), rate].filter(Boolean).join(s.when || s.rateMin !== undefined ? " · " : " ");
+    });
+    return [...new Set(lines.filter(Boolean)), levelText(t, some)].filter(Boolean).join(" · ");
+  };
+  if (!versionTags) return text(stats);
+  const all = view.versions.map((v) => v.id);
+  const by = new Map<string, EncounterStat[]>();
+  for (const s of stats) by.set((s.versions ?? all).join(","), [...(by.get((s.versions ?? all).join(",")) ?? []), s]);
+  const first = (key: string) => (key === all.join(",") ? -1 : all.indexOf(key.split(",")[0]));
+  return [...by]
+    .sort(([a], [b]) => first(a) - first(b))
+    .map(([key, some]) => `${versionNames(view, key.split(","))}: ${text(some)}`)
+    .join("\n");
 }
 
 /**
@@ -69,9 +83,9 @@ function rowText(t: PageT, view: GameView, row: EncounterRow): { only: string[] 
   const post = [...by]
     .map(([when, lines]) => {
       const level = levelText(t, lines);
-      return t("game.post", { when, text: level && sameButLevels(lines, story, true) ? level : linesText(t, view, lines, sets.size > 1) });
+      return t("game.post", { when, text: level && sameButLevels(lines, story, view.versions.map((v) => v.id)) ? level : linesText(t, view, lines, sets.size > 1) });
     })
-    .join(" · ");
+    .join("\n");
   return { only, text: linesText(t, view, story, sets.size > 1), post };
 }
 
