@@ -7,7 +7,8 @@
  * HELD_BACK in lib/config.ts; its file is checked all the same); NUZ_GAMES out of release order or
  * out of step with the build's game list or its file; an empty `sources`; duplicate area ids; an area with no
  * encounters; an unknown version id; a species or form without art; a rate outside 0-100; a level range with min > max
- * (or outside 1-100); a boss cap below 1 or above 100; and malformed fields (kinds, forms without art ids…). A form whose
+ * (or outside 1-100); a boss cap below 1 or above 100; and malformed fields (kinds, forms without art ids, except the
+ * location-dependent cosmetic forms of lib/forms.ts COSMETIC_FORMS, which have none…). A form whose
  * art isn't made yet is only allowed when scripts/nuzlocke/art-missing.json lists it (it is printed as a warning). Also a
  * condition on rows it can't belong to: a Max Raid den, Tera Raid, rod, Headbutt, Rock Smash or Honey condition on
  * another method; time-of-day, season or weather conditions in a game without them; "before" and "after" the Hall of
@@ -21,6 +22,7 @@ import type { EncounterKind, NuzArea, NuzGame } from "../../src/lib/nuzlocke/mod
 import { NUZ_GAMES } from "../../src/lib/nuzlocke/games";
 import { VERSIONS } from "../../src/lib/pokemon/encounter-types";
 import { GAMES, HELD_BACK } from "./lib/config";
+import { COSMETIC_FORMS } from "./lib/forms";
 
 const ROOT = path.resolve(__dirname, "../..");
 const DATA = path.join(ROOT, "src/data/nuzlocke");
@@ -162,7 +164,9 @@ for (const info of [...NUZ_GAMES, ...held]) {
       if (!Number.isInteger(e.species) || e.species < 1 || e.species > MAX_SPECIES) fail(what, `species ${e.species} is not a national dex number`);
       if (!KINDS.includes(e.kind)) fail(what, `unknown kind ${e.kind}`);
       if (!e.method?.trim()) fail(what, "empty method");
-      if (e.form !== undefined && (!e.form || e.art === undefined)) fail(what, "form without its art id");
+      // A location-dependent cosmetic form (East Sea Shellos) has no PokéAPI pokemon, so no art id: the species' art.
+      if (e.form !== undefined && (!e.form || (e.art === undefined && !COSMETIC_FORMS.has(e.form)))) fail(what, "form without its art id");
+      if (e.form && COSMETIC_FORMS.has(e.form) && e.art !== undefined) fail(what, "a cosmetic form with an art id");
       if (e.art !== undefined && e.form === undefined) fail(what, "art id without a form");
       const art = e.art ?? e.species;
       if (!hasArt(art)) {

@@ -9,7 +9,9 @@
  *  - encounters: PokéAPI location-areas for the versions it covers (Gens 1-7, Let's Go, Sword/Shield + DLC); Serebii's
  *    species pages for the rest (BD/SP, Legends: Arceus, Scarlet/Violet + DLC, Legends: Z-A) and, for Gens 1-7, as the
  *    cross-check; Bulbapedia's location pages settle every disagreement and supply the walking terrain, starters and
- *    gifts/trades/statics the other two lack;
+ *    gifts/trades/statics the other two lack; the game's whole Bulbapedia location category is swept, so a building's
+ *    page joins its town and a place neither other source names becomes an area (lib/bulba-sweep.ts); the Honey Tree
+ *    page is each tree place's page; rows Bulbapedia shows to be wrong are fixed with their evidence (lib/fixes.ts);
  *  - story order and bosses: Bulbapedia's walkthrough for the game.
  */
 import fs from "node:fs";
@@ -22,6 +24,8 @@ import type { BulbaRow } from "./lib/bulba-catch";
 import { pages, pageUrl, plain } from "./lib/bulbapedia";
 import { catchRows } from "./lib/bulba-catch";
 import { areaPages, areaRows, availability, confirmed, partners } from "./lib/bulba-primary";
+import { categorySweep } from "./lib/bulba-sweep";
+import { AMBUSH, BATTLE_ONLY_FORMS, BOSS_BEFORE, NOTES, ROW_FIXES, SPREAD, STATICS } from "./lib/fixes";
 import { GAMES, GAME_BY_ID, type GameCfg } from "./lib/config";
 import { STATS } from "./lib/fetch";
 import { pokeapiRows, type ConditionFix } from "./lib/pokeapi-rows";
@@ -129,7 +133,7 @@ function keyOfHead(name: string, keys: { has(k: string): boolean }, game?: strin
     const k = placeKey(t);
     if (keys.has(k)) return k;
     const al = game ? ALIASES[game]?.[k] : undefined;
-    if (al && !al.sub && keys.has(placeKey(al.area))) return placeKey(al.area);
+    if (al && !al.sub && !al.rowsOnly && keys.has(placeKey(al.area))) return placeKey(al.area);
   }
   return undefined;
 }
@@ -171,6 +175,39 @@ interface VisibleCheck {
   source: string;
 }
 
+interface FixLog {
+  area: string;
+  version?: string;
+  species?: number;
+  name?: string;
+  method?: string;
+  from?: string;
+  action: string;
+  why: string;
+  source: string;
+}
+
+interface NonWildCheck {
+  area: string;
+  version: string;
+  species: number;
+  name: string;
+  kind: string;
+  sources: string[];
+  action: "drop" | "move";
+  to: string;
+  source: string;
+}
+
+interface SweepLog {
+  page: string;
+  area: string;
+  part?: string;
+  action: "fold" | "new area";
+  how: string;
+  source: string;
+}
+
 interface SerebiiCheck {
   area: string;
   version: string;
@@ -190,6 +227,9 @@ interface Built {
   serebii: SerebiiCheck[];
   conditionFixes: ConditionFix[];
   visible: VisibleCheck[];
+  fixes: FixLog[];
+  sweep: SweepLog[];
+  nonWild: NonWildCheck[];
   coverageLosses: string[];
   report: Record<string, unknown>;
 }
@@ -327,6 +367,23 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
     }
     sources.add(SEREBII_URL[cfg.serebii]);
   }
+  // ---- source rows Bulbapedia shows to be wrong (lib/fixes.ts): dropped or corrected before they enter
+  const fixesLog: FixLog[] = [];
+  const rowFixes = ROW_FIXES.filter((f) => f.games.includes(cfg.id));
+  const applyFixes = (rows: Row[]): Row[] =>
+    rows.filter((r) => {
+      const f = rowFixes.find((x) => x.area === placeKey(r.place) && x.method.test(r.method) && (!x.species || x.species.includes(r.species)));
+      if (!f) return true;
+      fixesLog.push({ area: r.place, version: r.ver, species: r.species, name: speciesName(r.species), method: r.method, from: r.src, action: f.drop ? "drop" : `levels ${f.levels!.join("-")}${r.levels ? ` (was ${r.levels.join("-")})` : ""}`, why: f.why, source: f.source });
+      if (f.drop) return false;
+      if (f.levels) r.levels = f.levels;
+      return true;
+    });
+  api = applyFixes(api);
+  ser = applyFixes(ser);
+  const spreads = SPREAD.filter((x) => x.game === cfg.id);
+  const spreadRows = api.filter((r) => spreads.some((x) => x.from === placeKey(r.place)));
+  api = api.filter((r) => !spreadRows.includes(r));
   const bad = DATA_ERRORS[cfg.id] ?? {};
   const badRows = API_ROW_ERRORS[cfg.id] ?? [];
   api = api.filter((r) => {
@@ -390,6 +447,155 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
   for (const [k, rs] of serByArea) if (!names.has(k)) names.set(k, rs[0].place);
   const bulba = await bulbaPages(names, { templates: cfg.bulba, regions: cfg.bulbaRegions, links: wt.links, extra: BULBA_PAGES[cfg.id] });
   for (const locs of bulba.values()) for (const l of locs) sources.add(l.url);
+
+  // ---- the game's other Bulbapedia location pages (its category): a building's or part's page joins its area's pages
+  // (its gifts, trades and statics, and its wild rows, come in through the steps below like the area's own page's); a
+  // place no source names becomes an area of its own, its rows from its page (Dewford Town in Omega Ruby/Alpha
+  // Sapphire, Hearthome City in Brilliant Diamond/Shining Pearl).
+  const sweepLog: SweepLog[] = [];
+  const pageSub = new Map<string, string>();
+  const pageSubByUrl = new Map<string, string>();
+  /** Areas only Bulbapedia names: built whole from their pages here, left alone by the steps that add Bulbapedia rows. */
+  const newAreas = new Set<string>();
+  if (!cfg.bulbaPrimary) {
+    const usedTitles = new Set([...bulba.values()].flat().map((l) => l.title));
+    for (const sp of await categorySweep(cfg, usedTitles, names)) {
+      const key = sp.into ?? placeKey(sp.name);
+      if (!sp.into) {
+        if (accs.has(key) || names.has(key)) throw new Error(`${cfg.id}: swept page ${sp.title} is a new place but ${sp.name} exists`);
+        accs.set(key, { key, names: [{ src: "bulbapedia", name: sp.name }], rows: [] });
+        names.set(key, sp.name);
+        newAreas.add(key);
+      }
+      const loc: BulbaLoc = { title: sp.title, url: sp.url, rows: sp.rows, boxes: sp.boxes };
+      bulba.set(key, [...(bulba.get(key) ?? []), loc]);
+      if (sp.sub) {
+        pageSub.set(sp.title, sp.sub);
+        pageSubByUrl.set(sp.url, sp.sub);
+      }
+      if (newAreas.has(key)) accs.get(key)!.rows.push(...(await rowsOfPage(cfg, loc, names.get(key)!, sp.sub)));
+      sources.add(sp.url);
+      sweepLog.push({ page: sp.title, area: names.get(key)!, ...(sp.sub ? { part: sp.sub } : {}), action: sp.into ? "fold" : "new area", how: sp.how, source: sp.url });
+    }
+  }
+
+  // ---- Honey Trees (Diamond/Pearl/Platinum, Brilliant Diamond/Shining Pearl): one table for every tree, on
+  // Bulbapedia's Honey Tree page, whose Locations table names the 21 trees; the places' own pages leave them out. That
+  // page is one of each such place's pages (so PokéAPI's honey rows there are checked against it, not dropped).
+  if (/^(diamond-pearl|platinum|brilliant-diamond-shining-pearl)$/.test(cfg.id)) {
+    const hp = (await pages(["Honey Tree"])).get("Honey Tree");
+    const text = hp?.text ?? "";
+    const locs = /===\s*Locations\s*===([\s\S]*?)\n===/.exec(text)?.[1] ?? "";
+    const places = [...locs.matchAll(/\{\{rt\|(\d+)\|Sinnoh\}\}|\[\[([^|\]]+)\]\]/g)].map((m) => (m[1] ? `Route ${m[1]}` : m[2]));
+    if (places.length < 18 || !hp?.title) throw new Error(`${cfg.id}: Bulbapedia's Honey Tree page lists ${places.length} tree places`);
+    const tpl = new Set(cfg.bulba);
+    const loc: BulbaLoc = { title: hp.title, url: pageUrl(hp.title), rows: catchRows(text).filter((r) => tpl.has(r.tpl) && r.species > 0), boxes: [] };
+    for (const pl of new Set(places)) {
+      const k = placeKey(pl);
+      if (!names.has(k)) continue;
+      bulba.set(k, [...(bulba.get(k) ?? []), loc]);
+    }
+    sources.add(loc.url);
+  }
+
+  // ---- water Bulbapedia's table notes can't be reached ("The water is inaccessible without glitches": Gold, Silver
+  // and Crystal's Route 14, National Park): its rows are no encounters. Ours for that Pokémon, version and water
+  // method there go, and those table rows are left out of every later step.
+  for (const [key, locs] of bulba)
+    for (const l of locs) {
+      const blocked = l.rows.filter((h) => h.inaccessible);
+      if (!blocked.length) continue;
+      const a = accs.get(key);
+      const ser = serByArea.get(key) ?? [];
+      for (const h of blocked)
+        for (const ver of h.versions.filter((v) => versions.includes(v))) {
+          const fam = famOf(h.method);
+          const hit = (r: Row) => r.ver === ver && r.species === h.species && r.kind === "wild" && famOf(r.method) === fam;
+          const why = "Bulbapedia's table notes that this water can't be reached (\"The water is inaccessible without glitches\" / \"without the use of a cheating device\"), so its rows are no encounters";
+          const ours = [...(a?.rows ?? []), ...ser].filter(hit);
+          for (const r of ours) fixesLog.push({ area: names.get(key)!, version: ver, species: r.species, name: speciesName(r.species), method: r.method, from: r.src, action: "drop", why, source: l.url });
+          if (!ours.length) fixesLog.push({ area: names.get(key)!, version: ver, species: h.species, name: speciesName(h.species), method: h.method, from: "bulbapedia", action: "left out", why, source: l.url });
+          if (a) a.rows = a.rows.filter((r) => !hit(r));
+          serByArea.set(key, (serByArea.get(key) ?? []).filter((r) => !hit(r)));
+        }
+      l.rows = l.rows.filter((h) => !h.inaccessible);
+    }
+
+  // ---- rows a source files under a place of its own that are met at several places (lib/fixes.ts SPREAD: Sword/Shield's
+  // Regina): each area whose Bulbapedia page lists them gets them
+  for (const sp of spreads) {
+    const rows = spreadRows.filter((r) => placeKey(r.place) === sp.from);
+    const titles = [...bulba.values()].flat().map((l) => l.title);
+    const texts = await pages(titles);
+    let n = 0;
+    for (const [key, locs] of bulba) {
+      const l = locs.find((x) => sp.section.test(texts.get(x.title)?.text ?? ""));
+      if (!l) continue;
+      n++;
+      for (const r of rows) add({ ...r, place: names.get(key)!, sub: undefined, cond: [r.cond, sp.cond].filter(Boolean).join("; "), url: r.url });
+      for (const r of rows.filter((x, i) => rows.findIndex((y) => y.species === x.species) === i)) fixesLog.push({ area: names.get(key)!, species: r.species, name: speciesName(r.species), method: r.method, from: r.src, action: `copied from ${rows[0]?.place}`, why: sp.why, source: l.url });
+    }
+    if (rows.length && !n) throw new Error(`${cfg.id}: no area's Bulbapedia page has the section for ${sp.from}`);
+  }
+
+  // ---- Brilliant Diamond/Shining Pearl: Serebii (the source) and Bulbapedia give different rod chances throughout
+  // (Serebii's fit slot weights 60/30/5/4/1, Bulbapedia's Diamond/Pearl's 40/40/15/4/1, and its Fishing page is marked
+  // incomplete for these games); neither cites a datamine, so a rod row whose chance Bulbapedia's table doesn't share has
+  // none. The Poké Radar rows take Bulbapedia's chance and levels where it has one row for that Pokémon (Route 221's
+  // Nidorina and Nidorino: Serebii's levels 22 and 29-30 are not the route's).
+  if (cfg.id === "brilliant-diamond-shining-pearl")
+    for (const a of accs.values()) {
+      const hs = (bulba.get(a.key) ?? []).flatMap((l) => l.rows.map((h) => ({ h, url: l.url })));
+      for (const r of a.rows) {
+        const fam = famOf(r.method);
+        if (r.kind === "wild" && /rod$/.test(fam ?? "") && r.rate !== undefined) {
+          const b = hs.filter(({ h }) => h.species === r.species && h.versions.includes(r.ver) && famOf(h.method) === fam && !bulbaKind(h.method, h.tpl, h.div));
+          if (!b.length || b.some(({ h }) => parseRate(h.rate) === r.rate)) continue;
+          fixesLog.push({ area: a.names[0].name, version: r.ver, species: r.species, name: speciesName(r.species), method: r.method, from: r.src, action: `no chance (Serebii ${r.rate}%, Bulbapedia ${b.map(({ h }) => h.rate).join(" / ")})`, why: "Serebii's and Bulbapedia's rod chances disagree and neither cites a datamine (Bulbapedia's Fishing page is marked incomplete for Brilliant Diamond and Shining Pearl): no chance is shown rather than a wrong one", source: b[0].url });
+          delete r.rate;
+        }
+        if (r.kind === "wild" && /^Poké Radar$/i.test(r.method)) {
+          const b = hs.filter(({ h }) => h.species === r.species && h.versions.includes(r.ver) && /Poké Radar/i.test(h.method));
+          if (b.length !== 1) continue;
+          const rate = parseRate(b[0].h.rate);
+          const levels = parseLevels(b[0].h.levels);
+          if (rate === r.rate && JSON.stringify(levels) === JSON.stringify(r.levels)) continue;
+          fixesLog.push({ area: a.names[0].name, version: r.ver, species: r.species, name: speciesName(r.species), method: r.method, from: r.src, action: `Bulbapedia's ${rate ?? "-"}% Lv ${levels?.join("-") ?? "-"} (Serebii ${r.rate ?? "-"}% Lv ${r.levels?.join("-") ?? "-"})`, why: "Bulbapedia's Poké Radar row for this Pokémon here; Serebii's chance and levels don't fit the place", source: b[0].url });
+          if (rate !== undefined) r.rate = rate;
+          else delete r.rate;
+          if (levels) r.levels = levels;
+        }
+      }
+    }
+
+  // ---- Generation VII ambush encounters: PokéAPI's "bubbling-spots" rows take the method Bulbapedia's table gives
+  // that Pokémon there when it is an ambush (rustling grass, a flying Pokémon's shadow…); an SOS row "from a bubbling
+  // spot" where every such row turned out to be one ambush becomes an SOS row of that ambush (Haina Desert's sand clouds).
+  if (cfg.gen === 7 && cfg.pokeapi)
+    for (const a of accs.values()) {
+      const locs = bulba.get(a.key) ?? [];
+      const seen = new Set<string>();
+      let realFishing = false;
+      for (const r of a.rows) {
+        if (r.src !== "pokeapi" || r.method !== "Fishing (bubbling spot)") continue;
+        const ms = new Set(locs.flatMap((l) => l.rows).filter((h) => h.species === r.species && h.versions.includes(r.ver)).map((h) => AMBUSH[h.method.toLowerCase()]).filter(Boolean));
+        if (ms.size !== 1) {
+          realFishing = true;
+          continue;
+        }
+        const to = [...ms][0];
+        fixesLog.push({ area: a.names[0].name, version: r.ver, species: r.species, name: speciesName(r.species), method: r.method, from: r.src, action: `method ${to}`, why: "PokéAPI files Generation VII ambush encounters under its bubbling-spots method (fishing); Bulbapedia's table gives this Pokémon here as an ambush", source: locs[0]?.url ?? "" });
+        r.method = to;
+        seen.add(to);
+      }
+      if (seen.size === 1 && !realFishing && !locs.some((l) => l.rows.some((h) => /bubbling spot/i.test(h.div ?? ""))))
+        for (const r of a.rows) {
+          if (r.src !== "pokeapi" || r.method !== "SOS Battle (bubbling spot)") continue;
+          const to = `SOS Battle (${[...seen][0].toLowerCase()})`;
+          fixesLog.push({ area: a.names[0].name, version: r.ver, species: r.species, name: speciesName(r.species), method: r.method, from: r.src, action: `method ${to}`, why: "an SOS ally PokéAPI files as called from a bubbling spot, in a place whose bubbling-spot rows are all one ambush and where Bulbapedia's table has no fishing at a bubbling spot", source: locs[0]?.url ?? "" });
+          r.method = to;
+        }
+    }
 
   // ---- coverage of the merged sources (every row is one place, Pokémon, version and water/land), checked at the end:
   // no area may lose one except by a logged decision (a cross-check or audit drop)
@@ -512,7 +718,7 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
   for (const a of accs.values()) {
     const locs = bulba.get(a.key);
     const srows = serByArea.get(a.key) ?? [];
-    if (!locs?.length || !cfg.pokeapi || cfg.serebiiRows) continue;
+    if (!locs?.length || !cfg.pokeapi || cfg.serebiiRows || newAreas.has(a.key)) continue;
     for (const ver of versions) {
       // key "species|family" -> part -> summed slot vector
       const P = new Map<string, Map<string, number[]>>();
@@ -569,7 +775,7 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
         const useBulba = action === "add-bulbapedia" || bRows.some(({ h }) => formOfBulba(h).form);
         if (useBulba) {
           a.rows = a.rows.filter((r) => !(r.src === "pokeapi" && r.ver === ver && r.kind === "wild" && r.species === species && famOf(r.method) === fam && vecOurs(r, slots)));
-          for (const { h, url } of bRows) a.rows.push(...bulbaToRows(h, ver, slots, a.names[0].name, url, formOfBulba(h)).map((r) => (r.form ? r : withForm(r, a.key))));
+          for (const { h, url } of bRows) a.rows.push(...bulbaToRows(h, ver, slots, a.names[0].name, url, formOfBulba(h), pageSubByUrl.get(url)).map((r) => (r.form ? r : withForm(r, a.key))));
           continue;
         }
         const repl = srows.filter((x) => x.ver === ver && x.kind === "wild" && x.species === species && famOf(x.method) === fam && vecOurs(x, slots));
@@ -606,7 +812,10 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
   // overworld rows usually do (Challenge Beach's surfing Corphish, Cramorant and Arrokuda they don't).
   for (const a of accs.values()) {
     const locs = bulba.get(a.key);
-    if (!locs?.length || cfg.bulbaPrimary) continue;
+    if (!locs?.length || cfg.bulbaPrimary || newAreas.has(a.key)) continue;
+    // Matched against the area's rows from before this step (two of Bulbapedia's rows for one wanderer, in two
+    // weathers, are both kept).
+    const before = [...a.rows];
     for (const l of locs)
       for (const h of l.rows) {
         const section = h.heads.find((x) => NOT_RANDOM_TABLE.test(x));
@@ -620,22 +829,54 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
         const rate = /\//.test(h.rate ?? "") ? undefined : parseRate(h.rate);
         const form = formOfBulba(h);
         const sub = h.heads.filter((x) => !/^Generation /i.test(x) && !NOT_RANDOM_TABLE.test(x) && !/^(Hidden|Visible) encounters$/i.test(x)).pop();
+        // The divider's "After becoming Champion" is the Hall of Fame condition; the weather columns (rain=, fog=…) are
+        // the weathers it appears in, one row each, worded as PokéAPI's rows (clear weather is a row without one).
+        const story = /after becoming (the )?champion|after entering the hall of fame/i.test(h.div ?? "") ? "Enter the Hall of Fame" : undefined;
+        const wx = WEATHER.filter(([k]) => (h.named[k] ?? "").trim() && !/^(-|—|0%?)$/.test(plain(h.named[k])));
+        const weathers = h.named.all !== undefined || !wx.length || wx.length === WEATHER.length ? [undefined] : wx.map(([, c]) => c);
+        // A strong wanderer Bulbapedia gives no story condition, in a place whose other Pokémon change at the Hall of
+        // Fame: it is there before the Hall of Fame too (Workout Sea's Lv 80 Wailord), and the row says so.
+        const split = a.rows.some((r) => /Hall of Fame/.test(r.cond ?? ""));
+        const strong = !story && split && !!levels && levels[1] > 60 ? "There before the Hall of Fame too" : undefined;
         for (const ver of h.versions.filter((v) => versions.includes(v))) {
           const row: Row = { src: "bulbapedia", ver, place: a.names[0].name, ...(sub ? { sub } : {}), species: h.species, ...(form.form ? { form: form.form, art: form.art } : {}), kind: "wild", method, ...(rate !== undefined ? { rate } : {}), ...(levels ? { levels } : {}), url: l.url };
+          const variants = weathers.map((w): Row => {
+            const cond = [strong ?? story, w].filter(Boolean).join("; ");
+            return cond ? { ...row, cond } : row;
+          });
           const keys = coverageKeys(a.key, row);
           for (const k of wanderer ? keys.slice(0, 1) : keys) rawCoverage.add(k);
           // A Pokémon the area already has as a static encounter (Keldeo, the Swords of Justice, Spiritomb) is that one.
-          const same = a.rows.find(
+          const same = before.find(
             (r) =>
               r.ver === ver &&
               r.species === h.species &&
               (r.kind === "static" || ((r.form ?? "") === (form.form ?? "") && (wanderer ? /^Wanderer/.test(r.method) : mediumOf(r.method) === mediumOf(method)) && levelsOverlap(r.levels, levels))),
           );
           visibleLog.push({ area: a.names[0].name, version: ver, species: h.species, name: speciesName(h.species), section, method: h.method, ...(h.levels ? { levels: h.levels } : {}), action: same ? "duplicate" : "add", ...(same ? { matches: `${same.method}${same.levels ? ` Lv ${same.levels.join("-")}` : ""} (${same.src})` } : {}), source: l.url });
-          if (!same) a.rows.push(row);
+          if (!same) a.rows.push(...variants);
         }
       }
   }
+
+  // ---- Sword/Shield: in a place whose Pokémon change at the Hall of Fame, a row above Lv 60 without that condition
+  // is checked against Bulbapedia's table: post-game there ("After becoming Champion") -> the Hall of Fame condition;
+  // there before it too (no such note) -> the row says so (Workout Sea's Lv 80 Wailord). Each is logged.
+  if (cfg.id === "sword-shield")
+    for (const a of accs.values()) {
+      if (!a.rows.some((r) => /Hall of Fame/.test(r.cond ?? ""))) continue;
+      const hs = (bulba.get(a.key) ?? []).flatMap((l) => l.rows.map((h) => ({ h, url: l.url })));
+      for (const r of a.rows) {
+        if (r.kind !== "wild" || !r.levels || r.levels[1] <= 60 || /Hall of Fame/.test(r.cond ?? "")) continue;
+        const m = hs.filter(({ h }) => h.species === r.species && h.versions.includes(r.ver) && levelsOverlap(parseLevels(h.levels), r.levels));
+        if (!m.length) continue;
+        const post = m.some(({ h }) => /after becoming (the )?champion|after entering the hall of fame/i.test(`${h.div ?? ""} ${h.heads.join(" ")}`));
+        const add = post ? "Enter the Hall of Fame" : "There before the Hall of Fame too";
+        if ((r.cond ?? "").includes(add)) continue;
+        fixesLog.push({ area: a.names[0].name, version: r.ver, species: r.species, name: speciesName(r.species), method: r.method, from: r.src, action: `condition "${add}" (Lv ${r.levels.join("-")})`, why: post ? "Bulbapedia's table gives this Pokémon at this level here after becoming Champion only" : "Bulbapedia's table gives this Pokémon at this level here with no story condition, in a place whose other Pokémon change at the Hall of Fame", source: m[0].url });
+        r.cond = [add, r.cond].filter(Boolean).join("; ");
+      }
+    }
 
   // ---- starters: the walkthrough's "First partner" table rows, in the area its heading names
   const starters = new Set<string>();
@@ -676,7 +917,7 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
   // ---- Bulbapedia enrichment: walking terrain; starters and named non-wild methods; gifts/trades/statics missing
   for (const a of accs.values()) {
     const locs = bulba.get(a.key);
-    if (!locs?.length || cfg.bulbaPrimary) continue;
+    if (!locs?.length || cfg.bulbaPrimary || newAreas.has(a.key)) continue;
     const areaTerrains = new Set(locs.flatMap((l) => l.rows).filter((r) => !bulbaKind(r.method, r.tpl, r.div) && BULBA_FAMILY(r.method) === "walk").map((r) => TERRAIN[r.method.toLowerCase()]).filter(Boolean));
     for (const r of a.rows) {
       if (r.kind !== "wild" || r.method !== "Walking") continue;
@@ -703,20 +944,21 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
     for (const l of locs)
       for (const h of l.rows) {
         const kind = bulbaKind(h.method, h.tpl, h.div);
-        if (!kind) continue;
+        if (!kind || h.uncatchable || h.event) continue;
         for (const ver of h.versions) {
           if (!versions.includes(ver)) continue;
           if (a.rows.some((r) => r.ver === ver && r.species === h.species && r.kind !== "wild")) continue;
-          if (accsHasElsewhere(accs, ver, h.species, kind)) continue;
+          if (accsHasElsewhere(accs, ver, h.species, kind, bulba)) continue;
           a.rows.push({
             src: "bulbapedia",
             ver,
             place: a.names[0].name,
+            ...(pageSub.get(l.title) ? { sub: pageSub.get(l.title) } : {}),
             species: h.species,
             kind,
             method: kind === "fossil" ? "Fossil" : kind === "static" ? "Static" : /^Starter$/i.test(h.method) ? "Starter" : kind === "trade" ? "Trade" : kind === "egg" ? "Egg" : "Gift",
             ...(kind !== "trade" && parseLevels(h.levels) ? { levels: parseLevels(h.levels)! } : {}),
-            ...(kind === "trade" && h.named.tradename ? { cond: `Give ${h.named.tradename} in a Trade` } : {}),
+            ...([kind === "trade" ? tradeCond(h) : undefined, h.note].filter(Boolean).length ? { cond: [kind === "trade" ? tradeCond(h) : undefined, h.note].filter(Boolean).join("; ") } : {}),
             url: l.url,
           });
           notes.push(`Bulbapedia-only ${kind}: ${speciesName(h.species)} at ${a.names[0].name} (${ver}) — ${l.url}`);
@@ -755,21 +997,25 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
       a.rows = a.rows.filter((x) => !drop.has(x));
     }
 
-  // ---- Serebii's form-less rows (its "Fixed:" lines name no form): the form Bulbapedia's table gives that Pokémon
-  // there, when it gives one form for it (Paldea's fixed Tauros is a Combat Breed).
-  if (cfg.serebii && !cfg.pokeapi && !cfg.bulbaPrimary)
+  // ---- Form-less rows (Serebii's "Fixed:" lines name no form; PokéAPI has no pokemon for a cosmetic form such as
+  // East Sea Shellos): the form Bulbapedia's table gives that Pokémon there, when it gives one form for it (Paldea's
+  // fixed Tauros is a Combat Breed; Stony Wilderness's Shellos are East Sea), or one form for the rows met the same way
+  // at overlapping levels (Giant's Mirror has both seas).
+  if (!cfg.bulbaPrimary)
     for (const a of accs.values()) {
       const locs = bulba.get(a.key);
       if (!locs?.length) continue;
       for (const r of a.rows) {
-        if (r.src !== "serebii" || r.form) continue;
+        if (r.form) continue;
         const hs = locs.flatMap((l) => l.rows).filter((h) => h.versions.includes(r.ver) && h.species === r.species && !bulbaKind(h.method, h.tpl, h.div) === (r.kind === "wild"));
-        const labels = [...new Set(hs.map((h) => h.form ?? ""))];
+        let labels = [...new Set(hs.map((h) => h.form ?? ""))];
+        if (labels.length > 1) labels = [...new Set(hs.filter((h) => famOf(h.method) === famOf(r.method) && levelsOverlap(parseLevels(h.levels), r.levels)).map((h) => h.form ?? ""))];
         if (labels.length !== 1 || !labels[0]) continue;
         const f = await formFor(r.species, labels[0]);
         if (!f?.form) continue;
         r.form = f.form;
-        r.art = f.art;
+        if (f.art !== undefined) r.art = f.art;
+        else delete r.art;
         notes.push(`form from Bulbapedia's table: ${speciesName(r.species)} at ${a.names[0].name} (${r.ver}, ${r.kind}) is ${f.form} — ${locs[0].url}`);
       }
     }
@@ -802,7 +1048,7 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
   if (cfg.serebii && !cfg.pokeapi && !cfg.bulbaPrimary)
     for (const a of accs.values()) {
       const locs = bulba.get(a.key);
-      if (!locs?.length) continue;
+      if (!locs?.length || newAreas.has(a.key)) continue;
       // A DLC's place (every Serebii row there says "The Teal Mask"): Bulbapedia's rows there need that DLC too.
       const ser = a.rows.filter((r) => r.src === "serebii");
       const dlc = ["The Teal Mask", "The Indigo Disk", "Mega Dimension"].find((d) => ser.length && ser.every((r) => (r.cond ?? "").split("; ").includes(d)));
@@ -817,7 +1063,7 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
             const weights = cfg.gen === 9 || /^entry(la|za)$/.test(h.tpl);
             const rate = weights ? undefined : parseRate(h.rate);
             const note = [h.named.note ? plain(h.named.note) : "", dlc ?? ""].filter(Boolean).join("; ") || undefined;
-            add.push({ src: "bulbapedia", ver, place: a.names[0].name, species: h.species, ...(form?.form ? { form: form.form, art: form.art } : {}), kind: "wild", method: weights ? "Wild" : h.method, ...(rate !== undefined ? { rate } : {}), ...(levels ? { levels } : {}), ...(note ? { cond: note } : {}), url: l.url });
+            add.push({ src: "bulbapedia", ver, place: a.names[0].name, ...(pageSub.get(l.title) ? { sub: pageSub.get(l.title) } : {}), species: h.species, ...(form?.form ? { form: form.form, art: form.art } : {}), kind: "wild", method: weights ? "Wild" : h.method, ...(rate !== undefined ? { rate } : {}), ...(levels ? { levels } : {}), ...(note ? { cond: note } : {}), url: l.url });
           }
         if (!add.length) continue;
         a.rows.push(...add);
@@ -851,6 +1097,91 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
     }
     a.rows = a.rows.filter((x) => !drop.has(x));
   }
+
+  // ---- Bulbapedia audit of every gift, static, Egg and fossil: one its area's pages don't list but another area's
+  // pages do (the same encounter: kind and levels) belongs there (Red/Blue's Magikarp salesman is in Route 4's Pokémon
+  // Center, not on Route 3): it is dropped where that area already has it, else moved there (when one area lists it).
+  // Logged either way.
+  const nonWildLog: NonWildCheck[] = [];
+  if (!cfg.bulbaPrimary) {
+    const lists = (key: string, ver: string, sp: number) => (bulba.get(key) ?? []).some((l) => l.boxes.includes(sp) || l.rows.some((h) => h.species === sp && h.versions.includes(ver) && !h.uncatchable && !h.event && !!bulbaKind(h.method, h.tpl, h.div)));
+    // A "gift" Bulbapedia's table gives as revived from a fossil (Let's Go's Cinnabar Lab) is a fossil.
+    for (const a of accs.values())
+      for (const r of a.rows) {
+        if (r.kind !== "gift") continue;
+        const ks = (bulba.get(a.key) ?? []).flatMap((l) => l.rows.filter((h) => h.species === r.species && h.versions.includes(r.ver)).map((h) => ({ k: bulbaKind(h.method, h.tpl, h.div), url: l.url }))).filter((x) => x.k);
+        if (!ks.length || !ks.every((x) => x.k === "fossil")) continue;
+        fixesLog.push({ area: a.names[0].name, version: r.ver, species: r.species, name: speciesName(r.species), method: r.method, from: r.src, action: "kind fossil", why: "Bulbapedia's table gives this Pokémon here as revived from a Fossil", source: ks[0].url });
+        r.kind = "fossil";
+        r.method = "Fossil";
+      }
+    // The same encounter: same Pokémon and form, kind (a fossil filed as a gift is one), method, levels, and for a
+    // trade the Pokémon asked for. (Celadon's Game Corner Nidorina is not Route 11's traded one.)
+    const kindOf = (k: string) => (k === "fossil" ? "gift" : k);
+    const giveOf = (c?: string) => /Give (.+?) in a Trade/.exec(c ?? "")?.[1] ?? "";
+    const methodOf = (m: string) => (/^(Gift|Fossil)$/.test(m) ? "Gift" : m);
+    const same = (r: Row, x: Row) =>
+      x.ver === r.ver && x.species === r.species && (x.form ?? "") === (r.form ?? "") && kindOf(x.kind) === kindOf(r.kind) && methodOf(x.method) === methodOf(r.method) && JSON.stringify(x.levels ?? null) === JSON.stringify(r.levels ?? null) && (r.kind !== "trade" || giveOf(x.cond) === giveOf(r.cond));
+    // An area's Bulbapedia rows that are this encounter: same Pokémon, version, kind and (when both give them) levels.
+    const rowsFor = (key: string, r: Row) =>
+      (bulba.get(key) ?? []).flatMap((l) => l.rows).filter((h) => {
+        const k = bulbaKind(h.method, h.tpl, h.div);
+        if (!k || h.uncatchable || h.species !== r.species || !h.versions.includes(r.ver) || kindOf(k) !== kindOf(r.kind)) return false;
+        const lv = parseLevels(h.levels);
+        return r.kind === "trade" || !lv || !r.levels || JSON.stringify(lv) === JSON.stringify(r.levels);
+      });
+    for (const a of accs.values()) {
+      if (!bulba.get(a.key)?.length) continue;
+      const out = new Set<Row>();
+      for (const r of a.rows) {
+        // Trades are left where they are: two places' trades of one Pokémon for the same one look alike (Turffield
+        // Stadium's Meowth and Regina's).
+        if (r.kind === "wild" || r.kind === "roaming" || r.kind === "trade" || !versions.includes(r.ver) || lists(a.key, r.ver, r.species)) continue;
+        const there = [...accs.values()].filter((b) => b !== a && rowsFor(b.key, r).length);
+        if (!there.length) continue;
+        const has = there.find((b) => b.rows.some((x) => x !== r && same(r, x)));
+        const to = has ?? (there.length === 1 && !there[0].rows.some((x) => x.ver === r.ver && x.species === r.species && kindOf(x.kind) === kindOf(r.kind)) ? there[0] : undefined);
+        if (!to) continue;
+        out.add(r);
+        for (const k of coverageKeys(a.key, r)) droppedOnPurpose.add(k);
+        if (!has) to.rows.push({ ...r, place: to.names[0].name, sub: undefined });
+        nonWildLog.push({ area: a.names[0].name, version: r.ver, species: r.species, name: speciesName(r.species), kind: r.kind, sources: [r.src], action: has ? "drop" : "move", to: to.names[0].name, source: (bulba.get(to.key) ?? [])[0]?.url ?? "" });
+      }
+      a.rows = a.rows.filter((r) => !out.has(r));
+    }
+  }
+
+  // ---- the dropping fixes once more, for rows Bulbapedia's pages added since (the Slumbering Weald's uncatchable
+  // Zacian and Zamazenta are on its table as Special encounters)
+  for (const a of accs.values())
+    a.rows = a.rows.filter((r) => {
+      const f = rowFixes.find((x) => x.drop && x.area === a.key && x.method.test(r.method) && (!x.species || x.species.includes(r.species)));
+      if (!f) return true;
+      fixesLog.push({ area: a.names[0].name, version: r.ver, species: r.species, name: speciesName(r.species), method: r.method, from: r.src, action: "drop", why: f.why, source: f.source });
+      return false;
+    });
+
+  // ---- one-time encounters only a page's Special encounters text gives (lib/fixes.ts STATICS)
+  const statics = STATICS.filter((x) => x.game === cfg.id);
+  const already = statics.filter((st) => (st.versions ?? versions).some((ver) => accsHasAny(accs, ver, st.species)));
+  if (already.length) throw new Error(`${cfg.id}: STATICS ${already.map((st) => speciesName(st.species)).join(", ")} in the data already`);
+  for (const st of statics) {
+    const a = accs.get(st.area);
+    if (!a) throw new Error(`${cfg.id}: STATICS area ${st.area} not found`);
+    for (const ver of st.versions ?? versions) {
+      a.rows.push({ src: "bulbapedia", ver, place: a.names[0].name, species: st.species, kind: "static", method: "Static", levels: st.levels, cond: st.cond, url: st.source });
+      fixesLog.push({ area: a.names[0].name, version: ver, species: st.species, name: speciesName(st.species), method: "Static", from: "bulbapedia", action: `added Lv ${st.levels.join("-")}`, why: "the page's Special encounters text gives this one-time encounter (no table row); no source has it anywhere in the game", source: st.source });
+      sources.add(st.source);
+    }
+  }
+
+  // ---- conditions a row's table leaves out and its page's text gives (lib/fixes.ts NOTES)
+  for (const n of NOTES.filter((x) => x.game === cfg.id))
+    for (const r of accs.get(n.area)?.rows ?? [])
+      if (r.species === n.species && r.kind === n.kind && !(r.cond ?? "").includes(n.cond)) {
+        r.cond = [r.cond, n.cond].filter(Boolean).join("; ");
+        fixesLog.push({ area: names.get(n.area) ?? n.area, version: r.ver, species: r.species, name: speciesName(r.species), method: r.method, from: r.src, action: `condition "${n.cond}"`, why: "the page's text gives this condition; its table doesn't", source: n.source });
+      }
 
   // ---- parts the place itself names (SUB_RULES)
   for (const rule of SUB_RULES.filter((x) => x.games.includes(cfg.id)))
@@ -911,7 +1242,7 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
     const rows = a.rows.filter((r) => versions.includes(r.ver));
     if (!rows.length) continue;
     const name = displayName(a);
-    let id = slug(name);
+    const id = slug(name);
     if (usedIds.has(id)) throw new Error(`${cfg.id}: two areas named ${name}`);
     usedIds.add(id);
     areas.set(a.key, { id, name, encounters: encountersOf(rows, versions) });
@@ -923,6 +1254,16 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
   notes.push(...sb.notes);
   const { steps, extra, bossReport, unplaced, fromSummary } = order(cfg, wt, areas, sb);
   if (fromSummary.length) notes.push(`placed by the walkthrough index's part summaries: ${fromSummary.join("; ")}`);
+  for (const m of BOSS_BEFORE.filter((x) => x.game === cfg.id)) {
+    const b = steps.findIndex((s) => s.type === "boss" && s.boss.name === m.boss);
+    const a = steps.findIndex((s) => s.type === "area" && s.area.id === m.area);
+    if (b < 0 || a < 0) throw new Error(`${cfg.id}: BOSS_BEFORE ${m.boss} / ${m.area} not found`);
+    if (b < a) continue;
+    const [boss] = steps.splice(b, 1);
+    steps.splice(a, 0, boss);
+    fixesLog.push({ area: m.area, action: `${m.boss} before it`, why: m.why, source: m.source });
+    sources.add(m.source);
+  }
   const game: NuzGame = {
     id: cfg.id,
     name: cfg.name,
@@ -941,6 +1282,9 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
     serebii: bpLog,
     conditionFixes: summarizeFixes(conditionFixes),
     visible: visibleLog,
+    fixes: fixesLog,
+    sweep: sweepLog,
+    nonWild: nonWildLog,
     coverageLosses,
     report: {
       areas: areas.size,
@@ -967,6 +1311,19 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
  * check compares (PokéAPI's "walk"), so they stay out of it (PokéAPI's overworld rows have them).
  */
 const NOT_RANDOM_TABLE = /(^|\| )(Visible encounters|Wanderers?|Curry encounters)( \||$)/i;
+
+/** Bulbapedia's Sword/Shield weather columns -> PokéAPI's wording of that weather (clear weather: no condition). */
+const WEATHER: [string, string | undefined][] = [
+  ["clear", undefined],
+  ["cloudy", "During overcast weather"],
+  ["rain", "During rainy weather"],
+  ["thunderstorm", "During a thunderstorm"],
+  ["snow", "During snowy weather"],
+  ["blizzard", "During a snowstorm"],
+  ["sun", "During intense sun"],
+  ["sandstorm", "During a sandstorm"],
+  ["fog", "During foggy weather"],
+];
 
 /** Water or land: how a row's method meets the Pokémon (the coverage check keeps both apart). */
 function mediumOf(method: string): "water" | "land" {
@@ -998,12 +1355,53 @@ function summarizeFixes(fixes: ConditionFix[]): ConditionFix[] {
 }
 
 /** Bulbapedia catch rows -> our Rows (one per distinct chance across the time/season slots). */
-function bulbaToRows(h: BulbaRow, ver: string, names: string[], place: string, url: string, form: FormHit = {}): Row[] {
+/**
+ * Every row of a Bulbapedia page as ours, for a place only Bulbapedia names: wild rows with the table's chances per time
+ * slot (a special method's numbers only when they make up one table: a Berry tree's "100%" each is no chance),
+ * gifts/trades/statics/Eggs/fossils with their levels, a trade's "Give X" and a one-time row's note as the condition.
+ */
+async function rowsOfPage(cfg: GameCfg, l: BulbaLoc, place: string, part?: string): Promise<Row[]> {
+  const versions = cfg.versions.map((v) => v.id);
+  const slots = slotNames(cfg.id);
+  const out: Row[] = [];
+  const total = new Map<string, number>();
+  for (const h of l.rows) if (!bulbaKind(h.method, h.tpl, h.div) && !famOf(h.method)) for (const v of h.versions) total.set(`${v}|${h.method}`, (total.get(`${v}|${h.method}`) ?? 0) + (parseRate(h.rate) ?? 0));
+  for (const h of l.rows) {
+    if (h.uncatchable || h.event) continue;
+    const f = h.form ? ((await formFor(h.species, h.form)) ?? {}) : {};
+    // A form only the battle has (Eternamax Eternatus is caught as Eternatus).
+    const form = f.form && BATTLE_ONLY_FORMS.has(f.form) ? {} : f;
+    const kind = bulbaKind(h.method, h.tpl, h.div);
+    const levels = parseLevels(h.levels);
+    const note = h.note;
+    for (const ver of h.versions.filter((v) => versions.includes(v))) {
+      if (!kind && famOf(h.method)) {
+        out.push(...bulbaToRows(h, ver, slots, place, l.url, form, part));
+        continue;
+      }
+      const base = { src: "bulbapedia" as const, ver, place, ...(part ? { sub: part } : {}), species: h.species, ...(form.form ? { form: form.form, ...(form.art !== undefined ? { art: form.art } : {}) } : {}), url: l.url };
+      if (!kind) {
+        const rate = parseRate(h.rate);
+        const one = (total.get(`${ver}|${h.method}`) ?? 0) <= 100;
+        out.push({ ...base, kind: "wild", method: h.method[0].toUpperCase() + h.method.slice(1), ...(one && rate !== undefined ? { rate } : {}), ...(levels ? { levels } : {}), ...(note ? { cond: note } : {}) });
+        continue;
+      }
+      const method = kind === "fossil" ? "Fossil" : kind === "static" ? "Static" : /^Starter$/i.test(h.method) ? "Starter" : kind === "trade" ? "Trade" : kind === "egg" ? "Egg" : kind === "roaming" ? "Roaming" : "Gift";
+      const cond = [kind === "trade" ? (tradeCond(h) ?? "") : "", note ?? ""].filter(Boolean).join("; ");
+      out.push({ ...base, kind, method, ...(kind !== "trade" && levels ? { levels } : {}), ...(cond ? { cond } : {}) });
+    }
+  }
+  return out;
+}
+
+function bulbaToRows(h: BulbaRow, ver: string, names: string[], place: string, url: string, form: FormHit = {}, pagePart?: string): Row[] {
   const n = Math.max(1, names.length);
   const fam = famOf(h.method)!;
   const method = fam === "walk" ? (TERRAIN[h.method.toLowerCase()] ?? "Walking") : fam === "surf" ? "Surf" : fam === "old rod" ? "Old Rod" : fam === "good rod" ? "Good Rod" : "Super Rod";
-  // The part: a floor given as the method ("1F") or the table's sub-heading.
-  const sub = /^b?\d+f/i.test(h.method) ? h.method : h.heads.filter((x) => !/^Generation /i.test(x) && !/^(Hidden|Visible) encounters$/i.test(x)).pop();
+  // The part: a floor given as the method ("1F") or the table's sub-heading; on a page that is a part of the area
+  // (Mirage Mountain (southeast of Route 129)), that part first.
+  const own = /^b?\d+f/i.test(h.method) ? h.method : h.heads.filter((x) => !/^Generation /i.test(x) && !/^(Hidden|Visible) encounters$/i.test(x)).pop();
+  const sub = [pagePart, own].filter(Boolean).join(" ") || undefined;
   const v = vecBulba(h, n) ?? [];
   const levels = parseLevels(h.levels);
   const by = new Map<number, number[]>();
@@ -1018,10 +1416,25 @@ function bulbaToRows(h: BulbaRow, ver: string, names: string[], place: string, u
   return out;
 }
 
-function accsHasElsewhere(accs: Map<string, Acc>, ver: string, species: number, kind: string): boolean {
-  // A gift/trade listed by Bulbapedia on a city page may already be filed by PokéAPI under the building's own place.
-  for (const a of accs.values()) if (a.rows.some((r) => r.ver === ver && r.species === species && r.kind === kind)) return true;
+function accsHasElsewhere(accs: Map<string, Acc>, ver: string, species: number, kind: string, bulba: Map<string, BulbaLoc[]>): boolean {
+  // A gift/trade listed by Bulbapedia on a city page may already be filed by PokéAPI under the building's own place:
+  // another area's row is that one unless that area's own pages list it too (then each place has its own, like
+  // X/Y's hotel trades in Camphrier, Coumarine, Geosenge and Couriway).
+  const listed = (key: string) => (bulba.get(key) ?? []).some((l) => l.boxes.includes(species) || l.rows.some((h) => h.species === species && h.versions.includes(ver) && !!bulbaKind(h.method, h.tpl, h.div)));
+  for (const a of accs.values()) if (a.rows.some((r) => r.ver === ver && r.species === species && r.kind === kind) && !listed(a.key)) return true;
   return false;
+}
+
+function accsHasAny(accs: Map<string, Acc>, ver: string, species: number): boolean {
+  for (const a of accs.values()) if (a.rows.some((r) => r.ver === ver && r.species === species)) return true;
+  return false;
+}
+
+/** A trade's condition: the Pokémon asked for ("tradenum=000": any). */
+function tradeCond(h: BulbaRow): string | undefined {
+  const name = h.named.tradename ? plain(h.named.tradename) : "";
+  if (/^any$/i.test(name) || (!name && /^0+$/.test(h.named.tradenum ?? ""))) return "Give any Pokémon in a Trade";
+  return name ? `Give ${name} in a Trade` : undefined;
 }
 
 function displayName(a: Acc): string {
@@ -1184,7 +1597,7 @@ async function main() {
   const args = process.argv.slice(2);
   const ids = args.includes("--all") ? GAMES.map((g) => g.id) : args.filter((a, i) => args[i - 1] === "--game");
   if (!ids.length) throw new Error("usage: build.ts --game <id> [--game <id>…] | --all");
-  const log: Record<string, { disagreements: Disagreement[]; bulbapedia: Audit[]; rates: RateCheck[]; serebii?: SerebiiCheck[]; conditionFixes?: ConditionFix[]; visible?: VisibleCheck[]; coverageLosses?: string[] }> = fs.existsSync(CROSSCHECK) ? JSON.parse(fs.readFileSync(CROSSCHECK, "utf8")).games ?? {} : {};
+  const log: Record<string, { disagreements: Disagreement[]; bulbapedia: Audit[]; rates: RateCheck[]; serebii?: SerebiiCheck[]; conditionFixes?: ConditionFix[]; visible?: VisibleCheck[]; fixes?: FixLog[]; sweep?: SweepLog[]; nonWild?: NonWildCheck[]; coverageLosses?: string[] }> = fs.existsSync(CROSSCHECK) ? JSON.parse(fs.readFileSync(CROSSCHECK, "utf8")).games ?? {} : {};
   fs.mkdirSync(OUT_DIR, { recursive: true });
   fs.mkdirSync(REPORT_DIR, { recursive: true });
   for (const id of ids) {
@@ -1193,7 +1606,7 @@ async function main() {
     const t = Date.now();
     const b = await buildGame(cfg);
     fs.writeFileSync(path.join(OUT_DIR, `${id}.json`), JSON.stringify(b.game));
-    log[id] = { disagreements: b.disagreements, bulbapedia: b.audit, rates: b.rates, ...(b.serebii.length ? { serebii: b.serebii } : {}), ...(b.conditionFixes.length ? { conditionFixes: b.conditionFixes } : {}), ...(b.visible.length ? { visible: b.visible } : {}), coverageLosses: b.coverageLosses };
+    log[id] = { disagreements: b.disagreements, bulbapedia: b.audit, rates: b.rates, ...(b.serebii.length ? { serebii: b.serebii } : {}), ...(b.conditionFixes.length ? { conditionFixes: b.conditionFixes } : {}), ...(b.visible.length ? { visible: b.visible } : {}), ...(b.fixes.length ? { fixes: b.fixes } : {}), ...(b.sweep.length ? { sweep: b.sweep } : {}), ...(b.nonWild.length ? { nonWild: b.nonWild } : {}), coverageLosses: b.coverageLosses };
     fs.writeFileSync(path.join(REPORT_DIR, `${id}.json`), JSON.stringify(b.report, null, 1));
     const r = b.report as { areas: number; encounters: number; bosses: unknown[]; disagreements: number; unresolved: number; auditDropped: number; auditNotListed: number; rateReplaced: number; rateAdded: number; rateAddedBulbapedia: number; rateKept: number; unplaced: string[] };
     console.log(
@@ -1206,7 +1619,7 @@ async function main() {
     JSON.stringify(
       {
         about:
-          "Per game. disagreements: PokéAPI vs Serebii species disagreements per area and version, each settled by the game's table on Bulbapedia's location page (source): keep/drop = a PokéAPI row Bulbapedia lists / doesn't list; add/skip = a Serebii-only row Bulbapedia lists / doesn't list; unresolved = no Bulbapedia table, PokéAPI's data stands. bulbapedia: every other wild row Bulbapedia's table doesn't list for that version: drop = Bulbapedia lists the Pokémon there for no version of the game (e.g. an unreleased event table), keep = not on its table (both other sources list it). rates: per Pokémon and method family, PokéAPI's chances (per time slot, summed over the place's parts) that differ from Bulbapedia's table: replace = Serebii's rows (which match Bulbapedia) are used instead; add = PokéAPI lacks the method there and Serebii's matching rows are added; add-bulbapedia = only Bulbapedia has it, its rows are added; keep = no two sources agree, PokéAPI's stand. serebii (Scarlet/Violet, Legends: Z-A, whose Bulbapedia location tables are the source): every Serebii row its place's Bulbapedia table doesn't have; add = the Pokémon's own Bulbapedia page names that place for the game, skip = it doesn't (the row is left out). visible: every row of Bulbapedia's visible-Pokémon sections (Sword/Shield's Visible encounters, Wanderers, Curry encounters), add = no row of the area has that Pokémon met the same way (water or land) at overlapping levels in that version, duplicate = one does (named). coverageLosses: area|species|version(|water or land) keys the merged sources had and the output lost other than by a logged drop; it must be empty (verify:nuzlocke fails otherwise). conditionFixes: PokéAPI condition values found on rows they can't belong to (a Max Raid den value on Rolling Fields' wild rows), with the value used instead and the evidence. Written by scripts/nuzlocke/build.ts.",
+          "Per game. disagreements: PokéAPI vs Serebii species disagreements per area and version, each settled by the game's table on Bulbapedia's location page (source): keep/drop = a PokéAPI row Bulbapedia lists / doesn't list; add/skip = a Serebii-only row Bulbapedia lists / doesn't list; unresolved = no Bulbapedia table, PokéAPI's data stands. bulbapedia: every other wild row Bulbapedia's table doesn't list for that version: drop = Bulbapedia lists the Pokémon there for no version of the game (e.g. an unreleased event table), keep = not on its table (both other sources list it). rates: per Pokémon and method family, PokéAPI's chances (per time slot, summed over the place's parts) that differ from Bulbapedia's table: replace = Serebii's rows (which match Bulbapedia) are used instead; add = PokéAPI lacks the method there and Serebii's matching rows are added; add-bulbapedia = only Bulbapedia has it, its rows are added; keep = no two sources agree, PokéAPI's stand. serebii (Scarlet/Violet, Legends: Z-A, whose Bulbapedia location tables are the source): every Serebii row its place's Bulbapedia table doesn't have; add = the Pokémon's own Bulbapedia page names that place for the game, skip = it doesn't (the row is left out). visible: every row of Bulbapedia's visible-Pokémon sections (Sword/Shield's Visible encounters, Wanderers, Curry encounters), add = no row of the area has that Pokémon met the same way (water or land) at overlapping levels in that version, duplicate = one does (named). coverageLosses: area|species|version(|water or land) keys the merged sources had and the output lost other than by a logged drop; it must be empty (verify:nuzlocke fails otherwise). conditionFixes: PokéAPI condition values found on rows they can't belong to (a Max Raid den value on Rolling Fields' wild rows), with the value used instead and the evidence. fixes: source rows Bulbapedia shows to be wrong and what was done (drop, levels, method, no chance, copied to the places a moving NPC appears at, kind, condition), each with its evidence (scripts/nuzlocke/lib/fixes.ts, Bulbapedia's notes on unreachable water, PokéAPI's Generation VII ambush rows). sweep: the game's Bulbapedia location pages (its category) that no area's lookup reached and that have its table rows: fold = the page is part of an area (a building in a town, by its infobox location; a part, by its title; or a named rule) and joins that area's pages; new area = a place no other source names, built from its page. nonWild: gifts, statics, Eggs and fossils that their area's Bulbapedia pages don't list but another area's do (the same encounter: kind and levels; trades are left where they are): drop = that area already has it, move = it is moved there. Written by scripts/nuzlocke/build.ts.",
         games: ordered,
       },
       null,

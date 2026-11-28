@@ -2,7 +2,8 @@
  * PokéAPI location-area encounters -> Rows for one game's versions.
  *
  * Within one (area, Pokémon, version, method, non-time conditions) the slot chances are summed per time of day
- * (Gen 2/4) or season (Gen 5); slots with equal totals share one row whose condition names them.
+ * (Gen 2/4) or season (Gen 5), and the levels taken per time of day or season; times with equal totals and levels
+ * share one row whose condition names them (Gold/Silver's Route 1 Rattata: Lv 2 by morning and day, Lv 3-6 at night).
  */
 import type { EncounterKind } from "../../../src/lib/nuzlocke/model";
 import { API_NAMES, PLACEHOLDER } from "./aliases";
@@ -194,7 +195,7 @@ export async function pokeapiRows(vmap: Record<string, string>): Promise<{ rows:
         const ver = vmap[vd.version.name];
         if (!ver) continue;
         // (method, other conditions) -> per-slot chance sums
-        const groups = new Map<string, { method: string; conds: string[]; lo: number; hi: number; slots: number[]; slotKind: "time" | "season" | "none"; sum: number; pooled: boolean }>();
+        const groups = new Map<string, { method: string; conds: string[]; lo: number[]; hi: number[]; slots: number[]; slotKind: "time" | "season" | "none"; sum: number; pooled: boolean }>();
         for (const d of vd.encounter_details) {
           const m = API_METHOD[d.method.name];
           if (m === null) continue;
@@ -210,15 +211,17 @@ export async function pokeapiRows(vmap: Record<string, string>): Promise<{ rows:
           const other = cv.filter((c) => !(c in TIME) && !(c in SEASON) && !PLAIN_COND.has(c)).sort();
           const key = `${d.method.name}|${other.join(",")}`;
           const slotKind = times.length ? "time" : seasons.length ? "season" : "none";
-          const g = groups.get(key) ?? { method: d.method.name, conds: other, lo: 999, hi: 0, slots: [0, 0, 0, 0], slotKind, sum: 0, pooled: false };
+          const g = groups.get(key) ?? { method: d.method.name, conds: other, lo: [999, 999, 999, 999], hi: [0, 0, 0, 0], slots: [0, 0, 0, 0], slotKind, sum: 0, pooled: false };
           if (g.slotKind === "none" && slotKind !== "none") g.slotKind = slotKind;
-          g.lo = Math.min(g.lo, d.min_level);
-          g.hi = Math.max(g.hi, d.max_level);
           g.pooled ||= other.some((c) => NO_RATE_COND.test(c));
           const n = slotKind === "time" ? 3 : 4;
           const hit = slotKind === "time" ? times : slotKind === "season" ? seasons : [0, 1, 2, 3].slice(0, n);
-          // A detail without a time/season condition counts in every slot.
-          for (const s of slotKind === "none" ? [0, 1, 2, 3] : hit) g.slots[s] += d.chance;
+          // A detail without a time/season condition counts in every slot (its chance and its levels).
+          for (const s of slotKind === "none" ? [0, 1, 2, 3] : hit) {
+            g.slots[s] += d.chance;
+            g.lo[s] = Math.min(g.lo[s], d.min_level);
+            g.hi[s] = Math.max(g.hi[s], d.max_level);
+          }
           g.sum += d.chance;
           groups.set(key, g);
         }
@@ -232,20 +235,23 @@ export async function pokeapiRows(vmap: Record<string, string>): Promise<{ rows:
             method = "Fossil";
           }
           const condText = g.conds.map((c) => names.get(c) ?? c).join("; ");
-          const base: Omit<Row, "rate" | "cond"> = { src: "pokeapi", ver, place, ...(sub ? { sub } : {}), species, ...(form ? { form, art: pid } : {}), kind, method, url };
-          if (g.method !== "npc-trade") base.levels = [g.lo, g.hi];
+          const base: Omit<Row, "rate" | "cond" | "levels"> = { src: "pokeapi", ver, place, ...(sub ? { sub } : {}), species, ...(form ? { form, art: pid } : {}), kind, method, url };
           const rated = !NO_RATE.has(g.method) && !g.pooled;
           const nSlots = g.slotKind === "time" ? 3 : g.slotKind === "season" ? 4 : 1;
-          const slots = g.slots.slice(0, nSlots);
-          const byRate = new Map<number, number[]>();
-          slots.forEach((v, i) => {
-            if (v > 0) byRate.set(v, [...(byRate.get(v) ?? []), i]);
+          // Times (or seasons) with the same chance and the same levels make one row.
+          const byRate = new Map<string, { rate: number; lo: number; hi: number; idx: number[] }>();
+          g.slots.slice(0, nSlots).forEach((v, i) => {
+            if (v <= 0) return;
+            const k = `${v}|${g.lo[i]}|${g.hi[i]}`;
+            const e = byRate.get(k) ?? { rate: v, lo: g.lo[i], hi: g.hi[i], idx: [] };
+            e.idx.push(i);
+            byRate.set(k, e);
           });
           const labels = g.slotKind === "time" ? TIME_NAMES : SEASON_NAMES;
-          for (const [rate, idx] of byRate) {
+          for (const { rate, lo, hi, idx } of byRate.values()) {
             const when = g.slotKind === "none" || idx.length === nSlots ? "" : idx.map((i) => labels[i]).join(", ");
             const cond = [when, condText].filter(Boolean).join("; ");
-            const row: Row = { ...base, ...(rated && rate <= 100 ? { rate } : {}), ...(cond ? { cond } : {}) };
+            const row: Row = { ...base, ...(g.method !== "npc-trade" ? { levels: [lo, hi] as [number, number] } : {}), ...(rated && rate <= 100 ? { rate } : {}), ...(cond ? { cond } : {}) };
             const special = g.conds.filter((c) => SPECIAL.test(c));
             if (special.length) specialOf.set(row, special.join(","));
             rows.push(row);

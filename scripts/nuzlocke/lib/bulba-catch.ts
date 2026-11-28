@@ -66,7 +66,18 @@ export interface BulbaRow {
   heads: string[];
   /** Named params as given (type1, tradename, all…). */
   named: Record<string, string>;
+  /** The table notes that this part of it can't be reached in the game ("The water is inaccessible without glitches"). */
+  inaccessible?: true;
+  /** The rate column's tooltip ("{{tt|One|After receiving the National Pokédex}}"), plain text. */
+  note?: string;
+  /** The tooltip says the Pokémon can't be caught (Sword/Shield's first Eternatus battle). */
+  uncatchable?: true;
+  /** The tooltip says it needs an event (a QR code activation, a distribution): not an encounter of the game itself. */
+  event?: true;
 }
+
+/** A table note saying its rows can't be reached in normal play. */
+const INACCESSIBLE = /\binaccessible\b|without (the use of )?(a )?cheating device|without glitches/i;
 
 /** The "Pokémon" section of a location page ("==Pokémon==", or "===Pokémon===" on a building's page), to the next heading of its level. */
 export function pokemonSection(text: string): { body: string; offset: number } | null {
@@ -120,7 +131,17 @@ export function catchRows(text: string, opts: { whole?: boolean } = {}): BulbaRo
   const heads = [...body.matchAll(/^(={2,6})\s*(.*?)\s*\1\s*$/gm)].map((h) => ({ at: h.index!, lvl: h[1].length, name: plain(h[2]) }));
   const out: BulbaRow[] = [];
   let div: string | undefined;
+  let divType = "";
   let lastHeadAt = -1;
+  // The rows of the current table ({{Catch/header}} to {{Catch/footer}}) by divider type ("water", "land"…): a note
+  // divider saying that part can't be reached marks every row of its type in the table, before or after it.
+  let table: { row: BulbaRow; type: string }[] = [];
+  const blocked = new Set<string>();
+  const closeTable = () => {
+    for (const x of table) if (blocked.has(x.type)) x.row.inaccessible = true;
+    table = [];
+    blocked.clear();
+  };
   for (const t of templates(body)) {
     const name = t.name.toLowerCase().replace(/^catch\//, "");
     if (!/^catch\//i.test(t.name)) continue;
@@ -128,20 +149,36 @@ export function catchRows(text: string, opts: { whole?: boolean } = {}): BulbaRo
     const curHeadAt = headsAbove.length ? headsAbove[headsAbove.length - 1].at : -1;
     if (curHeadAt !== lastHeadAt) {
       div = undefined;
+      divType = "";
       lastHeadAt = curHeadAt;
     }
     if (/^(header|footer)/.test(name)) {
       div = undefined;
+      closeTable();
+      // A table's header names its first rows' type ("land", "water") until a divider says otherwise.
+      divType = /^header/.test(name) ? (t.pos[0] ?? "").trim().toLowerCase() : "";
       continue;
     }
     if (/^div/.test(name)) {
-      div = plain(t.pos[1] ?? "") || undefined;
+      const label = plain(t.pos[1] ?? "");
+      if (INACCESSIBLE.test(label)) {
+        blocked.add((t.pos[0] ?? "").trim().toLowerCase());
+        continue;
+      }
+      div = label || undefined;
+      divType = (t.pos[0] ?? "").trim().toLowerCase();
       continue;
     }
     const spec = SPECS[name];
     if (!spec) continue;
-    out.push(rowOf(t, name, spec, div, stack(headsAbove)));
+    const chain = stack(headsAbove);
+    // A demo's table ("Pokémon Omega Ruby and Pokémon Alpha Sapphire Special Demo Version") is not the game's.
+    if (chain.some((h) => /\bDemo\b/i.test(h))) continue;
+    const row = rowOf(t, name, spec, div, chain);
+    out.push(row);
+    table.push({ row, type: divType });
   }
+  closeTable();
   return out;
 }
 
@@ -161,6 +198,9 @@ function rowOf(t: Template, tpl: string, spec: Spec, div: string | undefined, he
   const habitat = HABITAT.filter(([k]) => /^yes$/i.test(t.named[k] ?? "")).map(([, l]) => l).join(", ");
   const rates = spec.rates.map(p).filter(Boolean);
   const rate = t.named.all !== undefined ? plain(t.named.all) : rates.length ? rates.map(plain).join("/") : undefined;
+  const rawRate = t.named.all ?? rates.join(" ");
+  const tip = /\{\{tt\|[^|{}]*\|([^{}]*)\}\}/.exec(rawRate)?.[1];
+  const note = tip ? plain(tip) : undefined;
   // Legends: Arceus writes the form in the dex code: "058H" (Hisuian Growlithe), "550W" (White-Striped Basculin),
   // "487O" (Origin Giratina), "422E" (East Sea Shellos), "413S"/"413G" (Sandy/Plant Cloak). Unown's letters ("201H")
   // name no Pokémon of their own and come to nothing when the label is looked up as a form.
@@ -180,5 +220,8 @@ function rowOf(t: Template, tpl: string, spec: Spec, div: string | undefined, he
     ...(div ? { div } : {}),
     heads,
     named: t.named,
+    ...(note ? { note } : {}),
+    ...(note && /\b(cannot|can't|can not) be caught\b/i.test(note) ? { uncatchable: true as const } : {}),
+    ...(note && /\bQR Code\b|\bevent\b|\bdistribut|\bMystery Gift\b|\bserial code\b/i.test(note) ? { event: true as const } : {}),
   };
 }
