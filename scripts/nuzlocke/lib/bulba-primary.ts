@@ -59,9 +59,23 @@ export function placesIn(area: string): { title: string; after: string }[] {
   const re = /\[\[([^\]|#]+)(?:#[^\]|]*)?(?:\|[^\]]*)?\]\]/g;
   let m: RegExpExecArray | null;
   while ((m = re.exec(text))) {
+    // What follows the place up to the next place of the list (a top-level comma) or line: its note, e.g.
+    // " ([[List of in-game event Pokémon…|Only one]])".
     const rest = text.slice(m.index + m[0].length);
-    const end = rest.search(/\[\[|<br\s*\/?>/i);
-    out.push({ title: norm(m[1]), after: end < 0 ? rest : rest.slice(0, end) });
+    let depth = 0;
+    let end = rest.length;
+    for (let i = 0; i < rest.length; i++) {
+      const two = rest.slice(i, i + 2);
+      if (two === "[[" || two === "{{") (depth++, i++);
+      else if (two === "]]" || two === "}}") (depth--, i++);
+      else if (rest[i] === "(") depth++;
+      else if (rest[i] === ")") depth--;
+      else if (depth <= 0 && (rest[i] === "," || /^<br/i.test(rest.slice(i, i + 3)))) {
+        end = i;
+        break;
+      }
+    }
+    out.push({ title: norm(m[1]), after: rest.slice(0, end) });
   }
   return out;
 }
@@ -94,11 +108,14 @@ export interface AreaPage {
   text: string;
 }
 
-export async function areaPages(candidates: Map<string, string[]>): Promise<Map<string, AreaPage | null>> {
+/** Each area's page: the first candidate with a table of this game's templates, else the first that exists. */
+export async function areaPages(candidates: Map<string, string[]>, tpl: Set<string> = new Set()): Promise<Map<string, AreaPage | null>> {
   const got = await pages([...new Set([...candidates.values()].flat())]);
   const out = new Map<string, AreaPage | null>();
-  for (const [key, list] of candidates) {
+  const hasTable = (text: string) => catchRows(text).some((r) => tpl.has(r.tpl));
+  for (const [key, list0] of candidates) {
     let hit: AreaPage | null = null;
+    const list = [...list0.filter((t) => got.get(t)?.text && hasTable(got.get(t)!.text!)), ...list0];
     for (const t of list) {
       const p = got.get(t);
       if (!p?.text || !p.title || /\{\{\s*disambig/i.test(p.text)) continue;

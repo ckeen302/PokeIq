@@ -257,7 +257,7 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
       if (names.has(k)) linkByKey.set(k, [...new Set([...(linkByKey.get(k) ?? []), title])]);
     }
     const cands = new Map([...names].map(([k, n]) => [k, [...(linkByKey.get(k) ?? []), n, ...cfg.bulbaRegions.flatMap((R) => [`${n} (${R})`, `${R} ${n}`])]]));
-    const ap = await areaPages(cands);
+    const ap = await areaPages(cands, new Set(cfg.bulba));
     const subPages = await pages([...new Set([...ap.values()].flatMap((p) => p?.subs ?? []))]);
     const confirmAt = new Map<string, Set<string>>();
     const tpl = new Set(cfg.bulba);

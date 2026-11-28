@@ -158403,26 +158403,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Cleffa_(Pok%C3%A9mon)"
     },
     {
-     "area": "Pokémon League",
-     "version": "scarlet",
-     "species": 174,
-     "name": "Igglybuff",
-     "serebii": "Wild",
-     "bulbapedia": "neither the place's table nor the Pokémon's page has it there",
-     "action": "skip",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Paldea_League"
-    },
-    {
-     "area": "Pokémon League",
-     "version": "violet",
-     "species": 174,
-     "name": "Igglybuff",
-     "serebii": "Wild",
-     "bulbapedia": "neither the place's table nor the Pokémon's page has it there",
-     "action": "skip",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Paldea_League"
-    },
-    {
      "area": "Alfornada Cavern",
      "version": "scarlet",
      "species": 181,
@@ -163713,16 +163693,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Bonsly_(Pok%C3%A9mon)"
     },
     {
-     "area": "Pokémon League",
-     "version": "scarlet",
-     "species": 440,
-     "name": "Happiny",
-     "serebii": "Wild",
-     "bulbapedia": "neither the place's table nor the Pokémon's page has it there",
-     "action": "skip",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Paldea_League"
-    },
-    {
      "area": "South Province (Area Five)",
      "version": "scarlet",
      "species": 440,
@@ -163731,16 +163701,6 @@
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Happiny_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Pokémon League",
-     "version": "violet",
-     "species": 440,
-     "name": "Happiny",
-     "serebii": "Wild",
-     "bulbapedia": "neither the place's table nor the Pokémon's page has it there",
-     "action": "skip",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Paldea_League"
     },
     {
      "area": "South Province (Area Five)",
@@ -168343,26 +168303,6 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Oni_Mountain"
     },
     {
-     "area": "Pokémon League",
-     "version": "scarlet",
-     "species": 791,
-     "name": "Solgaleo",
-     "serebii": "Wild",
-     "bulbapedia": "neither the place's table nor the Pokémon's page has it there",
-     "action": "skip",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Paldea_League"
-    },
-    {
-     "area": "Pokémon League",
-     "version": "violet",
-     "species": 791,
-     "name": "Solgaleo",
-     "serebii": "Wild",
-     "bulbapedia": "neither the place's table nor the Pokémon's page has it there",
-     "action": "skip",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Paldea_League"
-    },
-    {
      "area": "Kitakami Hall",
      "version": "scarlet",
      "species": 819,
@@ -169540,7 +169480,7 @@
      "serebii": "Wild",
      "bulbapedia": "neither the place's table nor the Pokémon's page has it there",
      "action": "skip",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Paldea_League"
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Pok%C3%A9mon_League_(Paldea)"
     },
     {
      "area": "South Province (Area Two)",
@@ -169580,7 +169520,7 @@
      "serebii": "Wild",
      "bulbapedia": "neither the place's table nor the Pokémon's page has it there",
      "action": "skip",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Paldea_League"
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Pok%C3%A9mon_League_(Paldea)"
     },
     {
      "area": "South Province (Area Two)",
@@ -169630,7 +169570,7 @@
      "serebii": "Wild",
      "bulbapedia": "neither the place's table nor the Pokémon's page has it there",
      "action": "skip",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Paldea_League"
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Pok%C3%A9mon_League_(Paldea)"
     },
     {
      "area": "South Province (Area Two)",
@@ -169660,7 +169600,7 @@
      "serebii": "Wild",
      "bulbapedia": "neither the place's table nor the Pokémon's page has it there",
      "action": "skip",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Paldea_League"
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Pok%C3%A9mon_League_(Paldea)"
     },
     {
      "area": "South Province (Area Two)",
@@ -169841,26 +169781,6 @@
      "bulbapedia": "the Pokémon's page names it there",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Pawmo_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Pokémon League",
-     "version": "scarlet",
-     "species": 924,
-     "name": "Tandemaus",
-     "serebii": "Wild",
-     "bulbapedia": "neither the place's table nor the Pokémon's page has it there",
-     "action": "skip",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Paldea_League"
-    },
-    {
-     "area": "Pokémon League",
-     "version": "violet",
-     "species": 924,
-     "name": "Tandemaus",
-     "serebii": "Wild",
-     "bulbapedia": "neither the place's table nor the Pokémon's page has it there",
-     "action": "skip",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Paldea_League"
     },
     {
      "area": "Apple Hills",
@@ -171068,7 +170988,7 @@
      "species": 1001,
      "name": "Wo-Chien",
      "serebii": "Wild",
-     "bulbapedia": "the Pokémon's page names it there",
+     "bulbapedia": "the Pokémon's page names it there (Only one)",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Wo-Chien_(Pok%C3%A9mon)"
     },
@@ -171078,7 +170998,7 @@
      "species": 1001,
      "name": "Wo-Chien",
      "serebii": "Wild",
-     "bulbapedia": "the Pokémon's page names it there",
+     "bulbapedia": "the Pokémon's page names it there (Only one)",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Wo-Chien_(Pok%C3%A9mon)"
     },
@@ -171088,7 +171008,7 @@
      "species": 1002,
      "name": "Chien-Pao",
      "serebii": "Wild",
-     "bulbapedia": "the Pokémon's page names it there",
+     "bulbapedia": "the Pokémon's page names it there (Only one)",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Chien-Pao_(Pok%C3%A9mon)"
     },
@@ -171098,7 +171018,7 @@
      "species": 1002,
      "name": "Chien-Pao",
      "serebii": "Wild",
-     "bulbapedia": "the Pokémon's page names it there",
+     "bulbapedia": "the Pokémon's page names it there (Only one)",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Chien-Pao_(Pok%C3%A9mon)"
     },
@@ -171108,7 +171028,7 @@
      "species": 1003,
      "name": "Ting-Lu",
      "serebii": "Wild",
-     "bulbapedia": "the Pokémon's page names it there",
+     "bulbapedia": "the Pokémon's page names it there (Only one)",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Ting-Lu_(Pok%C3%A9mon)"
     },
@@ -171118,7 +171038,7 @@
      "species": 1003,
      "name": "Ting-Lu",
      "serebii": "Wild",
-     "bulbapedia": "the Pokémon's page names it there",
+     "bulbapedia": "the Pokémon's page names it there (Only one)",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Ting-Lu_(Pok%C3%A9mon)"
     },
@@ -171128,7 +171048,7 @@
      "species": 1004,
      "name": "Chi-Yu",
      "serebii": "Wild",
-     "bulbapedia": "the Pokémon's page names it there",
+     "bulbapedia": "the Pokémon's page names it there (Only one)",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Chi-Yu_(Pok%C3%A9mon)"
     },
@@ -171138,7 +171058,7 @@
      "species": 1004,
      "name": "Chi-Yu",
      "serebii": "Wild",
-     "bulbapedia": "the Pokémon's page names it there",
+     "bulbapedia": "the Pokémon's page names it there (Only one)",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Chi-Yu_(Pok%C3%A9mon)"
     },
@@ -173996,7 +173916,7 @@
      "species": 380,
      "name": "Latias",
      "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
+     "bulbapedia": "the Pokémon's page names it there (Only one)",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Latias_(Pok%C3%A9mon)"
     },
@@ -174006,7 +173926,7 @@
      "species": 381,
      "name": "Latios",
      "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
+     "bulbapedia": "the Pokémon's page names it there (Only one)",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Latios_(Pok%C3%A9mon)"
     },
@@ -175296,7 +175216,7 @@
      "species": 638,
      "name": "Cobalion",
      "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
+     "bulbapedia": "the Pokémon's page names it there (Only one)",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Cobalion_(Pok%C3%A9mon)"
     },
@@ -175306,7 +175226,7 @@
      "species": 639,
      "name": "Terrakion",
      "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
+     "bulbapedia": "the Pokémon's page names it there (Only one)",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Terrakion_(Pok%C3%A9mon)"
     },
@@ -175316,7 +175236,7 @@
      "species": 640,
      "name": "Virizion",
      "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
+     "bulbapedia": "the Pokémon's page names it there (Only one)",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Virizion_(Pok%C3%A9mon)"
     },
@@ -175326,7 +175246,7 @@
      "species": 647,
      "name": "Keldeo",
      "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
+     "bulbapedia": "the Pokémon's page names it there (Only one)",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Keldeo_(Pok%C3%A9mon)"
     },
@@ -175336,7 +175256,7 @@
      "species": 648,
      "name": "Meloetta",
      "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
+     "bulbapedia": "the Pokémon's page names it there (Only one)",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Meloetta_(Pok%C3%A9mon)"
     },
@@ -175346,7 +175266,7 @@
      "species": 649,
      "name": "Genesect",
      "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
+     "bulbapedia": "the Pokémon's page names it there (Only one)",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Genesect_(Pok%C3%A9mon)"
     },
@@ -177086,19 +177006,9 @@
      "species": 720,
      "name": "Hoopa",
      "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
-     "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Hoopa_(Pok%C3%A9mon)"
-    },
-    {
-     "area": "Pokémon Research Lab",
-     "version": "legends-za",
-     "species": 721,
-     "name": "Volcanion",
-     "serebii": "Hyperspace",
      "bulbapedia": "the Pokémon's page names it there (Only one)",
      "action": "add",
-     "source": "https://bulbapedia.bulbagarden.net/wiki/Volcanion_(Pok%C3%A9mon)"
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Hoopa_(Pok%C3%A9mon)"
     },
     {
      "area": "Hyperspace Lumiose",
@@ -177226,7 +177136,7 @@
      "species": 809,
      "name": "Melmetal",
      "serebii": "Hyperspace",
-     "bulbapedia": "the Pokémon's page names it there",
+     "bulbapedia": "the Pokémon's page names it there (Only one)",
      "action": "add",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Melmetal_(Pok%C3%A9mon)"
     },
