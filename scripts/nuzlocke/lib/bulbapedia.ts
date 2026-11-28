@@ -47,12 +47,29 @@ export async function pages(titles: string[]): Promise<Map<string, WikiPage>> {
       out.set(t, p);
     } else missing.push(t);
   }
-  for (let i = 0; i < missing.length; i += 50) {
-    const batch = missing.slice(i, i + 50);
+  // Batches of 50 titles; big pages (a Pokémon's) make a response the API may cut short, so a batch whose answer isn't
+  // whole JSON is asked again in halves.
+  const queue: string[][] = [];
+  for (let i = 0; i < missing.length; i += 50) queue.push(missing.slice(i, i + 50));
+  while (queue.length) {
+    const batch = queue.shift()!;
     const q = new URLSearchParams({ action: "query", prop: "revisions", rvprop: "content", rvslots: "main", titles: batch.join("|"), redirects: "1", format: "json", formatversion: "2" });
     const res = await fetchOnce(`${API}?${q}`, "bulbapedia", "application/json");
     if (res.status !== 200) throw new Error(`Bulbapedia query failed: HTTP ${res.status}`);
-    const j = JSON.parse(res.body.toString("utf8")) as RevQuery;
+    let j: RevQuery;
+    try {
+      j = JSON.parse(res.body.toString("utf8")) as RevQuery;
+    } catch (e) {
+      if (batch.length === 1) throw e;
+      queue.unshift(batch.slice(0, batch.length >> 1), batch.slice(batch.length >> 1));
+      continue;
+    }
+    // A response cut at the size limit lists the rest without content ("continue"): ask for those again.
+    const cut = (j?.query?.pages ?? []).some((p) => !p.missing && !p.invalid && !p.revisions);
+    if (cut && batch.length > 1) {
+      queue.unshift(batch.slice(0, batch.length >> 1), batch.slice(batch.length >> 1));
+      continue;
+    }
     const byTitle = new Map((j?.query?.pages ?? []).map((p) => [p.title, p]));
     const hop = (t: string, map?: { from: string; to: string }[]) => map?.find((x) => x.from === t)?.to ?? t;
     for (const t of batch) {

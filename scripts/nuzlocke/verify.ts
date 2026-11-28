@@ -8,7 +8,10 @@
  * out of step with the build's game list or its file; an empty `sources`; duplicate area ids; an area with no
  * encounters; an unknown version id; a species or form without art; a rate outside 0-100; a level range with min > max
  * (or outside 1-100); a boss cap below 1 or above 100; and malformed fields (kinds, forms without art ids…). A form whose
- * art isn't made yet is only allowed when scripts/nuzlocke/art-missing.json lists it (it is printed as a warning).
+ * art isn't made yet is only allowed when scripts/nuzlocke/art-missing.json lists it (it is printed as a warning). Also a
+ * condition on rows it can't belong to: a Max Raid den, Tera Raid, rod, Headbutt, Rock Smash or Honey condition on
+ * another method; time-of-day, season or weather conditions in a game without them; "before" and "after" the Hall of
+ * Fame at once.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -47,6 +50,34 @@ for (const g of NUZ_GAMES) {
   if (cfg && JSON.stringify({ n: cfg.name, g: cfg.gen, r: cfg.region, v: cfg.versions }) !== JSON.stringify({ n: g.name, g: g.gen, r: g.region, v: g.versions })) fail("NUZ_GAMES", `${g.id} differs from the build's config`);
 }
 if (new Set(NUZ_GAMES.map((g) => g.id)).size !== NUZ_GAMES.length) fail("NUZ_GAMES", "duplicate game id");
+
+// ---- conditions that only fit some methods or games
+/** A condition naming a way of meeting Pokémon sits only on rows of that method. */
+const COND_NEEDS: [RegExp, RegExp, string][] = [
+  [/max raid|raid battle|raid den|pillar of light|wild area news|dynamax adventure/i, /raid|dynamax/i, "a Max Raid den condition"],
+  [/tera raid/i, /tera raid/i, "a Tera Raid condition"],
+  [/\b(old|good|super) rod\b/i, /rod|fish/i, "a fishing condition"],
+  [/\bheadbutt\b/i, /headbutt/i, "a Headbutt condition"],
+  [/\brock smash\b/i, /rock smash/i, "a Rock Smash condition"],
+  [/\bhoney\b/i, /honey/i, "a Honey Tree condition"],
+];
+const TIME_PART = /^(Morning|Day|Night)(, (Morning|Day|Night))*$/;
+const SEASON_PART = /^(Spring|Summer|Autumn|Winter)(, (Spring|Summer|Autumn|Winter))*$/;
+const WEATHER_PART = /^During .*weather$|^During (a |an )?(snowstorm|sandstorm|thunderstorm|intense sun|fog)$/i;
+const TIME_GAMES = new Set(["gold-silver", "crystal", "diamond-pearl", "platinum", "heartgold-soulsilver", "sun-moon", "ultra-sun-ultra-moon", "brilliant-diamond-shining-pearl"]);
+const SEASON_GAMES = new Set(["black-white", "black-2-white-2"]);
+const WEATHER_GAMES = new Set(["sword-shield"]);
+function conditionProblems(game: string, kind: EncounterKind, method: string, cond: string): string[] {
+  const out: string[] = [];
+  // (A gift's condition may name what earns it: "Catch 5 Ultra Beasts in Dynamax Adventures".)
+  if (kind === "wild" || kind === "static") for (const [c, m, what] of COND_NEEDS) if (c.test(cond) && !m.test(method)) out.push(`${what} ("${cond}") on a ${method} row`);
+  const parts = cond.split("; ");
+  if (parts.some((x) => TIME_PART.test(x)) && !TIME_GAMES.has(game)) out.push(`a time-of-day condition ("${cond}") in a game without time-of-day encounters`);
+  if (parts.some((x) => SEASON_PART.test(x)) && !SEASON_GAMES.has(game)) out.push(`a season condition ("${cond}") in a game without seasons`);
+  if (parts.some((x) => WEATHER_PART.test(x)) && !WEATHER_GAMES.has(game)) out.push(`a weather condition ("${cond}") in a game without weather encounters`);
+  if (/\bBefore entering the Hall of Fame\b/.test(cond) && /\bEnter the Hall of Fame\b/.test(cond)) out.push(`contradictory story conditions ("${cond}")`);
+  return out;
+}
 
 // ---- each game (shipped ones, then held-back ones, checked the same way)
 const totals: string[] = [];
@@ -116,6 +147,7 @@ for (const info of [...NUZ_GAMES, ...held]) {
         if (lo < 1 || hi > 100) fail(what, `levels ${lo}-${hi} outside 1-100`);
       }
       if (e.condition !== undefined && !e.condition.trim()) fail(what, "empty condition");
+      if (e.condition) for (const p of conditionProblems(info.id, e.kind, e.method, e.condition)) fail(what, p);
       const sig = JSON.stringify(e);
       if (sigs.has(sig)) fail(what, "duplicate encounter");
       sigs.add(sig);

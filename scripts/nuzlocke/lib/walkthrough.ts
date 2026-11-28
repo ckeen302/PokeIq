@@ -65,7 +65,11 @@ export interface Walkthrough {
 
 const REGION_RT: Record<string, string> = { kanto: "Kanto", johto: "Johto", hoenn: "Hoenn", sinnoh: "Sinnoh", unova: "Unova", kalos: "Kalos", alola: "Alola", galar: "Galar" };
 
-export async function walkthrough(title: string): Promise<Walkthrough> {
+/**
+ * `mentions`: places the walkthrough's text names that count as reached where first named (Legends: Z-A's prose takes
+ * the player through Wild Zones 1-7 without a heading for each).
+ */
+export async function walkthrough(title: string, mentions?: RegExp): Promise<Walkthrough> {
   const idx = (await pages([title])).get(title)!;
   if (!idx.text) throw new Error(`no walkthrough page ${title}`);
   // Parts in the index's order; "Post-Game" (or similar) header rows mark the rest as post-game.
@@ -148,6 +152,13 @@ export async function walkthrough(title: string): Promise<Walkthrough> {
       if (mon) events.push(lone(t.start, mon));
     }
     for (const m of text.matchAll(/\bThe Titan ([A-Z][a-z]+) is level (\d+)\b/g)) events.push(lone(m.index!, { species: 0, name: m[1], level: Number(m[2]) }));
+    if (mentions)
+      for (const m of plain(text).matchAll(new RegExp(mentions.source, "g"))) {
+        // Plain text positions differ from the wikitext's; the mention is placed at the nearest heading before the
+        // same words in the wikitext (or the part's start).
+        const at = Math.max(0, text.indexOf(m[0]));
+        events.push({ type: "head", lvl: 9, name: m[0], linked: [], path: [], part: p.idx, at });
+      }
   }
   events.sort((a, b) => a.part - b.part || a.at - b.at);
   return { title, url: pageUrl(title), parts, events, links, catches };
