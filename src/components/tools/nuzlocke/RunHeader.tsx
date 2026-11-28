@@ -1,10 +1,10 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { BadgeMinus, Download, Medal, Pencil, Plus, ScrollText, Share2, Trash2, Upload } from "lucide-react";
+import { BadgeMinus, Download, Medal, Pencil, Plus, ScrollText, Share2, Trash2, Upload, VenetianMask } from "lucide-react";
 import Link from "@/components/ui/Link";
 import { cn } from "@/lib/utils";
-import { NAME_MAX, badgeCount, badgeTotal, levelCap, stats, storyBefore, type Run } from "@/lib/nuzlocke/run";
+import { NAME_MAX, badgeCount, badgeTotal, hasBadges, levelCap, stats, storyBefore, type Run } from "@/lib/nuzlocke/run";
 import type { GameView } from "@/lib/nuzlocke/view";
 import { Menu, VersionDot, type MenuItem, type NuzT } from "./parts";
 import { TRACKER_PATH } from "./StartRun";
@@ -24,8 +24,12 @@ export function RunHeader({ t, run, view, readOnly, onRename, onBadge, onMenu }:
   // A rival or villain still to come before the cap's boss, when they don't set the cap: a "Before that" under it.
   const before = run.rules.caps ? storyBefore(run, view) : null;
   const hasCaps = view.steps.some((x) => x.type === "boss" && (x.boss.cap !== undefined || x.boss.capByVersion));
-  const badges = badgeCount(run, view);
+  const showCap = run.rules.caps && hasCaps;
+  // No badge counter where there are no badges (Alola's trials give none).
+  const showBadges = hasBadges(view, run.version);
+  const badges = showBadges ? badgeCount(run, view) : 0;
   const total = badgeTotal(view, run.version);
+  const tiles = 1 + +showCap + +showBadges;
   const items: MenuItem[] = readOnly
     ? [
         { id: "share", label: t("header.share"), icon: <Share2 /> },
@@ -79,8 +83,8 @@ export function RunHeader({ t, run, view, readOnly, onRename, onBadge, onMenu }:
         <Menu label={t("header.menu")} items={items} onPick={onMenu} className="-mr-1 -mt-1" testId="nz-menu" />
       </div>
 
-      <div className={cn("mt-4 grid gap-2.5 sm:gap-3", cap || (hasCaps && run.rules.caps) ? "grid-cols-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.2fr)]" : "grid-cols-2")}>
-        {run.rules.caps && hasCaps && (
+      <div className={cn("mt-4 grid gap-2.5 sm:gap-3", tiles === 3 ? "grid-cols-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.2fr)]" : tiles === 2 ? "grid-cols-2" : "grid-cols-1")}>
+        {showCap && (
           <div className="nz-cap flex min-h-[86px] flex-col justify-center rounded-2xl px-3.5 py-3 max-sm:px-3" data-testid="nz-cap" data-cap={cap?.cap ?? ""}>
             <span className="text-[10.5px] font-bold uppercase tracking-[0.16em] text-muted-foreground">{t("header.levelCap")}</span>
             {cap ? (
@@ -93,15 +97,9 @@ export function RunHeader({ t, run, view, readOnly, onRename, onBadge, onMenu }:
             ) : (
               <span className="mt-1 text-[14px] font-semibold">{t("header.noCap")}</span>
             )}
-            {before && (
-              <span className="mt-1 flex min-w-0 items-center gap-1.5 text-[12px] font-semibold leading-snug text-muted-foreground max-sm:text-[11px]" data-testid="nz-cap-before">
-                <span className="min-w-0 truncate">{before.top !== undefined ? t("header.beforeTop", { boss: before.boss.name, n: before.top }) : t("header.before", { boss: before.boss.name })}</span>
-                {before.boss.optional && <span className="shrink-0 rounded-full bg-foreground/[0.07] px-1.5 text-[10.5px]">{t("routes.optional")}</span>}
-              </span>
-            )}
           </div>
         )}
-        <BadgeTile t={t} n={badges} total={total} readOnly={readOnly} onBadge={onBadge} />
+        {showBadges && <BadgeTile t={t} n={badges} total={total} readOnly={readOnly} onBadge={onBadge} />}
         <dl className="grid min-h-[86px] grid-cols-3 items-center rounded-2xl bg-foreground/[0.04] px-2 py-3 text-center max-sm:grid-cols-1 max-sm:gap-0.5 max-sm:px-2.5 max-sm:text-left" data-testid="nz-stats">
           {(
             [
@@ -118,6 +116,16 @@ export function RunHeader({ t, run, view, readOnly, onRename, onBadge, onMenu }:
             </div>
           ))}
         </dl>
+        {before && (
+          // Its own row under the cap, so the battle's name is never cut short.
+          <p className="col-span-full -mt-0.5 flex items-start gap-2 rounded-xl border border-dashed border-[hsl(var(--screen)/0.35)] px-3 py-2 text-[12.5px] font-semibold leading-snug text-muted-foreground sm:-mt-1" data-testid="nz-cap-before">
+            <VenetianMask className="mt-px h-4 w-4 shrink-0 text-screen" aria-hidden />
+            <span className="min-w-0">
+              {before.top !== undefined ? t("header.beforeTop", { boss: before.boss.name, n: before.top }) : t("header.before", { boss: before.boss.name })}
+              {before.boss.optional && <span className="ml-1.5 inline-block rounded-full bg-foreground/[0.07] px-1.5 text-[10.5px] leading-[18px]">{t("routes.optional")}</span>}
+            </span>
+          </p>
+        )}
       </div>
     </header>
   );

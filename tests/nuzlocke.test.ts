@@ -7,7 +7,7 @@ import { NUZ_GAMES, loadGame } from "@/lib/nuzlocke/games";
 import { buildView, formFor, generation, specieFor } from "@/lib/nuzlocke/view.server";
 import { allAreas, artSrc, bossKeys, inVersion, type GameView } from "@/lib/nuzlocke/view";
 import { availableGames, gameSummaries, gameView } from "@/lib/nuzlocke/games.server";
-import { groupByMethod, methodLabel } from "@/lib/nuzlocke/group";
+import { groupByMethod, methodLabel, sameButLevels } from "@/lib/nuzlocke/group";
 import { compactEncounters } from "@/lib/nuzlocke/compact";
 import { matchupSummary, multiplier, teamMatchups } from "@/lib/nuzlocke/matchups";
 import {
@@ -20,6 +20,7 @@ import {
   createRun,
   dupeOf,
   evolve,
+  hasBadges,
   levelCap,
   logCatch,
   logFailed,
@@ -349,6 +350,12 @@ describe("an area's encounters, summed up", () => {
     const oddish = allAreas(v).find((a) => a.id === "rolling-fields")!.encounters.filter((e) => e.mon === "43" && e.method === "Grass");
     expect(oddish.filter((e) => !e.post).every((e) => e.levels![1] <= 10)).toBe(true);
     expect(oddish.filter((e) => e.post)).toEqual([expect.objectContaining({ post: "After the Hall of Fame", levels: [60, 60] })]);
+    // Only the levels differ, so "After the Hall of Fame: Lv 60" says it all; never when the places or odds pair up otherwise.
+    expect(sameButLevels(oddish.filter((e) => e.post), oddish.filter((e) => !e.post))).toBe(true);
+    expect(sameButLevels([{ condition: "Area 2 / Area 3", when: ["Sandstorm"], rate: 50, levels: [60, 60] }], [{ when: ["Sandstorm", "Area 2", "Area 3"], rate: 50, levels: [28, 32] }])).toBe(true);
+    expect(sameButLevels([{ condition: "1F", rate: 30 }, { condition: "2F", rate: 69 }], [{ condition: "1F", rate: 69 }, { condition: "2F", rate: 30 }])).toBe(false);
+    expect(sameButLevels([{ when: ["Fog"], rate: 100 }], [{ when: ["Snowstorm", "Fog"], rate: 100 }])).toBe(false);
+    expect(sameButLevels([{ rate: 40 }], [])).toBe(false);
     // The Isle of Armor has both, kept apart too; the Crown Tundra's lines don't depend on the Hall of Fame.
     for (const id of ["fields-of-honor", "soothing-wetlands", "giants-bed"]) {
       const area = allAreas(v).find((a) => a.id === id)!;
@@ -624,6 +631,13 @@ describe("story battles and the level cap", () => {
     expect(badgeTotal(v, "b")).toBe(1);
     expect(badgeCount(run("b", false, done), v)).toBe(0); // a totem, a rival and a kahuna aren't badges
     expect(badgeCount(run("b", false, [...done, "allister"]), v)).toBe(1);
+  });
+
+  it("has no badges to count in Alola, whose trials give none", async () => {
+    const sm = buildView((await loadGame("sun-moon"))!);
+    expect(hasBadges(sm, "sun")).toBe(false);
+    expect(hasBadges(v, "a")).toBe(true); // a version's own gym
+    expect(hasBadges(buildView(game(3, [])), "a")).toBe(true); // no bosses in the data: counted by hand
   });
 
   it("is done when every boss that sets the cap is beaten, rivals or not", () => {

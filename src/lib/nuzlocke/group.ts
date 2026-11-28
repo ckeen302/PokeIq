@@ -102,3 +102,21 @@ export function levelSpan(stats: readonly EncounterStat[]): [number, number] | n
   if (!known.length) return null;
   return [Math.min(...known.map((l) => l[0])), Math.max(...known.map((l) => l[1]))];
 }
+
+/** A line's places, weathers and odds, each once and in any order ("Area 2 / Area 3" is "Area 2" and "Area 3"). */
+function said(s: EncounterStat, withVersions: boolean): string {
+  const rate = s.rate === undefined ? "" : `${s.rateMin ?? s.rate}–${s.rate}%`;
+  const words = [...(s.condition?.split(/; | \/ /) ?? []), ...(s.when ?? []).flatMap((w) => w.split(" / ")), rate];
+  return [withVersions ? (s.versions?.join(",") ?? "*") : "", ...[...new Set(words)].sort()].join("|");
+}
+
+/**
+ * Whether some post-game lines are the story's again but for their levels: the same places, weathers and odds, line for
+ * line. "After the Hall of Fame: Lv 60" then says all there is. `withVersions`: the lines' versions count too (a game's
+ * page, which names them; a run's picker shows its own version's lines only).
+ */
+export function sameButLevels(post: readonly EncounterStat[], story: readonly EncounterStat[], withVersions = false): boolean {
+  const a = new Set(post.map((s) => said(s, withVersions)));
+  const b = new Set(story.map((s) => said(s, withVersions)));
+  return story.length > 0 && a.size === b.size && [...a].every((x) => b.has(x));
+}

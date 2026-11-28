@@ -14,7 +14,7 @@ import page from "@/messages/nuzlocke-page";
 import nuz from "@/messages/nuzlocke";
 import tools from "@/messages/tools";
 import { toolJsonLd } from "@/lib/tier-list/seo";
-import { groupByMethod, levelSpan, methodLabel, postStats, storyStats, type EncounterRow, type EncounterStat } from "@/lib/nuzlocke/group";
+import { groupByMethod, levelSpan, methodLabel, postStats, sameButLevels, storyStats, type EncounterRow, type EncounterStat } from "@/lib/nuzlocke/group";
 import { capFor, inVersion, type GameSummary, type GameView, type ViewArea, type ViewBoss } from "@/lib/nuzlocke/view";
 import { versionColor } from "@/lib/nuzlocke/versions";
 import { cn } from "@/lib/utils";
@@ -40,6 +40,11 @@ function versionNames(view: GameView, ids: readonly string[]): string {
   return ids.map((id) => view.versions.find((v) => v.id === id)?.name ?? id).join(" & ");
 }
 
+function levelText(t: PageT, stats: readonly EncounterStat[]): string | null {
+  const span = levelSpan(stats);
+  return span ? (span[0] === span[1] ? t("game.level", { n: span[0] }) : t("game.levels", { min: span[0], max: span[1] })) : null;
+}
+
 /** The text of some of a row's lines: each line of the data ("1F 69%", "FireRed 20%") or of a summary ("Overcast · Rain · 1–20%"), then the levels. */
 function linesText(t: PageT, view: GameView, stats: readonly EncounterStat[], versionTags: boolean): string {
   const lines = stats.map((s) => {
@@ -47,24 +52,27 @@ function linesText(t: PageT, view: GameView, stats: readonly EncounterStat[], ve
     const summed = !!s.when || s.rateMin !== undefined;
     return [versionTags && s.versions ? versionNames(view, s.versions) : null, s.condition, ...(s.when ?? []), rate].filter(Boolean).join(summed ? " · " : " ");
   });
-  const span = levelSpan(stats);
-  const parts = [...new Set(lines.filter(Boolean))];
-  if (span) parts.push(span[0] === span[1] ? t("game.level", { n: span[0] }) : t("game.levels", { min: span[0], max: span[1] }));
-  return parts.join(" · ");
+  return [...new Set(lines.filter(Boolean)), levelText(t, stats)].filter(Boolean).join(" · ");
 }
 
 /**
- * A Pokémon's line: its version tag (an exclusive), then its story-time lines; and, apart, its post-game lines ("After
- * the Hall of Fame: Lv 60"), never summed up with the story's.
+ * A Pokémon's line: its version tag (an exclusive), then its story-time lines; and, apart, its post-game lines, never
+ * summed up with the story's: "After the Hall of Fame: Lv 60" when only the levels differ.
  */
 function rowText(t: PageT, view: GameView, row: EncounterRow): { only: string[] | null; text: string; post: string } {
   const sets = new Set(row.stats.map((s) => s.versions?.join(",") ?? "*"));
   const union = new Set(row.stats.flatMap((s) => s.versions ?? view.versions.map((v) => v.id)));
   const only = !sets.has("*") && union.size < view.versions.length ? [...union] : null;
+  const story = storyStats(row.stats);
   const by = new Map<string, EncounterStat[]>();
   for (const s of postStats(row.stats)) by.set(s.post!, [...(by.get(s.post!) ?? []), s]);
-  const post = [...by].map(([when, lines]) => t("game.post", { when, text: linesText(t, view, lines, sets.size > 1) })).join(" · ");
-  return { only, text: linesText(t, view, storyStats(row.stats), sets.size > 1), post };
+  const post = [...by]
+    .map(([when, lines]) => {
+      const level = levelText(t, lines);
+      return t("game.post", { when, text: level && sameButLevels(lines, story, true) ? level : linesText(t, view, lines, sets.size > 1) });
+    })
+    .join(" · ");
+  return { only, text: linesText(t, view, story, sets.size > 1), post };
 }
 
 /** A small grey tag beside a boss's name ("Optional"). */

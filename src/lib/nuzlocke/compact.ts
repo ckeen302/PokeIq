@@ -183,9 +183,11 @@ function merge(lines: NuzEncounter[], methodWeathers: Set<string> | null): Compa
   const timeUnion = allDay ? null : TIMES.filter((x) => times.some((y) => timesOf(y!)!.includes(x)));
   each.forEach((p, i) => (each[i] = p.filter((x) => !timesOf(x))));
 
-  // What every line says goes in `condition`; what only some do, in `when`.
+  // What every line says goes in `condition`; what only some do, in `when`. A line that's only "in one of these places"
+  // gives each place its own chip, said once: "Area 2 / Main Area" and "Area 2" are "Area 2" and "Main Area".
   const common = each[0].filter((x) => each.every((p) => p.includes(x)));
-  const rest = [...new Set(each.map((p) => say(p.filter((x) => !common.includes(x)), lines[0].method)).filter(Boolean))];
+  const own = each.map((p) => p.filter((x) => !common.includes(x)));
+  const rest = [...new Set(own.flatMap((p) => (p.length === 1 && / \/ /.test(p[0]) && !/[()]/.test(p[0]) ? p[0].split(" / ").map((x) => say([x], lines[0].method)) : [say(p, lines[0].method)])).filter(Boolean))];
   if (timeUnion) when.push(timeUnion.join(", "));
   when.push(...rest);
 

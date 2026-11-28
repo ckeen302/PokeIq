@@ -9,7 +9,7 @@ import { useLocale } from "@/i18n/navigation";
 import { INTL_LOCALE } from "@/i18n/format";
 import nuz from "@/messages/nuzlocke";
 import { cn } from "@/lib/utils";
-import { badgeCount, badgeTotal, levelCap, stats, team, type Run } from "@/lib/nuzlocke/run";
+import { badgeCount, badgeTotal, hasBadges, levelCap, stats, team, type Run } from "@/lib/nuzlocke/run";
 import { listRuns, loadStore, saveRun } from "@/lib/nuzlocke/storage";
 import { VERSION_LOOK } from "@/lib/nuzlocke/versions";
 import type { GameSummary, GameView } from "@/lib/nuzlocke/view";
@@ -143,11 +143,13 @@ function RunCard({ run, game, view }: { run: Run; game: GameSummary | undefined;
         </span>
         {!members.length && <span className="sr-only">{t("home.teamEmpty")}</span>}
         <span className="mt-auto flex items-center gap-4 text-[13px] font-semibold">
-          <span className="inline-flex items-center gap-1.5">
-            <Medal className="h-4 w-4 text-[hsl(var(--warning))]" aria-hidden />
-            {badges === null ? "–" : total ? `${badges}/${total}` : badges}
-            <span className="sr-only">{t("home.badges", { n: badges ?? 0 })}</span>
-          </span>
+          {(!view || hasBadges(view, run.version)) && (
+            <span className="inline-flex items-center gap-1.5">
+              <Medal className="h-4 w-4 text-[hsl(var(--warning))]" aria-hidden />
+              {badges === null ? "–" : total ? `${badges}/${total}` : badges}
+              <span className="sr-only">{t("home.badges", { n: badges ?? 0 })}</span>
+            </span>
+          )}
           <span className="inline-flex items-center gap-1.5 text-muted-foreground">
             <HeartCrack className="h-4 w-4" aria-hidden />
             {t("home.fallen", { n: s.dead })}

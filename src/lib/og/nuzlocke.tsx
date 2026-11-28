@@ -5,7 +5,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import sharp from "sharp";
 import { fitTitle, ogCard } from "@/lib/og/card";
-import { badgeCount, badgeTotal, graveyard, standing, stats, team, type Run } from "@/lib/nuzlocke/run";
+import { badgeCount, badgeTotal, graveyard, hasBadges, standing, stats, team, type Run } from "@/lib/nuzlocke/run";
 import { VERSION_LOOK } from "@/lib/nuzlocke/versions";
 import { artSrc, type GameView } from "@/lib/nuzlocke/view";
 import page from "@/messages/en/nuzlocke-page.json";
@@ -83,6 +83,8 @@ export async function nuzRunCard(run: Run, view: GameView) {
   const s = stats(run);
   const badges = badgeCount(run, view);
   const total = badgeTotal(view, run.version);
+  // Alola's trials give no badges: no badge row for those.
+  const counted = hasBadges(view, run.version);
   const accent = VERSION_LOOK[run.version]?.color ?? ACCENT;
   const fitted = fitTitle(run.name || "Nuzlocke", 600, [64, 54, 46, 40]);
   // Under the name, where the run stands: the next boss (and its cap), or the end. The eyebrow already names the game.
@@ -92,12 +94,14 @@ export async function nuzRunCard(run: Run, view: GameView) {
   const visual = (
     <div style={{ display: "flex", flexDirection: "column", width: 444, gap: 16 }}>
       <Slots arts={arts} size={140} />
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <div style={{ display: "flex", ...label, width: 120 }}>Badges</div>
-        {Array.from({ length: total ?? Math.max(8, badges) }, (_, i) => (
-          <div key={i} style={{ display: "flex", width: 22, height: 22, borderRadius: 11, background: i < badges ? "#fcc33a" : "rgba(255,255,255,0.08)", border: i < badges ? "2px solid #ffe08a" : "2px solid rgba(255,255,255,0.12)" }} />
-        ))}
-      </div>
+      {counted && (
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ display: "flex", ...label, width: 120 }}>Badges</div>
+          {Array.from({ length: total ?? Math.max(8, badges) }, (_, i) => (
+            <div key={i} style={{ display: "flex", width: 22, height: 22, borderRadius: 11, background: i < badges ? "#fcc33a" : "rgba(255,255,255,0.08)", border: i < badges ? "2px solid #ffe08a" : "2px solid rgba(255,255,255,0.12)" }} />
+          ))}
+        </div>
+      )}
       <div style={{ display: "flex", alignItems: "center", gap: 6, height: 56 }}>
         <div style={{ display: "flex", ...label, width: 124 }}>Graveyard</div>
         {gone.length ? gone.map((a, i) => (a ? <img key={i} src={a} width={56} height={56} style={{ opacity: 0.8 }} /> : null)) : <div style={{ display: "flex", fontSize: 22, color: "#a4a0ba" }}>No one yet</div>}
@@ -112,7 +116,7 @@ export async function nuzRunCard(run: Run, view: GameView) {
       subtitle: where,
       accent,
       visual,
-      chips: [`${total ? `${badges}/${total}` : badges} ${badges === 1 && !total ? "badge" : "badges"}`, `${s.dead} fallen`, `${s.caught} caught`],
+      chips: [...(counted ? [`${total ? `${badges}/${total}` : badges} ${badges === 1 && !total ? "badge" : "badges"}`] : []), `${s.dead} fallen`, `${s.caught} caught`],
     },
     HEADERS
   );

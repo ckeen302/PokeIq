@@ -307,6 +307,12 @@ export function badgeCount(run: Run, view: Pick<GameView, "steps">): number {
   return gyms.length ? gyms.filter((b) => run.beaten.includes(b.key)).length : run.badges;
 }
 
+/**
+ * Whether a version has badges to count: its gym bosses' (counted by hand for a game whose data has no bosses). Alola's
+ * trials and grand trials give none.
+ */
+export const hasBadges = (view: Pick<GameView, "steps">, version: string): boolean => badgeBosses(view, version).length > 0 || !versionBosses(view, version).length;
+
 /** The most badges this game's data can count in a version (null when they're counted by hand). */
 export function badgeTotal(view: Pick<GameView, "steps">, version: string): number | null {
   const n = badgeBosses(view, version).length;

@@ -4,7 +4,7 @@ import { memo, useCallback, useMemo, useState } from "react";
 import { Check, ExternalLink, Search, SkipForward, Sparkles, TriangleAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { counts, dupeOf, isFree, type Run } from "@/lib/nuzlocke/run";
-import { groupByMethod, levelSpan, methodLabel, postStats, storyStats, type EncounterStat } from "@/lib/nuzlocke/group";
+import { groupByMethod, levelSpan, methodLabel, postStats, sameButLevels, storyStats, type EncounterStat } from "@/lib/nuzlocke/group";
 import { allAreas, inVersion, type GameView } from "@/lib/nuzlocke/view";
 import type { EncounterKind } from "@/lib/nuzlocke/model";
 import type { Act } from "./act";
@@ -13,9 +13,9 @@ import { methodIcon } from "./icons";
 
 const fold = (s: string) => s.normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
-/** One line of a Pokémon's odds here: "1F 69%", "50%", "After the Hall of Fame · 1–20%", then its levels. */
-export function statText(t: NuzT, stats: readonly EncounterStat[]): string {
-  const lines = [
+/** Each of some lines' condition and odds: one of the data's own ("1F 69%") or a summary's ("Main Area · 1–20%"). */
+function oddsTexts(t: NuzT, stats: readonly EncounterStat[]): string[] {
+  return [
     ...new Set(
       stats
         .map((s) => {
@@ -26,19 +26,32 @@ export function statText(t: NuzT, stats: readonly EncounterStat[]): string {
         .filter(Boolean)
     ),
   ];
+}
+
+function levelText(t: NuzT, stats: readonly EncounterStat[]): string | null {
   const span = levelSpan(stats);
-  if (span) lines.push(span[0] === span[1] ? t("picker.level", { n: span[0] }) : t("picker.levels", { min: span[0], max: span[1] }));
-  return lines.join(" · ");
+  return span ? (span[0] === span[1] ? t("picker.level", { n: span[0] }) : t("picker.levels", { min: span[0], max: span[1] })) : null;
+}
+
+/** One line of a Pokémon's odds here: "1F 69%", "50%", "Main Area · 1–20%", then its levels. */
+export function statText(t: NuzT, stats: readonly EncounterStat[]): string {
+  return [...oddsTexts(t, stats), levelText(t, stats)].filter(Boolean).join(" · ");
 }
 
 /**
- * A Pokémon's post-game lines, each on its own: "After the Hall of Fame: Overcast · 40% · Lv 60". They're never summed
- * up with the story's, whose levels a player mid-run needs on their own.
+ * A Pokémon's post-game lines, each on its own: they're never summed up with the story's, whose levels a player mid-run
+ * needs on their own. When only the levels differ from the story's, that's all one says: "After the Hall of Fame: Lv 60";
+ * otherwise it says it all: "After the Hall of Fame: Rain · 20% · Lv 60".
  */
 export function postText(t: NuzT, stats: readonly EncounterStat[]): string[] {
+  const story = storyStats(stats);
   const by = new Map<string, EncounterStat[]>();
   for (const s of postStats(stats)) by.set(s.post!, [...(by.get(s.post!) ?? []), s]);
-  return [...by].map(([post, lines]) => t("picker.post", { when: post, text: [...new Set(lines.flatMap((s) => s.when ?? []))].concat(statText(t, lines)).filter(Boolean).join(" · ") }));
+  return [...by].map(([post, lines]) => {
+    const level = levelText(t, lines);
+    const text = level && sameButLevels(lines, story) ? level : [...new Set(lines.flatMap((s) => s.when ?? []))].concat(oddsTexts(t, lines), level ?? []).join(" · ");
+    return t("picker.post", { when: post, text });
+  });
 }
 
 /** How many of a Pokémon's conditions show before "+3 more" (all of them once it's chosen). */
