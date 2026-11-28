@@ -194,8 +194,9 @@ export function Picker({ t, run, view, area: areaId, extra, onClose, act }: { t:
   );
   return (
     <Sheet title={area.name} sub={<p tabIndex={-1} data-autofocus className="mt-0.5 text-[14px] text-muted-foreground outline-none">{extra ? t("picker.leadExtra") : t("picker.lead")}</p>} onClose={onClose} closeLabel={t("picker.close")} wide footer={footer} testId="nz-picker">
+      {/* The search stays at the top of the list; its shadow fills the list's own top padding, so no row shows above it. */}
       {rows > 6 && (
-        <div className="sticky top-0 z-10 -mx-6 bg-card px-6 pb-2 pt-1 max-sm:-mx-5 max-sm:px-5">
+        <div className="sticky top-0 z-10 -mx-6 bg-card px-6 pb-2 pt-1 shadow-[0_-6px_0_0_hsl(var(--card))] max-sm:-mx-5 max-sm:px-5">
           <label className="relative block">
             <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
             <input value={query} onChange={(e) => setQuery(e.target.value)} type="search" placeholder={t("picker.search")} aria-label={t("picker.search")} className="h-11 w-full rounded-full border border-foreground/[0.1] bg-background pl-10 pr-4 text-[15px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" data-testid="nz-picker-search" />
