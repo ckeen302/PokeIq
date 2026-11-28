@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { displayName, type Death, type Run, type RunMon } from "@/lib/nuzlocke/run";
-import { allAreas, allBosses, type GameView } from "@/lib/nuzlocke/view";
+import { allAreas, allBosses, inVersion, type GameView } from "@/lib/nuzlocke/view";
 import { Modal } from "../tier-list/ui";
 import { Sprite, type NuzT } from "./parts";
 
@@ -49,7 +49,9 @@ export function DeathDialog({ t, run, view, mon, onClose, onConfirm }: { t: NuzT
   const suggestions = useMemo(() => (q.length < 2 || by ? [] : view.dex.filter(([, n]) => fold(n).includes(q)).sort((a, b) => Number(!fold(b[1]).startsWith(q)) - Number(!fold(a[1]).startsWith(q)) || a[0] - b[0]).slice(0, 6)), [q, by, view.dex]);
   const byName = by ? view.dex.find(([id]) => id === by)?.[1] : null;
   const places: { id: string; label: string }[] = [];
-  for (const s of view.steps) places.push(s.type === "area" ? { id: s.area.id, label: s.area.name } : { id: `${BOSS_PREFIX}${s.boss.key}`, label: t("death.whereBoss", { boss: s.boss.name }) });
+  for (const s of view.steps)
+    if (s.type === "area") places.push({ id: s.area.id, label: s.area.name });
+    else if (inVersion(s.boss, run.version)) places.push({ id: `${BOSS_PREFIX}${s.boss.key}`, label: t("death.whereBoss", { boss: s.boss.name }) });
   for (const a of view.extra) places.push({ id: a.id, label: a.name });
 
   const submit = () => {

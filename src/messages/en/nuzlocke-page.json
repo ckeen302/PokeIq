@@ -28,6 +28,7 @@
     "otherLead": "Areas outside the story order: side areas and the post-game.",
     "levelCap": "Level cap {n}",
     "rate": "{n}%",
+    "rates": "{min}–{max}%",
     "level": "Lv {n}",
     "levels": "Lv {min}–{max}",
     "only": "{version} only",

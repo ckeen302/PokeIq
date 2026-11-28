@@ -146,8 +146,10 @@
     "catchOdds": "Catch odds",
     "close": "Close",
     "rate": "{n}%",
+    "rates": "{min}–{max}%",
     "levels": "Lv {min}–{max}",
-    "level": "Lv {n}"
+    "level": "Lv {n}",
+    "more": "+{n} more"
   },
   "death": {
     "title": "Mark {name} as dead",

@@ -7,6 +7,7 @@ import SIZES_ART from "@/data/sizes-art.json";
 import { TYPES } from "@/lib/pokemon/type-matrix";
 import type { NuzArea, NuzGame } from "./model";
 import { bossKeys, monKey, type GameView, type ViewArea, type ViewMon, type ViewStep } from "./view";
+import { compactEncounters } from "./compact";
 
 /**
  * A game's data made ready for the tracker's screens (lib/nuzlocke/view.ts), on the server: every Pokémon's name,
@@ -65,6 +66,10 @@ function baseSpecie(gen: Generation, num: number): Specie | undefined {
 const ALIASES: Record<string, string> = {
   "raticate-totem-alola": "Raticate-Alola-Totem",
   "marowak-totem": "Marowak-Alola-Totem",
+  "meowstic-female": "Meowstic-F",
+  "indeedee-female": "Indeedee-F",
+  "oinkologne-female": "Oinkologne-F",
+  "basculegion-female": "Basculegion-F",
 };
 
 /**
@@ -100,6 +105,10 @@ for (const [slug, f] of FORMS) {
   // Two PokéAPI forms can be one Showdown forme (Zygarde-10%): the shorter name wins.
   if (name && (!POKEAPI_FORM.has(name) || slug.length < POKEAPI_FORM.get(name)!.length)) POKEAPI_FORM.set(name, slug);
 }
+for (const [slug, name] of Object.entries(ALIASES)) if (!POKEAPI_FORM.has(name)) POKEAPI_FORM.set(name, slug);
+
+/** Showdown's short formes in PokéAPI's words: "Meowstic-F" is "meowstic-female". */
+const FORME_WORDS: Record<string, string> = { F: "female", M: "male" };
 
 /** PokéAPI's form name for a Showdown forme ("Raichu-Alola" → "raichu-alola"), or undefined for a species' default. */
 export function formFor(s: Specie): string | undefined {
@@ -107,8 +116,20 @@ export function formFor(s: Specie): string | undefined {
   const known = POKEAPI_FORM.get(s.name);
   if (known) return known;
   const base = BY_ID.get(s.num)?.slug ?? s.baseSpecies.toLowerCase();
-  const forme = s.forme.toLowerCase().replace(/['’%.]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const forme = (FORME_WORDS[s.forme] ?? s.forme).toLowerCase().replace(/['’%.]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   return `${base}-${forme}`;
+}
+
+/** Regional formes as their names say them ("Alolan Rattata"). */
+const REGIONAL: Record<string, string> = { Alola: "Alolan", Galar: "Galarian", Hisui: "Hisuian", Paldea: "Paldean" };
+
+/**
+ * A form's English name when the site's Pokédex has none for it: Showdown's forme put first, as the games word them
+ * ("Blue-Striped Basculin", "Resolute Keldeo", "Female Meowstic"), never Showdown's own "Basculin-Blue-Striped".
+ */
+function formeName(s: Specie): string {
+  const forme = s.forme === "F" ? "Female" : s.forme === "M" ? "Male" : (REGIONAL[s.forme] ?? s.forme);
+  return `${forme} ${s.baseSpecies}`;
 }
 
 /** `art`: the form's picture id when the game data names one (NuzEncounter.art). */
@@ -123,7 +144,7 @@ function viewMon(gen: Generation, species: number, form: string | undefined, art
     key: form ?? String(species),
     species,
     ...(form && { form }),
-    name: f?.name ?? (form && specie?.forme ? specie.name : row.name),
+    name: f?.name ?? (form && specie?.forme ? formeName(specie) : row.name),
     slug: row.slug,
     art,
     types: (specie?.types ?? []).map((t) => t.toLowerCase()),
@@ -191,10 +212,11 @@ const CATCH_RATE: Record<string, string> = {
 /** The Team Builder's format for a generation, where it has one (Generations III, IV and IX). */
 const TEAM_FORMAT: Record<number, string> = { 3: "gen3ou", 4: "gen4ou", 9: "gen9ubers" };
 
-const areaView = (a: NuzArea): ViewArea => ({
+const areaView = (a: NuzArea, versions: readonly string[]): ViewArea => ({
   id: a.id,
   name: a.name,
-  encounters: a.encounters.map(({ species, form, ...e }) => {
+  // Each Pokémon once per way of meeting it and version, its lines summed up (Sword & Shield's Wild Area has hundreds).
+  encounters: compactEncounters(a.encounters, versions).map(({ species, form, ...e }) => {
     // The picture is the Pokémon's (in `mons`), not the encounter's.
     delete (e as { art?: number }).art;
     return { ...e, mon: monKey({ species, form }) };
@@ -210,7 +232,8 @@ export function buildView(game: NuzGame): GameView {
   );
   const keys = bossKeys(game.steps);
   let b = 0;
-  const steps: ViewStep[] = game.steps.map((s) => (s.type === "area" ? { type: "area", area: areaView(s.area) } : { type: "boss", boss: { ...s.boss, key: keys[b++] } }));
+  const versionIds = game.versions.map((v) => v.id);
+  const steps: ViewStep[] = game.steps.map((s) => (s.type === "area" ? { type: "area", area: areaView(s.area, versionIds) } : { type: "boss", boss: { ...s.boss, key: keys[b++] } }));
   const { types, chart } = typeChart(gen);
   return {
     id: game.id,
@@ -219,7 +242,7 @@ export function buildView(game: NuzGame): GameView {
     region: game.region,
     versions: game.versions,
     steps,
-    extra: game.extra.map(areaView),
+    extra: game.extra.map((a) => areaView(a, versionIds)),
     mons,
     dex: POKEDEX.filter((p) => p.gen <= game.gen).map((p) => [p.id, p.name]),
     types,

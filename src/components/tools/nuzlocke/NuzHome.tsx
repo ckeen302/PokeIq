@@ -113,7 +113,7 @@ function RunCard({ run, game, view }: { run: Run; game: GameSummary | undefined;
   const version = game?.versions.find((v) => v.id === run.version);
   const badges = view ? badgeCount(run, view) : null;
   const cap = view && run.rules.caps ? levelCap(run, view) : null;
-  const total = view ? badgeTotal(view) : null;
+  const total = view ? badgeTotal(view, run.version) : null;
   return (
     <li>
       <Link

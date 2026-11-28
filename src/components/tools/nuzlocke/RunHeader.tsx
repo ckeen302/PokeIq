@@ -23,7 +23,7 @@ export function RunHeader({ t, run, view, readOnly, onRename, onBadge, onMenu }:
   const cap = run.rules.caps ? levelCap(run, view) : null;
   const hasCaps = view.steps.some((x) => x.type === "boss" && (x.boss.cap !== undefined || x.boss.capByVersion));
   const badges = badgeCount(run, view);
-  const total = badgeTotal(view);
+  const total = badgeTotal(view, run.version);
   const items: MenuItem[] = readOnly
     ? [
         { id: "share", label: t("header.share"), icon: <Share2 /> },

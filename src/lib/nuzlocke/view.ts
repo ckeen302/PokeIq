@@ -32,9 +32,13 @@ export interface ViewMon {
   ability?: string;
 }
 
-/** An encounter, pointing at its Pokémon in `mons`. */
+/** An encounter, pointing at its Pokémon in `mons`: one of the data's lines, or several summed up (compact.ts). */
 export interface ViewEncounter extends Omit<NuzEncounter, "species" | "form" | "art"> {
   mon: string;
+  /** What varies between the lines summed up here (the weathers, the times of day, the floors…). */
+  when?: string[];
+  /** The lowest of their rates, when they differ (`rate` is then the highest). */
+  rateMin?: number;
 }
 
 export interface ViewArea {

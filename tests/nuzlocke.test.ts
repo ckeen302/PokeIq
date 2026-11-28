@@ -4,14 +4,16 @@ import DETAILS from "@/data/pokedex-details.json";
 import type { NuzEncounter, NuzGame, NuzStep } from "@/lib/nuzlocke/model";
 import { NUZ_GAMES, loadGame } from "@/lib/nuzlocke/games";
 import { buildView, formFor, generation, specieFor } from "@/lib/nuzlocke/view.server";
-import { allAreas, bossKeys, type GameView } from "@/lib/nuzlocke/view";
+import { allAreas, bossKeys, inVersion, type GameView } from "@/lib/nuzlocke/view";
 import { availableGames, gameSummaries, gameView } from "@/lib/nuzlocke/games.server";
-import { groupByMethod } from "@/lib/nuzlocke/group";
+import { groupByMethod, methodLabel } from "@/lib/nuzlocke/group";
+import { compactEncounters } from "@/lib/nuzlocke/compact";
 import { matchupSummary, multiplier, teamMatchups } from "@/lib/nuzlocke/matchups";
 import {
   DEFAULT_RULES,
   addBadge,
   badgeCount,
+  badgeTotal,
   box,
   clearArea,
   createRun,
@@ -133,6 +135,31 @@ describe("the game data the screens use", () => {
     expect(g7.mons["rattata-alola"].ability).toBe("Gluttony");
   });
 
+
+  it("gives Sun & Moon's Alolan forms their own types, names and pictures", async () => {
+    const v = buildView((await loadGame("sun-moon"))!);
+    expect(v.mons["rattata-alola"]).toMatchObject({ name: "Alolan Rattata", types: ["dark", "normal"], art: 10091, showdown: "Rattata-Alola" });
+    expect(v.mons["meowth-alola"]?.types).toEqual(["dark"]);
+    expect(v.mons["grimer-alola"]?.types).toEqual(["poison", "dark"]);
+    expect(v.mons["diglett-alola"]?.types).toEqual(["ground", "steel"]);
+    const route1 = allAreas(v).find((a) => a.id === "route-1")!;
+    expect(route1.encounters.some((e) => e.mon === "rattata-alola")).toBe(true);
+    // A form with no picture of its own yet shows the species' picture, under its own name and types.
+    const pau = v.mons["oricorio-pau"];
+    if (pau) {
+      expect(pau.art).toBe(741);
+      expect(pau.types).toEqual(["psychic", "flying"]);
+    }
+  });
+
+  it("names a form as the games do, and hands the Team Builder Showdown's own", () => {
+    const v = buildView(game(8, [{ species: 550, form: "basculin-blue-striped" }, { species: 678, form: "meowstic-female" }, { species: 677 }, { species: 876, form: "indeedee-female" }]));
+    expect(v.mons["basculin-blue-striped"]).toMatchObject({ name: "Blue-Striped Basculin", showdown: "Basculin-Blue-Striped", art: 550 });
+    expect(v.mons["meowstic-female"]).toMatchObject({ name: "Female Meowstic", showdown: "Meowstic-F" });
+    expect(v.mons["677"].evos).toContain("meowstic-female"); // Espurr's evolution is the same key as the data's
+    expect(v.mons["indeedee-female"].showdown).toBe("Indeedee-F");
+  });
+
   it("offers each generation's own evolutions", () => {
     const g1 = buildView(game(1, [{ species: 133 }, { species: 42 }]));
     const g3 = buildView(game(3, [{ species: 133 }, { species: 42 }]));
@@ -174,6 +201,98 @@ describe("the game data the screens use", () => {
       { versions: ["leafgreen"], rate: 60, levels: [5, 15] },
       { versions: ["firered"], rate: 20, levels: [5, 15] },
     ]);
+  });
+});
+
+
+describe("an area's encounters, summed up", () => {
+  const W = (weather: string | null, stage: string, rate: number, levels: [number, number], extra: Partial<NuzEncounter> = {}): NuzEncounter => ({
+    species: 1,
+    kind: "wild",
+    method: "Grass",
+    rate,
+    levels,
+    condition: [stage, weather].filter(Boolean).join("; "),
+    ...extra,
+  });
+  const ALL = [null, "During overcast weather", "During rainy weather", "During foggy weather"];
+  const both = (w: string | null, r: number) => [W(w, "Before entering the Hall of Fame", r, [7, 10]), W(w, "Enter the Hall of Fame", r, [60, 60])];
+
+  it("shows a Wild Area Pokémon once, with its weathers in a word and its rates as a range", () => {
+    const area = [...ALL.flatMap((w) => both(w, 20)), ...[null, "During rainy weather"].flatMap((w, i) => both(w, 5 + i * 5).map((e) => ({ ...e, species: 2 })))];
+    const out = compactEncounters(area, ["a", "b"]);
+    expect(out).toHaveLength(2);
+    // Every weather the grass has, before and after the Hall of Fame: no condition left but "Any weather".
+    expect(out[0]).toMatchObject({ species: 1, when: ["Any weather"], rate: 20, levels: [7, 60] });
+    expect(out[0].condition).toBeUndefined();
+    // Two of four weathers: named; two rates: a range.
+    expect(out[1]).toMatchObject({ species: 2, when: ["Normal weather", "Rain"], rateMin: 5, rate: 10 });
+  });
+
+  it("names the one or two weathers a Pokémon is missing from, and leaves weather out where the method has none", () => {
+    const six = [null, "During overcast weather", "During rainy weather", "During a thunderstorm", "During foggy weather", "During a sandstorm"];
+    const area = [
+      ...six.map((w) => W(w, "Enter the Hall of Fame", 10, [60, 60])),
+      ...six.slice(0, 4).map((w) => W(w, "Enter the Hall of Fame", 10, [60, 60], { species: 2 })),
+      W(null, "Enter the Hall of Fame", 30, [60, 60], { species: 3, method: "Fishing" }),
+    ];
+    const [one, two, fish] = compactEncounters(area, ["a"]);
+    expect(one.when).toEqual(["Any weather"]);
+    expect(one.condition).toBe("After the Hall of Fame");
+    expect(two.when).toEqual(["Any weather but Sandstorm and Fog"]);
+    expect(fish.when).toBeUndefined(); // the fishing has no weather in the data: it isn't "normal weather" only
+    expect(fish.condition).toBe("After the Hall of Fame");
+  });
+
+  it("keeps a few plain lines as they are, and sums up a version's own lines in that version only", () => {
+    const floors = compactEncounters(
+      [
+        { species: 41, kind: "wild", method: "Cave", rate: 69, levels: [7, 9], condition: "1F" },
+        { species: 41, kind: "wild", method: "Cave", rate: 20, levels: [8, 10], condition: "B1F" },
+      ],
+      ["a", "b"]
+    );
+    expect(floors.map((e) => e.condition)).toEqual(["1F", "B1F"]);
+    const lines: NuzEncounter[] = [
+      ...[1, 2, 3].map((n) => ({ species: 5, kind: "wild" as const, method: "Grass", rate: 10 * n, levels: [n, n] as [number, number], condition: `Area ${n}` })),
+      { species: 5, kind: "wild", method: "Grass", rate: 50, levels: [9, 9], condition: "Area 4", versions: ["b"] },
+    ];
+    const out = compactEncounters(lines, ["a", "b"]);
+    expect(out).toHaveLength(2);
+    expect(out[0]).toMatchObject({ versions: ["a"], when: ["Area 1", "Area 2", "Area 3"], rateMin: 10, rate: 30 });
+    expect(out[1]).toMatchObject({ versions: ["b"], when: ["Area 1", "Area 2", "Area 3", "Area 4"], rate: 50, levels: [1, 9] });
+  });
+
+  it("leaves out the time of day when the lines cover the whole day", () => {
+    const day = (condition: string, rate: number): NuzEncounter => ({ species: 7, kind: "wild", method: "Grass", rate, levels: [3, 5], condition });
+    const [all] = compactEncounters([day("Morning, Day", 10), day("Night", 30), day("1F; Night", 5), day("1F; Morning", 5)], ["a"]);
+    expect(all.when).toEqual(["1F"]);
+    const [night] = compactEncounters([day("Night", 30), day("1F; Night", 5), day("2F; Night", 5), day("3F; Night", 5)], ["a"]);
+    expect(night.when).toEqual(["Night", "1F", "2F", "3F"]);
+  });
+
+  it("brings Sword & Shield's Wild Area down to each Pokémon once per way of meeting it, per version", async () => {
+    const game = await loadGame("sword-shield");
+    expect(game).not.toBeNull();
+    const v = buildView(game!);
+    const lines = [...game!.steps.flatMap((s) => (s.type === "area" ? [s.area] : [])), ...game!.extra].reduce((n, a) => n + a.encounters.length, 0);
+    const entries = allAreas(v).reduce((n, a) => n + a.encounters.length, 0);
+    expect(lines).toBeGreaterThan(10_000);
+    expect(entries).toBeLessThan(lines / 3);
+    expect(JSON.stringify(v).length).toBeLessThan(800_000);
+    for (const a of allAreas(v))
+      for (const version of ["sword", "shield"])
+        for (const g of groupByMethod(a.encounters.filter((e) => inVersion(e, version))))
+          for (const r of g.rows) {
+            // Once per way of meeting it: one summed-up line, or up to three plain ones ("Before the Hall of Fame 20%").
+            if (r.stats.some((x) => x.when)) expect(r.stats, `${a.id} ${g.method} ${r.mon}`).toHaveLength(1);
+            else expect(r.stats.length, `${a.id} ${g.method} ${r.mon}`).toBeLessThanOrEqual(3);
+          }
+  });
+
+  it("heads Platinum's dual-slot encounters by the GBA game in slot 2", () => {
+    expect(methodLabel("FireRed")).toBe("FireRed in slot 2");
+    expect(methodLabel("Grass")).toBe("Grass");
   });
 });
 
@@ -324,6 +443,23 @@ describe("bosses, badges and the level cap", () => {
     expect(levelCap({ beaten: [], version: "a" }, v)).toMatchObject({ cap: 12, boss: { name: "Gym" } });
     expect(levelCap({ beaten: [], version: "b" }, v)?.cap).toBe(13);
     expect(levelCap({ beaten: ["gym"], version: "b" }, v)?.cap).toBe(60);
+  });
+
+
+  it("counts a version's own bosses in that version only (Sword's Bea, Shield's Allister)", async () => {
+    const v = buildView((await loadGame("sword-shield"))!);
+    const sword = createRun({ game: v.id, version: "sword", name: "T", now: T0 });
+    const shield = createRun({ game: v.id, version: "shield", name: "T", now: T0 });
+    expect(badgeTotal(v, "sword")).toBe(8);
+    expect(badgeTotal(v, "shield")).toBe(8);
+    const afterKabu = (r: Run) => ["milo", "nessa", "kabu"].reduce((x, k) => toggleBoss(x, k, T0), r);
+    expect(levelCap(afterKabu(sword), v)).toMatchObject({ cap: 36, boss: { name: "Bea" } });
+    expect(levelCap(afterKabu(shield), v)).toMatchObject({ cap: 36, boss: { name: "Allister" } });
+    let r = afterKabu(shield);
+    r = addBadge(r, v, T0).run;
+    expect(r.beaten).toContain("allister");
+    expect(r.beaten).not.toContain("bea");
+    expect(badgeCount(r, v)).toBe(4);
   });
 
   it("counts gym badges from the bosses beaten (a title isn't a badge)", async () => {

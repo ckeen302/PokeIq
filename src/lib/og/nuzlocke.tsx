@@ -82,7 +82,7 @@ export async function nuzRunCard(run: Run, view: GameView) {
   const [arts, gone] = await Promise.all([Promise.all(members.map((m) => picture(view.mons[m.mon]?.art ?? 0, 104))), Promise.all(fallen.slice(-6).map((m) => picture(view.mons[m.mon]?.art ?? 0, 56, true)))]);
   const s = stats(run);
   const badges = badgeCount(run, view);
-  const total = badgeTotal(view);
+  const total = badgeTotal(view, run.version);
   const accent = VERSION_LOOK[run.version]?.color ?? ACCENT;
   const fitted = fitTitle(run.name || "Nuzlocke", 600, [64, 54, 46, 40]);
   const label = { fontFamily: "Silkscreen", fontSize: 16, letterSpacing: 2, color: "#a4a0ba", textTransform: "uppercase" as const };

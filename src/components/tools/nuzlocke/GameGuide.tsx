@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element -- the site's own pre-sized Pokémon pictures, lazy */
 import "server-only";
 import { ArrowLeft, Medal, Swords } from "lucide-react";
 import Link from "@/components/ui/Link";
@@ -15,8 +14,8 @@ import page from "@/messages/nuzlocke-page";
 import nuz from "@/messages/nuzlocke";
 import tools from "@/messages/tools";
 import { toolJsonLd } from "@/lib/tier-list/seo";
-import { groupByMethod, levelSpan, type EncounterRow } from "@/lib/nuzlocke/group";
-import { artSrc, capFor, type GameSummary, type GameView, type ViewArea, type ViewBoss } from "@/lib/nuzlocke/view";
+import { groupByMethod, levelSpan, methodLabel, type EncounterRow } from "@/lib/nuzlocke/group";
+import { artSrc, capFor, inVersion, type GameSummary, type GameView, type ViewArea, type ViewBoss } from "@/lib/nuzlocke/view";
 import { versionColor } from "@/lib/nuzlocke/versions";
 import { cn } from "@/lib/utils";
 import { GameStart } from "./GameStart";
@@ -40,16 +39,32 @@ function versionNames(view: GameView, ids: readonly string[]): string {
   return ids.map((id) => view.versions.find((v) => v.id === id)?.name ?? id).join(" & ");
 }
 
-/** A Pokémon's line: its version tag (an exclusive), then each line of the data ("1F 69%", "FireRed 20%"), then its levels. */
+/**
+ * A Pokémon's line: its version tag (an exclusive), then each line of the data ("1F 69%", "FireRed 20%") or of their
+ * summary ("Overcast · Rain · 1–20%"), then its levels.
+ */
 function rowText(t: PageT, view: GameView, row: EncounterRow): { only: string[] | null; text: string } {
   const sets = new Set(row.stats.map((s) => s.versions?.join(",") ?? "*"));
   const union = new Set(row.stats.flatMap((s) => s.versions ?? view.versions.map((v) => v.id)));
   const only = !sets.has("*") && union.size < view.versions.length ? [...union] : null;
-  const lines = row.stats.map((s) => [sets.size > 1 && s.versions ? versionNames(view, s.versions) : null, s.condition, s.rate !== undefined ? t("game.rate", { n: s.rate }) : null].filter(Boolean).join(" "));
+  const lines = row.stats.map((s) => {
+    const rate = s.rate === undefined ? null : s.rateMin !== undefined ? t("game.rates", { min: s.rateMin, max: s.rate }) : t("game.rate", { n: s.rate });
+    const summed = !!s.when || s.rateMin !== undefined;
+    return [sets.size > 1 && s.versions ? versionNames(view, s.versions) : null, s.condition, ...(s.when ?? []), rate].filter(Boolean).join(summed ? " · " : " ");
+  });
   const span = levelSpan(row.stats);
   const parts = [...new Set(lines.filter(Boolean))];
   if (span) parts.push(span[0] === span[1] ? t("game.level", { n: span[0] }) : t("game.levels", { min: span[0], max: span[1] }));
   return { only, text: parts.join(" · ") };
+}
+
+/** "Sword only": a boss met in some versions only (a version's own Gym Leader). */
+function VersionsOnly({ t, view, ids }: { t: PageT; view: GameView; ids: readonly string[] }) {
+  return (
+    <i className="nzg-only shrink-0" style={{ "--v": versionColor(ids[0]) } as React.CSSProperties} data-testid="nz-boss-only">
+      {t("game.only", { version: versionNames(view, ids) })}
+    </i>
+  );
 }
 
 /** The method icons, drawn once: each area's headings point at them (<use>), so a long page carries each icon once. */
@@ -67,62 +82,47 @@ function IconSheet() {
   );
 }
 
+const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+/**
+ * An area's Pokémon as plain HTML, by way of meeting them. A game's page lists thousands (Sword & Shield's Wild Area
+ * alone has hundreds), so each row is as small as markup gets, and the list reaches the browser once as markup and once
+ * as a string (the page's React data), not as a React tree, which is twice the size.
+ */
+function areaHtml(t: PageT, view: GameView, area: ViewArea, locale: Locale): string {
+  return groupByMethod(area.encounters)
+    .map((g) => {
+      const kind = g.kind !== "wild" && g.method.toLowerCase() !== t(`game.kinds.${g.kind}`).toLowerCase() ? t(`game.kinds.${g.kind}`) : null;
+      const rows = g.rows
+        .map((row) => {
+          const mon = view.mons[row.mon];
+          if (!mon) return "";
+          const { only, text } = rowText(t, view, row);
+          const tag = only ? `<i class="nzg-only" style="--v:${versionColor(only[0])}">${esc(t("game.only", { version: versionNames(view, only) }))}</i>` : "";
+          return `<li><a href="${esc(localeHref(`/pokemon/${mon.slug}`, locale).href)}"><img src="${artSrc(mon.art)}" alt="" loading="lazy"><span><b>${esc(mon.name)}</b>${tag}${text ? `<small>${esc(text)}</small>` : ""}</span></a></li>`;
+        })
+        .join("");
+      const head = `<svg aria-hidden="true"><use href="#nzi-${methodIconKey(g.method, g.kind)}"/></svg>${esc(methodLabel(g.method))}${kind ? `<i>${esc(kind)}</i>` : ""}`;
+      return `<p class="nzg-h">${head}</p><ul class="nzg-l">${rows}</ul>`;
+    })
+    .join("");
+}
+
 function AreaBlock({ t, view, area, locale }: { t: PageT; view: GameView; area: ViewArea; locale: Locale }) {
-  const groups = groupByMethod(area.encounters);
   return (
     <li className="rounded-[22px] border border-foreground/[0.08] bg-card p-4 shadow-[0_16px_40px_-34px_hsl(var(--shade)/0.9)] sm:p-5" id={`area-${area.id}`} data-testid="nz-guide-area">
       <h3 className="font-display text-[19px] font-bold tracking-tight">{area.name}</h3>
-      {groups.length === 0 ? (
+      {area.encounters.length === 0 ? (
         <p className="mt-1 text-[14px] text-muted-foreground">{t("game.noEncounters")}</p>
       ) : (
-        <div className="mt-3 space-y-3.5">
-          {groups.map((g) => {
-            const icon = methodIconKey(g.method, g.kind);
-            const kind = g.kind !== "wild" && g.method.toLowerCase() !== t(`game.kinds.${g.kind}`).toLowerCase() ? t(`game.kinds.${g.kind}`) : null;
-            return (
-              <div key={`${g.kind}|${g.method}`}>
-                <p className="mb-1 flex items-center gap-1.5 text-[11.5px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
-                  <svg className="h-3.5 w-3.5" aria-hidden>
-                    <use href={`#nzi-${icon}`} />
-                  </svg>{" "}
-                  {g.method}
-                  {kind && <span className="rounded-full bg-foreground/[0.07] px-2 py-0.5 text-[10.5px] tracking-[0.08em]">{kind}</span>}
-                </p>
-                <ul className="grid gap-x-2 sm:grid-cols-2 lg:grid-cols-3">
-                  {g.rows.map((row) => {
-                    const mon = view.mons[row.mon];
-                    if (!mon) return null;
-                    const { only, text } = rowText(t, view, row);
-                    // Plain markup with the page's own classes: a game's page lists hundreds of these.
-                    return (
-                      <li key={row.mon}>
-                        <a href={localeHref(`/pokemon/${mon.slug}`, locale).href} className="nzg-row">
-                          <img src={artSrc(mon.art)} alt="" width={40} height={40} loading="lazy" decoding="async" className="nzg-img" />
-                          <span className="nzg-txt">
-                            <b>{mon.name}</b>
-                            {only && (
-                              <i className="nzg-only" style={{ "--v": versionColor(only[0]) } as React.CSSProperties}>
-                                {t("game.only", { version: versionNames(view, only) })}
-                              </i>
-                            )}
-                            {text && <small>{text}</small>}
-                          </span>
-                        </a>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            );
-          })}
-        </div>
+        <div className="nzg mt-3" dangerouslySetInnerHTML={{ __html: areaHtml(t, view, area, locale) }} />
       )}
     </li>
   );
 }
 
 function BossLine({ t, view, boss }: { t: PageT; view: GameView; boss: ViewBoss }) {
-  const caps = view.versions.map((v) => [v, capFor(boss, v.id)] as const);
+  const caps = view.versions.filter((v) => inVersion(boss, v.id)).map((v) => [v, capFor(boss, v.id)] as const);
   const same = new Set(caps.map(([, c]) => c)).size === 1;
   const cap = same ? (caps[0]?.[1] !== undefined ? t("game.levelCap", { n: caps[0][1]! }) : null) : caps.filter(([, c]) => c !== undefined).map(([v, c]) => `${v.name}: ${t("game.levelCap", { n: c! })}`).join(" · ");
   const Icon = boss.badge ? Medal : Swords;
@@ -133,6 +133,7 @@ function BossLine({ t, view, boss }: { t: PageT; view: GameView; boss: ViewBoss 
         <Icon className="h-4 w-4 shrink-0 text-[hsl(var(--warning))]" aria-hidden />
         <span>{boss.name}</span>
         {boss.badge && <span className="text-muted-foreground">· {boss.badge}</span>}
+        {boss.versions && <VersionsOnly t={t} view={view} ids={boss.versions} />}
         {/* On a phone the cap takes the second line, so no line starts with a dot. */}
         {cap && (
           <span className="text-foreground/90 max-sm:basis-full">
@@ -158,7 +159,7 @@ function CapList({ t, view }: { t: PageT; view: GameView }) {
       <p className="mb-4 mt-1 text-[15px] text-muted-foreground">{t("game.capsLead")}</p>
       <ol className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
         {bosses.map((b) => {
-          const caps = view.versions.map((v) => [v, capFor(b, v.id)] as const).filter(([, c]) => c !== undefined);
+          const caps = view.versions.filter((v) => inVersion(b, v.id)).map((v) => [v, capFor(b, v.id)] as const).filter(([, c]) => c !== undefined);
           const same = new Set(caps.map(([, c]) => c)).size <= 1;
           const Icon = b.badge ? Medal : Swords;
           return (
@@ -166,7 +167,12 @@ function CapList({ t, view }: { t: PageT; view: GameView }) {
               <Icon className="h-4 w-4 shrink-0 text-[hsl(var(--warning))]" aria-hidden />
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-[14.5px] font-semibold leading-tight">{b.name}</span>
-                {b.badge && <span className="block truncate text-[12.5px] text-muted-foreground">{b.badge}</span>}
+                {(b.badge || b.versions) && (
+                  <span className="flex min-w-0 items-center gap-1.5 text-[12.5px] text-muted-foreground">
+                    {b.badge && <span className="truncate">{b.badge}</span>}
+                    {b.versions && <VersionsOnly t={t} view={view} ids={b.versions} />}
+                  </span>
+                )}
               </span>
               <span className="shrink-0 text-right font-display text-[19px] font-bold leading-none [font-variant-numeric:tabular-nums]">
                 {caps.length === 0 ? "–" : same ? caps[0][1] : caps.map(([v, c]) => `${v.name} ${c}`).join(" · ")}

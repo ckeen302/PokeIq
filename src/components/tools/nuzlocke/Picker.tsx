@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 import { Check, ExternalLink, Search, SkipForward, Sparkles, TriangleAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { counts, dupeOf, isFree, type Run } from "@/lib/nuzlocke/run";
-import { groupByMethod, levelSpan, type EncounterStat } from "@/lib/nuzlocke/group";
+import { groupByMethod, levelSpan, methodLabel, type EncounterStat } from "@/lib/nuzlocke/group";
 import { allAreas, inVersion, type GameView } from "@/lib/nuzlocke/view";
 import type { EncounterKind } from "@/lib/nuzlocke/model";
 import type { Act } from "./act";
@@ -13,13 +13,99 @@ import { methodIcon } from "./icons";
 
 const fold = (s: string) => s.normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
-/** One line of a Pokémon's odds here: "1F 69%", "50%", then its levels. */
+/** One line of a Pokémon's odds here: "1F 69%", "50%", "After the Hall of Fame · 1–20%", then its levels. */
 export function statText(t: NuzT, stats: readonly EncounterStat[]): string {
-  const lines = [...new Set(stats.map((s) => [s.condition, s.rate !== undefined ? t("picker.rate", { n: s.rate }) : null].filter(Boolean).join(" ")).filter(Boolean))];
+  const lines = [
+    ...new Set(
+      stats
+        .map((s) => {
+          const rate = s.rate === undefined ? null : s.rateMin !== undefined ? t("picker.rates", { min: s.rateMin, max: s.rate }) : t("picker.rate", { n: s.rate });
+          // A line summed up from several reads "condition · range"; one of the data's own, "1F 69%".
+          return [s.condition, rate].filter(Boolean).join(s.when || s.rateMin !== undefined ? " · " : " ");
+        })
+        .filter(Boolean)
+    ),
+  ];
   const span = levelSpan(stats);
   if (span) lines.push(span[0] === span[1] ? t("picker.level", { n: span[0] }) : t("picker.levels", { min: span[0], max: span[1] }));
   return lines.join(" · ");
 }
+
+/** How many of a Pokémon's conditions show before "+3 more" (all of them once it's chosen). */
+const WHEN_SHOWN = 3;
+
+/**
+ * One Pokémon in the picker. Memoised: a big area (Sword & Shield's Wild Area) lists a hundred or more, and choosing one
+ * should redraw two rows, not all of them.
+ */
+const PickRow = memo(function PickRow({
+  t,
+  mon,
+  stats,
+  dupe,
+  on,
+  disabled,
+  onPick,
+}: {
+  t: NuzT;
+  mon: GameView["mons"][string];
+  stats: readonly EncounterStat[];
+  dupe: string | null;
+  on: boolean;
+  disabled: boolean;
+  onPick(): void;
+}) {
+  const when = useMemo(() => [...new Set(stats.flatMap((s) => s.when ?? []))], [stats]);
+  const shown = on ? when : when.slice(0, WHEN_SHOWN);
+  const text = statText(t, stats);
+  return (
+    <li className="nz-pick">
+      <button
+        type="button"
+        role="radio"
+        aria-checked={on}
+        disabled={disabled}
+        onClick={onPick}
+        className={cn(
+          "flex w-full items-center gap-3 rounded-2xl border px-2.5 py-2 text-left transition-[background-color,border-color,box-shadow] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-40 motion-reduce:transition-none",
+          on ? "border-primary/70 bg-primary/[0.08] shadow-[0_0_0_1px_hsl(var(--primary)/0.5)]" : "border-foreground/[0.07] hover:border-foreground/[0.18] hover:bg-foreground/[0.03]"
+        )}
+        data-testid={`nz-pick-${mon.key}`}
+        data-dupe={dupe ? "1" : "0"}
+      >
+        <Sprite art={mon.art} className="h-12 w-12 shrink-0" />
+        <span className="min-w-0 flex-1">
+          <span className="flex flex-wrap items-center gap-1.5">
+            <span className="text-[15px] font-bold leading-tight">{mon.name}</span>
+            {mon.types.map((ty) => (
+              <TypeChip key={ty} t={t} type={ty} size="sm" />
+            ))}
+          </span>
+          {text && <span className="mt-0.5 block text-[12.5px] text-muted-foreground [font-variant-numeric:tabular-nums]">{text}</span>}
+          {when.length > 0 && (
+            <span className="mt-1 flex flex-wrap gap-1" data-testid="nz-when">
+              {shown.map((w) => (
+                <span key={w} className="rounded-full bg-foreground/[0.06] px-2 py-px text-[11.5px] font-semibold leading-[18px] text-foreground/75">
+                  {w}
+                </span>
+              ))}
+              {when.length > shown.length && <span className="px-1 text-[11.5px] font-semibold leading-[20px] text-muted-foreground">{t("picker.more", { n: when.length - shown.length })}</span>}
+            </span>
+          )}
+          {dupe && (
+            <span className="mt-1 flex items-start gap-1 text-[12.5px] font-semibold leading-snug text-[hsl(var(--warning))]" data-testid="nz-dupe">
+              <TriangleAlert className="mt-px h-3.5 w-3.5 shrink-0" aria-hidden />
+              {dupe}
+            </span>
+          )}
+        </span>
+        <span className={cn("flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors", on ? "border-primary bg-primary text-primary-foreground" : "border-foreground/[0.18]")} aria-hidden>
+          {on && <Check className="h-3.5 w-3.5" strokeWidth={3.5} />}
+        </span>
+      </button>
+    </li>
+  );
+});
 
 /**
  * The encounter picker (a sheet from the bottom on a phone, a dialog on a wider screen): only the Pokémon this area
@@ -34,6 +120,21 @@ export function Picker({ t, run, view, area: areaId, extra, onClose, act }: { t:
   const [chosen, setChosen] = useState<{ mon: string; kind: EncounterKind; method: string; level?: number } | null>(null);
   const [shinyOn, setShinyOn] = useState(false);
   const rows = groups.reduce((n, g) => n + g.rows.length, 0);
+  const choose = useCallback(
+    (c: { mon: string; kind: EncounterKind; method: string; level?: number }) =>
+      setChosen((cur) => (cur && cur.mon === c.mon && cur.kind === c.kind && cur.method === c.method ? null : c)),
+    []
+  );
+  // One handler per row, made once per area: the rows are memoised, so their props must stay the same between renders.
+  const pickers = useMemo(() => {
+    const m = new Map<string, () => void>();
+    for (const g of groups)
+      for (const r of g.rows) {
+        const span = levelSpan(r.stats);
+        m.set(`${g.kind}|${g.method}|${r.mon}`, () => choose({ mon: r.mon, kind: g.kind, method: g.method, ...(span && { level: span[0] }) }));
+      }
+    return m;
+  }, [groups, choose]);
   const q = fold(query.trim());
   // In "extra" mode a Pokémon of a kind that counts can only come in as a shiny (the shiny clause).
   const forcedShiny = extra && !!chosen && counts(run.rules, chosen.kind);
@@ -109,10 +210,10 @@ export function Picker({ t, run, view, area: areaId, extra, onClose, act }: { t:
           const Icon = methodIcon(g.method, g.kind);
           const groupFree = !counts(run.rules, g.kind);
           return (
-            <section key={`${g.kind}|${g.method}`} aria-label={g.method}>
+            <section key={`${g.kind}|${g.method}`} aria-label={methodLabel(g.method)}>
               <h3 className="mb-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 px-1 text-[11.5px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
                 <span className="inline-flex items-center gap-1.5">
-                  <Icon className="h-3.5 w-3.5" aria-hidden /> {g.method}
+                  <Icon className="h-3.5 w-3.5" aria-hidden /> {methodLabel(g.method)}
                 </span>
                 {groupFree && <span className="rounded-full bg-success/[0.14] px-2 py-0.5 text-[10.5px] normal-case tracking-normal text-success">{t("picker.free")}</span>}
               </h3>
@@ -121,45 +222,17 @@ export function Picker({ t, run, view, area: areaId, extra, onClose, act }: { t:
                   const mon = view.mons[r.mon];
                   if (!mon) return null;
                   const dupe = run.rules.dupes ? dupeOf(run, view, r.mon) : null;
-                  const on = chosen?.mon === r.mon && chosen.kind === g.kind && chosen.method === g.method;
-                  const disabled = extra && !groupFree && !run.rules.shiny;
-                  const span = levelSpan(r.stats);
                   return (
-                    <li key={r.mon}>
-                      <button
-                        type="button"
-                        role="radio"
-                        aria-checked={on}
-                        disabled={disabled}
-                        onClick={() => setChosen(on ? null : { mon: r.mon, kind: g.kind, method: g.method, ...(span && { level: span[0] }) })}
-                        className={cn(
-                          "flex w-full items-center gap-3 rounded-2xl border px-2.5 py-2 text-left transition-[background-color,border-color,box-shadow] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-40 motion-reduce:transition-none",
-                          on ? "border-primary/70 bg-primary/[0.08] shadow-[0_0_0_1px_hsl(var(--primary)/0.5)]" : "border-foreground/[0.07] hover:border-foreground/[0.18] hover:bg-foreground/[0.03]"
-                        )}
-                        data-testid={`nz-pick-${r.mon}`}
-                        data-dupe={dupe ? "1" : "0"}
-                      >
-                        <Sprite art={mon.art} className="h-12 w-12 shrink-0" />
-                        <span className="min-w-0 flex-1">
-                          <span className="flex flex-wrap items-center gap-1.5">
-                            <span className="text-[15px] font-bold leading-tight">{mon.name}</span>
-                            {mon.types.map((ty) => (
-                              <TypeChip key={ty} t={t} type={ty} size="sm" />
-                            ))}
-                          </span>
-                          <span className="mt-0.5 block text-[12.5px] text-muted-foreground [font-variant-numeric:tabular-nums]">{statText(t, r.stats)}</span>
-                          {dupe && (
-                            <span className="mt-1 flex items-start gap-1 text-[12.5px] font-semibold leading-snug text-[hsl(var(--warning))]" data-testid="nz-dupe">
-                              <TriangleAlert className="mt-px h-3.5 w-3.5 shrink-0" aria-hidden />
-                              {t(dupe.status === "dead" ? "picker.dupeDead" : "picker.dupe", { name: view.mons[dupe.mon]?.name ?? "?" })}
-                            </span>
-                          )}
-                        </span>
-                        <span className={cn("flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors", on ? "border-primary bg-primary text-primary-foreground" : "border-foreground/[0.18]")} aria-hidden>
-                          {on && <Check className="h-3.5 w-3.5" strokeWidth={3.5} />}
-                        </span>
-                      </button>
-                    </li>
+                    <PickRow
+                      key={r.mon}
+                      t={t}
+                      mon={mon}
+                      stats={r.stats}
+                      dupe={dupe ? t(dupe.status === "dead" ? "picker.dupeDead" : "picker.dupe", { name: view.mons[dupe.mon]?.name ?? "?" }) : null}
+                      on={chosen?.mon === r.mon && chosen.kind === g.kind && chosen.method === g.method}
+                      disabled={extra && !groupFree && !run.rules.shiny}
+                      onPick={pickers.get(`${g.kind}|${g.method}|${r.mon}`)!}
+                    />
                   );
                 })}
               </ul>

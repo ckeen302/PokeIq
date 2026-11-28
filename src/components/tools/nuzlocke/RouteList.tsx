@@ -49,7 +49,8 @@ export function RouteList({
   const [otherOpen, setOtherOpen] = useState(() => view.extra.some((a) => run.areas[a.id]));
   const cap = run.rules.caps ? levelCap(run, view) : null;
   const playable = (a: ViewArea) => areaMons(a, run.version).length > 0;
-  const story: Item[] = view.steps.map((s) => (s.type === "area" ? { type: "area", area: s.area } : { type: "boss", boss: s.boss }));
+  // A version's own bosses (Sword's Bea, Shield's Allister) show in that version's runs only.
+  const story: Item[] = view.steps.flatMap((s): Item[] => (s.type === "area" ? [{ type: "area", area: s.area }] : inVersion(s.boss, run.version) ? [{ type: "boss", boss: s.boss }] : []));
   const all = [...story.flatMap((i) => (i.type === "area" ? [i.area] : [])), ...view.extra];
   const done = all.filter((a) => run.areas[a.id]).length;
   const remaining = all.filter((a) => !run.areas[a.id] && playable(a)).length;

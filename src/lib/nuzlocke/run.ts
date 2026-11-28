@@ -1,5 +1,5 @@
 import type { EncounterKind } from "./model";
-import { GIFT_KINDS, STATIC_KINDS, allBosses, capFor, givesBadge, type GameView, type ViewBoss, type ViewMon } from "./view";
+import { GIFT_KINDS, STATIC_KINDS, allBosses, capFor, givesBadge, inVersion, type GameView, type ViewBoss, type ViewMon } from "./view";
 
 /**
  * A Nuzlocke run: what the player has logged, area by area, and every Pokémon caught. Changed only through the pure
@@ -294,23 +294,26 @@ export function toggleBoss(run: Run, key: string, now = Date.now()): Run {
   return touch(run, { beaten: run.beaten.includes(key) ? run.beaten.filter((k) => k !== key) : [...run.beaten, key] }, now);
 }
 
-const badgeBosses = (view: Pick<GameView, "steps">) => allBosses(view).filter(givesBadge);
+/** The bosses a run's version has (a version's own Gym Leader is met in that version only). */
+export const versionBosses = (view: Pick<GameView, "steps">, version: string): ViewBoss[] => allBosses(view).filter((b) => inVersion(b, version));
+
+const badgeBosses = (view: Pick<GameView, "steps">, version: string) => versionBosses(view, version).filter(givesBadge);
 
 /** The badges won: the gym bosses beaten, or the hand count for a game whose data has none. */
 export function badgeCount(run: Run, view: Pick<GameView, "steps">): number {
-  const gyms = badgeBosses(view);
+  const gyms = badgeBosses(view, run.version);
   return gyms.length ? gyms.filter((b) => run.beaten.includes(b.key)).length : run.badges;
 }
 
-/** The most badges this game's data can count (null when they're counted by hand). */
-export function badgeTotal(view: Pick<GameView, "steps">): number | null {
-  const n = badgeBosses(view).length;
+/** The most badges this game's data can count in a version (null when they're counted by hand). */
+export function badgeTotal(view: Pick<GameView, "steps">, version: string): number | null {
+  const n = badgeBosses(view, version).length;
   return n || null;
 }
 
 /** One more badge: the next gym boss in story order is beaten (or the hand count goes up). */
 export function addBadge(run: Run, view: Pick<GameView, "steps">, now = Date.now()): { run: Run; boss: ViewBoss | null } {
-  const gyms = badgeBosses(view);
+  const gyms = badgeBosses(view, run.version);
   if (!gyms.length) return { run: run.badges >= BADGES_MAX ? run : touch(run, { badges: run.badges + 1 }, now), boss: null };
   const next = gyms.find((b) => !run.beaten.includes(b.key));
   return next ? { run: touch(run, { beaten: [...run.beaten, next.key] }, now), boss: next } : { run, boss: null };
@@ -318,15 +321,15 @@ export function addBadge(run: Run, view: Pick<GameView, "steps">, now = Date.now
 
 /** One badge fewer: the last gym boss beaten, in story order, isn't any more (or the hand count goes down). */
 export function removeBadge(run: Run, view: Pick<GameView, "steps">, now = Date.now()): { run: Run; boss: ViewBoss | null } {
-  const gyms = badgeBosses(view);
+  const gyms = badgeBosses(view, run.version);
   if (!gyms.length) return { run: run.badges <= 0 ? run : touch(run, { badges: run.badges - 1 }, now), boss: null };
   const last = [...gyms].reverse().find((b) => run.beaten.includes(b.key));
   return last ? { run: touch(run, { beaten: run.beaten.filter((k) => k !== last.key) }, now), boss: last } : { run, boss: null };
 }
 
-/** The level cap: the first boss in story order not yet beaten whose cap is known for this version. */
+/** The level cap: the first boss of the run's version, in story order, not yet beaten whose cap is known for it. */
 export function levelCap(run: Pick<Run, "beaten" | "version">, view: Pick<GameView, "steps">): { boss: ViewBoss; cap: number } | null {
-  for (const b of allBosses(view)) {
+  for (const b of versionBosses(view, run.version)) {
     if (run.beaten.includes(b.key)) continue;
     const cap = capFor(b, run.version);
     if (cap !== undefined) return { boss: b, cap };
