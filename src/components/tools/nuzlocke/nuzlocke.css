@@ -22,9 +22,10 @@
 .nz-dim { filter: grayscale(1) contrast(0.9) brightness(1.05); opacity: 0.82; }
 :root.light .nz-dim { filter: grayscale(1) contrast(0.85) brightness(1.08); opacity: 0.75; }
 
-/* The phone's dock for Routes / Team / Box / Graveyard sits just above the site's tab bar; the footer's margin grows
-   by its height so the page's end scrolls up above it. */
-html:has([data-nz-dock]) body > footer { margin-bottom: calc(4rem + env(safe-area-inset-bottom) + 4.5rem); }
+/* The phone's dock for Routes / Team / Box / Graveyard (4.25rem with its padding) sits just above the site's tab bar;
+   the footer's margin makes room for both and a little air, so the page's last card and the footer scroll clear of
+   them. */
+html:has([data-nz-dock]) body > footer { margin-bottom: calc(var(--tabbar-h) + 5.5rem); }
 @media (min-width: 1024px) {
   html:has([data-nz-dock]) body > footer { margin-bottom: 0; }
 }
