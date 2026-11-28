@@ -313,6 +313,53 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
   }
   for (const a of accs.values()) a.rows = a.rows.filter((r) => !dropped.has(r));
 
+  // ---- Let's Go: PokéAPI's rows have no chances (every one is 100) and its own method names ("Overworld (sky)"); for
+  // each Pokémon both sources list (after the cross-check), Serebii's detail rows stand in, with their methods, chances
+  // and levels. A Pokémon only PokéAPI (and Bulbapedia) lists keeps PokéAPI's row, without the chance.
+  if (cfg.serebiiRows) {
+    for (const [key, srows] of serByArea) {
+      const a = accs.get(key);
+      if (!a) continue;
+      for (const ver of versions) {
+        const S = new Set(srows.filter((r) => r.ver === ver && r.kind === "wild").map((r) => r.species));
+        const gone = new Set(a.rows.filter((r) => r.src === "pokeapi" && r.ver === ver && r.kind === "wild" && S.has(r.species)).map((r) => r.species));
+        if (!gone.size) continue;
+        const already = new Set(a.rows.filter((r) => r.src === "serebii" && r.ver === ver).map((r) => r.species));
+        // A condition PokéAPI gives a Pokémon there (one for all its rows) that Serebii doesn't: kept on Serebii's rows.
+        const pcond = new Map<number, string>();
+        for (const sp of gone) {
+          const cs = [...new Set(a.rows.filter((r) => r.src === "pokeapi" && r.ver === ver && r.kind === "wild" && r.species === sp).map((r) => r.cond ?? ""))];
+          if (cs.length === 1 && cs[0]) pcond.set(sp, cs[0]);
+        }
+        a.rows = a.rows.filter((r) => !(r.src === "pokeapi" && r.ver === ver && r.kind === "wild" && gone.has(r.species)));
+        for (const r of srows)
+          if (r.ver === ver && r.kind === "wild" && gone.has(r.species) && !already.has(r.species)) {
+            const c = pcond.get(r.species);
+            add(withForm(c && !(r.cond ?? "").includes(c) ? { ...r, cond: [c, r.cond].filter(Boolean).join("; ") } : r, key));
+          }
+      }
+    }
+    // PokéAPI's own rows left (a Pokémon only it and Bulbapedia list there): no chance, and Serebii's method words.
+    const LG: Record<string, [string, string?]> = { Overworld: ["Walking"], "Overworld (rare spawn)": ["Walking", "Rare Spawns"], "Overworld (water)": ["Water"], "Overworld (water, rare spawn)": ["Water", "Rare Spawns"], "Overworld (sky)": ["In the Sky"], "Overworld (sky, rare spawn)": ["In the Sky", "Rare Spawns"] };
+    for (const a of accs.values())
+      for (const r of a.rows) {
+        if (r.src !== "pokeapi") continue;
+        delete r.rate;
+        const to = LG[r.method];
+        if (!to) continue;
+        r.method = to[0];
+        if (to[1]) r.cond = [r.cond, to[1]].filter(Boolean).join("; ");
+      }
+    // The sky: Bulbapedia's tables head its rows "While riding a Flying Pokémon / After becoming Champion" (a post-game
+    // encounter); Serebii's "In the Sky" rows take that as their condition.
+    for (const a of accs.values()) {
+      const head = bulba.get(a.key)?.flatMap((l) => l.rows).find((h) => /^Sky$/i.test(h.method) && /^While riding/i.test(h.div ?? ""))?.div;
+      if (!head) continue;
+      const cond = head.replace(/\s+(After becoming)/, "; $1").replace(/; After/, "; after");
+      for (const r of a.rows) if (/^In the Sky/.test(r.method)) r.cond = [cond, r.cond].filter(Boolean).join("; ");
+    }
+  }
+
   // ---- Bulbapedia's form labels ("Alolan Form", "Midnight Form") as PokéAPI forms
   const bulbaForms = new Map<string, FormHit | null>();
   for (const locs of bulba.values())
@@ -331,7 +378,7 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
   for (const a of accs.values()) {
     const locs = bulba.get(a.key);
     const srows = serByArea.get(a.key) ?? [];
-    if (!locs?.length || !cfg.pokeapi) continue;
+    if (!locs?.length || !cfg.pokeapi || cfg.serebiiRows) continue;
     for (const ver of versions) {
       // key "species|family" -> part -> summed slot vector
       const P = new Map<string, Map<string, number[]>>();

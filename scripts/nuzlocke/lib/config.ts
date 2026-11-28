@@ -24,6 +24,8 @@ export interface GameCfg {
   bulba: string[];
   /** Region names used in Bulbapedia's location titles ("Kanto Route 1"). */
   bulbaRegions: string[];
+  /** PokéAPI's rows have no real chances (Let's Go): Serebii's detail rows stand in for the Pokémon both list. */
+  serebiiRows?: boolean;
 }
 
 const V = (id: string, name: string): NuzVersion => ({ id, name });
@@ -47,7 +49,7 @@ export const GAMES: GameCfg[] = [
   { id: "omega-ruby-alpha-sapphire", name: "Omega Ruby & Alpha Sapphire", gen: 6, region: "Hoenn", versions: [V("omega-ruby", "Omega Ruby"), V("alpha-sapphire", "Alpha Sapphire")], walkthrough: "Walkthrough:Pokémon Omega Ruby and Alpha Sapphire", pokeapi: same("omega-ruby", "alpha-sapphire"), serebiiLoc: "xy", bulba: ["entryoras"], bulbaRegions: ["Hoenn"] },
   { id: "sun-moon", name: "Sun & Moon", gen: 7, region: "Alola", versions: [V("sun", "Sun"), V("moon", "Moon")], walkthrough: "Walkthrough:Pokémon Sun and Moon", pokeapi: same("sun", "moon"), serebiiLoc: "sm", bulba: ["entry7"], bulbaRegions: ["Alola"] },
   { id: "ultra-sun-ultra-moon", name: "Ultra Sun & Ultra Moon", gen: 7, region: "Alola", versions: [V("ultra-sun", "Ultra Sun"), V("ultra-moon", "Ultra Moon")], walkthrough: "Walkthrough:Pokémon Ultra Sun and Ultra Moon", pokeapi: same("ultra-sun", "ultra-moon"), serebiiLoc: "sm", bulba: ["entryusum"], bulbaRegions: ["Alola"] },
-  { id: "lets-go-pikachu-eevee", name: "Let's Go, Pikachu! & Let's Go, Eevee!", gen: 7, region: "Kanto", versions: [V("lets-go-pikachu", "Let's Go, Pikachu!"), V("lets-go-eevee", "Let's Go, Eevee!")], walkthrough: "Walkthrough:Pokémon Let's Go, Pikachu! and Let's Go, Eevee!", pokeapi: same("lets-go-pikachu", "lets-go-eevee"), serebii: "lgpe", bulba: ["entrype"], bulbaRegions: ["Kanto"] },
+  { id: "lets-go-pikachu-eevee", name: "Let's Go, Pikachu! & Let's Go, Eevee!", gen: 7, region: "Kanto", versions: [V("lets-go-pikachu", "Let's Go, Pikachu!"), V("lets-go-eevee", "Let's Go, Eevee!")], walkthrough: "Walkthrough:Pokémon Let's Go, Pikachu! and Let's Go, Eevee!", pokeapi: same("lets-go-pikachu", "lets-go-eevee"), serebii: "lgpe", bulba: ["entrype"], bulbaRegions: ["Kanto"], serebiiRows: true },
   {
     id: "sword-shield",
     name: "Sword & Shield",

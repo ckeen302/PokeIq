@@ -110,6 +110,8 @@ async function conditionNames(): Promise<Map<string, string>> {
     const n = v?.names.find((x) => x.language.name === "en")?.name;
     if (n && n !== "?") m.set(r.name, accent(n.replace(/’/g, "'")));
   });
+  // PokéAPI gives these (Let's Go's sky rare spawns) no English name: their names say it.
+  for (const bird of ["articuno", "zapdos", "moltres"]) if (!m.has(`other-caught-${bird}`)) m.set(`other-caught-${bird}`, `After catching ${bird[0].toUpperCase()}${bird.slice(1)}`);
   condNames = m;
   return m;
 }

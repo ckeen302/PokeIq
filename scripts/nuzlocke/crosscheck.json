@@ -80315,6 +80315,347 @@
     }
    ]
   },
+  "lets-go-pikachu-eevee": {
+   "disagreements": [
+    {
+     "area": "Route 3",
+     "version": "lets-go-eevee",
+     "species": 146,
+     "name": "Moltres",
+     "pokeapi": true,
+     "serebii": false,
+     "bulbapedia": "yes",
+     "bulbapediaRow": "Sky, Lv. 3-56, -, Rare Spawns",
+     "resolution": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Kanto_Route_3"
+    },
+    {
+     "area": "Route 11",
+     "version": "lets-go-pikachu",
+     "species": 144,
+     "name": "Articuno",
+     "pokeapi": true,
+     "serebii": false,
+     "bulbapedia": "yes",
+     "bulbapediaRow": "Sky, Lv. 3-56, -, Rare Spawns",
+     "resolution": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Kanto_Route_11"
+    },
+    {
+     "area": "Route 11",
+     "version": "lets-go-pikachu",
+     "species": 145,
+     "name": "Zapdos",
+     "pokeapi": true,
+     "serebii": false,
+     "bulbapedia": "yes",
+     "bulbapediaRow": "Sky, Lv. 3-56, -, Rare Spawns",
+     "resolution": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Kanto_Route_11"
+    },
+    {
+     "area": "Route 11",
+     "version": "lets-go-pikachu",
+     "species": 146,
+     "name": "Moltres",
+     "pokeapi": true,
+     "serebii": false,
+     "bulbapedia": "yes",
+     "bulbapediaRow": "Sky, Lv. 3-56, -, Rare Spawns",
+     "resolution": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Kanto_Route_11"
+    },
+    {
+     "area": "Route 11",
+     "version": "lets-go-eevee",
+     "species": 144,
+     "name": "Articuno",
+     "pokeapi": true,
+     "serebii": false,
+     "bulbapedia": "yes",
+     "bulbapediaRow": "Sky, Lv. 3-56, -, Rare Spawns",
+     "resolution": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Kanto_Route_11"
+    },
+    {
+     "area": "Route 11",
+     "version": "lets-go-eevee",
+     "species": 145,
+     "name": "Zapdos",
+     "pokeapi": true,
+     "serebii": false,
+     "bulbapedia": "yes",
+     "bulbapediaRow": "Sky, Lv. 3-56, -, Rare Spawns",
+     "resolution": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Kanto_Route_11"
+    },
+    {
+     "area": "Route 11",
+     "version": "lets-go-eevee",
+     "species": 146,
+     "name": "Moltres",
+     "pokeapi": true,
+     "serebii": false,
+     "bulbapedia": "yes",
+     "bulbapediaRow": "Sky, Lv. 3-56, -, Rare Spawns",
+     "resolution": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Kanto_Route_11"
+    },
+    {
+     "area": "Route 12",
+     "version": "lets-go-eevee",
+     "species": 149,
+     "name": "Dragonite",
+     "pokeapi": true,
+     "serebii": false,
+     "bulbapedia": "yes",
+     "bulbapediaRow": "Sky, Lv. 3-56, -, Rare Spawns",
+     "resolution": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Kanto_Route_12"
+    },
+    {
+     "area": "Route 13",
+     "version": "lets-go-pikachu",
+     "species": 18,
+     "name": "Pidgeot",
+     "pokeapi": true,
+     "serebii": false,
+     "bulbapedia": "yes",
+     "bulbapediaRow": "Sky, Lv. 3-56, 5%, While riding a Flying Pokémon After becoming Champion",
+     "resolution": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Kanto_Route_13"
+    },
+    {
+     "area": "Route 13",
+     "version": "lets-go-eevee",
+     "species": 18,
+     "name": "Pidgeot",
+     "pokeapi": true,
+     "serebii": false,
+     "bulbapedia": "yes",
+     "bulbapediaRow": "Sky, Lv. 3-56, 5%, While riding a Flying Pokémon After becoming Champion",
+     "resolution": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Kanto_Route_13"
+    },
+    {
+     "area": "Route 22",
+     "version": "lets-go-pikachu",
+     "species": 144,
+     "name": "Articuno",
+     "pokeapi": true,
+     "serebii": false,
+     "bulbapedia": "yes",
+     "bulbapediaRow": "Sky, Lv. 3-56, -, Rare Spawns",
+     "resolution": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Kanto_Route_22"
+    },
+    {
+     "area": "Route 22",
+     "version": "lets-go-pikachu",
+     "species": 145,
+     "name": "Zapdos",
+     "pokeapi": true,
+     "serebii": false,
+     "bulbapedia": "yes",
+     "bulbapediaRow": "Sky, Lv. 3-56, -, Rare Spawns",
+     "resolution": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Kanto_Route_22"
+    },
+    {
+     "area": "Route 22",
+     "version": "lets-go-pikachu",
+     "species": 146,
+     "name": "Moltres",
+     "pokeapi": true,
+     "serebii": false,
+     "bulbapedia": "yes",
+     "bulbapediaRow": "Sky, Lv. 3-56, -, Rare Spawns",
+     "resolution": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Kanto_Route_22"
+    },
+    {
+     "area": "Route 22",
+     "version": "lets-go-eevee",
+     "species": 144,
+     "name": "Articuno",
+     "pokeapi": true,
+     "serebii": false,
+     "bulbapedia": "yes",
+     "bulbapediaRow": "Sky, Lv. 3-56, -, Rare Spawns",
+     "resolution": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Kanto_Route_22"
+    },
+    {
+     "area": "Route 22",
+     "version": "lets-go-eevee",
+     "species": 145,
+     "name": "Zapdos",
+     "pokeapi": true,
+     "serebii": false,
+     "bulbapedia": "yes",
+     "bulbapediaRow": "Sky, Lv. 3-56, -, Rare Spawns",
+     "resolution": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Kanto_Route_22"
+    },
+    {
+     "area": "Route 22",
+     "version": "lets-go-eevee",
+     "species": 146,
+     "name": "Moltres",
+     "pokeapi": true,
+     "serebii": false,
+     "bulbapedia": "yes",
+     "bulbapediaRow": "Sky, Lv. 3-56, -, Rare Spawns",
+     "resolution": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Kanto_Route_22"
+    },
+    {
+     "area": "Route 5",
+     "version": "lets-go-pikachu",
+     "species": 54,
+     "name": "Psyduck",
+     "pokeapi": false,
+     "serebii": true,
+     "bulbapedia": "no",
+     "resolution": "skip",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Kanto_Route_5"
+    },
+    {
+     "area": "Route 5",
+     "version": "lets-go-eevee",
+     "species": 54,
+     "name": "Psyduck",
+     "pokeapi": false,
+     "serebii": true,
+     "bulbapedia": "no",
+     "resolution": "skip",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Kanto_Route_5"
+    }
+   ],
+   "bulbapedia": [
+    {
+     "area": "Route 20",
+     "version": "lets-go-pikachu",
+     "species": 6,
+     "name": "Charizard",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Kanto_Route_20"
+    },
+    {
+     "area": "Route 20",
+     "version": "lets-go-pikachu",
+     "species": 144,
+     "name": "Articuno",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Kanto_Route_20"
+    },
+    {
+     "area": "Route 20",
+     "version": "lets-go-pikachu",
+     "species": 145,
+     "name": "Zapdos",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Kanto_Route_20"
+    },
+    {
+     "area": "Route 20",
+     "version": "lets-go-pikachu",
+     "species": 146,
+     "name": "Moltres",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Kanto_Route_20"
+    },
+    {
+     "area": "Route 20",
+     "version": "lets-go-pikachu",
+     "species": 149,
+     "name": "Dragonite",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Kanto_Route_20"
+    },
+    {
+     "area": "Route 20",
+     "version": "lets-go-eevee",
+     "species": 6,
+     "name": "Charizard",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Kanto_Route_20"
+    },
+    {
+     "area": "Route 20",
+     "version": "lets-go-eevee",
+     "species": 144,
+     "name": "Articuno",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Kanto_Route_20"
+    },
+    {
+     "area": "Route 20",
+     "version": "lets-go-eevee",
+     "species": 145,
+     "name": "Zapdos",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Kanto_Route_20"
+    },
+    {
+     "area": "Route 20",
+     "version": "lets-go-eevee",
+     "species": 146,
+     "name": "Moltres",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Kanto_Route_20"
+    },
+    {
+     "area": "Route 20",
+     "version": "lets-go-eevee",
+     "species": 149,
+     "name": "Dragonite",
+     "sources": [
+      "serebii"
+     ],
+     "bulbapedia": "not listed",
+     "action": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Kanto_Route_20"
+    }
+   ],
+   "rates": []
+  },
   "brilliant-diamond-shining-pearl": {
    "disagreements": [],
    "bulbapedia": [

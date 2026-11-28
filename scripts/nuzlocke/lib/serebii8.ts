@@ -65,12 +65,22 @@ export async function serebiiGameRows(src: SerebiiSource, versions: string[]): P
     if (!m) continue;
     // "Gigantamax Raid Battles: …" (an inline label): raids by den, not a place's encounters.
     if (/label:[^·]*(Raid Battles|Dynamax)/.test(r.n ?? "")) continue;
+    // Let's Go: "Grass" is Serebii's word for every walking spawn, caves too (the terrain comes from Bulbapedia's
+    // table later, as for the older games); "- Rare Spawns" is a condition of the method, as Bulbapedia divides it.
+    let rare = false;
+    if (src === "lgpe") {
+      const g = m.label.match(/^(Grass|Water|In the Sky)( - Rare Spawns)?$/);
+      if (g) {
+        m.label = g[1] === "Grass" ? "Walking" : g[1];
+        rare = !!g[2];
+      }
+    }
     // Notes: a DLC heading (kept as the condition where the game's main story has the place: Zapdos on Poco Path
     // needs The Indigo Disk; Sword/Shield's DLC areas are their own places), a form heading, "or nearby"
     // (Legends: Arceus), weather…
     const parts = (r.n ?? "").split(" · ").map((x) => x.trim()).filter(Boolean);
     let formLabel: string | undefined;
-    const cond: string[] = [];
+    const cond: string[] = rare ? ["Rare Spawns"] : [];
     let kind = m.kind;
     let method = m.label;
     for (const p of parts) {
