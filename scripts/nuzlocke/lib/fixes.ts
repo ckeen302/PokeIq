@@ -130,6 +130,21 @@ export const NOTES: { game: string; area: string; species: number; kind: string;
  * Bosses the walkthrough fights on arrival at a place, before its Pokémon (its heading comes first, then the battle,
  * and the place is explored in the next part): the boss goes before the area's step.
  */
+/**
+ * Areas the walkthrough's headings reach too early, moved straight after another area: Scarlet/Violet's Part 1 opens
+ * with a "South Province (Area One)" heading that holds Cabo Poco, where the game begins, but the player only roams
+ * Area One after Poco Path and Inlet Grotto (Part 2).
+ */
+export const AREA_AFTER: { game: string; area: string; after: string; why: string; source: string }[] = [
+  {
+    game: "scarlet-violet",
+    area: "south-province-area-one",
+    after: "inlet-grotto",
+    why: "the walkthrough's \"South Province (Area One)\" heading opens Part 1 with Cabo Poco inside it; Part 2 goes Poco Path, Inlet Grotto, the Poco Path Lighthouse, then the road through Area One to Los Platos and Mesagoza",
+    source: "https://bulbapedia.bulbagarden.net/wiki/Walkthrough:Pok%C3%A9mon_Scarlet_and_Violet/Part_2",
+  },
+];
+
 export const BOSS_BEFORE: { game: string; boss: string; area: string; why: string; source: string }[] = [
   {
     game: "sun-moon",

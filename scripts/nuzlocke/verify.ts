@@ -71,12 +71,12 @@ const COND_NEEDS: [RegExp, RegExp, string][] = [
   [/\brock smash\b/i, /rock smash/i, "a Rock Smash condition"],
   [/\bhoney\b/i, /honey/i, "a Honey Tree condition"],
 ];
-const TIME_PART = /^(Morning|Day|Night)(, (Morning|Day|Night))*$/;
+const TIME_PART = /^(Morning|Day|Evening|Night)(, (Morning|Day|Evening|Night))*$/;
 const SEASON_PART = /^(Spring|Summer|Autumn|Winter)(, (Spring|Summer|Autumn|Winter))*$/;
-const WEATHER_PART = /^During .*weather$|^During (a |an )?(snowstorm|sandstorm|thunderstorm|intense sun|fog)$/i;
-const TIME_GAMES = new Set(["gold-silver", "crystal", "diamond-pearl", "platinum", "heartgold-soulsilver", "sun-moon", "ultra-sun-ultra-moon", "brilliant-diamond-shining-pearl"]);
+const WEATHER_PART = /^During .*weather$|^During (a |an )?(snowstorm|sandstorm|thunderstorm|intense sun|fog)$|^Weather: /i;
+const TIME_GAMES = new Set(["gold-silver", "crystal", "diamond-pearl", "platinum", "heartgold-soulsilver", "sun-moon", "ultra-sun-ultra-moon", "brilliant-diamond-shining-pearl", "legends-arceus", "scarlet-violet", "legends-za"]);
 const SEASON_GAMES = new Set(["black-white", "black-2-white-2"]);
-const WEATHER_GAMES = new Set(["sword-shield"]);
+const WEATHER_GAMES = new Set(["sword-shield", "legends-arceus", "legends-za"]);
 function conditionProblems(game: string, kind: EncounterKind, method: string, cond: string): string[] {
   const out: string[] = [];
   // (A gift's condition may name what earns it: "Catch 5 Ultra Beasts in Dynamax Adventures".)

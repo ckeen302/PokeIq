@@ -23,10 +23,10 @@ import { bulbaKind, bulbaPages, TERRAIN, type BulbaLoc } from "./lib/bulba-loc";
 import type { BulbaRow } from "./lib/bulba-catch";
 import { pages, pageUrl, plain } from "./lib/bulbapedia";
 import { catchRows } from "./lib/bulba-catch";
-import { areaPages, areaRows, availability, boxesLeftOut, confirmed, dlcLabels, formsAsText, partners } from "./lib/bulba-primary";
+import { areaPages, areaRows, availability, boxesLeftOut, confirmed, dlcLabels, eventMons, formsAsText, partners, showable, TREATS_URL } from "./lib/bulba-primary";
 import { categorySweep } from "./lib/bulba-sweep";
 import { mergeStoryBosses, storyBosses } from "./lib/story-bosses";
-import { AMBUSH, BATTLE_ONLY_FORMS, BOSS_BEFORE, NOTES, ROW_FIXES, SPREAD, STATICS } from "./lib/fixes";
+import { AMBUSH, AREA_AFTER, BATTLE_ONLY_FORMS, BOSS_BEFORE, NOTES, ROW_FIXES, SPREAD, STATICS } from "./lib/fixes";
 import { GAMES, GAME_BY_ID, type GameCfg } from "./lib/config";
 import { STATS } from "./lib/fetch";
 import { pokeapiRows, type ConditionFix } from "./lib/pokeapi-rows";
@@ -113,6 +113,8 @@ const SEREBII_URL: Record<string, string> = {
   bdsp: "https://www.serebii.net/pokedex-swsh/",
   la: "https://www.serebii.net/pokedex-swsh/",
   sv: "https://www.serebii.net/pokedex-sv/",
+  // Serebii's Legends: Z-A Pokédex is the same Gen IX Pokédex (its menu's "-Legends: Z-A Pokédex" links to /pokedex-sv/,
+  // whose pages give the Legends: Z-A locations; there is no /pokedex-za/).
   za: "https://www.serebii.net/pokedex-sv/",
 };
 
@@ -293,6 +295,8 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
     }
     const areaName = (r: Row) => aliasOf(cfg.id, r.place, r.sub)?.area ?? r.place;
     const firsts = await partners(cfg, wt0, pokedex);
+    // Bulbapedia's list of the game's in-game event Pokémon: the levels of its one-time Pokémon and first partners.
+    const events = await eventMons(cfg);
     starterPlaces = [...new Set(firsts.map((f) => f.place))];
     const names = new Map<string, string>();
     for (const r of serRows) if (!names.has(placeKey(areaName(r)))) names.set(placeKey(areaName(r)), areaName(r));
@@ -307,6 +311,14 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
     const subPages = await pages([...new Set([...ap.values()].flatMap((p) => p?.subs ?? []))]);
     const confirmAt = new Map<string, Set<string>>();
     const tpl = new Set(cfg.bulba);
+    const TYPES = ["Normal", "Fire", "Water", "Grass", "Electric", "Ice", "Fighting", "Poison", "Ground", "Flying", "Psychic", "Bug", "Rock", "Ghost", "Dragon", "Dark", "Steel", "Fairy"];
+    const listTitles = cfg.id === "legends-za" ? TYPES.map((t) => `List of ${t}-type hyperspace wild zones`) : [];
+    const listPages = await pages(listTitles);
+    const hyperspaceLists = listTitles.flatMap((t) => {
+      const x = listPages.get(t);
+      return x?.text && x.title ? [{ title: x.title, url: pageUrl(x.title), text: x.text, whole: true }] : [];
+    });
+    if (cfg.id === "legends-za" && hyperspaceLists.length !== TYPES.length) throw new Error(`legends-za: ${hyperspaceLists.length} of ${TYPES.length} hyperspace wild zone lists found`);
     for (const [k, n] of names) {
       const p = ap.get(k);
       const own = p ? [{ title: p.title, url: p.url, text: p.text }] : [];
@@ -318,8 +330,10 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
           return x?.text && x.title ? [{ title: x.title, url: pageUrl(x.title), text: x.text }] : [];
         });
       const ownRows = own.length && catchRows(own[0].text).some((r) => tpl.has(r.tpl));
-      const use = ownRows ? own : [...own, ...subs];
-      const dlc = cfg.id === "scarlet-violet" ? ({ Kitakami: "The Teal Mask", Unova: "The Indigo Disk" } as Record<string, string>)[p?.region ?? ""] : undefined;
+      // Legends: Z-A's Hyperspace Lumiose: Bulbapedia lists its wild zones' Pokémon on one page per type.
+      const lists = cfg.id === "legends-za" && n === "Hyperspace Lumiose" ? hyperspaceLists : [];
+      const use = [...(ownRows ? own : [...own, ...subs]), ...lists];
+      const dlc = cfg.id === "scarlet-violet" ? ({ Kitakami: "The Teal Mask", Unova: "The Indigo Disk" } as Record<string, string>)[p?.region ?? ""] : lists.length ? "Mega Dimension" : undefined;
       for (const r of await areaRows(cfg, n, use, dlc)) add(r);
       battleOnly.push(...boxesLeftOut.splice(0));
       for (const u of use) if (catchRows(u.text).some((r) => tpl.has(r.tpl))) sources.add(u.url);
@@ -334,6 +348,15 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
       });
       const av = await availability(cfg.id, new Map([...new Set(need.map((r) => r.species))].map((sp) => [sp, pokedex.find((p) => p.id === sp)?.name ?? String(sp)])));
       const seen = new Set<string>();
+      // The levels of the Terastallized Pokémon on the area tables, by species and Tera Type: a Serebii row the
+      // Pokémon's page gives as that Tera Type takes them (the area table and the Pokémon's page can name neighbouring areas).
+      const teraLevels = new Map<string, [number, number]>();
+      for (const a of accs.values())
+        for (const x of a.rows) {
+          const t = /Terastallized \((\w+) Tera Type\)/.exec(x.cond ?? "")?.[1];
+          if (t && x.levels) teraLevels.set(`${x.species}|${t}`, x.levels);
+        }
+
       for (const r of need) {
         const k = placeKey(areaName(r));
         const others = new Set([...confirmAt].filter(([kk]) => kk !== k).flatMap(([, t]) => [...t]));
@@ -349,17 +372,58 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
         // (Not when the row already names a DLC: "The Teal Mask" says more than "The Hidden Treasure of Area Zero".)
         const isDlc = (x: string) => !!x && !cfg.versions.some((v) => v.name === x);
         const dlcLabel = c.label && isDlc(c.label) && !dlcLabels(cfg.id).some((d) => r.cond?.includes(d)) ? c.label : undefined;
-        const cond = [...new Set([r.cond, dlcLabel, r.cond ? undefined : c.note].filter((x): x is string => !!x))].join("; ") || undefined;
-        const row = { ...r, ...(cond ? { cond } : {}) };
-        add(c.once && r.kind === "wild" ? { ...row, kind: "static", method: "Static" } : row);
+        const note = c.note ?? "";
+        // What the Pokémon's page says of the place decides the row: "Only one" -> a one-time encounter (its level from
+        // Bulbapedia's in-game event list, where it is met there); "Electric Tera Type" -> a fixed Terastallized
+        // Pokémon, as the area tables write it (and with their level for it); a form ("Alolan Form") -> that form;
+        // anything else Serebii calls "Static" is an ordinary spawn there.
+        const formHit = note && /\b(?:Form|Forme|Breed|Style|Flower|Pattern|Plumage|Cloak|Striped|Sea)$/.test(note) && !r.form ? await formFor(r.species, note) : null;
+        const form = formHit?.form && showable(formHit.form, formHit.art) ? formHit : undefined;
+        const tera = /^(\w+) Tera Type$/.exec(note)?.[1];
+        let kind = r.kind;
+        let method = r.method;
+        let levels = r.levels;
+        const extra: string[] = [];
+        if (c.once) {
+          kind = "static";
+          method = "Static";
+          const ev = events.get(r.species)?.find((e) => [areaName(r), c.place].some((x) => !!x && placeKey(x) === placeKey(e.met)));
+          if (ev && !levels) {
+            levels = [ev.level, ev.level];
+            sources.add(ev.url);
+          }
+        } else if (tera) {
+          kind = "wild";
+          method = "Fixed";
+          extra.push(`Terastallized (${tera} Tera Type)`);
+          levels ??= teraLevels.get(`${r.species}|${tera}`);
+        } else if (r.kind === "static") {
+          kind = "wild";
+          method = "Wild";
+        }
+        const other = !form && !tera && !r.cond ? note : undefined;
+        const cond = [...new Set([r.cond, dlcLabel, ...extra, other].filter((x): x is string => !!x))].join("; ") || undefined;
+        const { cond: _c, levels: _l, ...base } = r;
+        void _c;
+        void _l;
+        add({ ...base, kind, method, ...(levels ? { levels } : {}), ...(form?.form ? { form: form.form, art: form.art } : {}), ...(cond ? { cond } : {}) });
         if (c.url) sources.add(c.url);
       }
       notes.push(`Serebii rows not on Bulbapedia's table: ${bpLog.filter((x) => x.action === "add").length} added (the Pokémon's page names the place), ${bpLog.filter((x) => x.action === "skip").length} left out`);
     }
     for (const s of firsts) {
-      for (const ver of versions) add({ src: "bulbapedia", ver, place: s.place, ...(s.sub ? { sub: s.sub } : {}), species: s.species, kind: "gift", method: "Starter", url: s.url });
+      // The place's table may give the same gift (Cabo Poco's "Gift" rows): one row, the starter's, with its level.
+      const a = accs.get(placeKey(aliasOf(cfg.id, s.place)?.area ?? s.place));
+      const table = a?.rows.filter((r) => r.species === s.species && r.kind === "gift" && r.method === "Gift") ?? [];
+      // Else the event list's level (its one entry for the species: "Lumiose first partner Pokémon: Chikorita Lv. 5").
+      const ev = events.get(s.species);
+      const levels = table.find((r) => r.levels)?.levels ?? (ev?.length === 1 ? ([ev[0].level, ev[0].level] as [number, number]) : undefined);
+      if (!table.length && ev?.length === 1) sources.add(ev[0].url);
+      if (a && table.length) a.rows = a.rows.filter((r) => !table.includes(r));
+      for (const ver of versions) add({ src: "bulbapedia", ver, place: s.place, ...(s.sub ? { sub: s.sub } : {}), species: s.species, kind: "gift", method: "Starter", ...(levels ? { levels } : {}), url: s.url });
       sources.add(s.url);
     }
+    if (cfg.id === "scarlet-violet") sources.add(TREATS_URL);
     if (firsts.length) notes.push(`starters (first partners in the walkthrough, placed by their Bulbapedia pages): ${firsts.map((s) => `${speciesName(s.species)} at ${s.place}${s.sub ? ` (${s.sub})` : ""}`).join(", ")}`);
     sources.add(wt0.url);
     if (cfg.serebii && cfg.bulbaPrimary === "serebii") sources.add(SEREBII_URL[cfg.serebii]);
@@ -1282,6 +1346,14 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
     const [boss] = steps.splice(b, 1);
     steps.splice(a, 0, boss);
     fixesLog.push({ area: m.area, action: `${m.boss} before it`, why: m.why, source: m.source });
+    sources.add(m.source);
+  }
+  for (const m of AREA_AFTER.filter((x) => x.game === cfg.id)) {
+    const a = steps.findIndex((s) => s.type === "area" && s.area.id === m.area);
+    if (a < 0 || steps.findIndex((s) => s.type === "area" && s.area.id === m.after) < 0) throw new Error(`${cfg.id}: AREA_AFTER ${m.area} / ${m.after} not found`);
+    const [step] = steps.splice(a, 1);
+    steps.splice(steps.findIndex((s) => s.type === "area" && s.area.id === m.after) + 1, 0, step);
+    fixesLog.push({ area: m.area, action: `after ${m.after}`, why: m.why, source: m.source });
     sources.add(m.source);
   }
   // ---- story bosses (scripts/nuzlocke/story-bosses.json: rivals, villains, totems…), by their anchors
