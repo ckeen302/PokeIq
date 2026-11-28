@@ -153,9 +153,9 @@
     "catchOdds": "Catch odds",
     "close": "Close",
     "rate": "{n}%",
-    "rates": "{min}–{max}%",
-    "levels": "Lv {min}–{max}",
-    "level": "Lv {n}",
+    "rates": "{min}–\u2060{max}%",
+    "levels": "Lv\u00a0{min}–\u2060{max}",
+    "level": "Lv\u00a0{n}",
     "more": "+{n} more",
     "post": "{when}: {text}"
   },
