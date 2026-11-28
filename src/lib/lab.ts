@@ -57,9 +57,9 @@ export interface LabExperience {
   pitch: string;
   /** Short feature chips under the pitch. */
   tags: string[];
-  /** Card art: a screenshot of the experience in /public, 16:9. Without it the card draws an animated preview. */
+  /** Card art in /public, 16:9: a picture of the experience (the World Globe's is a screenshot). Without it the card draws an animated preview. */
   image?: string;
-  /** The same picture in light mode, where the experience has a light look of its own (the World Globe). */
+  /** The same picture in light mode (a day version of the card's art, or the World Globe's own light look). */
   imageLight?: string;
   /** Accent colour, as an HSL triplet ("258 94% 74%"). */
   accent: string;
@@ -88,6 +88,7 @@ const STORY_CARD: LabExperience = {
   pitch: "A cinematic film of how Pokémon really began, from a boy collecting insects in Machida to thirty years of games, cards and shows. Scroll through it or press Play, with every line sourced.",
   tags: ["The real history", "Every line sourced", "Make a video"],
   image: "/lab/pokemon-story.webp",
+  imageLight: "/lab/pokemon-story-light.webp",
   accent: "42 88% 64%",
   live: POKEMON_STORY_LIVE,
 };
@@ -107,6 +108,7 @@ export const LAB_EXPERIENCES: LabExperience[] = [
     pitch: "Glide past every Pokémon at its real size in a 3D Lumiose City, then hit Make a video for a size comparison ready for TikTok, Reels and Shorts.",
     tags: ["Make a video", "Compare any Pokémon", "Lumiose City"],
     image: "/lab/sizes.webp",
+    imageLight: "/lab/sizes-light.webp",
     accent: "45 100% 64%",
     live: true,
   },
@@ -118,6 +120,7 @@ export const LAB_EXPERIENCES: LabExperience[] = [
     pitch: "Thousands of Pokémon clash on a 3D battlefield with the real games' damage maths. How many Magikarp does it take to beat Arceus? Find out, then make a video of it.",
     tags: ["How many?", "Army vs army", "Make a video"],
     image: "/lab/mass-battle.webp",
+    imageLight: "/lab/mass-battle-light.webp",
     accent: "28 100% 58%",
     live: MASS_BATTLE_LIVE,
   },
@@ -141,6 +144,7 @@ export const LAB_EXPERIENCES: LabExperience[] = [
     pitch: "Spin a ring of lab capsules and bring any Pokémon onto the holo-table in 3D, with its base stats, battle roles, Pokédex entry, evolutions and type matchups.",
     tags: ["Every Pokémon in 3D", "Battle roles", "Filter and sort"],
     image: "/lab/pokedex.webp",
+    imageLight: "/lab/pokedex-light.webp",
     accent: "190 95% 62%",
     live: LAB_DEX_LIVE,
   },
@@ -175,6 +179,7 @@ export const LAB_EXPERIENCES: LabExperience[] = [
     pitch: "A cinematic museum of the Pokémon world's in-universe history, from Sinnoh's creation myth to the time machine in Area Zero. Scroll through it or press Play, with every line sourced to the games.",
     tags: ["Told by the games", "Every line sourced", "Make a video"],
     image: "/lab/world-history.webp",
+    imageLight: "/lab/world-history-light.webp",
     accent: "42 92% 66%",
     live: WORLD_HISTORY_LIVE,
   },

@@ -123,8 +123,7 @@ function LabCard({ experience: e, priority, lone }: { experience: LabExperience;
                   sizes={CARD_IMAGE_SIZES}
                   loading={priority ? "eager" : undefined}
                   fetchPriority={priority ? "high" : undefined}
-                  // The Professor's Lab's picture is a screenshot with text to its edges: shown whole, never zoomed by the drift.
-                  className={cn("object-cover", e.id !== "pokedex" && "lab-kb")}
+                  className="object-cover lab-kb"
                 />
               </picture>
               {/* In light mode, an experience with a light look of its own shows that instead. */}
@@ -138,10 +137,6 @@ function LabCard({ experience: e, priority, lone }: { experience: LabExperience;
           ) : e.id === "race" ? (
             <RacePreview />
           ) : null}
-          <span className="pointer-events-none absolute inset-0 z-[1] bg-[linear-gradient(180deg,transparent_60%,rgb(0_0_0/0.55))]" />
-          <span className="hud-label pointer-events-none absolute bottom-3 left-3 z-[3] flex items-center gap-1.5 rounded-sm bg-black/55 px-2 py-1.5 text-white/90 backdrop-blur-sm max-sm:hidden">
-            <span className="led lab-led h-1.5 w-1.5" /> {t("live")}
-          </span>
         </Link>
         {/* The title and pitch share the same room on every card (a title's two lines and a pitch's four), so no card outgrows another. */}
         <div className="lab-card-text flex flex-1 flex-col gap-3 p-6 lg:p-8 max-sm:gap-1 max-sm:px-1 max-sm:pb-0 max-sm:pt-3">
