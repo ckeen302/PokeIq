@@ -592,7 +592,7 @@ const DexRowLink = memo(function DexRowLink({ p, eager, typeNames }: { p: DexLis
         {t("no", { n: String(p.id).padStart(4, "0") })}
       </span>
       <span className="sticky left-[72px] z-[1] flex h-full min-w-0 items-center gap-2 self-stretch bg-inherit pr-0.5 md:left-[86px]">
-        <span className="screen h-10 w-10 shrink-0 rounded-md md:h-[52px] md:w-[52px]">
+        <span className="screen art-well h-10 w-10 shrink-0 rounded-md md:h-[52px] md:w-[52px]">
           <span className="absolute inset-0 opacity-30 transition-opacity duration-300 group-hover:opacity-60" style={{ background: `radial-gradient(circle at 50% 60%, ${c1}, transparent 70%)` }} aria-hidden />
           <img
             src={boardArtUrl(p.id)}
@@ -701,7 +701,7 @@ const DexCard = memo(function DexCard({
           <span className="font-pixel text-[10px] tracking-wider text-muted-foreground">{t("no", { n: String(p.id).padStart(4, "0") })}</span>
           {badge && <span className="font-pixel text-[10px] tabular-nums text-screen">{badge}</span>}
         </div>
-        <div className="screen mx-3 mt-2 aspect-square rounded-md">
+        <div className="screen art-well mx-3 mt-2 aspect-square rounded-md">
           <div
             className="absolute inset-0 opacity-30 transition-opacity duration-300 group-hover:opacity-60"
             style={{ background: `radial-gradient(circle at 50% 60%, ${c1}, transparent 65%)` }}
