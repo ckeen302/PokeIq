@@ -97,7 +97,8 @@ export function StartRun({ games, gameId, onClose }: { games: GameSummary[]; gam
           <p className="font-display text-[19px] font-bold tracking-tight">{game.name}</p>
         )}
 
-        <fieldset className="space-y-2">
+        {/* A one-version game (Platinum) has nothing to choose. */}
+        <fieldset className={cn("space-y-2", game.versions.length < 2 && "hidden")}>
           <legend className="text-[13px] font-semibold uppercase tracking-wider text-muted-foreground">{t("start.version")}</legend>
           <div className={cn("grid gap-2", game.versions.length > 2 ? "grid-cols-2 sm:grid-cols-3" : game.versions.length === 2 ? "grid-cols-2" : "grid-cols-1")} role="radiogroup" aria-label={t("start.version")}>
             {game.versions.map((v) => {

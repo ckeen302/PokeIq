@@ -15,10 +15,11 @@ import nuz from "@/messages/nuzlocke";
 import tools from "@/messages/tools";
 import { toolJsonLd } from "@/lib/tier-list/seo";
 import { groupByMethod, levelSpan, methodLabel, type EncounterRow } from "@/lib/nuzlocke/group";
-import { artSrc, capFor, inVersion, type GameSummary, type GameView, type ViewArea, type ViewBoss } from "@/lib/nuzlocke/view";
+import { capFor, inVersion, type GameSummary, type GameView, type ViewArea, type ViewBoss } from "@/lib/nuzlocke/view";
 import { versionColor } from "@/lib/nuzlocke/versions";
 import { cn } from "@/lib/utils";
 import { GameStart } from "./GameStart";
+import { GuideList, type GuideGroup, type GuideRow } from "./GuideList";
 import { METHOD_ICONS, methodIconKey } from "./icons";
 import "./nuzlocke.css";
 
@@ -82,41 +83,26 @@ function IconSheet() {
   );
 }
 
-const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-
-/**
- * An area's Pokémon as plain HTML, by way of meeting them. A game's page lists thousands (Sword & Shield's Wild Area
- * alone has hundreds), so each row is as small as markup gets, and the list reaches the browser once as markup and once
- * as a string (the page's React data), not as a React tree, which is twice the size.
- */
-function areaHtml(t: PageT, view: GameView, area: ViewArea, locale: Locale): string {
-  return groupByMethod(area.encounters)
-    .map((g) => {
-      const kind = g.kind !== "wild" && g.method.toLowerCase() !== t(`game.kinds.${g.kind}`).toLowerCase() ? t(`game.kinds.${g.kind}`) : null;
-      const rows = g.rows
-        .map((row) => {
-          const mon = view.mons[row.mon];
-          if (!mon) return "";
-          const { only, text } = rowText(t, view, row);
-          const tag = only ? `<i class="nzg-only" style="--v:${versionColor(only[0])}">${esc(t("game.only", { version: versionNames(view, only) }))}</i>` : "";
-          return `<li><a href="${esc(localeHref(`/pokemon/${mon.slug}`, locale).href)}"><img src="${artSrc(mon.art)}" alt="" loading="lazy"><span><b>${esc(mon.name)}</b>${tag}${text ? `<small>${esc(text)}</small>` : ""}</span></a></li>`;
-        })
-        .join("");
-      const head = `<svg aria-hidden="true"><use href="#nzi-${methodIconKey(g.method, g.kind)}"/></svg>${esc(methodLabel(g.method))}${kind ? `<i>${esc(kind)}</i>` : ""}`;
-      return `<p class="nzg-h">${head}</p><ul class="nzg-l">${rows}</ul>`;
-    })
-    .join("");
+/** An area's Pokémon as rows of data, by way of meeting them; GuideList writes them out (see there for why). */
+function areaGroups(t: PageT, view: GameView, area: ViewArea, locale: Locale): GuideGroup[] {
+  return groupByMethod(area.encounters).map((g) => {
+    const kind = g.kind !== "wild" && g.method.toLowerCase() !== t(`game.kinds.${g.kind}`).toLowerCase() ? t(`game.kinds.${g.kind}`) : null;
+    const rows = g.rows.flatMap((row): GuideRow[] => {
+      const mon = view.mons[row.mon];
+      if (!mon) return [];
+      const { only, text } = rowText(t, view, row);
+      const href = localeHref(`/pokemon/${mon.slug}`, locale).href;
+      return [only ? [href, mon.art, mon.name, text, t("game.only", { version: versionNames(view, only) }), versionColor(only[0])] : [href, mon.art, mon.name, text]];
+    });
+    return [methodIconKey(g.method, g.kind), methodLabel(g.method), kind, rows];
+  });
 }
 
 function AreaBlock({ t, view, area, locale }: { t: PageT; view: GameView; area: ViewArea; locale: Locale }) {
   return (
     <li className="rounded-[22px] border border-foreground/[0.08] bg-card p-4 shadow-[0_16px_40px_-34px_hsl(var(--shade)/0.9)] sm:p-5" id={`area-${area.id}`} data-testid="nz-guide-area">
       <h3 className="font-display text-[19px] font-bold tracking-tight">{area.name}</h3>
-      {area.encounters.length === 0 ? (
-        <p className="mt-1 text-[14px] text-muted-foreground">{t("game.noEncounters")}</p>
-      ) : (
-        <div className="nzg mt-3" dangerouslySetInnerHTML={{ __html: areaHtml(t, view, area, locale) }} />
-      )}
+      {area.encounters.length === 0 ? <p className="mt-1 text-[14px] text-muted-foreground">{t("game.noEncounters")}</p> : <GuideList groups={areaGroups(t, view, area, locale)} />}
     </li>
   );
 }

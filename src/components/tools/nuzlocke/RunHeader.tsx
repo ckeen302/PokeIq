@@ -44,11 +44,20 @@ export function RunHeader({ t, run, view, readOnly, onRename, onBadge, onMenu }:
         <div className="min-w-0 flex-1">
           <p className="flex min-w-0 items-center gap-2 text-[12px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
             <VersionDot id={run.version} />
-            <span className="shrink-0 text-foreground/85" data-testid="nz-version">{version?.name ?? run.version}</span>
-            <span aria-hidden className="max-sm:hidden">·</span>
-            <Link href={`${TRACKER_PATH}/${view.id}`} className="truncate underline-offset-4 hover:text-foreground hover:underline max-sm:hidden">
-              {view.name}
-            </Link>
+            {(version?.name ?? run.version) === view.name ? (
+              // A one-version game (Platinum): its name once, as the link to its page.
+              <Link href={`${TRACKER_PATH}/${view.id}`} className="shrink-0 text-foreground/85 underline-offset-4 hover:text-foreground hover:underline" data-testid="nz-version">
+                {view.name}
+              </Link>
+            ) : (
+              <>
+                <span className="shrink-0 text-foreground/85" data-testid="nz-version">{version?.name ?? run.version}</span>
+                <span aria-hidden className="max-sm:hidden">·</span>
+                <Link href={`${TRACKER_PATH}/${view.id}`} className="truncate underline-offset-4 hover:text-foreground hover:underline max-sm:hidden">
+                  {view.name}
+                </Link>
+              </>
+            )}
           </p>
           {editing ? (
             <RenameField t={t} name={run.name} onDone={(n) => (setEditing(false), n !== null && onRename(n))} />

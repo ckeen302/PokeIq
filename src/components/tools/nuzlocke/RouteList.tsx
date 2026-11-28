@@ -54,7 +54,12 @@ export function RouteList({
   const all = [...story.flatMap((i) => (i.type === "area" ? [i.area] : [])), ...view.extra];
   const done = all.filter((a) => run.areas[a.id]).length;
   const remaining = all.filter((a) => !run.areas[a.id] && playable(a)).length;
-  const next = all.find((a) => !run.areas[a.id] && playable(a)) ?? null;
+  // Up next: the first open area after the furthest one logged in story order (a player moves on; one passed by, such as
+  // a town's water before Surf, stays in Remaining), else the first open one.
+  const open = (a: ViewArea) => !run.areas[a.id] && playable(a);
+  const storyAreas = story.flatMap((i) => (i.type === "area" ? [i.area] : []));
+  const furthest = storyAreas.reduce((last, a, n) => (run.areas[a.id] ? n : last), -1);
+  const next = storyAreas.slice(furthest + 1).find(open) ?? all.find(open) ?? null;
   const shows = (i: Item) =>
     filter === "all" ? true : i.type === "boss" ? (filter === "done") === run.beaten.includes(i.boss.key) : filter === "done" ? !!run.areas[i.area.id] : !run.areas[i.area.id] && playable(i.area);
   const shown = story.filter(shows);
