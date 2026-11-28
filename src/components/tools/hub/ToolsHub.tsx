@@ -1,4 +1,5 @@
 import Link from "@/components/ui/Link";
+import { cn } from "@/lib/utils";
 import type { HubData, HubTool } from "./data";
 import { HubHeading, OpenPill } from "./parts";
 
@@ -18,17 +19,24 @@ function ToolCard({ tool, open, priority }: { tool: HubTool; open: string; prior
       data-testid={tool.testId}
     >
       <div className="relative aspect-[4/3] shrink-0 overflow-hidden bg-[hsl(250_40%_7%)]">
-        {/* eslint-disable-next-line @next/next/no-img-element -- pre-sized screenshots, no optimiser needed */}
-        <img
-          src={tool.image.replace(".webp", "-800.webp")}
-          srcSet={`${tool.image.replace(".webp", "-800.webp")} 640w, ${tool.image} 1200w`}
-          sizes="(min-width: 1152px) 370px, (min-width: 1024px) 31vw, 48vw"
-          alt=""
-          decoding="async"
-          loading={priority ? undefined : "lazy"}
-          fetchPriority={priority ? "high" : undefined}
-          className="h-full w-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-[1.04] motion-reduce:transition-none"
-        />
+        {/* By night and by day, as the theme is. */}
+        {(["", "-light"] as const).map((v) => {
+          const src = tool.image.replace(".webp", `${v}.webp`);
+          return (
+            // eslint-disable-next-line @next/next/no-img-element -- pre-sized pictures, no optimiser needed
+            <img
+              key={v}
+              src={src.replace(".webp", "-800.webp")}
+              srcSet={`${src.replace(".webp", "-800.webp")} 640w, ${src} 1200w`}
+              sizes="(min-width: 1152px) 370px, (min-width: 1024px) 31vw, 48vw"
+              alt=""
+              decoding="async"
+              loading={priority && !v ? undefined : "lazy"}
+              fetchPriority={priority && !v ? "high" : undefined}
+              className={cn("h-full w-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-[1.04] motion-reduce:transition-none", v ? "hidden [.light_&]:block" : "[.light_&]:hidden")}
+            />
+          );
+        })}
       </div>
       <div className="flex flex-1 flex-col justify-between gap-4 p-5 max-sm:gap-0 max-sm:p-3 lg:p-6">
         <h2 className="font-display text-xl font-bold uppercase leading-[0.95] tracking-tight [overflow-wrap:anywhere] max-sm:text-[15px] lg:text-2xl">{tool.title}</h2>

@@ -3,18 +3,17 @@ import { getT, serverT } from "@/i18n/server";
 import tools from "@/messages/tools";
 import tierList from "@/messages/tier-list";
 import ballPage from "@/messages/pokeball-maker-page";
-import pickerPage from "@/messages/favorite-picker-page";
 import shinyCounterPage from "@/messages/shiny-counter-page";
 import catchRatePage from "@/messages/catch-rate-page";
 import home from "@/messages/home";
 
-/** The Tools hub's cards: each tool's name and line (existing strings only), its accent and its picture, a screenshot of the tool in use. */
+/** The Tools hub's cards: each tool's name and line (existing strings only), its accent and its card art. The Favorite Pokémon Picker is a list in the Tier List Maker now, not a card of its own. */
 
 export interface HubTool {
   href: string;
   title: string;
   subtitle: string;
-  /** A screenshot of the tool itself (public/tools/hub). */
+  /** The tool's card art (public/tools/hub), by night; `<name>-light.webp` beside it is the same scene by day. */
   image: string;
   /** An HSL triplet: the card's border and glow on hover. */
   accent: string;
@@ -31,7 +30,6 @@ export async function hubData(): Promise<HubData> {
   const t = await getT(tools);
   const tl = serverT(tierList);
   const pb = serverT(ballPage);
-  const fp = serverT(pickerPage);
   const sc = serverT(shinyCounterPage);
   const cr = serverT(catchRatePage);
   const h = serverT(home);
@@ -45,7 +43,6 @@ export async function hubData(): Promise<HubData> {
       { href: "/tools/catch-rate-calculator", title: cr("title"), subtitle: cr("cardSubtitle"), image: "/tools/hub/catch.webp", accent: "150 72% 52%", testId: "tool-card-catch-rate" },
       { href: "/tools/pokeball-maker", title: pb("cardTitle"), subtitle: pb("cardSubtitle"), image: "/tools/hub/ball.webp", accent: "356 86% 60%", testId: "tool-card-pokeball-maker" },
       { href: "/tools/tier-list", title: tl("card.title"), subtitle: tl("card.subtitle"), image: "/tools/hub/tier.webp", accent: "258 94% 74%", testId: "tool-card-tier-list" },
-      { href: "/tools/favorite-pokemon-picker", title: fp("cardTitle"), subtitle: fp("cardSubtitle"), image: "/tools/hub/picker.webp", accent: "44 96% 62%", testId: "tool-card-favorite-picker" },
     ],
   };
 }

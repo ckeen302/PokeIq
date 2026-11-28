@@ -4,11 +4,12 @@ import { getLocale, serverT } from "@/i18n/server";
 import { ClientMessages } from "@/i18n/ClientMessages";
 import tierList from "@/messages/tier-list";
 import tools from "@/messages/tools";
+import pickerPage from "@/messages/favorite-picker-page";
 import { toolJsonLd } from "@/lib/tier-list/seo";
 import { TemplateGrid } from "@/components/tools/tier-list/TemplateGrid";
 import { ContinueChip } from "@/components/tools/tier-list/ContinueChip";
 
-/** /tools/tier-list: the Pokémon Tier List Maker's front page. Pick a template; each opens with all four modes. */
+/** /tools/tier-list: the Pokémon Tier List Maker's front page. Pick a template (each opens with all four modes), or the Favorite Pokémon Picker. */
 
 const PATH = "/tools/tier-list";
 
@@ -33,7 +34,8 @@ export default function TierListHome() {
       <section className="mt-10 max-sm:mt-7" aria-labelledby="tl-pick">
         <h2 id="tl-pick" className="mb-5 font-display text-2xl font-semibold tracking-tight">{t("pick.heading")}</h2>
         <ClientMessages namespaces={[tierList]}>
-          <TemplateGrid />
+          {/* The Favorite Pokémon Picker is one more kind of list here (it has no card of its own on /tools). */}
+          <TemplateGrid extra={[{ href: "/tools/favorite-pokemon-picker", label: serverT(pickerPage)("cardTitle"), face: 133, testId: "template-favorite-picker" }]} />
         </ClientMessages>
       </section>
       <p className="mt-12 text-center text-[12px] leading-relaxed text-muted-foreground/70">{t("credit")}</p>

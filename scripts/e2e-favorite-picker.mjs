@@ -88,10 +88,10 @@ export async function runFavoritePicker({ browser, BASE, OUT = "e2e-screenshots"
   const page = await context.newPage();
   watch(page, consoleErrors);
 
-  // ---- The card on /tools, the page and its server HTML.
+  // ---- Its card in the Tier List Maker (it's a kind of list there, with no card of its own on /tools), the page and its server HTML.
   try {
-    await page.goto(`${BASE}/tools`, { waitUntil: "load" });
-    const card = page.getByTestId("tool-card-favorite-picker");
+    await page.goto(`${BASE}/tools/tier-list`, { waitUntil: "load" });
+    const card = page.getByTestId("template-favorite-picker");
     await card.waitFor({ timeout: 15_000 });
     await card.click();
     await page.waitForURL(new RegExp(PATH), { timeout: 20_000 });
