@@ -24,7 +24,8 @@ export const LAB_CSS = `
 :root.light .lab-hero .lab-floor{background-image:linear-gradient(hsl(var(--screen) / .3) 1.5px,transparent 1.5px),linear-gradient(90deg,hsl(var(--screen) / .22) 1.5px,transparent 1.5px)}
 :root.light .lab-title{text-shadow:0 2px 18px hsl(var(--screen) / .22)}
 :root.light .lab-title b{text-shadow:0 2px 18px hsl(var(--primary) / .3)}
-:root.light .lab-card .screen::after{display:none}
+/* The cards' pictures are art, not device screens: no scanlines over them. */
+.lab-card .screen::after{display:none}
 :root.light .lab-panel{box-shadow:0 26px 50px rgb(70 50 170 / .22),0 0 28px hsl(var(--lab-accent, var(--screen)) / .2)}
 .lab-title b{color:hsl(var(--primary));text-shadow:0 0 22px hsl(var(--primary) / .75),0 0 60px hsl(var(--primary) / .35)}
 .lab-stack{perspective:1400px}
