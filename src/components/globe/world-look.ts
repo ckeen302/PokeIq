@@ -124,7 +124,8 @@ export function createWorldLook(o: WorldLookOptions) {
         // A pool of light on the region in focus, ringed; the whole world in focus: its rim brighter.
         float fp=dot(N,uFocus);
         float pool=smoothstep(cos(.26),cos(.05),fp);
-        float ring=exp(-pow((fp-cos(.21))/.004,2.));
+        float fr=(fp-cos(.21))/.004;
+        float ring=exp(-fr*fr);
         col=mix(col, col*1.12+uHot*.1, pool*uFocusK*(.35+.65*l));
         col=mix(col, uHot, ring*.75*uFocusK);
         f*=1.+.8*uWorldK;
