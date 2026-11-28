@@ -1,0 +1,2462 @@
+{
+ "red-blue": [
+  {
+   "after": "pallet-town",
+   "boss": {
+    "name": "Rival Blue (Oak's Lab)",
+    "kind": "story",
+    "cap": 5
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Blue_(game)/Red,_Green,_and_Blue"
+  },
+  {
+   "after": "route-22",
+   "boss": {
+    "name": "Rival Blue (Route 22, first)",
+    "kind": "story",
+    "cap": 9,
+    "optional": true
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Blue_(game)/Red,_Green,_and_Blue"
+  },
+  {
+   "after": "cerulean-city",
+   "boss": {
+    "name": "Rival Blue (Cerulean City)",
+    "kind": "story",
+    "cap": 18
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Blue_(game)/Red,_Green,_and_Blue"
+  },
+  {
+   "after": "vermilion-city",
+   "boss": {
+    "name": "Rival Blue (S.S. Anne)",
+    "kind": "story",
+    "cap": 20
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Blue_(game)/Red,_Green,_and_Blue"
+  },
+  {
+   "after": "pokemon-tower",
+   "boss": {
+    "name": "Rival Blue (Pokémon Tower)",
+    "kind": "story",
+    "cap": 25
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Blue_(game)/Red,_Green,_and_Blue"
+  },
+  {
+   "after": "celadon-city",
+   "boss": {
+    "name": "Giovanni (Rocket Hideout)",
+    "kind": "story",
+    "cap": 29
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Giovanni"
+  },
+  {
+   "after": "saffron-city",
+   "boss": {
+    "name": "Rival Blue (Silph Co.)",
+    "kind": "story",
+    "cap": 40
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Blue_(game)/Red,_Green,_and_Blue"
+  },
+  {
+   "after": "saffron-city",
+   "boss": {
+    "name": "Giovanni (Silph Co.)",
+    "kind": "story",
+    "cap": 41
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Giovanni"
+  },
+  {
+   "after": "route-23",
+   "boss": {
+    "name": "Rival Blue (Route 22, second)",
+    "kind": "story",
+    "cap": 53
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Blue_(game)/Red,_Green,_and_Blue"
+  }
+ ],
+ "yellow": [
+  {
+   "after": "pallet-town",
+   "boss": {
+    "name": "Rival Blue (Oak's Lab)",
+    "kind": "story",
+    "cap": 5
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Blue_(game)/Yellow"
+  },
+  {
+   "after": "route-22",
+   "boss": {
+    "name": "Rival Blue (Route 22, first)",
+    "kind": "story",
+    "cap": 9,
+    "optional": true
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Blue_(game)/Yellow"
+  },
+  {
+   "after": "mt-moon",
+   "boss": {
+    "name": "Jessie & James (Mt. Moon)",
+    "kind": "story",
+    "cap": 14
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Team_Rocket_trio"
+  },
+  {
+   "after": "cerulean-city",
+   "boss": {
+    "name": "Rival Blue (Cerulean City)",
+    "kind": "story",
+    "cap": 18
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Blue_(game)/Yellow"
+  },
+  {
+   "after": "vermilion-city",
+   "boss": {
+    "name": "Rival Blue (S.S. Anne)",
+    "kind": "story",
+    "cap": 20
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Blue_(game)/Yellow"
+  },
+  {
+   "after": "pokemon-tower",
+   "boss": {
+    "name": "Rival Blue (Pokémon Tower)",
+    "kind": "story",
+    "cap": 25
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Blue_(game)/Yellow"
+  },
+  {
+   "after": "celadon-city",
+   "boss": {
+    "name": "Jessie & James (Rocket Hideout)",
+    "kind": "story",
+    "cap": 25
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Team_Rocket_trio"
+  },
+  {
+   "after": "celadon-city",
+   "boss": {
+    "name": "Giovanni (Rocket Hideout)",
+    "kind": "story",
+    "cap": 29
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Giovanni"
+  },
+  {
+   "after": "saffron-city",
+   "boss": {
+    "name": "Jessie & James (Pokémon Tower)",
+    "kind": "story",
+    "cap": 27
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Team_Rocket_trio"
+  },
+  {
+   "after": "saffron-city",
+   "boss": {
+    "name": "Rival Blue (Silph Co.)",
+    "kind": "story",
+    "cap": 40
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Blue_(game)/Yellow"
+  },
+  {
+   "after": "saffron-city",
+   "boss": {
+    "name": "Jessie & James (Silph Co.)",
+    "kind": "story",
+    "cap": 31
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Team_Rocket_trio"
+  },
+  {
+   "after": "saffron-city",
+   "boss": {
+    "name": "Giovanni (Silph Co.)",
+    "kind": "story",
+    "cap": 41
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Giovanni"
+  },
+  {
+   "after": "route-23",
+   "boss": {
+    "name": "Rival Blue (Route 22, second)",
+    "kind": "story",
+    "cap": 53
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Blue_(game)/Yellow"
+  }
+ ],
+ "gold-silver": [
+  {
+   "after": "cherrygrove-city",
+   "boss": {
+    "name": "Rival Silver (Cherrygrove City)",
+    "kind": "story",
+    "cap": 5
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Silver_(game)"
+  },
+  {
+   "after": "slowpoke-well",
+   "boss": {
+    "name": "Proton (Slowpoke Well)",
+    "kind": "story",
+    "cap": 14
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Proton"
+  },
+  {
+   "after": "ilex-forest",
+   "boss": {
+    "name": "Rival Silver (Azalea Town)",
+    "kind": "story",
+    "cap": 16
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Silver_(game)"
+  },
+  {
+   "after": "burned-tower",
+   "boss": {
+    "name": "Rival Silver (Burned Tower)",
+    "kind": "story",
+    "cap": 22
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Silver_(game)"
+  },
+  {
+   "after": "team-rocket-hq",
+   "boss": {
+    "name": "Petrel (Team Rocket HQ)",
+    "kind": "story",
+    "cap": 24
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Petrel"
+  },
+  {
+   "after": "team-rocket-hq",
+   "boss": {
+    "name": "Ariana (Team Rocket HQ)",
+    "kind": "story",
+    "cap": 25
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Ariana"
+  },
+  {
+   "after": "route-44",
+   "boss": {
+    "name": "Petrel (Radio Tower)",
+    "kind": "story",
+    "cap": 32
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Petrel"
+  },
+  {
+   "after": "route-44",
+   "boss": {
+    "name": "Rival Silver (Goldenrod Underground)",
+    "kind": "story",
+    "cap": 32
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Silver_(game)"
+  },
+  {
+   "after": "route-44",
+   "boss": {
+    "name": "Proton (Radio Tower)",
+    "kind": "story",
+    "cap": 36
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Proton"
+  },
+  {
+   "after": "route-44",
+   "boss": {
+    "name": "Ariana (Radio Tower)",
+    "kind": "story",
+    "cap": 32
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Ariana"
+  },
+  {
+   "after": "route-44",
+   "boss": {
+    "name": "Archer (Radio Tower)",
+    "kind": "story",
+    "cap": 35
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Archer"
+  },
+  {
+   "after": "victory-road",
+   "boss": {
+    "name": "Rival Silver (Victory Road)",
+    "kind": "story",
+    "cap": 38
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Silver_(game)"
+  },
+  {
+   "after": "mt-moon",
+   "boss": {
+    "name": "Rival Silver (Mt. Moon)",
+    "kind": "story",
+    "cap": 45,
+    "optional": true
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Silver_(game)"
+  },
+  {
+   "after": "mt-silver",
+   "boss": {
+    "name": "Red (Mt. Silver)",
+    "kind": "story",
+    "cap": 81
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Red_(game)"
+  }
+ ],
+ "crystal": [
+  {
+   "after": "cherrygrove-city",
+   "boss": {
+    "name": "Rival Silver (Cherrygrove City)",
+    "kind": "story",
+    "cap": 5
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Silver_(game)"
+  },
+  {
+   "after": "slowpoke-well",
+   "boss": {
+    "name": "Proton (Slowpoke Well)",
+    "kind": "story",
+    "cap": 14
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Proton"
+  },
+  {
+   "after": "ilex-forest",
+   "boss": {
+    "name": "Rival Silver (Azalea Town)",
+    "kind": "story",
+    "cap": 16
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Silver_(game)"
+  },
+  {
+   "after": "burned-tower",
+   "boss": {
+    "name": "Rival Silver (Burned Tower)",
+    "kind": "story",
+    "cap": 22
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Silver_(game)"
+  },
+  {
+   "after": "team-rocket-hq",
+   "boss": {
+    "name": "Petrel (Team Rocket HQ)",
+    "kind": "story",
+    "cap": 24
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Petrel"
+  },
+  {
+   "after": "team-rocket-hq",
+   "boss": {
+    "name": "Ariana (Team Rocket HQ)",
+    "kind": "story",
+    "cap": 25
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Ariana"
+  },
+  {
+   "after": "route-44",
+   "boss": {
+    "name": "Petrel (Radio Tower)",
+    "kind": "story",
+    "cap": 32
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Petrel"
+  },
+  {
+   "after": "route-44",
+   "boss": {
+    "name": "Rival Silver (Goldenrod Underground)",
+    "kind": "story",
+    "cap": 32
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Silver_(game)"
+  },
+  {
+   "after": "route-44",
+   "boss": {
+    "name": "Proton (Radio Tower)",
+    "kind": "story",
+    "cap": 36
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Proton"
+  },
+  {
+   "after": "route-44",
+   "boss": {
+    "name": "Ariana (Radio Tower)",
+    "kind": "story",
+    "cap": 32
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Ariana"
+  },
+  {
+   "after": "route-44",
+   "boss": {
+    "name": "Archer (Radio Tower)",
+    "kind": "story",
+    "cap": 35
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Archer"
+  },
+  {
+   "after": "victory-road",
+   "boss": {
+    "name": "Rival Silver (Victory Road)",
+    "kind": "story",
+    "cap": 38
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Silver_(game)"
+  },
+  {
+   "after": "mt-moon",
+   "boss": {
+    "name": "Rival Silver (Mt. Moon)",
+    "kind": "story",
+    "cap": 45,
+    "optional": true
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Silver_(game)"
+  },
+  {
+   "after": "mt-silver",
+   "boss": {
+    "name": "Red (Mt. Silver)",
+    "kind": "story",
+    "cap": 81
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Red_(game)"
+  }
+ ],
+ "ruby-sapphire": [
+  {
+   "after": "route-103",
+   "boss": {
+    "name": "May / Brendan (Route 103)",
+    "kind": "story",
+    "cap": 5
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/May_(game)"
+  },
+  {
+   "after": "route-110",
+   "boss": {
+    "name": "May / Brendan (Route 110)",
+    "kind": "story",
+    "cap": 20
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/May_(game)"
+  },
+  {
+   "after": "route-110",
+   "boss": {
+    "name": "Wally (Mauville City)",
+    "kind": "story",
+    "cap": 16
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Wally"
+  },
+  {
+   "after": "route-115",
+   "boss": {
+    "name": "Maxie (Mt. Chimney)",
+    "kind": "story",
+    "cap": 25,
+    "versions": [
+     "ruby"
+    ]
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Maxie"
+  },
+  {
+   "after": "route-115",
+   "boss": {
+    "name": "Archie (Mt. Chimney)",
+    "kind": "story",
+    "cap": 25,
+    "versions": [
+     "sapphire"
+    ]
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Archie"
+  },
+  {
+   "after": "route-119",
+   "boss": {
+    "name": "May / Brendan (Route 119)",
+    "kind": "story",
+    "cap": 31
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/May_(game)"
+  },
+  {
+   "after": "lilycove-city",
+   "boss": {
+    "name": "May / Brendan (Lilycove City)",
+    "kind": "story",
+    "cap": 34,
+    "optional": true
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/May_(game)"
+  },
+  {
+   "after": "seafloor-cavern",
+   "boss": {
+    "name": "Maxie (Seafloor Cavern)",
+    "kind": "story",
+    "cap": 43,
+    "versions": [
+     "ruby"
+    ]
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Maxie"
+  },
+  {
+   "after": "seafloor-cavern",
+   "boss": {
+    "name": "Archie (Seafloor Cavern)",
+    "kind": "story",
+    "cap": 43,
+    "versions": [
+     "sapphire"
+    ]
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Archie"
+  },
+  {
+   "after": "victory-road",
+   "boss": {
+    "name": "Wally (Victory Road)",
+    "kind": "story",
+    "cap": 45
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Wally"
+  }
+ ],
+ "emerald": [
+  {
+   "after": "route-103",
+   "boss": {
+    "name": "May / Brendan (Route 103)",
+    "kind": "story",
+    "cap": 5
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/May_(game)"
+  },
+  {
+   "after": "route-110",
+   "boss": {
+    "name": "May / Brendan (Route 110)",
+    "kind": "story",
+    "cap": 20
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/May_(game)"
+  },
+  {
+   "after": "route-110",
+   "boss": {
+    "name": "Wally (Mauville City)",
+    "kind": "story",
+    "cap": 16
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Wally"
+  },
+  {
+   "after": "route-115",
+   "boss": {
+    "name": "Maxie (Mt. Chimney)",
+    "kind": "story",
+    "cap": 25
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Maxie"
+  },
+  {
+   "after": "route-119",
+   "boss": {
+    "name": "May / Brendan (Route 119)",
+    "kind": "story",
+    "cap": 31
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/May_(game)"
+  },
+  {
+   "after": "lilycove-city",
+   "boss": {
+    "name": "May / Brendan (Lilycove City)",
+    "kind": "story",
+    "cap": 34,
+    "optional": true
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/May_(game)"
+  },
+  {
+   "after": "magma-hideout",
+   "boss": {
+    "name": "Maxie (Magma Hideout)",
+    "kind": "story",
+    "cap": 39
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Maxie"
+  },
+  {
+   "after": "route-125",
+   "boss": {
+    "name": "Maxie & Tabitha (Space Center)",
+    "kind": "story",
+    "cap": 44
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Maxie"
+  },
+  {
+   "after": "seafloor-cavern",
+   "boss": {
+    "name": "Archie (Seafloor Cavern)",
+    "kind": "story",
+    "cap": 43
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Archie"
+  },
+  {
+   "after": "victory-road",
+   "boss": {
+    "name": "Wally (Victory Road)",
+    "kind": "story",
+    "cap": 45
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Wally"
+  },
+  {
+   "after": "marine-cave",
+   "boss": {
+    "name": "Steven (Meteor Falls)",
+    "kind": "story",
+    "cap": 78
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Steven_Stone"
+  }
+ ],
+ "firered-leafgreen": [
+  {
+   "after": "pallet-town",
+   "boss": {
+    "name": "Rival Blue (Oak's Lab)",
+    "kind": "story",
+    "cap": 5
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Blue_(game)/FireRed_and_LeafGreen"
+  },
+  {
+   "after": "route-22",
+   "boss": {
+    "name": "Rival Blue (Route 22, first)",
+    "kind": "story",
+    "cap": 9,
+    "optional": true
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Blue_(game)/FireRed_and_LeafGreen"
+  },
+  {
+   "after": "cerulean-city",
+   "boss": {
+    "name": "Rival Blue (Cerulean City)",
+    "kind": "story",
+    "cap": 18
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Blue_(game)/FireRed_and_LeafGreen"
+  },
+  {
+   "after": "vermilion-city",
+   "boss": {
+    "name": "Rival Blue (S.S. Anne)",
+    "kind": "story",
+    "cap": 20
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Blue_(game)/FireRed_and_LeafGreen"
+  },
+  {
+   "after": "pokemon-tower",
+   "boss": {
+    "name": "Rival Blue (Pokémon Tower)",
+    "kind": "story",
+    "cap": 25
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Blue_(game)/FireRed_and_LeafGreen"
+  },
+  {
+   "after": "celadon-city",
+   "boss": {
+    "name": "Giovanni (Rocket Hideout)",
+    "kind": "story",
+    "cap": 29
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Giovanni"
+  },
+  {
+   "after": "saffron-city",
+   "boss": {
+    "name": "Rival Blue (Silph Co.)",
+    "kind": "story",
+    "cap": 40
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Blue_(game)/FireRed_and_LeafGreen"
+  },
+  {
+   "after": "saffron-city",
+   "boss": {
+    "name": "Giovanni (Silph Co.)",
+    "kind": "story",
+    "cap": 41
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Giovanni"
+  },
+  {
+   "after": "route-23",
+   "boss": {
+    "name": "Rival Blue (Route 22, second)",
+    "kind": "story",
+    "cap": 53
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Blue_(game)/FireRed_and_LeafGreen"
+  }
+ ],
+ "diamond-pearl": [
+  {
+   "after": "route-203",
+   "boss": {
+    "name": "Barry (Route 203)",
+    "kind": "story",
+    "cap": 9
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Barry_(game)/Diamond_and_Pearl"
+  },
+  {
+   "after": "valley-windworks",
+   "boss": {
+    "name": "Mars (Valley Windworks)",
+    "kind": "story",
+    "cap": 16
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Mars"
+  },
+  {
+   "after": "route-206",
+   "boss": {
+    "name": "Jupiter (Galactic Eterna Building)",
+    "kind": "story",
+    "cap": 20
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Jupiter"
+  },
+  {
+   "after": "hearthome-city",
+   "boss": {
+    "name": "Barry (Hearthome City)",
+    "kind": "story",
+    "cap": 21
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Barry_(game)/Diamond_and_Pearl"
+  },
+  {
+   "after": "route-212",
+   "boss": {
+    "name": "Barry (Pastoria City)",
+    "kind": "story",
+    "cap": 28
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Barry_(game)/Diamond_and_Pearl"
+  },
+  {
+   "after": "canalave-city",
+   "boss": {
+    "name": "Barry (Canalave City)",
+    "kind": "story",
+    "cap": 35
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Barry_(game)/Diamond_and_Pearl"
+  },
+  {
+   "after": "lake-valor",
+   "boss": {
+    "name": "Saturn (Lake Valor)",
+    "kind": "story",
+    "cap": 37
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Saturn"
+  },
+  {
+   "after": "lake-valor",
+   "boss": {
+    "name": "Mars (Lake Verity)",
+    "kind": "story",
+    "cap": 39
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Mars"
+  },
+  {
+   "after": "lake-acuity",
+   "boss": {
+    "name": "Cyrus (Team Galactic HQ)",
+    "kind": "story",
+    "cap": 43
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Cyrus"
+  },
+  {
+   "after": "lake-acuity",
+   "boss": {
+    "name": "Saturn (Team Galactic HQ)",
+    "kind": "story",
+    "cap": 40
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Saturn"
+  },
+  {
+   "after": "spear-pillar",
+   "boss": {
+    "name": "Mars & Jupiter (Spear Pillar)",
+    "kind": "story",
+    "cap": 46
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Mars"
+  },
+  {
+   "after": "spear-pillar",
+   "boss": {
+    "name": "Cyrus (Spear Pillar)",
+    "kind": "story",
+    "cap": 48
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Cyrus"
+  },
+  {
+   "after": "victory-road",
+   "boss": {
+    "name": "Barry (Pokémon League)",
+    "kind": "story",
+    "cap": 53
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Barry_(game)/Diamond_and_Pearl"
+  }
+ ],
+ "platinum": [
+  {
+   "after": "route-201",
+   "boss": {
+    "name": "Barry (Route 201)",
+    "kind": "story",
+    "cap": 5
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Barry_(game)/Platinum"
+  },
+  {
+   "after": "route-203",
+   "boss": {
+    "name": "Barry (Route 203)",
+    "kind": "story",
+    "cap": 9
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Barry_(game)/Platinum"
+  },
+  {
+   "after": "valley-windworks",
+   "boss": {
+    "name": "Mars (Valley Windworks)",
+    "kind": "story",
+    "cap": 17
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Mars"
+  },
+  {
+   "after": "old-chateau",
+   "boss": {
+    "name": "Jupiter (Galactic Eterna Building)",
+    "kind": "story",
+    "cap": 23
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Jupiter"
+  },
+  {
+   "after": "route-209",
+   "boss": {
+    "name": "Barry (Route 209)",
+    "kind": "story",
+    "cap": 27
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Barry_(game)/Platinum"
+  },
+  {
+   "after": "pastoria-city",
+   "boss": {
+    "name": "Barry (Pastoria City)",
+    "kind": "story",
+    "cap": 36
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Barry_(game)/Platinum"
+  },
+  {
+   "after": "celestic-town",
+   "boss": {
+    "name": "Cyrus (Celestic Town)",
+    "kind": "story",
+    "cap": 36
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Cyrus"
+  },
+  {
+   "after": "canalave-city",
+   "boss": {
+    "name": "Barry (Canalave City)",
+    "kind": "story",
+    "cap": 38
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Barry_(game)/Platinum"
+  },
+  {
+   "after": "lake-valor",
+   "boss": {
+    "name": "Saturn (Lake Valor)",
+    "kind": "story",
+    "cap": 40
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Saturn"
+  },
+  {
+   "after": "lake-valor",
+   "boss": {
+    "name": "Mars (Lake Verity)",
+    "kind": "story",
+    "cap": 40
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Mars"
+  },
+  {
+   "after": "lake-acuity",
+   "boss": {
+    "name": "Cyrus (Team Galactic HQ)",
+    "kind": "story",
+    "cap": 46
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Cyrus"
+  },
+  {
+   "after": "lake-acuity",
+   "boss": {
+    "name": "Saturn (Team Galactic HQ)",
+    "kind": "story",
+    "cap": 44
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Saturn"
+  },
+  {
+   "after": "spear-pillar",
+   "boss": {
+    "name": "Mars & Jupiter (Spear Pillar)",
+    "kind": "story",
+    "cap": 46
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Mars"
+  },
+  {
+   "after": "distortion-world",
+   "boss": {
+    "name": "Cyrus (Distortion World)",
+    "kind": "story",
+    "cap": 48
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Cyrus"
+  },
+  {
+   "after": "victory-road",
+   "boss": {
+    "name": "Barry (Pokémon League)",
+    "kind": "story",
+    "cap": 51
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Barry_(game)/Platinum"
+  }
+ ],
+ "heartgold-soulsilver": [
+  {
+   "after": "cherrygrove-city",
+   "boss": {
+    "name": "Rival Silver (Cherrygrove City)",
+    "kind": "story",
+    "cap": 5
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Silver_(game)"
+  },
+  {
+   "after": "slowpoke-well",
+   "boss": {
+    "name": "Proton (Slowpoke Well)",
+    "kind": "story",
+    "cap": 12
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Proton"
+  },
+  {
+   "after": "ilex-forest",
+   "boss": {
+    "name": "Rival Silver (Azalea Town)",
+    "kind": "story",
+    "cap": 18
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Silver_(game)"
+  },
+  {
+   "after": "burned-tower",
+   "boss": {
+    "name": "Rival Silver (Burned Tower)",
+    "kind": "story",
+    "cap": 22
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Silver_(game)"
+  },
+  {
+   "after": "team-rocket-hq",
+   "boss": {
+    "name": "Petrel (Team Rocket HQ)",
+    "kind": "story",
+    "cap": 24
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Petrel"
+  },
+  {
+   "after": "team-rocket-hq",
+   "boss": {
+    "name": "Ariana (Team Rocket HQ)",
+    "kind": "story",
+    "cap": 27
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Ariana"
+  },
+  {
+   "after": "route-44",
+   "boss": {
+    "name": "Petrel (Radio Tower)",
+    "kind": "story",
+    "cap": 32
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Petrel"
+  },
+  {
+   "after": "route-44",
+   "boss": {
+    "name": "Rival Silver (Goldenrod Tunnel)",
+    "kind": "story",
+    "cap": 34
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Silver_(game)"
+  },
+  {
+   "after": "route-44",
+   "boss": {
+    "name": "Proton (Radio Tower)",
+    "kind": "story",
+    "cap": 33
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Proton"
+  },
+  {
+   "after": "route-44",
+   "boss": {
+    "name": "Ariana (Radio Tower)",
+    "kind": "story",
+    "cap": 32
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Ariana"
+  },
+  {
+   "after": "route-44",
+   "boss": {
+    "name": "Archer (Radio Tower)",
+    "kind": "story",
+    "cap": 38
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Archer"
+  },
+  {
+   "after": "victory-road",
+   "boss": {
+    "name": "Rival Silver (Victory Road)",
+    "kind": "story",
+    "cap": 40
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Silver_(game)"
+  },
+  {
+   "after": "mt-moon",
+   "boss": {
+    "name": "Rival Silver (Mt. Moon)",
+    "kind": "story",
+    "cap": 50,
+    "optional": true
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Silver_(game)"
+  },
+  {
+   "after": "mt-silver",
+   "boss": {
+    "name": "Red (Mt. Silver)",
+    "kind": "story",
+    "cap": 88
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Red_(game)"
+  }
+ ],
+ "black-white": [
+  {
+   "after": "nuvema-town",
+   "boss": {
+    "name": "Bianca (Nuvema Town)",
+    "kind": "story",
+    "cap": 5
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Bianca"
+  },
+  {
+   "after": "nuvema-town",
+   "boss": {
+    "name": "Cheren (Nuvema Town)",
+    "kind": "story",
+    "cap": 5
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Cheren"
+  },
+  {
+   "after": "route-1",
+   "boss": {
+    "name": "N (Accumula Town)",
+    "kind": "story",
+    "cap": 7
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/N"
+  },
+  {
+   "after": "route-2",
+   "boss": {
+    "name": "Bianca (Route 2)",
+    "kind": "story",
+    "cap": 7
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Bianca"
+  },
+  {
+   "after": "dreamyard",
+   "boss": {
+    "name": "Cheren (Striaton City)",
+    "kind": "story",
+    "cap": 8
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Cheren"
+  },
+  {
+   "after": "route-3",
+   "boss": {
+    "name": "Cheren (Route 3)",
+    "kind": "story",
+    "cap": 14
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Cheren"
+  },
+  {
+   "after": "nacrene-city",
+   "boss": {
+    "name": "N (Nacrene City)",
+    "kind": "story",
+    "cap": 13
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/N"
+  },
+  {
+   "after": "route-4",
+   "boss": {
+    "name": "Bianca (Castelia City)",
+    "kind": "story",
+    "cap": 20
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Bianca"
+  },
+  {
+   "after": "route-4",
+   "boss": {
+    "name": "Cheren (Route 4)",
+    "kind": "story",
+    "cap": 22
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Cheren"
+  },
+  {
+   "after": "relic-castle",
+   "boss": {
+    "name": "N (Nimbasa City)",
+    "kind": "story",
+    "cap": 22
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/N"
+  },
+  {
+   "after": "route-5",
+   "boss": {
+    "name": "Cheren (Route 5)",
+    "kind": "story",
+    "cap": 26
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Cheren"
+  },
+  {
+   "after": "route-6",
+   "boss": {
+    "name": "Bianca (Driftveil City)",
+    "kind": "story",
+    "cap": 28
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Bianca"
+  },
+  {
+   "after": "chargestone-cave",
+   "boss": {
+    "name": "N (Chargestone Cave)",
+    "kind": "story",
+    "cap": 28
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/N"
+  },
+  {
+   "after": "twist-mountain",
+   "boss": {
+    "name": "Cheren (Twist Mountain)",
+    "kind": "story",
+    "cap": 35
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Cheren"
+  },
+  {
+   "after": "route-8",
+   "boss": {
+    "name": "Bianca (Route 8)",
+    "kind": "story",
+    "cap": 40
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Bianca"
+  },
+  {
+   "after": "route-10",
+   "boss": {
+    "name": "Cheren (Route 10)",
+    "kind": "story",
+    "cap": 45
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Cheren"
+  }
+ ],
+ "black-2-white-2": [
+  {
+   "after": "aspertia-city",
+   "boss": {
+    "name": "Hugh (Aspertia City)",
+    "kind": "story",
+    "cap": 5
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Hugh"
+  },
+  {
+   "after": "floccesy-ranch",
+   "boss": {
+    "name": "Hugh (Floccesy Ranch)",
+    "kind": "story",
+    "cap": 8
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Hugh"
+  },
+  {
+   "after": "route-4",
+   "boss": {
+    "name": "Colress (Route 4)",
+    "kind": "story",
+    "cap": 23
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Colress"
+  },
+  {
+   "after": "relic-passage",
+   "boss": {
+    "name": "Hugh (Pokémon World Tournament)",
+    "kind": "story",
+    "cap": 25
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Hugh"
+  },
+  {
+   "after": "relic-passage",
+   "boss": {
+    "name": "Cheren (Pokémon World Tournament)",
+    "kind": "story",
+    "cap": 25
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Cheren"
+  },
+  {
+   "after": "relic-passage",
+   "boss": {
+    "name": "Colress (Pokémon World Tournament)",
+    "kind": "story",
+    "cap": 25
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Colress"
+  },
+  {
+   "after": "undella-town",
+   "boss": {
+    "name": "Hugh (Undella Town)",
+    "kind": "story",
+    "cap": 41
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Hugh"
+  },
+  {
+   "after": "giant-chasm",
+   "boss": {
+    "name": "Colress (Plasma Frigate)",
+    "kind": "story",
+    "cap": 52
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Colress"
+  },
+  {
+   "after": "giant-chasm",
+   "boss": {
+    "name": "Ghetsis (Giant Chasm)",
+    "kind": "story",
+    "cap": 52
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Ghetsis"
+  },
+  {
+   "after": "victory-road",
+   "boss": {
+    "name": "Hugh (Victory Road)",
+    "kind": "story",
+    "cap": 57
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Hugh"
+  }
+ ],
+ "x-y": [
+  {
+   "after": "aquacorde-town",
+   "boss": {
+    "name": "Shauna (Aquacorde Town)",
+    "kind": "story",
+    "cap": 5
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Shauna"
+  },
+  {
+   "after": "route-5",
+   "boss": {
+    "name": "Tierno (Route 5)",
+    "kind": "story",
+    "cap": 12
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Tierno"
+  },
+  {
+   "after": "route-7",
+   "boss": {
+    "name": "Tierno & Trevor (Route 7)",
+    "kind": "story",
+    "cap": 16
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Tierno"
+  },
+  {
+   "after": "tower-of-mastery",
+   "boss": {
+    "name": "Serena / Calem (Tower of Mastery)",
+    "kind": "story",
+    "cap": 30
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Serena_(game)"
+  },
+  {
+   "after": "azure-bay",
+   "boss": {
+    "name": "Serena / Calem (Coumarine City)",
+    "kind": "story",
+    "cap": 33
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Serena_(game)"
+  },
+  {
+   "after": "route-14",
+   "boss": {
+    "name": "Serena / Calem (Route 14)",
+    "kind": "story",
+    "cap": 37
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Serena_(game)"
+  },
+  {
+   "after": "route-17",
+   "boss": {
+    "name": "Serena / Calem (Anistar City)",
+    "kind": "story",
+    "cap": 46
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Serena_(game)"
+  },
+  {
+   "after": "team-flare-secret-hq",
+   "boss": {
+    "name": "Lysandre (Lysandre Labs)",
+    "kind": "story",
+    "cap": 49
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Lysandre"
+  },
+  {
+   "after": "team-flare-secret-hq",
+   "boss": {
+    "name": "Lysandre (Team Flare Secret HQ)",
+    "kind": "story",
+    "cap": 51
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Lysandre"
+  },
+  {
+   "after": "team-flare-secret-hq",
+   "boss": {
+    "name": "Lysandre (Team Flare Secret HQ, final)",
+    "kind": "story",
+    "cap": 53
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Lysandre"
+  },
+  {
+   "after": "route-19",
+   "boss": {
+    "name": "Shauna (Route 19)",
+    "kind": "story",
+    "cap": 51
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Shauna"
+  },
+  {
+   "after": "route-19",
+   "boss": {
+    "name": "Tierno (Route 19)",
+    "kind": "story",
+    "cap": 52
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Tierno"
+  },
+  {
+   "after": "route-19",
+   "boss": {
+    "name": "Trevor (Route 19)",
+    "kind": "story",
+    "cap": 51
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Trevor"
+  },
+  {
+   "after": "victory-road",
+   "boss": {
+    "name": "Serena / Calem (Victory Road)",
+    "kind": "story",
+    "cap": 61
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Serena_(game)"
+  },
+  {
+   "after": "friend-safari",
+   "boss": {
+    "name": "AZ (Lumiose City)",
+    "kind": "story",
+    "cap": 60
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/AZ"
+  }
+ ],
+ "omega-ruby-alpha-sapphire": [
+  {
+   "after": "route-103",
+   "boss": {
+    "name": "May / Brendan (Route 103)",
+    "kind": "story",
+    "cap": 5
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/May_(game)"
+  },
+  {
+   "after": "route-110",
+   "boss": {
+    "name": "May / Brendan (Route 110)",
+    "kind": "story",
+    "cap": 20
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/May_(game)"
+  },
+  {
+   "after": "route-110",
+   "boss": {
+    "name": "Wally (Mauville City)",
+    "kind": "story",
+    "cap": 17
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Wally"
+  },
+  {
+   "after": "route-115",
+   "boss": {
+    "name": "Maxie (Mt. Chimney)",
+    "kind": "story",
+    "cap": 27,
+    "versions": [
+     "omega-ruby"
+    ]
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Maxie"
+  },
+  {
+   "after": "route-115",
+   "boss": {
+    "name": "Archie (Mt. Chimney)",
+    "kind": "story",
+    "cap": 27,
+    "versions": [
+     "alpha-sapphire"
+    ]
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Archie"
+  },
+  {
+   "after": "route-119",
+   "boss": {
+    "name": "May / Brendan (Route 119)",
+    "kind": "story",
+    "cap": 33
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/May_(game)"
+  },
+  {
+   "after": "lilycove-city",
+   "boss": {
+    "name": "May / Brendan (Lilycove City)",
+    "kind": "story",
+    "cap": 39
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/May_(game)"
+  },
+  {
+   "after": "seafloor-cavern",
+   "boss": {
+    "name": "Maxie (Seafloor Cavern)",
+    "kind": "story",
+    "cap": 43,
+    "versions": [
+     "omega-ruby"
+    ]
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Maxie"
+  },
+  {
+   "after": "seafloor-cavern",
+   "boss": {
+    "name": "Archie (Seafloor Cavern)",
+    "kind": "story",
+    "cap": 43,
+    "versions": [
+     "alpha-sapphire"
+    ]
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Archie"
+  },
+  {
+   "after": "victory-road",
+   "boss": {
+    "name": "Wally (Victory Road)",
+    "kind": "story",
+    "cap": 48
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Wally"
+  }
+ ],
+ "sun-moon": [
+  {
+   "after": "iki-town",
+   "boss": {
+    "name": "Hau (Iki Town)",
+    "kind": "story",
+    "cap": 5
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Hau"
+  },
+  {
+   "after": "iki-town",
+   "boss": {
+    "name": "Hau (Iki Town festival)",
+    "kind": "story",
+    "cap": 7
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Hau"
+  },
+  {
+   "after": "verdant-cavern",
+   "boss": {
+    "name": "Totem Gumshoos",
+    "cap": 12,
+    "versions": [
+     "sun"
+    ]
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Verdant_Cavern"
+  },
+  {
+   "after": "verdant-cavern",
+   "boss": {
+    "name": "Totem Raticate",
+    "cap": 12,
+    "versions": [
+     "moon"
+    ]
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Verdant_Cavern"
+  },
+  {
+   "after": "route-3",
+   "boss": {
+    "name": "Hau (Route 3)",
+    "kind": "story",
+    "cap": 14
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Hau"
+  },
+  {
+   "after": "paniola-town",
+   "boss": {
+    "name": "Hau (Paniola Town)",
+    "kind": "story",
+    "cap": 17
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Hau"
+  },
+  {
+   "after": "route-5",
+   "boss": {
+    "name": "Gladion (Route 5)",
+    "kind": "story",
+    "cap": 18
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Gladion"
+  },
+  {
+   "after": "brooklet-hill",
+   "boss": {
+    "name": "Totem Wishiwashi",
+    "cap": 20
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Brooklet_Hill"
+  },
+  {
+   "after": "route-6",
+   "boss": {
+    "name": "Battle Royal (Hau, Gladion, Masked Royal)",
+    "kind": "story",
+    "cap": 19
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Battle_Royal_Dome"
+  },
+  {
+   "after": "wela-volcano-park",
+   "boss": {
+    "name": "Totem Salazzle",
+    "cap": 22
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Wela_Volcano_Park"
+  },
+  {
+   "after": "lush-jungle",
+   "boss": {
+    "name": "Totem Lurantis",
+    "cap": 24
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Lush_Jungle"
+  },
+  {
+   "after": "malie-city",
+   "boss": {
+    "name": "Hau (Malie City)",
+    "kind": "story",
+    "cap": 29
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Hau"
+  },
+  {
+   "after": "mount-hokulani",
+   "boss": {
+    "name": "Totem Vikavolt",
+    "cap": 29
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Hokulani_Observatory"
+  },
+  {
+   "after": "mount-hokulani",
+   "boss": {
+    "name": "Guzma (Malie Garden)",
+    "kind": "story",
+    "cap": 31
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Guzma"
+  },
+  {
+   "after": "thrifty-megamart",
+   "boss": {
+    "name": "Totem Mimikyu",
+    "cap": 33
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Thrifty_Megamart_(Abandoned_Site)"
+  },
+  {
+   "after": "route-17",
+   "boss": {
+    "name": "Guzma (Shady House)",
+    "kind": "story",
+    "cap": 37
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Guzma"
+  },
+  {
+   "after": "route-17",
+   "boss": {
+    "name": "Gladion (Aether House)",
+    "kind": "story",
+    "cap": 38
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Gladion"
+  },
+  {
+   "after": "seafolk-village",
+   "boss": {
+    "name": "Guzma (Aether Paradise)",
+    "kind": "story",
+    "cap": 41
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Guzma"
+  },
+  {
+   "after": "seafolk-village",
+   "boss": {
+    "name": "Lusamine (Aether Paradise)",
+    "kind": "story",
+    "cap": 41
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Lusamine"
+  },
+  {
+   "after": "vast-poni-canyon",
+   "boss": {
+    "name": "Totem Kommo-o",
+    "cap": 45
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Vast_Poni_Canyon"
+  },
+  {
+   "after": "altar-of-the-moone",
+   "boss": {
+    "name": "Lusamine (Ultra Deep Sea)",
+    "kind": "story",
+    "cap": 50
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Lusamine"
+  },
+  {
+   "after": "mount-lanakila",
+   "boss": {
+    "name": "Gladion (Mount Lanakila)",
+    "kind": "story",
+    "cap": 53
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Gladion"
+  },
+  {
+   "after": "mount-lanakila",
+   "boss": {
+    "name": "Hau (Mount Lanakila)",
+    "kind": "story",
+    "cap": 54
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Hau"
+  }
+ ],
+ "ultra-sun-ultra-moon": [
+  {
+   "after": "route-1",
+   "boss": {
+    "name": "Hau (Route 1)",
+    "kind": "story",
+    "cap": 5
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Hau"
+  },
+  {
+   "after": "mahalo-trail",
+   "boss": {
+    "name": "Hau (Iki Town festival)",
+    "kind": "story",
+    "cap": 7
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Hau"
+  },
+  {
+   "after": "verdant-cavern",
+   "boss": {
+    "name": "Totem Gumshoos",
+    "cap": 12,
+    "versions": [
+     "ultra-sun"
+    ]
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Verdant_Cavern"
+  },
+  {
+   "after": "verdant-cavern",
+   "boss": {
+    "name": "Totem Raticate",
+    "cap": 12,
+    "versions": [
+     "ultra-moon"
+    ]
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Verdant_Cavern"
+  },
+  {
+   "after": "route-3",
+   "boss": {
+    "name": "Hau (Route 3)",
+    "kind": "story",
+    "cap": 13
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Hau"
+  },
+  {
+   "after": "paniola-town",
+   "boss": {
+    "name": "Hau (Paniola Town)",
+    "kind": "story",
+    "cap": 16
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Hau"
+  },
+  {
+   "after": "route-5",
+   "boss": {
+    "name": "Gladion (Route 5)",
+    "kind": "story",
+    "cap": 18
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Gladion"
+  },
+  {
+   "after": "brooklet-hill",
+   "boss": {
+    "name": "Totem Araquanid",
+    "cap": 20
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Brooklet_Hill"
+  },
+  {
+   "after": "royal-avenue",
+   "boss": {
+    "name": "Battle Royal (Hau, Gladion, Masked Royal)",
+    "kind": "story",
+    "cap": 20
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Battle_Royal_Dome"
+  },
+  {
+   "after": "wela-volcano-park",
+   "boss": {
+    "name": "Totem Marowak",
+    "cap": 22
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Wela_Volcano_Park"
+  },
+  {
+   "after": "lush-jungle",
+   "boss": {
+    "name": "Totem Lurantis",
+    "cap": 24
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Lush_Jungle"
+  },
+  {
+   "after": "malie-city",
+   "boss": {
+    "name": "Hau (Malie City)",
+    "kind": "story",
+    "cap": 30
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Hau"
+  },
+  {
+   "after": "mount-hokulani",
+   "boss": {
+    "name": "Totem Togedemaru",
+    "cap": 33
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Hokulani_Observatory"
+  },
+  {
+   "after": "mount-hokulani",
+   "boss": {
+    "name": "Guzma (Malie Garden)",
+    "kind": "story",
+    "cap": 34
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Guzma"
+  },
+  {
+   "after": "thrifty-megamart",
+   "boss": {
+    "name": "Totem Mimikyu",
+    "cap": 35
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Thrifty_Megamart_(Abandoned_Site)"
+  },
+  {
+   "after": "route-17",
+   "boss": {
+    "name": "Guzma (Shady House)",
+    "kind": "story",
+    "cap": 41
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Guzma"
+  },
+  {
+   "after": "route-17",
+   "boss": {
+    "name": "Gladion (Aether House)",
+    "kind": "story",
+    "cap": 43
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Gladion"
+  },
+  {
+   "after": "seafolk-village",
+   "boss": {
+    "name": "Guzma (Aether Paradise)",
+    "kind": "story",
+    "cap": 45
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Guzma"
+  },
+  {
+   "after": "seafolk-village",
+   "boss": {
+    "name": "Lusamine (Aether Paradise)",
+    "kind": "story",
+    "cap": 47
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Lusamine"
+  },
+  {
+   "after": "vast-poni-canyon",
+   "boss": {
+    "name": "Totem Kommo-o",
+    "cap": 49
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Vast_Poni_Canyon"
+  },
+  {
+   "after": "ultra-megalopolis",
+   "boss": {
+    "name": "Ultra Necrozma",
+    "kind": "story",
+    "cap": 60
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Megalo_Tower"
+  },
+  {
+   "after": "ultra-megalopolis",
+   "boss": {
+    "name": "Totem Ribombee",
+    "cap": 55
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Seafolk_Village"
+  },
+  {
+   "after": "mount-lanakila",
+   "boss": {
+    "name": "Gladion (Mount Lanakila)",
+    "kind": "story",
+    "cap": 55
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Gladion"
+  },
+  {
+   "after": "team-rockets-castle",
+   "boss": {
+    "name": "Giovanni (Rainbow Rocket)",
+    "kind": "story",
+    "cap": 70
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Giovanni"
+  }
+ ],
+ "lets-go-pikachu-eevee": [
+  {
+   "after": "pallet-town",
+   "boss": {
+    "name": "Trace (Oak's Lab)",
+    "kind": "story",
+    "cap": 6
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Trace_(game)"
+  },
+  {
+   "after": "route-22",
+   "boss": {
+    "name": "Trace (Route 22, first)",
+    "kind": "story",
+    "cap": 7,
+    "optional": true
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Trace_(game)"
+  },
+  {
+   "after": "mt-moon",
+   "boss": {
+    "name": "Jessie & James (Mt. Moon)",
+    "kind": "story",
+    "cap": 12
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Team_Rocket_trio"
+  },
+  {
+   "after": "cerulean-city",
+   "boss": {
+    "name": "Trace (Cerulean City)",
+    "kind": "story",
+    "cap": 13
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Trace_(game)"
+  },
+  {
+   "after": "vermilion-city",
+   "boss": {
+    "name": "Trace (S.S. Anne)",
+    "kind": "story",
+    "cap": 21
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Trace_(game)"
+  },
+  {
+   "after": "pokemon-tower",
+   "boss": {
+    "name": "Trace (Pokémon Tower)",
+    "kind": "story",
+    "cap": 28
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Trace_(game)"
+  },
+  {
+   "after": "celadon-city",
+   "boss": {
+    "name": "Jessie & James (Rocket Hideout)",
+    "kind": "story",
+    "cap": 32
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Team_Rocket_trio"
+  },
+  {
+   "after": "celadon-city",
+   "boss": {
+    "name": "Archer (Rocket Hideout)",
+    "kind": "story",
+    "cap": 33
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Archer"
+  },
+  {
+   "after": "celadon-city",
+   "boss": {
+    "name": "Giovanni (Rocket Hideout)",
+    "kind": "story",
+    "cap": 35
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Giovanni"
+  },
+  {
+   "after": "saffron-city",
+   "boss": {
+    "name": "Jessie & James (Pokémon Tower)",
+    "kind": "story",
+    "cap": 34
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Team_Rocket_trio"
+  },
+  {
+   "after": "saffron-city",
+   "boss": {
+    "name": "Blue (Silph Co.)",
+    "kind": "story",
+    "cap": 40
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Blue_(game)"
+  },
+  {
+   "after": "saffron-city",
+   "boss": {
+    "name": "Archer (Silph Co.)",
+    "kind": "story",
+    "cap": 37
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Archer"
+  },
+  {
+   "after": "saffron-city",
+   "boss": {
+    "name": "Jessie & James (Silph Co.)",
+    "kind": "story",
+    "cap": 36
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Team_Rocket_trio"
+  },
+  {
+   "after": "saffron-city",
+   "boss": {
+    "name": "Giovanni (Silph Co.)",
+    "kind": "story",
+    "cap": 39
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Giovanni"
+  },
+  {
+   "after": "route-23",
+   "boss": {
+    "name": "Trace (Route 22, second)",
+    "kind": "story",
+    "cap": 51
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Trace_(game)"
+  },
+  {
+   "after": "cerulean-cave",
+   "boss": {
+    "name": "Red (Indigo Plateau)",
+    "kind": "story",
+    "cap": 85
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Red_(game)"
+  }
+ ],
+ "sword-shield": [
+  {
+   "after": "postwick",
+   "boss": {
+    "name": "Hop (Postwick)",
+    "kind": "story",
+    "cap": 5
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Hop/Sword_and_Shield"
+  },
+  {
+   "after": "route-2",
+   "boss": {
+    "name": "Hop (Route 2)",
+    "kind": "story",
+    "cap": 8
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Hop/Sword_and_Shield"
+  },
+  {
+   "after": "motostoke",
+   "boss": {
+    "name": "Hop (Motostoke)",
+    "kind": "story",
+    "cap": 14
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Hop/Sword_and_Shield"
+  },
+  {
+   "after": "mine",
+   "boss": {
+    "name": "Bede (Galar Mine)",
+    "kind": "story",
+    "cap": 16
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Bede"
+  },
+  {
+   "after": "route-5",
+   "boss": {
+    "name": "Hop (Route 5)",
+    "kind": "story",
+    "cap": 21
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Hop/Sword_and_Shield"
+  },
+  {
+   "after": "mine-no-2",
+   "boss": {
+    "name": "Bede (Galar Mine No. 2)",
+    "kind": "story",
+    "cap": 23
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Bede"
+  },
+  {
+   "after": "motostoke-outskirts",
+   "boss": {
+    "name": "Marnie (Motostoke)",
+    "kind": "story",
+    "cap": 26
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Marnie"
+  },
+  {
+   "after": "stow-on-side",
+   "boss": {
+    "name": "Hop (Stow-on-Side)",
+    "kind": "story",
+    "cap": 33
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Hop/Sword_and_Shield"
+  },
+  {
+   "after": "glimwood-tangle",
+   "boss": {
+    "name": "Bede (Stow-on-Side)",
+    "kind": "story",
+    "cap": 35
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Bede"
+  },
+  {
+   "after": "route-7",
+   "boss": {
+    "name": "Hop (Route 7)",
+    "kind": "story",
+    "cap": 37
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Hop/Sword_and_Shield"
+  },
+  {
+   "after": "route-9",
+   "boss": {
+    "name": "Hop (Circhester)",
+    "kind": "story",
+    "cap": 41
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Hop/Sword_and_Shield"
+  },
+  {
+   "after": "route-9",
+   "boss": {
+    "name": "Marnie (Route 9)",
+    "kind": "story",
+    "cap": 44
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Marnie"
+  },
+  {
+   "after": "wyndon",
+   "boss": {
+    "name": "Marnie (Champion Cup)",
+    "kind": "story",
+    "cap": 49
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Marnie"
+  },
+  {
+   "after": "wyndon",
+   "boss": {
+    "name": "Hop (Champion Cup)",
+    "kind": "story",
+    "cap": 49
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Hop/Sword_and_Shield"
+  },
+  {
+   "after": "energy-plant",
+   "boss": {
+    "name": "Rose (Energy Plant)",
+    "kind": "story",
+    "cap": 57
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Rose"
+  },
+  {
+   "after": "energy-plant",
+   "boss": {
+    "name": "Eternatus",
+    "kind": "story",
+    "cap": 60
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Tower_summit"
+  },
+  {
+   "after": "battle-tower",
+   "boss": {
+    "name": "Hop (Slumbering Weald)",
+    "kind": "story",
+    "cap": 70
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Hop/Sword_and_Shield"
+  }
+ ],
+ "brilliant-diamond-shining-pearl": [
+  {
+   "after": "route-203",
+   "boss": {
+    "name": "Barry (Route 203)",
+    "kind": "story",
+    "cap": 9
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Barry_(game)"
+  },
+  {
+   "after": "valley-windworks",
+   "boss": {
+    "name": "Mars (Valley Windworks)",
+    "kind": "story",
+    "cap": 16
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Mars"
+  },
+  {
+   "after": "old-chateau",
+   "boss": {
+    "name": "Jupiter (Galactic Eterna Building)",
+    "kind": "story",
+    "cap": 20
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Jupiter"
+  },
+  {
+   "after": "route-208",
+   "boss": {
+    "name": "Barry (Hearthome City)",
+    "kind": "story",
+    "cap": 21
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Barry_(game)"
+  },
+  {
+   "after": "route-212",
+   "boss": {
+    "name": "Barry (Pastoria City)",
+    "kind": "story",
+    "cap": 31
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Barry_(game)"
+  },
+  {
+   "after": "canalave-city",
+   "boss": {
+    "name": "Barry (Canalave City)",
+    "kind": "story",
+    "cap": 37
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Barry_(game)"
+  },
+  {
+   "after": "lake-valor",
+   "boss": {
+    "name": "Saturn (Lake Valor)",
+    "kind": "story",
+    "cap": 37
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Saturn"
+  },
+  {
+   "after": "lake-valor",
+   "boss": {
+    "name": "Mars (Lake Verity)",
+    "kind": "story",
+    "cap": 39
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Mars"
+  },
+  {
+   "after": "lake-acuity",
+   "boss": {
+    "name": "Cyrus (Team Galactic HQ)",
+    "kind": "story",
+    "cap": 43
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Cyrus"
+  },
+  {
+   "after": "lake-acuity",
+   "boss": {
+    "name": "Saturn (Team Galactic HQ)",
+    "kind": "story",
+    "cap": 40
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Saturn"
+  },
+  {
+   "after": "spear-pillar",
+   "boss": {
+    "name": "Mars & Jupiter (Spear Pillar)",
+    "kind": "story",
+    "cap": 46
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Mars"
+  },
+  {
+   "after": "spear-pillar",
+   "boss": {
+    "name": "Cyrus (Spear Pillar)",
+    "kind": "story",
+    "cap": 48
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Cyrus"
+  },
+  {
+   "after": "pokemon-league",
+   "boss": {
+    "name": "Barry (Pokémon League)",
+    "kind": "story",
+    "cap": 55
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Barry_(game)"
+  }
+ ]
+}
