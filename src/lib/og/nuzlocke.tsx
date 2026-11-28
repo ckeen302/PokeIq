@@ -7,7 +7,7 @@ import sharp from "sharp";
 import { fitTitle, ogCard } from "@/lib/og/card";
 import { badgeCount, badgeTotal, graveyard, standing, stats, team, type Run } from "@/lib/nuzlocke/run";
 import { VERSION_LOOK } from "@/lib/nuzlocke/versions";
-import type { GameView } from "@/lib/nuzlocke/view";
+import { artSrc, type GameView } from "@/lib/nuzlocke/view";
 import page from "@/messages/en/nuzlocke-page.json";
 import toolsEn from "@/messages/en/tools.json";
 
@@ -27,7 +27,7 @@ function picture(art: number, size: number, gray = false): Promise<string | null
   if (!p) {
     p = (async () => {
       try {
-        const file = join(process.cwd(), "public/sizes/art/256", `${art}.webp`);
+        const file = join(process.cwd(), "public", artSrc(art));
         if (!existsSync(file)) return null;
         let img = sharp(await readFile(file)).resize(size, size, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } });
         if (gray) img = img.grayscale();

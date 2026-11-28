@@ -139,5 +139,11 @@ export const capFor = (b: NuzBoss, version: string): number | undefined => b.cap
 /** Whether a boss gives a gym badge (not a title such as Champion): badges are what the header counts. */
 export const givesBadge = (b: NuzBoss): boolean => !!b.badge && /badge$/i.test(b.badge.trim());
 
+/**
+ * Pictures kept with the tracker because /sizes/art has none: the forms on Ultra Sun's and Ultra Moon's covers, Dusk Mane
+ * and Dawn Wings Necrozma (by PokéAPI id; the same renders as the rest of the site's).
+ */
+const ART_PATHS: Record<number, string> = { 10155: "/tools/nuzlocke/10155.webp", 10156: "/tools/nuzlocke/10156.webp" };
+
 /** The picture of a Pokémon (or of any species, by number). */
-export const artSrc = (art: number): string => `/sizes/art/256/${art}.webp`;
+export const artSrc = (art: number): string => ART_PATHS[art] ?? `/sizes/art/256/${art}.webp`;
