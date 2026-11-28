@@ -14,6 +14,8 @@ export interface NuzEncounter {
   species: number;
   /** The exact form met, as PokéAPI names it (e.g. "rattata-alola"); absent for the species' default form. It decides the art and the types. */
   form?: string;
+  /** With `form`: the form's PokéAPI pokemon id (10xxx), whose art is /sizes/art/256/{art}.webp. Absent for the default form (its art is the species number). */
+  art?: number;
   kind: EncounterKind;
   /** How it is met, in the game's own words ("Grass", "Surf", "Old Rod", "Headbutt", "Horde"…). */
   method: string;

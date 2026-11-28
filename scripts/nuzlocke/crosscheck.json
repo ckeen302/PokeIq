@@ -1,0 +1,367 @@
+{
+ "about": "Per game. disagreements: PokéAPI vs Serebii species disagreements per area and version, each settled by the game's table on Bulbapedia's location page (source): keep/drop = a PokéAPI row Bulbapedia lists / doesn't list; add/skip = a Serebii-only row Bulbapedia lists / doesn't list; unresolved = no Bulbapedia table, PokéAPI's data stands. bulbapedia: every other wild row Bulbapedia's table doesn't list for that version: drop = Bulbapedia lists the Pokémon there for no version of the game (e.g. an unreleased event table), keep = not on its table (both other sources list it). Written by scripts/nuzlocke/build.ts.",
+ "games": {
+  "firered-leafgreen": {
+   "disagreements": [
+    {
+     "area": "Route 1",
+     "version": "leafgreen",
+     "species": 16,
+     "name": "Pidgey",
+     "pokeapi": true,
+     "serebii": false,
+     "bulbapedia": "yes",
+     "bulbapediaRow": "Grass, Lv. 2-5, 50%",
+     "resolution": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Kanto_Route_1"
+    },
+    {
+     "area": "Icefall Cave",
+     "version": "firered",
+     "species": 194,
+     "name": "Wooper",
+     "pokeapi": true,
+     "serebii": false,
+     "bulbapedia": "yes",
+     "bulbapediaRow": "Surf, Lv. 5-15, 5%, Surfing",
+     "resolution": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Icefall_Cave"
+    },
+    {
+     "area": "Icefall Cave",
+     "version": "firered",
+     "species": 183,
+     "name": "Marill",
+     "pokeapi": false,
+     "serebii": true,
+     "bulbapedia": "no",
+     "resolution": "skip",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Icefall_Cave"
+    },
+    {
+     "area": "Icefall Cave",
+     "version": "firered",
+     "species": 221,
+     "name": "Piloswine",
+     "pokeapi": false,
+     "serebii": true,
+     "bulbapedia": "no",
+     "resolution": "skip",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Icefall_Cave"
+    },
+    {
+     "area": "Icefall Cave",
+     "version": "leafgreen",
+     "species": 221,
+     "name": "Piloswine",
+     "pokeapi": false,
+     "serebii": true,
+     "bulbapedia": "no",
+     "resolution": "skip",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Icefall_Cave"
+    },
+    {
+     "area": "Route 19",
+     "version": "firered",
+     "species": 117,
+     "name": "Seadra",
+     "pokeapi": true,
+     "serebii": false,
+     "bulbapedia": "yes",
+     "bulbapediaRow": "Fish Super, Lv. 25-35, 4%, Fishing",
+     "resolution": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Kanto_Route_19"
+    },
+    {
+     "area": "Route 19",
+     "version": "leafgreen",
+     "species": 99,
+     "name": "Kingler",
+     "pokeapi": true,
+     "serebii": false,
+     "bulbapedia": "yes",
+     "bulbapediaRow": "Fish Super, Lv. 25-35, 4%, Fishing",
+     "resolution": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Kanto_Route_19"
+    },
+    {
+     "area": "Route 20",
+     "version": "firered",
+     "species": 117,
+     "name": "Seadra",
+     "pokeapi": true,
+     "serebii": false,
+     "bulbapedia": "yes",
+     "bulbapediaRow": "Fish Super, Lv. 25-35, 4%, Fishing",
+     "resolution": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Kanto_Route_20"
+    },
+    {
+     "area": "Route 20",
+     "version": "leafgreen",
+     "species": 99,
+     "name": "Kingler",
+     "pokeapi": true,
+     "serebii": false,
+     "bulbapedia": "yes",
+     "bulbapediaRow": "Fish Super, Lv. 25-35, 4%, Fishing",
+     "resolution": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Kanto_Route_20"
+    },
+    {
+     "area": "Route 21",
+     "version": "firered",
+     "species": 117,
+     "name": "Seadra",
+     "pokeapi": true,
+     "serebii": false,
+     "bulbapedia": "yes",
+     "bulbapediaRow": "Fish Super, Lv. 25-35, 4%, Fishing",
+     "resolution": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Kanto_Route_21"
+    },
+    {
+     "area": "Route 21",
+     "version": "leafgreen",
+     "species": 99,
+     "name": "Kingler",
+     "pokeapi": true,
+     "serebii": false,
+     "bulbapedia": "yes",
+     "bulbapediaRow": "Fish Super, Lv. 25-35, 4%, Fishing",
+     "resolution": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Kanto_Route_21"
+    },
+    {
+     "area": "Cinnabar Island",
+     "version": "leafgreen",
+     "species": 80,
+     "name": "Slowbro",
+     "pokeapi": true,
+     "serebii": false,
+     "bulbapedia": "yes",
+     "bulbapediaRow": "Fish Super, Lv. 25-35, 4%, Fishing",
+     "resolution": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Cinnabar_Island"
+    },
+    {
+     "area": "Cinnabar Island",
+     "version": "leafgreen",
+     "species": 99,
+     "name": "Kingler",
+     "pokeapi": false,
+     "serebii": true,
+     "bulbapedia": "no",
+     "resolution": "skip",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Cinnabar_Island"
+    },
+    {
+     "area": "Trainer Tower",
+     "version": "leafgreen",
+     "species": 226,
+     "name": "Mantine",
+     "pokeapi": true,
+     "serebii": false,
+     "bulbapedia": "yes",
+     "bulbapediaRow": "Surf, Lv. 35-40, 5%, Surfing",
+     "resolution": "keep",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Trainer_Tower"
+    }
+   ],
+   "bulbapedia": [
+    {
+     "area": "Altering Cave",
+     "version": "firered",
+     "species": 179,
+     "name": "Mareep",
+     "sources": [
+      "pokeapi"
+     ],
+     "bulbapedia": "unavailable",
+     "action": "drop",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Altering_Cave"
+    },
+    {
+     "area": "Altering Cave",
+     "version": "leafgreen",
+     "species": 179,
+     "name": "Mareep",
+     "sources": [
+      "pokeapi"
+     ],
+     "bulbapedia": "unavailable",
+     "action": "drop",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Altering_Cave"
+    },
+    {
+     "area": "Altering Cave",
+     "version": "firered",
+     "species": 204,
+     "name": "Pineco",
+     "sources": [
+      "pokeapi"
+     ],
+     "bulbapedia": "unavailable",
+     "action": "drop",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Altering_Cave"
+    },
+    {
+     "area": "Altering Cave",
+     "version": "leafgreen",
+     "species": 204,
+     "name": "Pineco",
+     "sources": [
+      "pokeapi"
+     ],
+     "bulbapedia": "unavailable",
+     "action": "drop",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Altering_Cave"
+    },
+    {
+     "area": "Altering Cave",
+     "version": "firered",
+     "species": 228,
+     "name": "Houndour",
+     "sources": [
+      "pokeapi"
+     ],
+     "bulbapedia": "unavailable",
+     "action": "drop",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Altering_Cave"
+    },
+    {
+     "area": "Altering Cave",
+     "version": "leafgreen",
+     "species": 228,
+     "name": "Houndour",
+     "sources": [
+      "pokeapi"
+     ],
+     "bulbapedia": "unavailable",
+     "action": "drop",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Altering_Cave"
+    },
+    {
+     "area": "Altering Cave",
+     "version": "firered",
+     "species": 216,
+     "name": "Teddiursa",
+     "sources": [
+      "pokeapi"
+     ],
+     "bulbapedia": "unavailable",
+     "action": "drop",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Altering_Cave"
+    },
+    {
+     "area": "Altering Cave",
+     "version": "leafgreen",
+     "species": 216,
+     "name": "Teddiursa",
+     "sources": [
+      "pokeapi"
+     ],
+     "bulbapedia": "unavailable",
+     "action": "drop",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Altering_Cave"
+    },
+    {
+     "area": "Altering Cave",
+     "version": "firered",
+     "species": 190,
+     "name": "Aipom",
+     "sources": [
+      "pokeapi"
+     ],
+     "bulbapedia": "unavailable",
+     "action": "drop",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Altering_Cave"
+    },
+    {
+     "area": "Altering Cave",
+     "version": "leafgreen",
+     "species": 190,
+     "name": "Aipom",
+     "sources": [
+      "pokeapi"
+     ],
+     "bulbapedia": "unavailable",
+     "action": "drop",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Altering_Cave"
+    },
+    {
+     "area": "Altering Cave",
+     "version": "firered",
+     "species": 213,
+     "name": "Shuckle",
+     "sources": [
+      "pokeapi"
+     ],
+     "bulbapedia": "unavailable",
+     "action": "drop",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Altering_Cave"
+    },
+    {
+     "area": "Altering Cave",
+     "version": "leafgreen",
+     "species": 213,
+     "name": "Shuckle",
+     "sources": [
+      "pokeapi"
+     ],
+     "bulbapedia": "unavailable",
+     "action": "drop",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Altering_Cave"
+    },
+    {
+     "area": "Altering Cave",
+     "version": "firered",
+     "species": 234,
+     "name": "Stantler",
+     "sources": [
+      "pokeapi"
+     ],
+     "bulbapedia": "unavailable",
+     "action": "drop",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Altering_Cave"
+    },
+    {
+     "area": "Altering Cave",
+     "version": "leafgreen",
+     "species": 234,
+     "name": "Stantler",
+     "sources": [
+      "pokeapi"
+     ],
+     "bulbapedia": "unavailable",
+     "action": "drop",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Altering_Cave"
+    },
+    {
+     "area": "Altering Cave",
+     "version": "firered",
+     "species": 235,
+     "name": "Smeargle",
+     "sources": [
+      "pokeapi"
+     ],
+     "bulbapedia": "unavailable",
+     "action": "drop",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Altering_Cave"
+    },
+    {
+     "area": "Altering Cave",
+     "version": "leafgreen",
+     "species": 235,
+     "name": "Smeargle",
+     "sources": [
+      "pokeapi"
+     ],
+     "bulbapedia": "unavailable",
+     "action": "drop",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Altering_Cave"
+    }
+   ]
+  }
+ }
+}

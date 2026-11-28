@@ -23,6 +23,7 @@
     "battle:species": "tsx scripts/battle-species.ts",
     "dex:sprites": "tsx scripts/dex-sprites.ts",
     "verify:showdown": "tsx scripts/showdown-parity.ts",
+    "verify:nuzlocke": "tsx scripts/nuzlocke/verify.ts",
     "verify:quiz": "NODE_USE_ENV_PROXY=1 tsx scripts/quiz-verify.ts",
     "i18n:mirror": "node scripts/i18n/mirror.mjs",
     "i18n:check": "node scripts/i18n/mirror.mjs --check && node scripts/i18n/check-messages.mjs"
