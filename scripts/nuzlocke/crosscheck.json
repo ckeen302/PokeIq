@@ -1,5 +1,5 @@
 {
- "about": "Per game. disagreements: PokéAPI vs Serebii species disagreements per area and version, each settled by the game's table on Bulbapedia's location page (source): keep/drop = a PokéAPI row Bulbapedia lists / doesn't list; add/skip = a Serebii-only row Bulbapedia lists / doesn't list; unresolved = no Bulbapedia table, PokéAPI's data stands. bulbapedia: every other wild row Bulbapedia's table doesn't list for that version: drop = Bulbapedia lists the Pokémon there for no version of the game (e.g. an unreleased event table), keep = not on its table (both other sources list it). rates: per Pokémon and method family, PokéAPI's chances (per time slot, summed over the place's parts) that differ from Bulbapedia's table: replace = Serebii's rows (which match Bulbapedia) are used instead; add = PokéAPI lacks the method there and Serebii's matching rows are added; add-bulbapedia = only Bulbapedia has it, its rows are added; keep = no two sources agree, PokéAPI's stand. serebii (Scarlet/Violet, Legends: Z-A, whose Bulbapedia location tables are the source): every Serebii row its place's Bulbapedia table doesn't have; add = the Pokémon's own Bulbapedia page names that place for the game, skip = it doesn't (the row is left out). visible: every row of Bulbapedia's visible-Pokémon sections (Sword/Shield's Visible encounters, Wanderers, Curry encounters), add = no row of the area has that Pokémon met the same way (water or land) at overlapping levels in that version, duplicate = one does (named). coverageLosses: area|species|version(|water or land) keys the merged sources had and the output lost other than by a logged drop; it must be empty (verify:nuzlocke fails otherwise). conditionFixes: PokéAPI condition values found on rows they can't belong to (a Max Raid den value on Rolling Fields' wild rows), with the value used instead and the evidence. fixes: source rows Bulbapedia shows to be wrong and what was done (drop, levels, method, no chance, copied to the places a moving NPC appears at, kind, condition), each with its evidence (scripts/nuzlocke/lib/fixes.ts, Bulbapedia's notes on unreachable water, PokéAPI's Generation VII ambush rows). sweep: the game's Bulbapedia location pages (its category) that no area's lookup reached and that have its table rows: fold = the page is part of an area (a building in a town, by its infobox location; a part, by its title; or a named rule) and joins that area's pages; new area = a place no other source names, built from its page. nonWild: gifts, statics, Eggs and fossils that their area's Bulbapedia pages don't list but another area's do (the same encounter: kind and levels; trades are left where they are): drop = that area already has it, move = it is moved there. battleOnly (Scarlet/Violet, Legends: Arceus, Legends: Z-A): Special encounters boxes left out because the text above them says the Pokémon is only battled (why: the words that say so, e.g. \"cannot be caught\" or a Rogue Mega Evolution's battle). Written by scripts/nuzlocke/build.ts.",
+ "about": "Per game. disagreements: PokéAPI vs Serebii species disagreements per area and version, each settled by the game's table on Bulbapedia's location page (source): keep/drop = a PokéAPI row Bulbapedia lists / doesn't list; add/skip = a Serebii-only row Bulbapedia lists / doesn't list; unresolved = no Bulbapedia table, PokéAPI's data stands. bulbapedia: every other wild row Bulbapedia's table doesn't list for that version: drop = Bulbapedia lists the Pokémon there for no version of the game (e.g. an unreleased event table), keep = not on its table (both other sources list it). rates: per Pokémon and method family, PokéAPI's chances (per time slot, summed over the place's parts) that differ from Bulbapedia's table: replace = Serebii's rows (which match Bulbapedia) are used instead; add = PokéAPI lacks the method there and Serebii's matching rows are added; add-bulbapedia = only Bulbapedia has it, its rows are added; keep = no two sources agree, PokéAPI's stand. serebii (Scarlet/Violet, Legends: Z-A, whose Bulbapedia location tables are the source): every Serebii row its place's Bulbapedia table doesn't have; add = the Pokémon's own Bulbapedia page names that place for the game, skip = it doesn't (the row is left out). visible: every row of Bulbapedia's visible-Pokémon sections (Sword/Shield's Visible encounters, Wanderers, Curry encounters), add = no row of the area has that Pokémon met the same way (water or land) at overlapping levels in that version, duplicate = one does (named). coverageLosses: area|species|version(|water or land) keys the merged sources had and the output lost other than by a logged drop; it must be empty (verify:nuzlocke fails otherwise). conditionFixes: PokéAPI condition values found on rows they can't belong to (a Max Raid den value on Rolling Fields' wild rows), with the value used instead and the evidence. fixes: source rows Bulbapedia shows to be wrong and what was done (drop, levels, method, no chance, copied to the places a moving NPC appears at, kind, condition), each with its evidence (scripts/nuzlocke/lib/fixes.ts, Bulbapedia's notes on unreachable water, PokéAPI's Generation VII ambush rows). sweep: the game's Bulbapedia location pages (its category) that no area's lookup reached and that have its table rows: fold = the page is part of an area (a building in a town, by its infobox location; a part, by its title; or a named rule) and joins that area's pages; new area = a place no other source names, built from its page. nonWild: gifts, statics, Eggs and fossils that their area's Bulbapedia pages don't list but another area's do (the same encounter: kind and levels; trades are left where they are): drop = that area already has it, move = it is moved there. unnamedSubs: PokéAPI's unnamed sub-areas (\"Unknown area 53\") and the part of Bulbapedia's table each was matched to by its encounters (every Pokémon, way, version and level range of it in that part, at least three quarters of the part, and in no other part; parts that all match and share a first name give that name), or null with the reason, its rows then naming no part. battleOnly (Scarlet/Violet, Legends: Arceus, Legends: Z-A): Special encounters boxes left out because the text above them says the Pokémon is only battled (why: the words that say so, e.g. \"cannot be caught\" or a Rogue Mega Evolution's battle). Written by scripts/nuzlocke/build.ts.",
  "games": {
   "red-blue": {
    "disagreements": [
@@ -29311,6 +29311,99 @@
      "source": "https://bulbapedia.bulbagarden.net/wiki/Desert_Resort"
     }
    ],
+   "unnamedSubs": [
+    {
+     "area": "Victory Road",
+     "sub": "Unknown area 53",
+     "part": "1F (middle and rightmost room)",
+     "why": "its 16 encounters (Pokémon, way, version, levels) are all in Bulbapedia's \"1F (middle and rightmost room)\" part, which has 18; no other part has them all",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Victory_Road_(Black_and_White)"
+    },
+    {
+     "area": "Victory Road",
+     "sub": "Unknown area 54",
+     "part": "1F (leftmost room), 2F-3F",
+     "why": "its 6 encounters (Pokémon, way, version, levels) are all in Bulbapedia's \"1F (leftmost room), 2F-3F\" part, which has 8; no other part has them all",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Victory_Road_(Black_and_White)"
+    },
+    {
+     "area": "Victory Road",
+     "sub": "Unknown area 55",
+     "part": "1F (leftmost room), 2F-3F",
+     "why": "its 6 encounters (Pokémon, way, version, levels) are all in Bulbapedia's \"1F (leftmost room), 2F-3F\" part, which has 8; no other part has them all",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Victory_Road_(Black_and_White)"
+    },
+    {
+     "area": "Victory Road",
+     "sub": "Unknown area 57",
+     "part": "1F (leftmost room), 2F-3F",
+     "why": "its 6 encounters (Pokémon, way, version, levels) are all in Bulbapedia's \"1F (leftmost room), 2F-3F\" part, which has 8; no other part has them all",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Victory_Road_(Black_and_White)"
+    },
+    {
+     "area": "Victory Road",
+     "sub": "Unknown area 58",
+     "part": "1F (middle and rightmost room)",
+     "why": "its 16 encounters (Pokémon, way, version, levels) are all in Bulbapedia's \"1F (middle and rightmost room)\" part, which has 18; no other part has them all",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Victory_Road_(Black_and_White)"
+    },
+    {
+     "area": "Victory Road",
+     "sub": "Unknown area 59",
+     "part": "1F (leftmost room), 2F-3F",
+     "why": "its 6 encounters (Pokémon, way, version, levels) are all in Bulbapedia's \"1F (leftmost room), 2F-3F\" part, which has 8; no other part has them all",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Victory_Road_(Black_and_White)"
+    },
+    {
+     "area": "Victory Road",
+     "sub": "Unknown area 60",
+     "part": "1F (leftmost room), 2F-3F",
+     "why": "its 6 encounters (Pokémon, way, version, levels) are all in Bulbapedia's \"1F (leftmost room), 2F-3F\" part, which has 8; no other part has them all",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Victory_Road_(Black_and_White)"
+    },
+    {
+     "area": "Victory Road",
+     "sub": "Unknown area 61",
+     "part": "1F (leftmost room), 2F-3F",
+     "why": "its 6 encounters (Pokémon, way, version, levels) are all in Bulbapedia's \"1F (leftmost room), 2F-3F\" part, which has 8; no other part has them all",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Victory_Road_(Black_and_White)"
+    },
+    {
+     "area": "Victory Road",
+     "sub": "Unknown area 62",
+     "part": null,
+     "why": "its encounters are all in 3 of Bulbapedia's parts (\"4F (middle room)\", \"4F (leftmost and rightmost room), 5F-7F\", \"Trial Chamber\"): not certain which",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Victory_Road_(Black_and_White)"
+    },
+    {
+     "area": "Victory Road",
+     "sub": "Unknown area 63",
+     "part": null,
+     "why": "its encounters are all in 3 of Bulbapedia's parts (\"4F (middle room)\", \"4F (leftmost and rightmost room), 5F-7F\", \"Trial Chamber\"): not certain which",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Victory_Road_(Black_and_White)"
+    },
+    {
+     "area": "Victory Road",
+     "sub": "Unknown area 64",
+     "part": null,
+     "why": "its encounters are all in 3 of Bulbapedia's parts (\"4F (middle room)\", \"4F (leftmost and rightmost room), 5F-7F\", \"Trial Chamber\"): not certain which",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Victory_Road_(Black_and_White)"
+    },
+    {
+     "area": "Victory Road",
+     "sub": "Unknown area 65",
+     "part": null,
+     "why": "its encounters are all in 3 of Bulbapedia's parts (\"4F (middle room)\", \"4F (leftmost and rightmost room), 5F-7F\", \"Trial Chamber\"): not certain which",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Victory_Road_(Black_and_White)"
+    },
+    {
+     "area": "Victory Road",
+     "sub": "Unknown area 66",
+     "part": null,
+     "why": "its encounters are all in 3 of Bulbapedia's parts (\"4F (middle room)\", \"4F (leftmost and rightmost room), 5F-7F\", \"Trial Chamber\"): not certain which",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Victory_Road_(Black_and_White)"
+    }
+   ],
    "coverageLosses": []
   },
   "black-2-white-2": {
@@ -30459,6 +30552,176 @@
      "action": "new area",
      "how": "a place of its own (infobox location: Nimbasa City)",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Nimbasa_City"
+    }
+   ],
+   "unnamedSubs": [
+    {
+     "area": "Victory Road",
+     "sub": "Unknown area 71",
+     "part": "1F",
+     "why": "its 12 encounters (Pokémon, way, version, levels) are all in Bulbapedia's \"1F\" part, which has 12; no other part has them all",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Victory_Road_(Black_2_and_White_2)"
+    },
+    {
+     "area": "Victory Road",
+     "sub": "Unknown area 72",
+     "part": "Grove",
+     "why": "its 4 encounters (Pokémon, way, version, levels) are all in Bulbapedia's \"Grove\" part, which has 4; no other part has them all",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Victory_Road_(Black_2_and_White_2)"
+    },
+    {
+     "area": "Victory Road",
+     "sub": "Unknown area 73",
+     "part": "Outside 1",
+     "why": "its 12 encounters (Pokémon, way, version, levels) are all in Bulbapedia's \"Outside 1\" part, which has 12; no other part has them all",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Victory_Road_(Black_2_and_White_2)"
+    },
+    {
+     "area": "Victory Road",
+     "sub": "Unknown area 74",
+     "part": null,
+     "why": "no part of Bulbapedia's table holds its encounters (Pokémon, way, version and levels)",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Victory_Road_(Black_2_and_White_2)"
+    },
+    {
+     "area": "Victory Road",
+     "sub": "Unknown area 75",
+     "part": "2F Back",
+     "why": "its 10 encounters (Pokémon, way, version, levels) are all in Bulbapedia's \"2F Back\" part, which has 12; no other part has them all",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Victory_Road_(Black_2_and_White_2)"
+    },
+    {
+     "area": "Victory Road",
+     "sub": "Unknown area 76",
+     "part": "Outside 2",
+     "why": "its 4 encounters (Pokémon, way, version, levels) are all in Bulbapedia's \"Outside 2\" part, which has 4; no other part has them all",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Victory_Road_(Black_2_and_White_2)"
+    },
+    {
+     "area": "Victory Road",
+     "sub": "Unknown area 77",
+     "part": "3F (both rooms)",
+     "why": "its 4 encounters (Pokémon, way, version, levels) are all in Bulbapedia's \"3F (both rooms)\" part, which has 4; no other part has them all",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Victory_Road_(Black_2_and_White_2)"
+    },
+    {
+     "area": "Victory Road",
+     "sub": "Unknown area 78",
+     "part": null,
+     "why": "no part of Bulbapedia's table holds its encounters (Pokémon, way, version and levels)",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Victory_Road_(Black_2_and_White_2)"
+    },
+    {
+     "area": "Victory Road",
+     "sub": "Unknown area 79",
+     "part": "Outside 1",
+     "why": "its 12 encounters (Pokémon, way, version, levels) are all in Bulbapedia's \"Outside 1\" part, which has 12; no other part has them all",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Victory_Road_(Black_2_and_White_2)"
+    },
+    {
+     "area": "Victory Road",
+     "sub": "Unknown area 80",
+     "part": "3F (both rooms)",
+     "why": "its 4 encounters (Pokémon, way, version, levels) are all in Bulbapedia's \"3F (both rooms)\" part, which has 4; no other part has them all",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Victory_Road_(Black_2_and_White_2)"
+    },
+    {
+     "area": "Castelia Sewers",
+     "sub": "Unknown area 38",
+     "part": null,
+     "why": "Bulbapedia's table for this place is not split into parts",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Castelia_Sewers"
+    },
+    {
+     "area": "Reversal Mountain",
+     "sub": "Unknown area 48",
+     "part": "Exterior",
+     "why": "its 12 encounters (Pokémon, way, version, levels) are all in Bulbapedia's \"Exterior\" part, which has 12; no other part has them all",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Reversal_Mountain"
+    },
+    {
+     "area": "Reversal Mountain",
+     "sub": "Unknown area 49",
+     "part": "Interior",
+     "why": "its 10 encounters are all in each of Bulbapedia's parts \"Interior / Entrances\", \"Interior / Main\", which share the name \"Interior\"",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Reversal_Mountain"
+    },
+    {
+     "area": "Reversal Mountain",
+     "sub": "Unknown area 50",
+     "part": "Interior",
+     "why": "its 10 encounters are all in each of Bulbapedia's parts \"Interior / Entrances\", \"Interior / Main\", which share the name \"Interior\"",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Reversal_Mountain"
+    },
+    {
+     "area": "Reversal Mountain",
+     "sub": "Unknown area 51",
+     "part": "Interior",
+     "why": "its 10 encounters are all in each of Bulbapedia's parts \"Interior / Entrances\", \"Interior / Main\", which share the name \"Interior\"",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Reversal_Mountain"
+    },
+    {
+     "area": "Reversal Mountain",
+     "sub": "Unknown area 52",
+     "part": "Interior",
+     "why": "its 10 encounters are all in each of Bulbapedia's parts \"Interior / Entrances\", \"Interior / Main\", which share the name \"Interior\"",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Reversal_Mountain"
+    },
+    {
+     "area": "Reversal Mountain",
+     "sub": "Unknown area 53",
+     "part": "Interior",
+     "why": "its 10 encounters are all in each of Bulbapedia's parts \"Interior / Entrances\", \"Interior / Main\", which share the name \"Interior\"",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Reversal_Mountain"
+    },
+    {
+     "area": "Reversal Mountain",
+     "sub": "Unknown area 54",
+     "part": "Interior",
+     "why": "its 10 encounters are all in each of Bulbapedia's parts \"Interior / Entrances\", \"Interior / Main\", which share the name \"Interior\"",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Reversal_Mountain"
+    },
+    {
+     "area": "Reversal Mountain",
+     "sub": "Unknown area 55",
+     "part": "Interior",
+     "why": "its 10 encounters are all in each of Bulbapedia's parts \"Interior / Entrances\", \"Interior / Main\", which share the name \"Interior\"",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Reversal_Mountain"
+    },
+    {
+     "area": "Reversal Mountain",
+     "sub": "Unknown area 56",
+     "part": "Interior",
+     "why": "its 10 encounters are all in each of Bulbapedia's parts \"Interior / Entrances\", \"Interior / Main\", which share the name \"Interior\"",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Reversal_Mountain"
+    },
+    {
+     "area": "Reversal Mountain",
+     "sub": "Unknown area 57",
+     "part": "Interior",
+     "why": "its 10 encounters are all in each of Bulbapedia's parts \"Interior / Entrances\", \"Interior / Main\", which share the name \"Interior\"",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Reversal_Mountain"
+    },
+    {
+     "area": "Reversal Mountain",
+     "sub": "Unknown area 58",
+     "part": "Interior",
+     "why": "its 10 encounters are all in each of Bulbapedia's parts \"Interior / Entrances\", \"Interior / Main\", which share the name \"Interior\"",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Reversal_Mountain"
+    },
+    {
+     "area": "Reversal Mountain",
+     "sub": "Unknown area 59",
+     "part": "Interior",
+     "why": "its 10 encounters are all in each of Bulbapedia's parts \"Interior / Entrances\", \"Interior / Main\", which share the name \"Interior\"",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Reversal_Mountain"
+    },
+    {
+     "area": "Reversal Mountain",
+     "sub": "Unknown area 60",
+     "part": "Interior",
+     "why": "its 10 encounters are all in each of Bulbapedia's parts \"Interior / Entrances\", \"Interior / Main\", which share the name \"Interior\"",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Reversal_Mountain"
     }
    ],
    "coverageLosses": []
@@ -31693,6 +31956,155 @@
      "action": "drop",
      "to": "Ambrette Town",
      "source": "https://bulbapedia.bulbagarden.net/wiki/Ambrette_Town"
+    }
+   ],
+   "unnamedSubs": [
+    {
+     "area": "Glittering Cave",
+     "sub": "Unknown area 303",
+     "part": null,
+     "why": "Bulbapedia's table for this place is not split into parts",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Glittering_Cave"
+    },
+    {
+     "area": "Glittering Cave",
+     "sub": "Unknown area 304",
+     "part": null,
+     "why": "Bulbapedia's table for this place is not split into parts",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Glittering_Cave"
+    },
+    {
+     "area": "Reflection Cave",
+     "sub": "Unknown area 305",
+     "part": null,
+     "why": "Bulbapedia's table for this place is not split into parts",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Reflection_Cave"
+    },
+    {
+     "area": "Reflection Cave",
+     "sub": "Unknown area 306",
+     "part": null,
+     "why": "Bulbapedia's table for this place is not split into parts",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Reflection_Cave"
+    },
+    {
+     "area": "Reflection Cave",
+     "sub": "Unknown area 307",
+     "part": null,
+     "why": "Bulbapedia's table for this place is not split into parts",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Reflection_Cave"
+    },
+    {
+     "area": "Reflection Cave",
+     "sub": "Unknown area 308",
+     "part": null,
+     "why": "Bulbapedia's table for this place is not split into parts",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Reflection_Cave"
+    },
+    {
+     "area": "Frost Cavern",
+     "sub": "Unknown area 313",
+     "part": null,
+     "why": "no part of Bulbapedia's table holds its encounters (Pokémon, way, version and levels)",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Frost_Cavern"
+    },
+    {
+     "area": "Frost Cavern",
+     "sub": "Unknown area 314",
+     "part": "1F, Ice Rock room, and 3F only",
+     "why": "its 12 encounters (Pokémon, way, version, levels) are all in Bulbapedia's \"1F, Ice Rock room, and 3F only\" part, which has 12; no other part has them all",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Frost_Cavern"
+    },
+    {
+     "area": "Frost Cavern",
+     "sub": "Unknown area 315",
+     "part": null,
+     "why": "no part of Bulbapedia's table holds its encounters (Pokémon, way, version and levels)",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Frost_Cavern"
+    },
+    {
+     "area": "Frost Cavern",
+     "sub": "Unknown area 316",
+     "part": "1F, Ice Rock room, and 3F only",
+     "why": "its 12 encounters (Pokémon, way, version, levels) are all in Bulbapedia's \"1F, Ice Rock room, and 3F only\" part, which has 12; no other part has them all",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Frost_Cavern"
+    },
+    {
+     "area": "Frost Cavern",
+     "sub": "Unknown area 317",
+     "part": "1F, Ice Rock room, and 3F only",
+     "why": "its 12 encounters (Pokémon, way, version, levels) are all in Bulbapedia's \"1F, Ice Rock room, and 3F only\" part, which has 12; no other part has them all",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Frost_Cavern"
+    },
+    {
+     "area": "Victory Road",
+     "sub": "Unknown area 322",
+     "part": null,
+     "why": "no part of Bulbapedia's table holds its encounters (Pokémon, way, version and levels)",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Victory_Road_(Kalos)"
+    },
+    {
+     "area": "Victory Road",
+     "sub": "Unknown area 324",
+     "part": null,
+     "why": "no part of Bulbapedia's table holds its encounters (Pokémon, way, version and levels)",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Victory_Road_(Kalos)"
+    },
+    {
+     "area": "Victory Road",
+     "sub": "Unknown area 326",
+     "part": null,
+     "why": "no part of Bulbapedia's table holds its encounters (Pokémon, way, version and levels)",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Victory_Road_(Kalos)"
+    },
+    {
+     "area": "Victory Road",
+     "sub": "Unknown area 327",
+     "part": null,
+     "why": "no part of Bulbapedia's table holds its encounters (Pokémon, way, version and levels)",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Victory_Road_(Kalos)"
+    },
+    {
+     "area": "Victory Road",
+     "sub": "Unknown area 328",
+     "part": null,
+     "why": "no part of Bulbapedia's table holds its encounters (Pokémon, way, version and levels)",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Victory_Road_(Kalos)"
+    },
+    {
+     "area": "Terminus Cave",
+     "sub": "Unknown area 343",
+     "part": null,
+     "why": "Bulbapedia's table for this place is not split into parts",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Terminus_Cave"
+    },
+    {
+     "area": "Terminus Cave",
+     "sub": "Unknown area 344",
+     "part": null,
+     "why": "Bulbapedia's table for this place is not split into parts",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Terminus_Cave"
+    },
+    {
+     "area": "Terminus Cave",
+     "sub": "Unknown area 345",
+     "part": null,
+     "why": "Bulbapedia's table for this place is not split into parts",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Terminus_Cave"
+    },
+    {
+     "area": "Terminus Cave",
+     "sub": "Unknown area 347",
+     "part": null,
+     "why": "Bulbapedia's table for this place is not split into parts",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Terminus_Cave"
+    },
+    {
+     "area": "Terminus Cave",
+     "sub": "Unknown area 348",
+     "part": null,
+     "why": "Bulbapedia's table for this place is not split into parts",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Terminus_Cave"
     }
    ],
    "coverageLosses": []
