@@ -1,36 +1,7 @@
 {
- "about": "Forms that can be met in a game but have no art yet in public/sizes/art/256 (form name -> PokéAPI pokemon id). The encounters stay in the data; npm run verify:nuzlocke prints these as warnings and fails on any other missing art, or on an entry here that gets art or stops being used.",
+ "about": "Forms met in a game that show their species' picture: PokéAPI has no Pokémon HOME render for them (Partner Pikachu and Partner Eevee look like Pikachu and Eevee). Every other form needs its own picture: public/sizes/art/256/{id}.webp for a form with a PokéAPI id, public/tools/nuzlocke/forms/{species}-{form}.webp for a cosmetic form (scripts/nuzlocke-art.ts makes both). npm run verify:nuzlocke fails on any other form without one, and on an entry here that gets a picture or stops being used.",
  "forms": {
-  "wormadam-sandy": 10004,
-  "wormadam-trash": 10005,
-  "giratina-origin": 10007,
-  "rotom-heat": 10008,
-  "rotom-wash": 10009,
-  "rotom-frost": 10010,
-  "rotom-fan": 10011,
-  "rotom-mow": 10012,
-  "basculin-blue-striped": 10016,
-  "keldeo-resolute": 10024,
-  "meowstic-female": 10025,
-  "pumpkaboo-small": 10027,
-  "pumpkaboo-large": 10028,
-  "pumpkaboo-super": 10029,
-  "oricorio-pom-pom": 10123,
-  "oricorio-pau": 10124,
-  "oricorio-sensu": 10125,
-  "lycanroc-midnight": 10126,
-  "rockruff-own-tempo": 10151,
-  "lycanroc-dusk": 10152,
   "pikachu-starter": 10158,
-  "eevee-starter": 10159,
-  "zygarde-10": 10181,
-  "toxtricity-low-key": 10184,
-  "indeedee-female": 10186,
-  "oinkologne-female": 10254,
-  "tatsugiri-droopy": 10258,
-  "tatsugiri-stretchy": 10259,
-  "squawkabilly-blue-plumage": 10260,
-  "squawkabilly-yellow-plumage": 10261,
-  "squawkabilly-white-plumage": 10262
+  "eevee-starter": 10159
  }
 }

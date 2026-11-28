@@ -8,8 +8,10 @@
  * out of step with the build's game list or its file; an empty `sources`; duplicate area ids; an area with no
  * encounters; an unknown version id; a species or form without art; a rate outside 0-100; a level range with min > max
  * (or outside 1-100); a boss cap below 1 or above 100; and malformed fields (kinds, forms without art ids, except the
- * location-dependent cosmetic forms of lib/forms.ts COSMETIC_FORMS, which have none…). A form whose
- * art isn't made yet is only allowed when scripts/nuzlocke/art-missing.json lists it (it is printed as a warning). Also a
+ * location-dependent cosmetic forms of lib/forms.ts COSMETIC_FORMS, which have none…). Every form needs its own
+ * picture: public/sizes/art/256/{id}.webp, or for a cosmetic form public/tools/nuzlocke/forms/{species}-{form}.webp
+ * (scripts/nuzlocke-art.ts makes both); only the forms scripts/nuzlocke/art-missing.json lists, which have no HOME
+ * render, show their species' picture (they're printed as a note). Also a
  * condition on rows it can't belong to: a Max Raid den, Tera Raid, rod, Headbutt, Rock Smash or Honey condition on
  * another method; time-of-day, season or weather conditions in a game without them; "before" and "after" the Hall of
  * Fame at once. And any coverage the build lost (crosscheck.json coverageLosses: a place's Pokémon, version or water/land
@@ -34,7 +36,9 @@ const MAX_SPECIES = 1025;
 const errors: string[] = [];
 const fail = (where: string, msg: string) => errors.push(`${where}: ${msg}`);
 const hasArt = (id: number) => fs.existsSync(path.join(ART, `${id}.webp`));
-/** Forms known to have no art yet (reported, kept in the data): form name -> PokéAPI pokemon id. Anything else without art fails. */
+/** A cosmetic form's picture (East Sea Shellos is 422-east.webp): the tracker keeps these, PokéAPI having no id for them. */
+const cosmeticArt = (species: number, form: string) => path.join(ROOT, "public/tools/nuzlocke/forms", `${species}-${form.slice(form.indexOf("-") + 1)}.webp`);
+/** Forms that show their species' picture, having no HOME render (Partner Pikachu, Partner Eevee): form name -> PokéAPI pokemon id. Anything else without a picture fails. */
 const ART_MISSING = JSON.parse(fs.readFileSync(path.join(__dirname, "art-missing.json"), "utf8")).forms as Record<string, number>;
 const artMissingUsed = new Map<string, string[]>();
 
@@ -168,6 +172,7 @@ for (const info of [...NUZ_GAMES, ...held]) {
       if (e.form !== undefined && (!e.form || (e.art === undefined && !COSMETIC_FORMS.has(e.form)))) fail(what, "form without its art id");
       if (e.form && COSMETIC_FORMS.has(e.form) && e.art !== undefined) fail(what, "a cosmetic form with an art id");
       if (e.art !== undefined && e.form === undefined) fail(what, "art id without a form");
+      if (e.form && COSMETIC_FORMS.has(e.form) && !fs.existsSync(cosmeticArt(e.species, e.form))) fail(what, `no picture: ${path.relative(ROOT, cosmeticArt(e.species, e.form))} (scripts/nuzlocke-art.ts)`);
       const art = e.art ?? e.species;
       if (!hasArt(art)) {
         if (e.form && ART_MISSING[e.form] === art) artMissingUsed.set(e.form, [...new Set([...(artMissingUsed.get(e.form) ?? []), at])]);
@@ -197,13 +202,13 @@ for (const info of [...NUZ_GAMES, ...held]) {
 }
 
 for (const [form, id] of Object.entries(ART_MISSING)) {
-  if (hasArt(id)) fail("art-missing.json", `${form} (${id}) has art now: remove it from the list`);
+  if (hasArt(id)) fail("art-missing.json", `${form} (${id}) has a picture now: remove it from the list`);
   else if (!artMissingUsed.has(form)) fail("art-missing.json", `${form} is listed but no encounter uses it`);
 }
 for (const t of totals) console.log(t);
 if (artMissingUsed.size) {
-  console.warn(`\n⚠ ${artMissingUsed.size} form(s) have no art yet (listed in scripts/nuzlocke/art-missing.json; the encounters are kept):`);
-  for (const [form, games] of artMissingUsed) console.warn(`  - ${form} (public/sizes/art/256/${ART_MISSING[form]}.webp) in ${games.join(", ")}`);
+  console.log(`\n${artMissingUsed.size} form(s) show their species' picture, having no HOME render (scripts/nuzlocke/art-missing.json):`);
+  for (const [form, games] of artMissingUsed) console.log(`  - ${form} (${ART_MISSING[form]}) in ${games.join(", ")}`);
 }
 if (errors.length) {
   console.error(`\n✗ ${errors.length} problem(s):`);
