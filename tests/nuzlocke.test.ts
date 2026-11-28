@@ -27,6 +27,7 @@ import {
   removeMon,
   setStatus,
   skipArea,
+  standing,
   swap,
   team,
   toggleBoss,
@@ -460,6 +461,16 @@ describe("bosses, badges and the level cap", () => {
     expect(r.beaten).toContain("allister");
     expect(r.beaten).not.toContain("bea");
     expect(badgeCount(r, v)).toBe(4);
+  });
+
+  it("says where a run stands: the next boss and its cap, then done", async () => {
+    const view = await frlgView();
+    let run = createRun({ game: view.id, version: "firered", name: "T", now: T0 });
+    expect(standing(run, view)).toMatchObject({ next: { name: "Brock" }, cap: 14 });
+    expect(standing({ ...run, rules: { ...run.rules, caps: false } }, view)).toEqual({ next: expect.objectContaining({ name: "Brock" }) });
+    for (const k of bossKeys((await loadGame(view.id))!.steps)) run = toggleBoss(run, k, T0);
+    expect(standing(run, view)).toBe("done");
+    expect(standing(run, buildView(game(3, [])))).toBeNull();
   });
 
   it("counts gym badges from the bosses beaten (a title isn't a badge)", async () => {

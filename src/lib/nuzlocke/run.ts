@@ -327,6 +327,19 @@ export function removeBadge(run: Run, view: Pick<GameView, "steps">, now = Date.
   return last ? { run: touch(run, { beaten: run.beaten.filter((k) => k !== last.key) }, now), boss: last } : { run, boss: null };
 }
 
+/**
+ * Where a run stands: the next boss of its version not yet beaten, with its cap when the caps rule is on and it has one;
+ * "done" once every boss is beaten; null for a game whose data has no bosses.
+ */
+export function standing(run: Pick<Run, "beaten" | "version" | "rules">, view: Pick<GameView, "steps">): { next: ViewBoss; cap?: number } | "done" | null {
+  const bosses = versionBosses(view, run.version);
+  if (!bosses.length) return null;
+  const next = bosses.find((b) => !run.beaten.includes(b.key));
+  if (!next) return "done";
+  const cap = run.rules.caps ? capFor(next, run.version) : undefined;
+  return cap === undefined ? { next } : { next, cap };
+}
+
 /** The level cap: the first boss of the run's version, in story order, not yet beaten whose cap is known for it. */
 export function levelCap(run: Pick<Run, "beaten" | "version">, view: Pick<GameView, "steps">): { boss: ViewBoss; cap: number } | null {
   for (const b of versionBosses(view, run.version)) {

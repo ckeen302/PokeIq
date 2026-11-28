@@ -5,7 +5,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import sharp from "sharp";
 import { fitTitle, ogCard } from "@/lib/og/card";
-import { badgeCount, badgeTotal, graveyard, stats, team, type Run } from "@/lib/nuzlocke/run";
+import { badgeCount, badgeTotal, graveyard, standing, stats, team, type Run } from "@/lib/nuzlocke/run";
 import { VERSION_LOOK } from "@/lib/nuzlocke/versions";
 import type { GameView } from "@/lib/nuzlocke/view";
 import page from "@/messages/en/nuzlocke-page.json";
@@ -85,6 +85,9 @@ export async function nuzRunCard(run: Run, view: GameView) {
   const total = badgeTotal(view, run.version);
   const accent = VERSION_LOOK[run.version]?.color ?? ACCENT;
   const fitted = fitTitle(run.name || "Nuzlocke", 600, [64, 54, 46, 40]);
+  // Under the name, where the run stands: the next boss (and its cap), or the end. The eyebrow already names the game.
+  const now = standing(run, view);
+  const where = now === null ? view.name : now === "done" ? "Run complete" : now.cap !== undefined ? `Next: ${now.next.name} · cap ${now.cap}` : `Next: ${now.next.name}`;
   const label = { fontFamily: "Silkscreen", fontSize: 16, letterSpacing: 2, color: "#a4a0ba", textTransform: "uppercase" as const };
   const visual = (
     <div style={{ display: "flex", flexDirection: "column", width: 444, gap: 16 }}>
@@ -106,7 +109,7 @@ export async function nuzRunCard(run: Run, view: GameView) {
       eyebrow: `${version?.name ?? view.name} Nuzlocke`,
       title: fitted.lines,
       titleSize: fitted.size,
-      subtitle: view.name,
+      subtitle: where,
       accent,
       visual,
       chips: [`${total ? `${badges}/${total}` : badges} ${badges === 1 && !total ? "badge" : "badges"}`, `${s.dead} fallen`, `${s.caught} caught`],
