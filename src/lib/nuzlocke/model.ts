@@ -14,7 +14,11 @@ export interface NuzEncounter {
   species: number;
   /** The exact form met, as PokéAPI names it (e.g. "rattata-alola"); absent for the species' default form. It decides the art and the types. */
   form?: string;
-  /** With `form`: the form's PokéAPI pokemon id (10xxx), whose art is /sizes/art/256/{art}.webp. Absent for the default form (its art is the species number). */
+  /**
+   * With `form`: the form's PokéAPI pokemon id (10xxx), whose art is /sizes/art/256/{art}.webp. Absent for the default
+   * form (its art is the species number), and for a location-dependent cosmetic form that PokéAPI has no pokemon for,
+   * only a pokemon-form (East Sea Shellos is `form: "shellos-east"` with no `art`; the species' art stands in).
+   */
   art?: number;
   kind: EncounterKind;
   /** How it is met, in the game's own words ("Grass", "Surf", "Old Rod", "Headbutt", "Horde"…). */
@@ -48,6 +52,10 @@ export interface NuzBoss {
   capByVersion?: Record<string, number>;
   /** Only in these versions (a version-exclusive battle), by version id; absent when every version has it. */
   versions?: string[];
+  /** A rival, villain or other story battle: it shows in story order but sets the level cap only when the run's rule says so. */
+  kind?: "story";
+  /** A battle the player can skip. */
+  optional?: boolean;
 }
 
 /** One step of the game in story order: an area to encounter in, or a boss. */

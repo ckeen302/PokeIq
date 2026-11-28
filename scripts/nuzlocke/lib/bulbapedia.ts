@@ -91,6 +91,26 @@ export async function page(title: string): Promise<WikiPage> {
   return (await pages([title])).get(title)!;
 }
 
+/** Titles of a category's articles (namespace 0), e.g. "Category:Emerald locations"; cached like the pages. */
+export async function categoryMembers(category: string): Promise<string[]> {
+  const file = path.join(RAW, "bulbapedia/category", `${encodeURIComponent(category).replace(/%/g, "~").slice(0, 180)}.json.gz`);
+  if (fs.existsSync(file)) return JSON.parse(zlib.gunzipSync(fs.readFileSync(file)).toString("utf8")) as string[];
+  const titles: string[] = [];
+  let cont: string | undefined;
+  do {
+    const q = new URLSearchParams({ action: "query", list: "categorymembers", cmtitle: category, cmlimit: "500", cmnamespace: "0", format: "json", formatversion: "2", ...(cont ? { cmcontinue: cont } : {}) });
+    const res = await fetchOnce(`${API}?${q}`, "bulbapedia", "application/json");
+    if (res.status !== 200) throw new Error(`Bulbapedia category query failed: HTTP ${res.status}`);
+    const j = JSON.parse(res.body.toString("utf8")) as { query?: { categorymembers: { title: string }[] }; continue?: { cmcontinue: string } };
+    titles.push(...(j.query?.categorymembers ?? []).map((m) => m.title));
+    cont = j.continue?.cmcontinue;
+  } while (cont);
+  if (!titles.length) throw new Error(`Bulbapedia category ${category} is empty`);
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, zlib.gzipSync(JSON.stringify(titles)));
+  return titles;
+}
+
 /* --------------------------------------------------------------- wikitext helpers -- */
 
 /** Split a template body on top-level pipes (ignoring pipes inside nested {{ }} and [[ ]]). */

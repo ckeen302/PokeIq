@@ -3,6 +3,7 @@
  "forms": {
   "wormadam-sandy": 10004,
   "wormadam-trash": 10005,
+  "giratina-origin": 10007,
   "rotom-heat": 10008,
   "rotom-wash": 10009,
   "rotom-frost": 10010,
@@ -20,6 +21,8 @@
   "lycanroc-midnight": 10126,
   "rockruff-own-tempo": 10151,
   "lycanroc-dusk": 10152,
+  "pikachu-starter": 10158,
+  "eevee-starter": 10159,
   "zygarde-10": 10181,
   "toxtricity-low-key": 10184,
   "indeedee-female": 10186,
