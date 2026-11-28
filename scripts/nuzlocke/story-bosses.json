@@ -1609,6 +1609,15 @@
    "source": "https://bulbapedia.bulbagarden.net/wiki/Tierno"
   },
   {
+   "after": "geosenge-town",
+   "boss": {
+    "name": "Korrina (Geosenge Town)",
+    "kind": "story",
+    "cap": 25
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Korrina"
+  },
+  {
    "after": "tower-of-mastery",
    "boss": {
     "name": "Serena / Calem (Tower of Mastery)",
@@ -1616,6 +1625,15 @@
     "cap": 30
    },
    "source": "https://bulbapedia.bulbagarden.net/wiki/Serena_(game)"
+  },
+  {
+   "afterBoss": "Korrina",
+   "boss": {
+    "name": "Korrina (Tower of Mastery, Lucario only)",
+    "kind": "story",
+    "cap": 32
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Korrina"
   },
   {
    "after": "coumarine-city",
@@ -1742,6 +1760,15 @@
     "cap": 53
    },
    "source": "https://bulbapedia.bulbagarden.net/wiki/Lysandre"
+  },
+  {
+   "after": "couriway-town",
+   "boss": {
+    "name": "Sycamore (Couriway Town)",
+    "kind": "story",
+    "cap": 50
+   },
+   "source": "https://bulbapedia.bulbagarden.net/wiki/Professor_Sycamore"
   },
   {
    "after": "route-19",
