@@ -80,7 +80,7 @@ export function Hero({ data, form, onFormChange, types, abilities }: HeroProps) 
         {/* Artwork stage */}
         <div className="flex flex-col items-center gap-4">
           <div
-            className="screen relative aspect-square w-full max-w-[400px] rounded-md [perspective:900px]"
+            className="screen art-well relative aspect-square w-full max-w-[400px] rounded-md [perspective:900px]"
             onPointerMove={(e) => {
               const r = e.currentTarget.getBoundingClientRect();
               mx.set((e.clientX - r.left) / r.width - 0.5);

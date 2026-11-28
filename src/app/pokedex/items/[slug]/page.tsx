@@ -89,7 +89,7 @@ export default async function ItemPage({ params }: PageProps) {
         kicker={t("item.kicker", { category: itemCategory(t, item.category) })}
         title={name}
         media={
-          <span className="screen flex h-24 w-24 shrink-0 items-center justify-center rounded-md">
+          <span className="screen art-well flex h-24 w-24 shrink-0 items-center justify-center rounded-md">
             <img src={itemSpriteUrl(item.slug)} alt={t("item.sprite", { name })} width={64} height={64} data-testid="item-sprite" className="relative z-[1] h-16 w-16 object-contain [image-rendering:pixelated]" />
           </span>
         }

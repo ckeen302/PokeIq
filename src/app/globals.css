@@ -203,6 +203,22 @@
     filter: brightness(0.82) saturate(1.25);
   }
 
+  /* A Pokémon's (or an item's) picture box in the Pokédex: a device display by night; by day a soft lavender tile with no
+     scanlines, so the art sits on the light page instead of in a black square. */
+  :root.light .screen.art-well {
+    color-scheme: light;
+    --screen: 258 70% 56%;
+    background:
+      radial-gradient(90% 80% at 50% 55%, hsl(0 0% 100% / 0.95), transparent 75%),
+      hsl(252 60% 95%);
+    box-shadow:
+      inset 0 0 0 1px hsl(258 60% 60% / 0.18),
+      inset 0 -18px 30px -18px hsl(258 60% 60% / 0.12);
+  }
+  :root.light .screen.art-well::after {
+    display: none;
+  }
+
   /* Game text box: double border, blinking ▼ when [data-done]. */
   .dialog-box {
     @apply relative rounded-lg border-2 border-foreground/85 bg-card px-5 py-4;
