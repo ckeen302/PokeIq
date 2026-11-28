@@ -291,6 +291,22 @@ describe("an area's encounters, summed up", () => {
           }
   });
 
+  it("words a honey tree's group shortly, saying the same", async () => {
+    const tree = (condition: string, method = "Honey Tree"): NuzEncounter => ({ species: 190, kind: "wild", method, rate: 10, levels: [5, 15], condition });
+    const [a, b] = compactEncounters(
+      [tree("Honey Tree Group A (70% on normal trees / 20% on Munchlax trees)"), tree("Honey Tree Group B (20% on normal trees / 70% on Munchlax trees)")],
+      ["a"]
+    );
+    expect([a.condition, b.condition]).toEqual(["Group A (70% normal / 20% Munchlax trees)", "Group B (20% normal / 70% Munchlax trees)"]);
+    const [elsewhere] = compactEncounters([tree("Route 205; Honey Tree Group C (0% on normal trees / 1% on Munchlax trees)", "Grass")], ["a"]);
+    expect(elsewhere.condition).toBe("Route 205; Honey tree group C (0% normal / 1% Munchlax trees)");
+    // In the data, every honey tree group is under a Honey Tree heading.
+    const v = buildView((await loadGame("platinum"))!);
+    const honey = allAreas(v).flatMap((x) => x.encounters).filter((e) => /group [a-z] \(/i.test(e.condition ?? "") || e.when?.some((w) => /group [a-z] \(/i.test(w)));
+    expect(honey.length).toBeGreaterThan(0);
+    for (const e of honey) expect(e.method).toBe("Honey Tree");
+  });
+
   it("heads Platinum's dual-slot encounters by the GBA game in slot 2", () => {
     expect(methodLabel("FireRed")).toBe("FireRed in slot 2");
     expect(methodLabel("Grass")).toBe("Grass");

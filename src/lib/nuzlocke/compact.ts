@@ -51,7 +51,18 @@ const RELABEL: Record<string, string> = {
   "Enter the Hall of Fame": "After the Hall of Fame",
   "Before entering the Hall of Fame": "Before the Hall of Fame",
 };
-const label = (part: string) => RELABEL[part] ?? part;
+/** DPPt's honey trees, as the data words them: "Honey Tree Group A (70% on normal trees / 20% on Munchlax trees)". */
+const HONEY = /^Honey Tree Group ([A-Z]) \((\d+)% on normal trees \/ (\d+)% on Munchlax trees\)$/;
+
+/**
+ * A condition as the screens show it, saying the same in fewer words: "After the Hall of Fame"; a honey tree's group as
+ * "Group A (70% normal / 20% Munchlax trees)" under a Honey Tree heading ("Honey tree group A (…)" under any other).
+ */
+const label = (part: string, method: string): string => {
+  const honey = HONEY.exec(part);
+  if (honey) return `${/honey/i.test(method) ? "Group" : "Honey tree group"} ${honey[1]} (${honey[2]}% normal / ${honey[3]}% Munchlax trees)`;
+  return RELABEL[part] ?? part;
+};
 
 const parts = (condition: string | undefined): string[] => (condition ? condition.split("; ").filter(Boolean) : []);
 const weatherOf = (e: NuzEncounter): string => parts(e.condition).map((p) => WEATHER[p]).find(Boolean) ?? NORMAL_WEATHER;
@@ -75,7 +86,7 @@ export function compactEncounters(encounters: readonly NuzEncounter[], versions:
   for (const lines of rows.values()) {
     const methodWeathers = weathers.get(lines[0].method) ?? null;
     if (!methodWeathers && lines.length <= KEEP) {
-      for (const e of lines) out.push(e.condition ? { ...e, condition: parts(e.condition).map(label).join("; ") } : e);
+      for (const e of lines) out.push(e.condition ? { ...e, condition: parts(e.condition).map((p) => label(p, e.method)).join("; ") } : e);
       continue;
     }
     // Summed up version by version (a run is in one), then shared where the versions agree: in a run, a Pokémon shows
@@ -129,13 +140,14 @@ function merge(lines: NuzEncounter[], methodWeathers: Set<string> | null): Compa
 
   // What every line says goes in `condition`; what only some do, in `when`.
   const common = each[0].filter((x) => each.every((p) => p.includes(x)));
-  const rest = [...new Set(each.map((p) => p.filter((x) => !common.includes(x)).map(label).join("; ")).filter(Boolean))];
+  const said = (x: string) => label(x, lines[0].method);
+  const rest = [...new Set(each.map((p) => p.filter((x) => !common.includes(x)).map(said).join("; ")).filter(Boolean))];
   if (timeUnion) when.push(timeUnion.join(", "));
   when.push(...rest);
 
   const rates = lines.flatMap((e) => (e.rate !== undefined ? [e.rate] : []));
   const levels = lines.flatMap((e) => (e.levels ? [e.levels] : []));
-  if (common.length) out.condition = common.map(label).join("; ");
+  if (common.length) out.condition = common.map(said).join("; ");
   if (when.length) out.when = when;
   if (rates.length) {
     out.rate = Math.max(...rates);
