@@ -158,7 +158,16 @@ export function catchRows(text: string, opts: { whole?: boolean } = {}): BulbaRo
     table = [];
     blocked.clear();
   };
-  for (const t of templates(body)) {
+  const all = templates(body);
+  // A row may give only a note's name ("notename=unlock"): its note is the one first given under that name in the page
+  // (Scarlet/Violet's and the Legends games' templates).
+  const noteByName = new Map<string, string>();
+  for (const t of all) if (t.named.notename?.trim() && t.named.note?.trim() && !noteByName.has(t.named.notename.trim())) noteByName.set(t.named.notename.trim(), t.named.note);
+  for (const t of all) {
+    const nm = t.name.toLowerCase().replace(/^catch\//, "");
+    if (/^entry(9|9\/special|la|za)$/.test(nm) && t.named.notename?.trim() && !t.named.note?.trim() && noteByName.has(t.named.notename.trim())) t.named.note = noteByName.get(t.named.notename.trim())!;
+  }
+  for (const t of all) {
     const name = t.name.toLowerCase().replace(/^catch\//, "");
     if (!/^catch\//i.test(t.name)) continue;
     const headsAbove = heads.filter((h) => h.at < t.start);

@@ -26,7 +26,7 @@ import { catchRows } from "./lib/bulba-catch";
 import { areaPages, areaRows, availability, boxesLeftOut, confirmed, dlcLabels, eventMons, formsAsText, partners, showable, TREATS_URL } from "./lib/bulba-primary";
 import { categorySweep } from "./lib/bulba-sweep";
 import { mergeStoryBosses, storyBosses } from "./lib/story-bosses";
-import { AMBUSH, AREA_AFTER, BATTLE_ONLY_FORMS, BOSS_BEFORE, NOTES, ROW_FIXES, SPREAD, STATICS } from "./lib/fixes";
+import { AMBUSH, AREA_AFTER, BATTLE_ONLY_FORMS, BOSS_BEFORE, NOTE_REWRITE, NOTES, ROW_FIXES, SPREAD, STATICS } from "./lib/fixes";
 import { GAMES, GAME_BY_ID, type GameCfg } from "./lib/config";
 import { STATS } from "./lib/fetch";
 import { pokeapiRows, type ConditionFix } from "./lib/pokeapi-rows";
@@ -1257,6 +1257,19 @@ async function buildGame(cfg: GameCfg): Promise<Built> {
       fixesLog.push({ area: a.names[0].name, version: ver, species: st.species, name: speciesName(st.species), method: "Static", from: "bulbapedia", action: `added Lv ${st.levels.join("-")}`, why: "the page's Special encounters text gives this one-time encounter (no table row); no source has it anywhere in the game", source: st.source });
       sources.add(st.source);
     }
+  }
+
+  // ---- table notes too long to read as a condition, said in short (lib/fixes.ts NOTE_REWRITE)
+  for (const n of NOTE_REWRITE.filter((x) => x.game === cfg.id)) {
+    let hit = 0;
+    for (const a of accs.values())
+      for (const r of a.rows)
+        if (r.cond?.split("; ").some((p) => n.match.test(p))) {
+          r.cond = r.cond.split("; ").map((p) => (n.match.test(p) ? n.cond : p)).join("; ");
+          hit++;
+        }
+    if (!hit) throw new Error(`${cfg.id}: NOTE_REWRITE ${n.match} matches no row`);
+    fixesLog.push({ area: "(every row with the note)", action: `condition "${n.cond}" (${hit} rows)`, why: n.why, source: n.source });
   }
 
   // ---- conditions a row's table leaves out and its page's text gives (lib/fixes.ts NOTES)

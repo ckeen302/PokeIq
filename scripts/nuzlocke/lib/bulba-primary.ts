@@ -178,6 +178,9 @@ export function prose(s: string): string {
     .replace(/<!--[\s\S]*?-->/g, "")
     .replace(/<ref[^>]*\/>|<ref[^>]*>[\s\S]*?<\/ref>/gi, "")
     .replace(/\[\[(?:File|Image):(?:[^[\]]|\[\[[^\]]*\]\])*\]\]/gi, "")
+    .replace(/\[(?:https?:)?\/\/[^\s\]]+\s+([^\]]+)\]/g, "$1")
+    .replace(/\[(?:https?:)?\/\/[^\s\]]+\]/g, "")
+    .replace(/https?:\/\/\S+/g, "")
     .replace(/\{\{player\}\}/gi, "player")
     .replace(/\{\{fd\|[^|{}]*\|([^|{}]*)\}\}/gi, "$1")
     .replace(/\{\{Shiny\}\}/gi, "Shiny")
@@ -378,7 +381,8 @@ function tradeCond(h: BulbaRow): string | undefined {
 
 /** A Bulbapedia table row -> kind, method and condition, by the game's table layout. */
 function kindOf(game: string, h: BulbaRow): { kind: EncounterKind; method: string; cond?: string } | null {
-  const note = h.named.note ? plain(h.named.note) : "";
+  // (As prose: its references, links and URLs dropped, {{Shiny}} kept as a word; no closing full stop, as a condition part.)
+  const note = h.named.note ? prose(h.named.note).replace(/(?<!\b(?:Co|St|Mt|Dr|Jr))\.$/, "") : "";
   const div = h.div ?? "";
   if (game === "scarlet-violet") {
     if (h.tpl === "entry9/special") {
@@ -440,8 +444,11 @@ export async function areaRows(cfg: GameCfg, place: string, pagesOf: { title: st
           : h.tpl === "entry9" && dlc === "The Teal Mask" && it.text
             ? `Lv. ${it.text} before completing The Way Home; Bulbapedia lists no level for after it`
             : "";
+        // A note about one level of a two-range cell ("…will spawn level 36 Pokémon…" on "17-28, 36") is that range's.
+        const lvNote = k.cond ? /\blevel (\d+)\b/i.exec(k.cond)?.[1] : undefined;
+        const noteHere = !lvNote || items.length < 2 || (it.levels !== undefined && it.levels[0] <= Number(lvNote) && Number(lvNote) <= it.levels[1]);
         // A form PokéAPI doesn't list as a Pokémon (a cosmetic one, "Former Titan") stays in the condition.
-        const cond = [zone, k.cond ? decode(k.cond) : "", f === null ? formText : "", h.alpha && k.method !== "Fixed alpha" ? "Alpha" : "", h.times?.join(", ") ?? "", h.weather ? `Weather: ${h.weather.join(", ")}` : "", before, dlc].filter(Boolean).join("; ") || undefined;
+        const cond = [zone, k.cond && noteHere ? decode(k.cond) : "", f === null ? formText : "", h.alpha && k.method !== "Fixed alpha" ? "Alpha" : "", h.times?.join(", ") ?? "", h.weather ? `Weather: ${h.weather.join(", ")}` : "", before, dlc].filter(Boolean).join("; ") || undefined;
         for (const ver of h.versions.filter((v) => versions.includes(v)))
           out.push({ src: "bulbapedia", ver, place, species: h.species, ...(f?.form ? { form: f.form, art: f.art } : {}), kind: k.kind, method: k.method, ...(it.levels ? { levels: it.levels } : {}), ...(cond ? { cond } : {}), url: p.url });
       }

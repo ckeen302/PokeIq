@@ -127,10 +127,6 @@ export const NOTES: { game: string; area: string; species: number; kind: string;
 ];
 
 /**
- * Bosses the walkthrough fights on arrival at a place, before its Pokémon (its heading comes first, then the battle,
- * and the place is explored in the next part): the boss goes before the area's step.
- */
-/**
  * Areas the walkthrough's headings reach too early, moved straight after another area: Scarlet/Violet's Part 1 opens
  * with a "South Province (Area One)" heading that holds Cabo Poco, where the game begins, but the player only roams
  * Area One after Poco Path and Inlet Grotto (Part 2).
@@ -145,6 +141,10 @@ export const AREA_AFTER: { game: string; area: string; after: string; why: strin
   },
 ];
 
+/**
+ * Bosses the walkthrough fights on arrival at a place, before its Pokémon (its heading comes first, then the battle,
+ * and the place is explored in the next part): the boss goes before the area's step.
+ */
 export const BOSS_BEFORE: { game: string; boss: string; area: string; why: string; source: string }[] = [
   {
     game: "sun-moon",
@@ -167,4 +167,31 @@ export const STATICS: { game: string; area: string; species: number; levels: [nu
   ...["lush jungle", "memorial hill"].map((area) => ({ game: "sun-moon", area, species: 796, levels: [65, 65] as [number, number], cond: "During the third Ultra Beast mission; one Xurkitree here and one at " + (area === "lush jungle" ? "Memorial Hill" : "Lush Jungle"), source: "https://bulbapedia.bulbagarden.net/wiki/" + (area === "lush jungle" ? "Lush_Jungle" : "Memorial_Hill") })),
   { game: "sun-moon", area: "resolution cave", species: 799, levels: [70, 70], cond: "During the fifth Ultra Beast mission", source: "https://bulbapedia.bulbagarden.net/wiki/Resolution_Cave" },
   { game: "sun-moon", area: "ten carat hill", species: 800, levels: [75, 75], cond: "After completing all of the Ultra Beast missions", source: "https://bulbapedia.bulbagarden.net/wiki/Ten_Carat_Hill" },
+];
+
+/**
+ * Table notes too long to read as a condition, said in short with the same meaning (the full note stays on its page).
+ */
+export const NOTE_REWRITE: { game: string; match: RegExp; cond: string; why: string; source: string }[] = [
+  {
+    game: "scarlet-violet",
+    match: /^Due to a quirk in the spawning mechanics, when it is day, Flutter Mane will spawn and despawn so rapidly.*$/,
+    cond: "By day it despawns before it can be seen (except in a Union Circle session or as a Shiny); it can be met at night",
+    why: "Bulbapedia's note on Area Zero's Flutter Mane rows: by day they despawn too fast to be seen unless in a Union Circle session; the quirk spares Shiny ones and the night",
+    source: "https://bulbapedia.bulbagarden.net/wiki/Area_Zero",
+  },
+  {
+    game: "scarlet-violet",
+    match: /^Once the player has accepted Perrin's request at Blueberry Academy's Terarium as part of The Indigo Disk, they can encounter Raging Bolt and Gouging Fire\/Iron Crown and Iron Boulder in specific locations throughout Area Zero$/,
+    cond: "After accepting Perrin's request at Blueberry Academy's Terarium (The Indigo Disk), at a specific spot in Area Zero",
+    why: "Bulbapedia's Area Zero text names all four of these Paradox Pokémon in one sentence; each row (each version's two) needs only what applies to it",
+    source: "https://bulbapedia.bulbagarden.net/wiki/Area_Zero",
+  },
+  {
+    game: "scarlet-violet",
+    match: /^After accepting Perrin's quest in Mossui Town after registering over 150 Pokémon in the Kitakami Pokédex, the player will embark on a quest with her to hunt a special Ursaluna in the Timeless Woods$/,
+    cond: "During Perrin's hunt for a special Ursaluna in the Timeless Woods (after registering over 150 Pokémon in the Kitakami Pokédex), an Ariados ambushes the player",
+    why: "the text above the Ariados box opens with the quest and says in its next sentence that an Ariados ambushes the player there; the first sentence alone reads as an Ursaluna note",
+    source: "https://bulbapedia.bulbagarden.net/wiki/Timeless_Woods",
+  },
 ];

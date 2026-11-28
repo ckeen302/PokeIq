@@ -192143,6 +192143,24 @@
    ],
    "fixes": [
     {
+     "area": "(every row with the note)",
+     "action": "condition \"By day it despawns before it can be seen (except in a Union Circle session or as a Shiny); it can be met at night\" (5 rows)",
+     "why": "Bulbapedia's note on Area Zero's Flutter Mane rows: by day they despawn too fast to be seen unless in a Union Circle session; the quirk spares Shiny ones and the night",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Area_Zero"
+    },
+    {
+     "area": "(every row with the note)",
+     "action": "condition \"After accepting Perrin's request at Blueberry Academy's Terarium (The Indigo Disk), at a specific spot in Area Zero\" (4 rows)",
+     "why": "Bulbapedia's Area Zero text names all four of these Paradox Pokémon in one sentence; each row (each version's two) needs only what applies to it",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Area_Zero"
+    },
+    {
+     "area": "(every row with the note)",
+     "action": "condition \"During Perrin's hunt for a special Ursaluna in the Timeless Woods (after registering over 150 Pokémon in the Kitakami Pokédex), an Ariados ambushes the player\" (2 rows)",
+     "why": "the text above the Ariados box opens with the quest and says in its next sentence that an Ariados ambushes the player there; the first sentence alone reads as an Ursaluna note",
+     "source": "https://bulbapedia.bulbagarden.net/wiki/Timeless_Woods"
+    },
+    {
      "area": "south-province-area-one",
      "action": "after inlet-grotto",
      "why": "the walkthrough's \"South Province (Area One)\" heading opens Part 1 with Cabo Poco inside it; Part 2 goes Poco Path, Inlet Grotto, the Poco Path Lighthouse, then the road through Area One to Los Platos and Mesagoza",
