@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { BadgeMinus, Download, Medal, Pencil, Plus, ScrollText, Share2, Trash2, Upload } from "lucide-react";
 import Link from "@/components/ui/Link";
 import { cn } from "@/lib/utils";
-import { NAME_MAX, badgeCount, badgeTotal, levelCap, stats, type Run } from "@/lib/nuzlocke/run";
+import { NAME_MAX, badgeCount, badgeTotal, levelCap, stats, storyBefore, type Run } from "@/lib/nuzlocke/run";
 import type { GameView } from "@/lib/nuzlocke/view";
 import { Menu, VersionDot, type MenuItem, type NuzT } from "./parts";
 import { TRACKER_PATH } from "./StartRun";
@@ -21,6 +21,8 @@ export function RunHeader({ t, run, view, readOnly, onRename, onBadge, onMenu }:
   const version = view.versions.find((v) => v.id === run.version);
   const s = stats(run);
   const cap = run.rules.caps ? levelCap(run, view) : null;
+  // A rival or villain still to come before the cap's boss, when they don't set the cap: a "Before that" under it.
+  const before = run.rules.caps ? storyBefore(run, view) : null;
   const hasCaps = view.steps.some((x) => x.type === "boss" && (x.boss.cap !== undefined || x.boss.capByVersion));
   const badges = badgeCount(run, view);
   const total = badgeTotal(view, run.version);
@@ -90,6 +92,12 @@ export function RunHeader({ t, run, view, readOnly, onRename, onBadge, onMenu }:
               </span>
             ) : (
               <span className="mt-1 text-[14px] font-semibold">{t("header.noCap")}</span>
+            )}
+            {before && (
+              <span className="mt-1 flex min-w-0 items-center gap-1.5 text-[12px] font-semibold leading-snug text-muted-foreground max-sm:text-[11px]" data-testid="nz-cap-before">
+                <span className="min-w-0 truncate">{before.top !== undefined ? t("header.beforeTop", { boss: before.boss.name, n: before.top }) : t("header.before", { boss: before.boss.name })}</span>
+                {before.boss.optional && <span className="shrink-0 rounded-full bg-foreground/[0.07] px-1.5 text-[10.5px]">{t("routes.optional")}</span>}
+              </span>
             )}
           </div>
         )}

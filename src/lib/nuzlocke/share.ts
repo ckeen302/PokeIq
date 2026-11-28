@@ -13,7 +13,8 @@ const MAX_RAW = 24_000;
 
 const KINDS: readonly EncounterKind[] = ["wild", "gift", "static", "trade", "egg", "fossil", "roaming"];
 const STATUSES: readonly MonStatus[] = ["team", "box", "dead"];
-const RULE_BITS: (keyof Rules)[] = ["dupes", "shiny", "gifts", "statics", "caps"];
+// New rules go at the end, so older links read them as off.
+const RULE_BITS: (keyof Rules)[] = ["dupes", "shiny", "gifts", "statics", "caps", "storyCaps"];
 
 /** A Pokémon: area, met, now ("" when the same), nickname, status, flags (1 shiny, 2 free), level (0 none), kind, death. */
 type MonRow = [string, string, string, string, number, number, number, number, DeathRow?];

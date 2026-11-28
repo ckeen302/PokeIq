@@ -10,16 +10,20 @@ import { artSrc } from "@/lib/nuzlocke/view";
  * The same string is built on the server and when the page hydrates, so React keeps the server's markup.
  */
 
-/** A row: its Pokédex link, picture, name, line ("45% · Lv 2–5"), and the version it's only in, with that version's colour. */
-export type GuideRow = [href: string, art: number, name: string, text: string, only?: string, color?: string];
+/**
+ * A row: its Pokédex link, picture, name, line ("45% · Lv 2–5"), the version it's only in with that version's colour
+ * ("" for none), and its post-game line ("After the Hall of Fame: Lv 60"), shown muted under the story's.
+ */
+export type GuideRow = [href: string, art: number, name: string, text: string, only?: string, color?: string, post?: string];
 /** A way of meeting: its icon (in the page's icon sheet), its heading, its kind when the heading doesn't say it ("Gift"), its rows. */
 export type GuideGroup = [icon: string, label: string, kind: string | null, rows: GuideRow[]];
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
-function row([href, art, name, text, only, color]: GuideRow): string {
+function row([href, art, name, text, only, color, post]: GuideRow): string {
   const tag = only ? `<i class="nzg-only" style="--v:${esc(color ?? "")}">${esc(only)}</i>` : "";
-  return `<li><a href="${esc(href)}"><img src="${artSrc(art)}" alt="" loading="lazy"><span><b>${esc(name)}</b>${tag}${text ? `<small>${esc(text)}</small>` : ""}</span></a></li>`;
+  const later = post ? `<small class="nzg-post">${esc(post)}</small>` : "";
+  return `<li><a href="${esc(href)}"><img src="${artSrc(art)}" alt="" loading="lazy"><span><b>${esc(name)}</b>${tag}${text ? `<small>${esc(text)}</small>` : ""}${later}</span></a></li>`;
 }
 
 export function GuideList({ groups }: { groups: GuideGroup[] }) {

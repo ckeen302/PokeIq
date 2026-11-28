@@ -40,6 +40,8 @@
     "staticsText": "A Pokémon you walk up to, or a roaming one, uses up its area's encounter; when this is off, it's a free extra.",
     "caps": "Level caps",
     "capsText": "Shows the level of the next boss's strongest Pokémon, so you know not to train past it.",
+    "storyCaps": "Rival and villain battles set the level cap",
+    "storyCapsText": "Usually the cap is the next gym leader's (or totem's, or kahuna's). With this on, the next rival or villain battle counts too. Battles you can skip never do.",
     "done": "Done"
   },
   "header": {
@@ -50,6 +52,8 @@
     "badgeAddHand": "Badges: {n}. Tap to add one, hold to take one off.",
     "levelCap": "Level cap",
     "capFor": "for {boss}",
+    "before": "Before that: {boss}",
+    "beforeTop": "Before that: {boss}, top Lv {n}",
     "noCap": "Every boss beaten",
     "caught": "Caught",
     "alive": "Alive",
@@ -90,6 +94,9 @@
     "extraShiny": "Shiny clause",
     "extraFree": "Didn't use the area",
     "cap": "Level cap {n}",
+    "topLevel": "Top level {n}",
+    "optional": "Optional",
+    "storyBattle": "Story battle",
     "beaten": "Beaten",
     "markBeaten": "Mark {boss} beaten",
     "markNotBeaten": "Mark {boss} not beaten",
@@ -149,7 +156,8 @@
     "rates": "{min}–{max}%",
     "levels": "Lv {min}–{max}",
     "level": "Lv {n}",
-    "more": "+{n} more"
+    "more": "+{n} more",
+    "post": "{when}: {text}"
   },
   "death": {
     "title": "Mark {name} as dead",

@@ -39,6 +39,8 @@ export interface ViewEncounter extends Omit<NuzEncounter, "species" | "form" | "
   when?: string[];
   /** The lowest of their rates, when they differ (`rate` is then the highest). */
   rateMin?: number;
+  /** Met only after the story ("After the Hall of Fame"): shown apart from (under) the story's lines. */
+  post?: string;
 }
 
 export interface ViewArea {

@@ -10,6 +10,7 @@ const CLAUSES = [
   ["gifts", "gifts", "giftsText"],
   ["statics", "statics", "staticsText"],
   ["caps", "caps", "capsText"],
+  ["storyCaps", "storyCaps", "storyCapsText"],
 ] as const;
 
 /** The rules: the three that make a Nuzlocke (always on, explained), then the clauses the player picks. */
@@ -33,7 +34,8 @@ export function RulesForm({ t, rules, onChange }: { t: NuzT; rules: Rules; onCha
         <h3 className="mb-1 text-[12.5px] font-bold uppercase tracking-[0.14em] text-muted-foreground">{t("rules.clauses")}</h3>
         <div className="divide-y divide-foreground/[0.06]">
           {CLAUSES.map(([key, label, text]) => (
-            <Switch key={key} checked={rules[key]} onChange={(v) => onChange({ ...rules, [key]: v })} label={t(`rules.${label}`)} text={t(`rules.${text}`)} testId={`nz-rule-${key}`} />
+            // Rival and villain battles setting the cap only means something with the caps shown.
+            <Switch key={key} checked={rules[key] && (key !== "storyCaps" || rules.caps)} disabled={key === "storyCaps" && !rules.caps} onChange={(v) => onChange({ ...rules, [key]: v })} label={t(`rules.${label}`)} text={t(`rules.${text}`)} testId={`nz-rule-${key}`} />
           ))}
         </div>
       </section>

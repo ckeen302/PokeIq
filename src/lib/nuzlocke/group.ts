@@ -15,6 +15,8 @@ export interface EncounterStat {
   /** The lowest rate, when the lines summed up differ (`rate` is the highest). */
   rateMin?: number;
   levels?: [number, number];
+  /** A post-game line ("After the Hall of Fame"), shown under the story's. */
+  post?: string;
 }
 
 export interface EncounterRow {
@@ -84,10 +86,15 @@ function collect(encounters: readonly ViewEncounter[]): MethodGroup[] {
     if (e.rate !== undefined) stat.rate = e.rate;
     if (e.rateMin !== undefined) stat.rateMin = e.rateMin;
     if (e.levels) stat.levels = e.levels;
+    if (e.post) stat.post = e.post;
     row.stats.push(stat);
   }
   return [...groups.values()].map((g) => g.group);
 }
+
+/** A row's story-time lines, and its post-game ones (shown apart, under them). */
+export const storyStats = (stats: readonly EncounterStat[]): EncounterStat[] => stats.filter((s) => !s.post);
+export const postStats = (stats: readonly EncounterStat[]): EncounterStat[] => stats.filter((s) => s.post);
 
 /** The level range across a row's lines, or null when none is known. */
 export function levelSpan(stats: readonly EncounterStat[]): [number, number] | null {

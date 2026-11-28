@@ -1,15 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { BookOpen, Check, ChevronDown, ChevronsUp, Hash, Medal, Plus, RotateCcw, SkipForward, Sparkles, Swords, Trash2, Undo2 } from "lucide-react";
+import { BookOpen, Check, ChevronDown, ChevronsUp, Hash, Medal, Plus, RotateCcw, SkipForward, Sparkles, Swords, Trash2, Undo2, VenetianMask } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { NICK_MAX, counts, displayName, levelCap, monsIn, type MonStatus, type Run, type RunMon } from "@/lib/nuzlocke/run";
+import { NICK_MAX, counts, displayName, levelCap, monsIn, setsCap, type MonStatus, type Run, type RunMon } from "@/lib/nuzlocke/run";
 import type { AreaFilter } from "@/lib/nuzlocke/storage";
 import { capFor, inVersion, type GameView, type ViewArea, type ViewBoss } from "@/lib/nuzlocke/view";
 import { groupByMethod } from "@/lib/nuzlocke/group";
 import { Segmented } from "../tier-list/ui";
 import type { Act } from "./act";
-import { Menu, Sprite, TypeChip, type MenuItem, type NuzT } from "./parts";
+import { Menu, Sprite, TypeChip, VersionDot, type MenuItem, type NuzT } from "./parts";
 
 /**
  * The run's main column: every area in story order with the bosses between them, each area's one encounter (or the
@@ -54,12 +54,15 @@ export function RouteList({
   const all = [...story.flatMap((i) => (i.type === "area" ? [i.area] : [])), ...view.extra];
   const done = all.filter((a) => run.areas[a.id]).length;
   const remaining = all.filter((a) => !run.areas[a.id] && playable(a)).length;
-  // Up next: the first open area after the furthest one logged in story order (a player moves on; one passed by, such as
-  // a town's water before Surf, stays in Remaining), else the first open one.
+  // Up next: the first open area or story battle (a rival, a villain) after the furthest step done in story order (a
+  // player moves on; an area passed by, such as a town's water before Surf, stays in Remaining), else the first open one.
   const open = (a: ViewArea) => !run.areas[a.id] && playable(a);
-  const storyAreas = story.flatMap((i) => (i.type === "area" ? [i.area] : []));
-  const furthest = storyAreas.reduce((last, a, n) => (run.areas[a.id] ? n : last), -1);
-  const next = storyAreas.slice(furthest + 1).find(open) ?? all.find(open) ?? null;
+  const isOpen = (i: Item) => (i.type === "area" ? open(i.area) : i.boss.kind === "story" && !run.beaten.includes(i.boss.key));
+  const isDone = (i: Item) => (i.type === "area" ? !!run.areas[i.area.id] : run.beaten.includes(i.boss.key));
+  const furthest = story.reduce((last, i, n) => (isDone(i) ? n : last), -1);
+  const nextItem: Item | null = story.slice(furthest + 1).find(isOpen) ?? story.find(isOpen) ?? (view.extra.find(open) ? { type: "area", area: view.extra.find(open)! } : null);
+  const next = nextItem?.type === "area" ? nextItem.area : null;
+  const nextName = nextItem ? (nextItem.type === "area" ? nextItem.area.name : nextItem.boss.name) : null;
   const shows = (i: Item) =>
     filter === "all" ? true : i.type === "boss" ? (filter === "done") === run.beaten.includes(i.boss.key) : filter === "done" ? !!run.areas[i.area.id] : !run.areas[i.area.id] && playable(i.area);
   const shown = story.filter(shows);
@@ -67,11 +70,11 @@ export function RouteList({
   const anyArea = shown.some((i) => i.type === "area") || extraShown.length > 0;
 
   const goNext = () => {
-    if (!next) return;
+    if (!nextItem) return;
     if (filter === "done") onFilter("all");
-    if (view.extra.some((a) => a.id === next.id)) setOtherOpen(true);
+    if (next && view.extra.some((a) => a.id === next.id)) setOtherOpen(true);
     window.requestAnimationFrame(() => {
-      const el = document.getElementById(`nz-area-${next.id}`);
+      const el = nextItem.type === "area" ? document.getElementById(`nz-area-${nextItem.area.id}`) : document.querySelector<HTMLElement>(`[data-boss="${nextItem.boss.key}"]`);
       if (!el) return;
       const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       el.scrollIntoView({ block: "center", behavior: reduce ? "auto" : "smooth" });
@@ -117,10 +120,10 @@ export function RouteList({
             { value: "done", label: <FilterLabel text={t("routes.done")} n={done} />, testId: "nz-filter-done" },
           ]}
         />
-        {next && !readOnly && (
+        {nextName && !readOnly && (
           <button type="button" onClick={goNext} className="inline-flex h-9 max-w-full items-center gap-1.5 rounded-full px-3 text-[13.5px] font-semibold text-muted-foreground transition-colors hover:bg-foreground/[0.06] hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring max-md:h-10" data-testid="nz-next">
             <ChevronDown className="h-4 w-4 shrink-0" aria-hidden />
-            <span className="truncate">{t("routes.next", { area: next.name })}</span>
+            <span className="truncate">{t("routes.next", { area: nextName })}</span>
           </button>
         )}
       </div>
@@ -128,7 +131,7 @@ export function RouteList({
       <ol className="space-y-2.5">
         {shown.map((i, n) =>
           i.type === "boss" ? (
-            <BossDivider key={`${i.boss.key}-${n}`} t={t} run={run} boss={i.boss} current={cap?.boss.key === i.boss.key} readOnly={readOnly} onToggle={() => act.boss(i.boss.key)} />
+            <BossDivider key={`${i.boss.key}-${n}`} t={t} run={run} view={view} boss={i.boss} current={cap?.boss.key === i.boss.key} readOnly={readOnly} onToggle={() => act.boss(i.boss.key)} />
           ) : (
             <AreaCard key={i.area.id} t={t} run={run} view={view} area={i.area} next={i.area.id === next?.id} readOnly={readOnly} justCaught={justCaught} onCaughtShown={onCaughtShown} act={act} />
           )
@@ -167,29 +170,51 @@ function FilterLabel({ text, n }: { text: string; n: number }) {
   );
 }
 
-function BossDivider({ t, run, boss, current, readOnly, onToggle }: { t: NuzT; run: Run; boss: ViewBoss; current: boolean; readOnly: boolean; onToggle(): void }) {
+/**
+ * A boss between the areas: a gym leader (its badge), a totem or kahuna, the Elite Four…; or, lighter, a story battle
+ * (a rival, a villain). Its level is "Level cap N" when it sets the cap under the run's rules, else "Top level N". Tap to
+ * mark it beaten; only a gym leader's badge counts as a badge.
+ */
+function BossDivider({ t, run, view, boss, current, readOnly, onToggle }: { t: NuzT; run: Run; view: GameView; boss: ViewBoss; current: boolean; readOnly: boolean; onToggle(): void }) {
   const beaten = run.beaten.includes(boss.key);
+  const story = boss.kind === "story";
   const cap = capFor(boss, run.version);
-  const showCap = run.rules.caps && cap !== undefined;
-  const Icon = beaten ? Check : boss.badge ? Medal : Swords;
+  const level = run.rules.caps && cap !== undefined ? t(setsCap(boss, run.rules) ? "routes.cap" : "routes.topLevel", { n: cap }) : null;
+  const Icon = beaten ? Check : story ? VenetianMask : boss.badge ? Medal : Swords;
+  const chip = "rounded-full bg-foreground/[0.07] px-2 py-px text-[11.5px] font-semibold text-foreground/75";
   const body = (
     <>
       <span className={cn("h-px flex-1", beaten ? "bg-success/30" : "bg-foreground/[0.12]")} aria-hidden />
       <span
         className={cn(
-          "flex max-w-[88%] flex-wrap items-center justify-center gap-x-2 gap-y-0.5 rounded-full border px-4 py-2 text-center text-[14px] font-semibold transition-colors",
-          beaten ? "border-success/40 bg-success/[0.09] text-foreground/80" : current ? "border-[hsl(var(--warning)/0.55)] bg-[hsl(var(--warning)/0.12)] shadow-[0_0_0_3px_hsl(var(--warning)/0.1)]" : "border-[hsl(var(--warning)/0.3)] bg-[hsl(var(--warning)/0.06)]"
+          "flex max-w-[88%] flex-wrap items-center justify-center gap-x-2 gap-y-0.5 rounded-full border px-4 text-center font-semibold transition-colors",
+          story ? "py-1.5 text-[13px]" : "py-2 text-[14px]",
+          beaten
+            ? "border-success/40 bg-success/[0.09] text-foreground/80"
+            : story
+              ? cn("border-foreground/[0.14] bg-foreground/[0.03] text-foreground/85", current && "shadow-[0_0_0_3px_hsl(var(--foreground)/0.06)]")
+              : current
+                ? "border-[hsl(var(--warning)/0.55)] bg-[hsl(var(--warning)/0.12)] shadow-[0_0_0_3px_hsl(var(--warning)/0.1)]"
+                : "border-[hsl(var(--warning)/0.3)] bg-[hsl(var(--warning)/0.06)]"
         )}
+        data-story={story ? "1" : undefined}
       >
-        <Icon className={cn("h-4 w-4 shrink-0", beaten ? "text-success" : "text-[hsl(var(--warning))]")} strokeWidth={beaten ? 3 : 2} aria-hidden />
+        <Icon className={cn("h-4 w-4 shrink-0", beaten ? "text-success" : story ? "text-muted-foreground" : "text-[hsl(var(--warning))]")} strokeWidth={beaten ? 3 : 2} aria-label={story && !beaten ? t("routes.storyBattle") : undefined} aria-hidden={!story || beaten} />
         <span>{boss.name}</span>
         {boss.badge && <span className="text-muted-foreground">· {boss.badge}</span>}
-        {/* On a phone the cap and "Beaten" take the second line, so no line starts with a dot. */}
-        {(showCap || beaten) && (
+        {boss.optional && <span className={chip}>{t("routes.optional")}</span>}
+        {boss.versions && (
+          <span className={cn(chip, "inline-flex items-center gap-1")}>
+            <VersionDot id={boss.versions[0]} className="h-2 w-2" />
+            {boss.versions.map((id) => view.versions.find((v) => v.id === id)?.name ?? id).join(" & ")}
+          </span>
+        )}
+        {/* On a phone the level and "Beaten" take the second line, so no line starts with a dot. */}
+        {(level || beaten) && (
           <span className="max-sm:basis-full">
             <span className="max-sm:hidden">· </span>
-            {showCap && <span className={cn(!beaten && "font-bold")}>{t("routes.cap", { n: cap })}</span>}
-            {showCap && beaten && " · "}
+            {level && <span className={cn(!beaten && !story && "font-bold")}>{level}</span>}
+            {level && beaten && " · "}
             {beaten && <span className="text-success">{t("routes.beaten")}</span>}
           </span>
         )}
@@ -202,7 +227,7 @@ function BossDivider({ t, run, boss, current, readOnly, onToggle }: { t: NuzT; r
       {readOnly ? (
         <div className="flex items-center gap-3 py-1">{body}</div>
       ) : (
-        <button type="button" onClick={onToggle} aria-pressed={beaten} aria-label={beaten ? t("routes.markNotBeaten", { boss: boss.name }) : t("routes.markBeaten", { boss: boss.name })} className="flex min-h-12 w-full items-center gap-3 rounded-full py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" data-testid={`nz-boss-${boss.key}`}>
+        <button type="button" onClick={onToggle} aria-pressed={beaten} aria-label={beaten ? t("routes.markNotBeaten", { boss: boss.name }) : t("routes.markBeaten", { boss: boss.name })} className={cn("flex w-full items-center gap-3 rounded-full py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", story ? "min-h-11" : "min-h-12")} data-testid={`nz-boss-${boss.key}`}>
           {body}
         </button>
       )}

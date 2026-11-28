@@ -48,6 +48,10 @@ export interface NuzBoss {
   capByVersion?: Record<string, number>;
   /** Only in these versions (a version-exclusive battle), by version id; absent when every version has it. */
   versions?: string[];
+  /** A rival, villain or other story battle: it shows in story order but sets the level cap only when the run's rule says so. */
+  kind?: "story";
+  /** A battle the player can skip. */
+  optional?: boolean;
 }
 
 /** One step of the game in story order: an area to encounter in, or a boss. */

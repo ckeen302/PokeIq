@@ -26,8 +26,10 @@ import {
   removeBadge,
   removeMon,
   setStatus,
+  setsCap,
   skipArea,
   standing,
+  storyBefore,
   swap,
   team,
   toggleBoss,
@@ -219,15 +221,18 @@ describe("an area's encounters, summed up", () => {
   const ALL = [null, "During overcast weather", "During rainy weather", "During foggy weather"];
   const both = (w: string | null, r: number) => [W(w, "Before entering the Hall of Fame", r, [7, 10]), W(w, "Enter the Hall of Fame", r, [60, 60])];
 
-  it("shows a Wild Area Pokémon once, with its weathers in a word and its rates as a range", () => {
+  it("shows a Wild Area Pokémon once in the story (and once after it), with its weathers in a word and its rates as a range", () => {
     const area = [...ALL.flatMap((w) => both(w, 20)), ...[null, "During rainy weather"].flatMap((w, i) => both(w, 5 + i * 5).map((e) => ({ ...e, species: 2 })))];
     const out = compactEncounters(area, ["a", "b"]);
-    expect(out).toHaveLength(2);
-    // Every weather the grass has, before and after the Hall of Fame: no condition left but "Any weather".
-    expect(out[0]).toMatchObject({ species: 1, when: ["Any weather"], rate: 20, levels: [7, 60] });
-    expect(out[0].condition).toBeUndefined();
+    const story = out.filter((e) => !e.post);
+    expect(story).toHaveLength(2);
+    // Every weather the grass has: no condition left but "Any weather" ("Before the Hall of Fame" goes unsaid, as there's a post-game line).
+    expect(story[0]).toMatchObject({ species: 1, when: ["Any weather"], rate: 20, levels: [7, 10] });
+    expect(story[0].condition).toBeUndefined();
     // Two of four weathers: named; two rates: a range.
-    expect(out[1]).toMatchObject({ species: 2, when: ["Normal weather", "Rain"], rateMin: 5, rate: 10 });
+    expect(story[1]).toMatchObject({ species: 2, when: ["Normal weather", "Rain"], rateMin: 5, rate: 10, levels: [7, 10] });
+    // After the Hall of Fame, apart, with its own levels.
+    expect(out.filter((e) => e.post)).toEqual([expect.objectContaining({ species: 1, post: "After the Hall of Fame", levels: [60, 60] }), expect.objectContaining({ species: 2, post: "After the Hall of Fame", levels: [60, 60] })]);
   });
 
   it("names the one or two weathers a Pokémon is missing from, and leaves weather out where the method has none", () => {
@@ -239,10 +244,11 @@ describe("an area's encounters, summed up", () => {
     ];
     const [one, two, fish] = compactEncounters(area, ["a"]);
     expect(one.when).toEqual(["Any weather"]);
-    expect(one.condition).toBe("After the Hall of Fame");
+    expect(one.post).toBe("After the Hall of Fame");
+    expect(one.condition).toBeUndefined();
     expect(two.when).toEqual(["Any weather but Sandstorm and Fog"]);
     expect(fish.when).toBeUndefined(); // the fishing has no weather in the data: it isn't "normal weather" only
-    expect(fish.condition).toBe("After the Hall of Fame");
+    expect(fish.post).toBe("After the Hall of Fame");
   });
 
   it("keeps a few plain lines as they are, and sums up a version's own lines in that version only", () => {
@@ -279,15 +285,17 @@ describe("an area's encounters, summed up", () => {
     const lines = [...game!.steps.flatMap((s) => (s.type === "area" ? [s.area] : [])), ...game!.extra].reduce((n, a) => n + a.encounters.length, 0);
     const entries = allAreas(v).reduce((n, a) => n + a.encounters.length, 0);
     expect(lines).toBeGreaterThan(10_000);
-    expect(entries).toBeLessThan(lines / 3);
+    expect(entries).toBeLessThan(lines / 2);
     expect(JSON.stringify(v).length).toBeLessThan(800_000);
     for (const a of allAreas(v))
       for (const version of ["sword", "shield"])
         for (const g of groupByMethod(a.encounters.filter((e) => inVersion(e, version))))
           for (const r of g.rows) {
-            // Once per way of meeting it: one summed-up line, or up to three plain ones ("Before the Hall of Fame 20%").
-            if (r.stats.some((x) => x.when)) expect(r.stats, `${a.id} ${g.method} ${r.mon}`).toHaveLength(1);
-            else expect(r.stats.length, `${a.id} ${g.method} ${r.mon}`).toBeLessThanOrEqual(3);
+            // Once per way of meeting it, in the story and after it: one summed-up line each, or up to three plain ones.
+            for (const part of [r.stats.filter((x) => !x.post), r.stats.filter((x) => x.post)]) {
+              if (part.some((x) => x.when)) expect(part, `${a.id} ${g.method} ${r.mon}`).toHaveLength(1);
+              else expect(part.length, `${a.id} ${g.method} ${r.mon}`).toBeLessThanOrEqual(3);
+            }
           }
   });
 
@@ -305,6 +313,35 @@ describe("an area's encounters, summed up", () => {
     const honey = allAreas(v).flatMap((x) => x.encounters).filter((e) => /group [a-z] \(/i.test(e.condition ?? "") || e.when?.some((w) => /group [a-z] \(/i.test(w)));
     expect(honey.length).toBeGreaterThan(0);
     for (const e of honey) expect(e.method).toBe("Honey Tree");
+  });
+
+  it("keeps the story's levels apart from the post-game's", async () => {
+    const line = (stage: string, levels: [number, number], rate?: number): NuzEncounter => ({ species: 43, kind: "wild", method: "Grass", levels, ...(rate !== undefined && { rate }), condition: `Main Area; ${stage}; During overcast weather` });
+    const out = compactEncounters([line("Before entering the Hall of Fame", [7, 10]), line("Enter the Hall of Fame", [60, 60], 40)], ["a"]);
+    expect(out).toHaveLength(2);
+    expect(out[0]).toMatchObject({ levels: [7, 10] });
+    expect(out[0].post).toBeUndefined();
+    expect(out[0].condition).toBe("Main Area"); // "Before the Hall of Fame" goes unsaid: the post-game line says the difference
+    expect(out[1]).toMatchObject({ post: "After the Hall of Fame", levels: [60, 60], rate: 40, condition: "Main Area" });
+    // Sword & Shield: Rolling Fields' Oddish is Lv 7–10 in the story, and Lv 60 after it, apart.
+    const v = buildView((await loadGame("sword-shield"))!);
+    const oddish = allAreas(v).find((a) => a.id === "rolling-fields")!.encounters.filter((e) => e.mon === "43" && e.method === "Grass");
+    expect(oddish.filter((e) => !e.post).every((e) => e.levels![1] <= 10)).toBe(true);
+    expect(oddish.filter((e) => e.post)).toEqual([expect.objectContaining({ post: "After the Hall of Fame", levels: [60, 60] })]);
+    // The Isle of Armor has both, kept apart too; the Crown Tundra's lines don't depend on the Hall of Fame.
+    for (const id of ["fields-of-honor", "soothing-wetlands", "giants-bed"]) {
+      const area = allAreas(v).find((a) => a.id === id)!;
+      expect(area.encounters.some((e) => !e.post && e.kind === "wild"), id).toBe(true);
+      expect(area.encounters.some((e) => e.post === "After the Hall of Fame"), id).toBe(id !== "giants-bed");
+      for (const e of area.encounters) expect([e.condition, ...(e.when ?? [])].join(" "), id).not.toMatch(/Hall of Fame/);
+    }
+  });
+
+  it("joins the items a fossil needs", () => {
+    const [e] = compactEncounters([{ species: 883, kind: "fossil", method: "Fossil", condition: "Have Fossilized Dino in bag; Have Fossilized Fish in bag" }], ["a"]);
+    expect(e.condition).toBe("Fossilized Dino + Fossilized Fish");
+    const [one] = compactEncounters([{ species: 138, kind: "fossil", method: "Fossil", condition: "Cinnabar Lab; Have Helix Fossil in bag" }], ["a"]);
+    expect(one.condition).toBe("Cinnabar Lab; Have Helix Fossil in bag");
   });
 
   it("heads Platinum's dual-slot encounters by the GBA game in slot 2", () => {
@@ -521,6 +558,55 @@ function busyRun(view: GameView): Run {
   run = toggleBoss(run, "brock", T0);
   return { ...run, updatedAt: T0 + 120_000 };
 }
+
+describe("story battles and the level cap", () => {
+  // In story order: a totem (no badge), a rival, an optional battle, a kahuna (no badge), then each version's own gym.
+  const steps: NuzStep[] = [
+    { type: "boss", boss: { name: "Totem Gumshoos", cap: 12 } },
+    { type: "boss", boss: { name: "Rival Hau", cap: 14, kind: "story" } },
+    { type: "boss", boss: { name: "Trial Captain Ilima", cap: 13, kind: "story", optional: true } },
+    { type: "boss", boss: { name: "Kahuna Hala", cap: 15 } },
+    { type: "boss", boss: { name: "Bea", badge: "Fighting Badge", cap: 36, versions: ["a"] } },
+    { type: "boss", boss: { name: "Allister", badge: "Ghost Badge", cap: 36, versions: ["b"] } },
+  ];
+  const v = buildView(game(7, [], steps));
+  const run = (version: string, storyCaps: boolean, beaten: string[] = []) => ({ ...createRun({ game: "x", version, name: "T", now: T0, rules: { ...DEFAULT_RULES, storyCaps } }), beaten });
+
+  it("leaves rivals out of the cap by default, and says they come first", () => {
+    expect(DEFAULT_RULES.storyCaps).toBe(false);
+    expect(levelCap(run("a", false), v)).toMatchObject({ cap: 12, boss: { name: "Totem Gumshoos" } });
+    const r = run("a", false, ["totem-gumshoos"]);
+    expect(levelCap(r, v)).toMatchObject({ cap: 15, boss: { name: "Kahuna Hala" } });
+    expect(storyBefore(r, v)).toMatchObject({ boss: { name: "Rival Hau" }, top: 14 });
+    expect(standing(r, v)).toMatchObject({ next: { name: "Kahuna Hala" }, cap: 15 });
+  });
+
+  it("caps at a rival with the rule on, but never at an optional battle", () => {
+    const r = run("a", true, ["totem-gumshoos"]);
+    expect(levelCap(r, v)).toMatchObject({ cap: 14, boss: { name: "Rival Hau" } });
+    expect(storyBefore(r, v)).toBeNull();
+    const after = run("a", true, ["totem-gumshoos", "rival-hau"]);
+    expect(levelCap(after, v)).toMatchObject({ cap: 15, boss: { name: "Kahuna Hala" } });
+    expect(storyBefore(after, v)).toMatchObject({ boss: { name: "Trial Captain Ilima", optional: true } });
+    expect(setsCap({ name: "x", kind: "story", optional: true }, { storyCaps: true })).toBe(false);
+    expect(setsCap({ name: "x", optional: true }, { storyCaps: true })).toBe(false);
+  });
+
+  it("takes each version's own gym, and counts badges from gyms only", () => {
+    const done = ["totem-gumshoos", "rival-hau", "kahuna-hala"];
+    expect(levelCap(run("a", false, done), v)).toMatchObject({ boss: { name: "Bea" } });
+    expect(levelCap(run("b", false, done), v)).toMatchObject({ boss: { name: "Allister" } });
+    expect(badgeTotal(v, "a")).toBe(1);
+    expect(badgeTotal(v, "b")).toBe(1);
+    expect(badgeCount(run("b", false, done), v)).toBe(0); // a totem, a rival and a kahuna aren't badges
+    expect(badgeCount(run("b", false, [...done, "allister"]), v)).toBe(1);
+  });
+
+  it("is done when every boss that sets the cap is beaten, rivals or not", () => {
+    expect(standing(run("b", false, ["totem-gumshoos", "kahuna-hala", "allister"]), v)).toBe("done");
+    expect(standing(run("b", true, ["totem-gumshoos", "kahuna-hala", "allister"]), v)).toMatchObject({ next: { name: "Rival Hau" } });
+  });
+});
 
 describe("saving", () => {
   it("round-trips runs through storage, several at once", async () => {

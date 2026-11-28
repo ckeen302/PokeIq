@@ -4,7 +4,7 @@ import { memo, useCallback, useMemo, useState } from "react";
 import { Check, ExternalLink, Search, SkipForward, Sparkles, TriangleAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { counts, dupeOf, isFree, type Run } from "@/lib/nuzlocke/run";
-import { groupByMethod, levelSpan, methodLabel, type EncounterStat } from "@/lib/nuzlocke/group";
+import { groupByMethod, levelSpan, methodLabel, postStats, storyStats, type EncounterStat } from "@/lib/nuzlocke/group";
 import { allAreas, inVersion, type GameView } from "@/lib/nuzlocke/view";
 import type { EncounterKind } from "@/lib/nuzlocke/model";
 import type { Act } from "./act";
@@ -31,6 +31,16 @@ export function statText(t: NuzT, stats: readonly EncounterStat[]): string {
   return lines.join(" · ");
 }
 
+/**
+ * A Pokémon's post-game lines, each on its own: "After the Hall of Fame: Overcast · 40% · Lv 60". They're never summed
+ * up with the story's, whose levels a player mid-run needs on their own.
+ */
+export function postText(t: NuzT, stats: readonly EncounterStat[]): string[] {
+  const by = new Map<string, EncounterStat[]>();
+  for (const s of postStats(stats)) by.set(s.post!, [...(by.get(s.post!) ?? []), s]);
+  return [...by].map(([post, lines]) => t("picker.post", { when: post, text: [...new Set(lines.flatMap((s) => s.when ?? []))].concat(statText(t, lines)).filter(Boolean).join(" · ") }));
+}
+
 /** How many of a Pokémon's conditions show before "+3 more" (all of them once it's chosen). */
 const WHEN_SHOWN = 3;
 
@@ -55,9 +65,12 @@ const PickRow = memo(function PickRow({
   disabled: boolean;
   onPick(): void;
 }) {
-  const when = useMemo(() => [...new Set(stats.flatMap((s) => s.when ?? []))], [stats]);
+  // The story's lines lead; the post-game ones follow, muted (or lead, muted, when there are only those).
+  const story = useMemo(() => storyStats(stats), [stats]);
+  const when = useMemo(() => [...new Set(story.flatMap((s) => s.when ?? []))], [story]);
   const shown = on ? when : when.slice(0, WHEN_SHOWN);
-  const text = statText(t, stats);
+  const text = statText(t, story);
+  const post = postText(t, stats);
   return (
     <li className="nz-pick">
       <button
@@ -92,6 +105,11 @@ const PickRow = memo(function PickRow({
               {when.length > shown.length && <span className="px-1 text-[11.5px] font-semibold leading-[20px] text-muted-foreground">{t("picker.more", { n: when.length - shown.length })}</span>}
             </span>
           )}
+          {post.map((line) => (
+            <span key={line} className="mt-1 block text-[12px] leading-snug text-muted-foreground/80 [font-variant-numeric:tabular-nums]" data-testid="nz-post">
+              {line}
+            </span>
+          ))}
           {dupe && (
             <span className="mt-1 flex items-start gap-1 text-[12.5px] font-semibold leading-snug text-[hsl(var(--warning))]" data-testid="nz-dupe">
               <TriangleAlert className="mt-px h-3.5 w-3.5 shrink-0" aria-hidden />
@@ -130,7 +148,9 @@ export function Picker({ t, run, view, area: areaId, extra, onClose, act }: { t:
     const m = new Map<string, () => void>();
     for (const g of groups)
       for (const r of g.rows) {
-        const span = levelSpan(r.stats);
+        // The level to start the catch odds from: the story's (a post-game line's only if that's all there is).
+        const story = storyStats(r.stats);
+        const span = levelSpan(story.length ? story : r.stats);
         m.set(`${g.kind}|${g.method}|${r.mon}`, () => choose({ mon: r.mon, kind: g.kind, method: g.method, ...(span && { level: span[0] }) }));
       }
     return m;

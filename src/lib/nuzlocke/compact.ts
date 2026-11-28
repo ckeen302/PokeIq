@@ -16,6 +16,8 @@ export interface CompactEncounter extends NuzEncounter {
   when?: string[];
   /** The lowest of the lines' rates, when they differ (`rate` is then the highest). */
   rateMin?: number;
+  /** Met only after the story ("After the Hall of Fame"): kept apart from the story's lines, never summed up with them. */
+  post?: string;
 }
 
 /** Sword & Shield's weather, as the data words it; a line without one, in an area that has weather, is in normal weather. */
@@ -29,6 +31,7 @@ const WEATHER: Record<string, string> = {
   "During a snowstorm": "Snowstorm",
   "During a sandstorm": "Sandstorm",
   "During foggy weather": "Fog",
+  Fog: "Fog",
 };
 export const NORMAL_WEATHER = "Normal weather";
 export const ANY_WEATHER = "Any weather";
@@ -64,6 +67,42 @@ const label = (part: string, method: string): string => {
   return RELABEL[part] ?? part;
 };
 
+/** The parts of a condition as the screens say them, joined: "Have Fossilized Dino in bag; Have Fossilized Fish in bag" is "Fossilized Dino + Fossilized Fish". */
+function say(list: readonly string[], method: string): string {
+  const said = list.map((p) => label(p, method));
+  const bag = said.flatMap((p) => /^Have (.+) in bag$/.exec(p)?.[1] ?? []);
+  if (bag.length < 2) return said.join("; ");
+  const first = said.findIndex((p) => /^Have .+ in bag$/.test(p));
+  return [...said.slice(0, first).filter((p) => !/^Have .+ in bag$/.test(p)), bag.join(" + "), ...said.slice(first + 1).filter((p) => !/^Have .+ in bag$/.test(p))].join("; ");
+}
+
+/**
+ * Conditions that put a line after the story, and how the screens head such a line. Story-time and post-game lines are
+ * never summed up together: a player mid-run reading "Lv 7–60" would think a level 60 could turn up.
+ */
+const POST: [RegExp, string][] = [
+  [/^Enter the Hall of Fame$/, "After the Hall of Fame"],
+  [/^Acquired National Pokédex$/, "After the National Pokédex"],
+  [/^Elite four defeated$/i, "After the Elite Four"],
+  [/^after becoming Champion$/i, "After becoming Champion"],
+];
+/** Their story-time side, left unsaid on a Pokémon that has a post-game line (which then says the difference). */
+const PRE = new Set(["Before entering the Hall of Fame", "Before National Pokédex"]);
+
+function postOf(e: NuzEncounter): { part: string; said: string } | null {
+  for (const p of parts(e.condition)) for (const [re, said] of POST) if (re.test(p)) return { part: p, said };
+  return null;
+}
+
+/** A line without some of its condition's parts. */
+function without(e: NuzEncounter, drop: (part: string) => boolean): NuzEncounter {
+  const kept = parts(e.condition).filter((p) => !drop(p));
+  const out = { ...e };
+  if (kept.length) out.condition = kept.join("; ");
+  else delete out.condition;
+  return out;
+}
+
 const parts = (condition: string | undefined): string[] => (condition ? condition.split("; ").filter(Boolean) : []);
 const weatherOf = (e: NuzEncounter): string => parts(e.condition).map((p) => WEATHER[p]).find(Boolean) ?? NORMAL_WEATHER;
 
@@ -75,18 +114,24 @@ export function compactEncounters(encounters: readonly NuzEncounter[], versions:
   const weathers = new Map<string, Set<string>>();
   for (const e of encounters) if (parts(e.condition).some((p) => p in WEATHER)) weathers.set(e.method, new Set());
   for (const e of encounters) weathers.get(e.method)?.add(weatherOf(e));
-  const rows = new Map<string, NuzEncounter[]>();
+  // Each Pokémon's lines by way of meeting it, the post-game ones apart (their condition then says it, as `post`).
+  const base = (e: NuzEncounter) => `${e.species}|${e.form ?? ""}|${e.kind}|${e.method}`;
+  const hasPost = new Set(encounters.filter((e) => postOf(e)).map(base));
+  const rows = new Map<string, { post: string | null; lines: NuzEncounter[] }>();
   for (const e of encounters) {
-    const key = `${e.species}|${e.form ?? ""}|${e.kind}|${e.method}`;
-    const lines = rows.get(key);
-    if (lines) lines.push(e);
-    else rows.set(key, [e]);
+    const post = postOf(e);
+    const line = post ? without(e, (p) => p === post.part) : hasPost.has(base(e)) ? without(e, (p) => PRE.has(p)) : e;
+    const key = `${base(e)}|${post?.said ?? ""}`;
+    const row = rows.get(key);
+    if (row) row.lines.push(line);
+    else rows.set(key, { post: post?.said ?? null, lines: [line] });
   }
   const out: CompactEncounter[] = [];
-  for (const lines of rows.values()) {
+  for (const { post, lines } of rows.values()) {
+    const tag = (e: CompactEncounter): CompactEncounter => (post ? { ...e, post } : e);
     const methodWeathers = weathers.get(lines[0].method) ?? null;
     if (!methodWeathers && lines.length <= KEEP) {
-      for (const e of lines) out.push(e.condition ? { ...e, condition: parts(e.condition).map((p) => label(p, e.method)).join("; ") } : e);
+      for (const e of lines) out.push(tag(e.condition ? { ...e, condition: say(parts(e.condition), e.method) } : e));
       continue;
     }
     // Summed up version by version (a run is in one), then shared where the versions agree: in a run, a Pokémon shows
@@ -101,7 +146,7 @@ export function compactEncounters(encounters: readonly NuzEncounter[], versions:
       if (seen) seen.versions.push(v);
       else byResult.set(key, { entry, versions: [v] });
     }
-    for (const { entry, versions: vs } of byResult.values()) out.push(vs.length === versions.length ? entry : { ...entry, versions: vs });
+    for (const { entry, versions: vs } of byResult.values()) out.push(tag(vs.length === versions.length ? entry : { ...entry, versions: vs }));
   }
   return out;
 }
@@ -140,14 +185,13 @@ function merge(lines: NuzEncounter[], methodWeathers: Set<string> | null): Compa
 
   // What every line says goes in `condition`; what only some do, in `when`.
   const common = each[0].filter((x) => each.every((p) => p.includes(x)));
-  const said = (x: string) => label(x, lines[0].method);
-  const rest = [...new Set(each.map((p) => p.filter((x) => !common.includes(x)).map(said).join("; ")).filter(Boolean))];
+  const rest = [...new Set(each.map((p) => say(p.filter((x) => !common.includes(x)), lines[0].method)).filter(Boolean))];
   if (timeUnion) when.push(timeUnion.join(", "));
   when.push(...rest);
 
   const rates = lines.flatMap((e) => (e.rate !== undefined ? [e.rate] : []));
   const levels = lines.flatMap((e) => (e.levels ? [e.levels] : []));
-  if (common.length) out.condition = common.map(said).join("; ");
+  if (common.length) out.condition = say(common, lines[0].method);
   if (when.length) out.when = when;
   if (rates.length) {
     out.rate = Math.max(...rates);

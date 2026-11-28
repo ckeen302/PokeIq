@@ -1,4 +1,4 @@
-import type { EncounterKind } from "./model";
+import type { EncounterKind, NuzBoss } from "./model";
 import { GIFT_KINDS, STATIC_KINDS, allBosses, capFor, givesBadge, inVersion, type GameView, type ViewBoss, type ViewMon } from "./view";
 
 /**
@@ -60,9 +60,11 @@ export interface Rules {
   statics: boolean;
   /** Show the level caps. */
   caps: boolean;
+  /** Rival and villain battles set the level cap too (by default only gym leaders, totems, kahunas and the like do). */
+  storyCaps: boolean;
 }
 
-export const DEFAULT_RULES: Rules = { dupes: true, shiny: true, gifts: true, statics: true, caps: true };
+export const DEFAULT_RULES: Rules = { dupes: true, shiny: true, gifts: true, statics: true, caps: true, storyCaps: false };
 
 export interface Run {
   v: typeof RUN_VERSION;
@@ -327,25 +329,48 @@ export function removeBadge(run: Run, view: Pick<GameView, "steps">, now = Date.
   return last ? { run: touch(run, { beaten: run.beaten.filter((k) => k !== last.key) }, now), boss: last } : { run, boss: null };
 }
 
+type CapRun = Pick<Run, "beaten" | "version"> & { rules?: Pick<Rules, "storyCaps"> };
+
 /**
- * Where a run stands: the next boss of its version not yet beaten, with its cap when the caps rule is on and it has one;
- * "done" once every boss is beaten; null for a game whose data has no bosses.
+ * Whether a boss sets the level cap under a run's rules: a gym leader, a totem, a kahuna, the Elite Four… always; a
+ * rival or villain (a story battle) only when the rule says so; a battle the player can skip, never.
+ */
+export const setsCap = (b: NuzBoss, rules: Pick<Rules, "storyCaps"> | undefined): boolean => !b.optional && (b.kind !== "story" || !!rules?.storyCaps);
+
+/**
+ * Where a run stands: the next boss of its version not yet beaten that sets the cap under its rules, with that cap when
+ * the caps rule is on and it has one; "done" once every such boss is beaten; null for a game whose data has no bosses.
  */
 export function standing(run: Pick<Run, "beaten" | "version" | "rules">, view: Pick<GameView, "steps">): { next: ViewBoss; cap?: number } | "done" | null {
   const bosses = versionBosses(view, run.version);
   if (!bosses.length) return null;
-  const next = bosses.find((b) => !run.beaten.includes(b.key));
+  const next = bosses.find((b) => !run.beaten.includes(b.key) && setsCap(b, run.rules));
   if (!next) return "done";
   const cap = run.rules.caps ? capFor(next, run.version) : undefined;
   return cap === undefined ? { next } : { next, cap };
 }
 
-/** The level cap: the first boss of the run's version, in story order, not yet beaten whose cap is known for it. */
-export function levelCap(run: Pick<Run, "beaten" | "version">, view: Pick<GameView, "steps">): { boss: ViewBoss; cap: number } | null {
+/** The level cap: the first boss of the run's version, in story order, not yet beaten, that sets the cap under its rules and has one. */
+export function levelCap(run: CapRun, view: Pick<GameView, "steps">): { boss: ViewBoss; cap: number } | null {
   for (const b of versionBosses(view, run.version)) {
-    if (run.beaten.includes(b.key)) continue;
+    if (run.beaten.includes(b.key) || !setsCap(b, run.rules)) continue;
     const cap = capFor(b, run.version);
     if (cap !== undefined) return { boss: b, cap };
+  }
+  return null;
+}
+
+/**
+ * A story battle still to come before the cap's boss when story battles don't set the cap (or an optional one): worth
+ * a "Before that" under the cap, with its strongest Pokémon's level.
+ */
+export function storyBefore(run: CapRun, view: Pick<GameView, "steps">): { boss: ViewBoss; top?: number } | null {
+  const cap = levelCap(run, view);
+  for (const b of versionBosses(view, run.version)) {
+    if (cap && b.key === cap.boss.key) return null;
+    if (run.beaten.includes(b.key) || b.kind !== "story" || setsCap(b, run.rules)) continue;
+    const top = capFor(b, run.version);
+    return top === undefined ? { boss: b } : { boss: b, top };
   }
   return null;
 }

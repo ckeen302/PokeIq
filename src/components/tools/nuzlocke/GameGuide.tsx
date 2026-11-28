@@ -1,5 +1,5 @@
 import "server-only";
-import { ArrowLeft, Medal, Swords } from "lucide-react";
+import { ArrowLeft, Medal, Swords, VenetianMask } from "lucide-react";
 import Link from "@/components/ui/Link";
 import { jsonLd } from "@/lib/seo";
 import { breadcrumbList } from "@/lib/structured-data";
@@ -14,7 +14,7 @@ import page from "@/messages/nuzlocke-page";
 import nuz from "@/messages/nuzlocke";
 import tools from "@/messages/tools";
 import { toolJsonLd } from "@/lib/tier-list/seo";
-import { groupByMethod, levelSpan, methodLabel, type EncounterRow } from "@/lib/nuzlocke/group";
+import { groupByMethod, levelSpan, methodLabel, postStats, storyStats, type EncounterRow, type EncounterStat } from "@/lib/nuzlocke/group";
 import { capFor, inVersion, type GameSummary, type GameView, type ViewArea, type ViewBoss } from "@/lib/nuzlocke/view";
 import { versionColor } from "@/lib/nuzlocke/versions";
 import { cn } from "@/lib/utils";
@@ -40,23 +40,36 @@ function versionNames(view: GameView, ids: readonly string[]): string {
   return ids.map((id) => view.versions.find((v) => v.id === id)?.name ?? id).join(" & ");
 }
 
+/** The text of some of a row's lines: each line of the data ("1F 69%", "FireRed 20%") or of a summary ("Overcast · Rain · 1–20%"), then the levels. */
+function linesText(t: PageT, view: GameView, stats: readonly EncounterStat[], versionTags: boolean): string {
+  const lines = stats.map((s) => {
+    const rate = s.rate === undefined ? null : s.rateMin !== undefined ? t("game.rates", { min: s.rateMin, max: s.rate }) : t("game.rate", { n: s.rate });
+    const summed = !!s.when || s.rateMin !== undefined;
+    return [versionTags && s.versions ? versionNames(view, s.versions) : null, s.condition, ...(s.when ?? []), rate].filter(Boolean).join(summed ? " · " : " ");
+  });
+  const span = levelSpan(stats);
+  const parts = [...new Set(lines.filter(Boolean))];
+  if (span) parts.push(span[0] === span[1] ? t("game.level", { n: span[0] }) : t("game.levels", { min: span[0], max: span[1] }));
+  return parts.join(" · ");
+}
+
 /**
- * A Pokémon's line: its version tag (an exclusive), then each line of the data ("1F 69%", "FireRed 20%") or of their
- * summary ("Overcast · Rain · 1–20%"), then its levels.
+ * A Pokémon's line: its version tag (an exclusive), then its story-time lines; and, apart, its post-game lines ("After
+ * the Hall of Fame: Lv 60"), never summed up with the story's.
  */
-function rowText(t: PageT, view: GameView, row: EncounterRow): { only: string[] | null; text: string } {
+function rowText(t: PageT, view: GameView, row: EncounterRow): { only: string[] | null; text: string; post: string } {
   const sets = new Set(row.stats.map((s) => s.versions?.join(",") ?? "*"));
   const union = new Set(row.stats.flatMap((s) => s.versions ?? view.versions.map((v) => v.id)));
   const only = !sets.has("*") && union.size < view.versions.length ? [...union] : null;
-  const lines = row.stats.map((s) => {
-    const rate = s.rate === undefined ? null : s.rateMin !== undefined ? t("game.rates", { min: s.rateMin, max: s.rate }) : t("game.rate", { n: s.rate });
-    const summed = !!s.when || s.rateMin !== undefined;
-    return [sets.size > 1 && s.versions ? versionNames(view, s.versions) : null, s.condition, ...(s.when ?? []), rate].filter(Boolean).join(summed ? " · " : " ");
-  });
-  const span = levelSpan(row.stats);
-  const parts = [...new Set(lines.filter(Boolean))];
-  if (span) parts.push(span[0] === span[1] ? t("game.level", { n: span[0] }) : t("game.levels", { min: span[0], max: span[1] }));
-  return { only, text: parts.join(" · ") };
+  const by = new Map<string, EncounterStat[]>();
+  for (const s of postStats(row.stats)) by.set(s.post!, [...(by.get(s.post!) ?? []), s]);
+  const post = [...by].map(([when, lines]) => t("game.post", { when, text: linesText(t, view, lines, sets.size > 1) })).join(" · ");
+  return { only, text: linesText(t, view, storyStats(row.stats), sets.size > 1), post };
+}
+
+/** A small grey tag beside a boss's name ("Optional"). */
+function Tag({ children }: { children: React.ReactNode }) {
+  return <i className="nzg-only nzg-tag shrink-0">{children}</i>;
 }
 
 /** "Sword only": a boss met in some versions only (a version's own Gym Leader). */
@@ -90,9 +103,10 @@ function areaGroups(t: PageT, view: GameView, area: ViewArea, locale: Locale): G
     const rows = g.rows.flatMap((row): GuideRow[] => {
       const mon = view.mons[row.mon];
       if (!mon) return [];
-      const { only, text } = rowText(t, view, row);
+      const { only, text, post } = rowText(t, view, row);
       const href = localeHref(`/pokemon/${mon.slug}`, locale).href;
-      return [only ? [href, mon.art, mon.name, text, t("game.only", { version: versionNames(view, only) }), versionColor(only[0])] : [href, mon.art, mon.name, text]];
+      const tag: [string, string] | [] = only ? [t("game.only", { version: versionNames(view, only) }), versionColor(only[0])] : [];
+      return [post ? [href, mon.art, mon.name, text, tag[0] ?? "", tag[1] ?? "", post] : only ? [href, mon.art, mon.name, text, tag[0]!, tag[1]!] : [href, mon.art, mon.name, text]];
     });
     return [methodIconKey(g.method, g.kind), methodLabel(g.method), kind, rows];
   });
@@ -107,18 +121,24 @@ function AreaBlock({ t, view, area, locale }: { t: PageT; view: GameView; area: 
   );
 }
 
+/** A story battle (a rival, a villain) shows its top level; any other boss, its level cap. */
+const levelKey = (b: ViewBoss) => (b.kind === "story" ? "game.topLevel" : "game.levelCap");
+
 function BossLine({ t, view, boss }: { t: PageT; view: GameView; boss: ViewBoss }) {
   const caps = view.versions.filter((v) => inVersion(boss, v.id)).map((v) => [v, capFor(boss, v.id)] as const);
   const same = new Set(caps.map(([, c]) => c)).size === 1;
-  const cap = same ? (caps[0]?.[1] !== undefined ? t("game.levelCap", { n: caps[0][1]! }) : null) : caps.filter(([, c]) => c !== undefined).map(([v, c]) => `${v.name}: ${t("game.levelCap", { n: c! })}`).join(" · ");
-  const Icon = boss.badge ? Medal : Swords;
+  const key = levelKey(boss);
+  const cap = same ? (caps[0]?.[1] !== undefined ? t(key, { n: caps[0][1]! }) : null) : caps.filter(([, c]) => c !== undefined).map(([v, c]) => `${v.name}: ${t(key, { n: c! })}`).join(" · ");
+  const story = boss.kind === "story";
+  const Icon = story ? VenetianMask : boss.badge ? Medal : Swords;
   return (
-    <li className="flex items-center gap-3 py-1" data-testid="nz-guide-boss">
+    <li className="flex items-center gap-3 py-1" data-testid="nz-guide-boss" data-story={story ? "1" : undefined}>
       <span className="h-px flex-1 bg-gradient-to-r from-transparent to-foreground/[0.14]" aria-hidden />
-      <span className="flex max-w-[85%] flex-wrap items-center justify-center gap-x-2 gap-y-0.5 rounded-full border border-[hsl(var(--warning)/0.35)] bg-[hsl(var(--warning)/0.08)] px-4 py-2 text-center text-[14px] font-semibold">
-        <Icon className="h-4 w-4 shrink-0 text-[hsl(var(--warning))]" aria-hidden />
+      <span className={cn("flex max-w-[85%] flex-wrap items-center justify-center gap-x-2 gap-y-0.5 rounded-full border px-4 text-center font-semibold", story ? "border-foreground/[0.14] bg-foreground/[0.03] py-1.5 text-[13px]" : "border-[hsl(var(--warning)/0.35)] bg-[hsl(var(--warning)/0.08)] py-2 text-[14px]")}>
+        <Icon className={cn("h-4 w-4 shrink-0", story ? "text-muted-foreground" : "text-[hsl(var(--warning))]")} aria-label={story ? t("game.storyBattle") : undefined} aria-hidden={!story} />
         <span>{boss.name}</span>
         {boss.badge && <span className="text-muted-foreground">· {boss.badge}</span>}
+        {boss.optional && <Tag>{t("game.optional")}</Tag>}
         {boss.versions && <VersionsOnly t={t} view={view} ids={boss.versions} />}
         {/* On a phone the cap takes the second line, so no line starts with a dot. */}
         {cap && (
@@ -147,20 +167,24 @@ function CapList({ t, view }: { t: PageT; view: GameView }) {
         {bosses.map((b) => {
           const caps = view.versions.filter((v) => inVersion(b, v.id)).map((v) => [v, capFor(b, v.id)] as const).filter(([, c]) => c !== undefined);
           const same = new Set(caps.map(([, c]) => c)).size <= 1;
-          const Icon = b.badge ? Medal : Swords;
+          const story = b.kind === "story";
+          const Icon = story ? VenetianMask : b.badge ? Medal : Swords;
           return (
-            <li key={b.key} className="flex min-h-[60px] items-center gap-3 rounded-2xl border border-foreground/[0.07] bg-card px-3.5 py-2.5">
-              <Icon className="h-4 w-4 shrink-0 text-[hsl(var(--warning))]" aria-hidden />
+            // A story battle (a rival, a villain) is listed lighter: its top level is the cap only if a run's rule says so.
+            <li key={b.key} className={cn("flex min-h-[60px] items-center gap-3 rounded-2xl border px-3.5 py-2.5", story ? "border-dashed border-foreground/[0.12] bg-transparent" : "border-foreground/[0.07] bg-card")} data-story={story ? "1" : undefined}>
+              <Icon className={cn("h-4 w-4 shrink-0", story ? "text-muted-foreground" : "text-[hsl(var(--warning))]")} aria-label={story ? t("game.storyBattle") : undefined} aria-hidden={!story} />
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-[14.5px] font-semibold leading-tight">{b.name}</span>
-                {(b.badge || b.versions) && (
-                  <span className="flex min-w-0 items-center gap-1.5 text-[12.5px] text-muted-foreground">
+                {(b.badge || b.versions || story || b.optional) && (
+                  <span className="flex min-w-0 flex-wrap items-center gap-1.5 text-[12.5px] text-muted-foreground">
                     {b.badge && <span className="truncate">{b.badge}</span>}
+                    {story && <span>{t("game.storyBattle")}</span>}
+                    {b.optional && <Tag>{t("game.optional")}</Tag>}
                     {b.versions && <VersionsOnly t={t} view={view} ids={b.versions} />}
                   </span>
                 )}
               </span>
-              <span className="shrink-0 text-right font-display text-[19px] font-bold leading-none [font-variant-numeric:tabular-nums]">
+              <span className={cn("shrink-0 text-right font-display text-[19px] font-bold leading-none [font-variant-numeric:tabular-nums]", story && "text-muted-foreground")}>
                 {caps.length === 0 ? "–" : same ? caps[0][1] : caps.map(([v, c]) => `${v.name} ${c}`).join(" · ")}
               </span>
             </li>
